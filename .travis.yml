@@ -8,5 +8,6 @@ python:
 install: 
   - "sudo python setup.py develop"
   - "sudo pip install nose"
+  - "sudo pip install pylint"
 # command to run tests, e.g. python setup.py test
-script: nosetests -w tests
+script: nosetests -w tests && epylint shakedown
