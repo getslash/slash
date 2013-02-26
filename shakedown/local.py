@@ -40,11 +40,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # since each thread has its own greenlet we can just use those as identifiers
 # for the context.  If greenlets are not available we fall back to the
 # current thread ident.
+import six
 try:
     from greenlet import getcurrent as get_ident # pylint: disable=F0401
 except ImportError: # pragma: no cover
     try:
-        from thread import get_ident
+        if six.PY3:
+            try:
+                from threading import get_ident # pylint: disable=F0401,E0611
+            except ImportError:
+                from threading import _get_ident as get_ident # for Python3.2 specifically
+        else:
+            from thread import get_ident
     except ImportError: # pragma: no cover
         from dummy_thread import get_ident
 
