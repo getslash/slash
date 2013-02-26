@@ -7,13 +7,9 @@ _in_same_dir = functools.partial(os.path.join, os.path.dirname(__file__))
 with open(_in_same_dir("shakedown", "__version__.py")) as version_file:
     exec(version_file.read())  # pylint: disable=W0122
 
-install_requires = []
-with open(_in_same_dir("install_requires.txt")) as install_requires_file:
-    install_requires = [
-        line.strip()
-        for line in install_requires_file
-        if not line.isspace()
-        ]
+install_requires = [
+    "six",
+]
 
 setup(name="shakedown",
       classifiers = [
@@ -27,5 +23,4 @@ setup(name="shakedown",
       packages=find_packages(exclude=["tests"]),
       install_requires=install_requires,
       scripts=[],
-      namespace_packages=[]
       )

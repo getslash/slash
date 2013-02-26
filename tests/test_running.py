@@ -3,11 +3,11 @@ from .utils import TestBucket
 from shakedown.runner import run_tests
 from shakedown.session import Session
 from shakedown.suite import Suite
-
+from six.moves import xrange # pylint: disable=W0622
 import random
-import unittest
+from .utils import TestCase
 
-class TestRunningTestBase(unittest.TestCase):
+class TestRunningTestBase(TestCase):
     def setUp(self):
         self.bucket = TestBucket()
         self.runnables = self.bucket.generate_tests(7)
@@ -26,7 +26,7 @@ class AllSuccessfulTest(TestRunningTestBase):
 
 class FailedItemsTest(TestRunningTestBase):
     def prepare_runnables(self):
-        num_unsuccessfull = len(self.runnables) / 2
+        num_unsuccessfull = len(self.runnables) // 2
         num_error_tests = 2
         assert 1 < num_unsuccessfull < len(self.runnables)
         unsuccessful = random.sample(self.runnables, num_unsuccessfull)

@@ -1,8 +1,14 @@
 from shakedown import RunnableTest
 from shakedown.exceptions import TestFailed
-from six.moves import xrange
+from six.moves import xrange # pylint: disable=W0622
+import platform
 import itertools
 import uuid
+
+if platform.python_version() < "2.7":
+    from unittest2 import TestCase
+else:
+    from unittest import TestCase
 
 class TestBucket(object):
     """
