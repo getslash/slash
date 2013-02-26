@@ -29,8 +29,11 @@ class TestBucket(object):
         test_id = next(self._uuid_generator)
         self._expected.add(test_id)
         return BucketTest(self, test_id)
-    def notify_run(self, test_id):
-        self._expected.remove(test_id)
+    def notify_run(self, test):
+        self._expected.remove(test.__bucket_testid__)
+        callback_list = self._run_callbacks.get(test.__bucket_testid__, [])
+        while callback_list:
+            callback_list.pop(0)(test)
     def assert_all_run(self):
         assert not self._expected, "These tests have not run: {0}".format(", ".join(self._expected))
     ### Functions to manage test execution
@@ -52,4 +55,4 @@ class BucketTest(RunnableTest):
         self._bucket = bucket
         self.__bucket_testid__ = bucket_test_id
     def run(self):
-        self._bucket.notify_run(self.__bucket_testid__)
+        self._bucket.notify_run(self)

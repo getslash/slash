@@ -40,7 +40,18 @@ class FailedItemsTest(TestRunningTestBase):
     def test__all_executed(self):
         self.bucket.assert_all_run()
     def test__failed_items_failed(self):
-        self.skipTest("")
+        for failed_test in self.failed_tests:
+            result = self.session.get_result(failed_test)
+            self.assertTrue(result.is_failure())
+            self.assertFalse(result.is_error())
+            self.assertFalse(result.is_success())
+    def test__error_items_error(self):
+        for error_test in self.error_tests:
+            result = self.session.get_result(error_test)
+            self.assertTrue(result.is_error())
+            self.assertFalse(result.is_failure())
+            self.assertFalse(result.is_success())
+
 
 ### make nosetests ignore stuff we don't want to run
 run_tests.__test__ = False
