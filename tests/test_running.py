@@ -3,7 +3,7 @@ from .utils import TestBucket
 from shakedown.runner import run_tests
 from shakedown.session import Session
 from shakedown.suite import Suite
-from six.moves import xrange # pylint: disable=W0622
+import six
 import random
 from .utils import TestCase
 
@@ -30,7 +30,7 @@ class FailedItemsTest(TestRunningTestBase):
         num_error_tests = 2
         assert 1 < num_unsuccessfull < len(self.runnables)
         unsuccessful = random.sample(self.runnables, num_unsuccessfull)
-        self.error_tests = [unsuccessful.pop(-1) for _ in xrange(num_error_tests)]
+        self.error_tests = [unsuccessful.pop(-1) for _ in six.moves.xrange(num_error_tests)]
         self.failed_tests = unsuccessful
         assert self.error_tests and self.failed_tests
         for failed_test in self.failed_tests:

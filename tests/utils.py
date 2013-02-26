@@ -1,6 +1,6 @@
 from shakedown import RunnableTest
 from shakedown.exceptions import TestFailed
-from six.moves import xrange # pylint: disable=W0622
+import six
 import platform
 import itertools
 import uuid
@@ -24,7 +24,7 @@ class TestBucket(object):
         self._uuid_generator = ("{0}/{1}".format(self._uuid_base, i) for i in itertools.count(1))
         self._run_callbacks = {}
     def generate_tests(self, num_tests=3):
-        return [self.generate_test() for _ in xrange(num_tests)]
+        return [self.generate_test() for _ in six.moves.xrange(num_tests)]
     def generate_test(self):
         test_id = next(self._uuid_generator)
         self._expected.add(test_id)
