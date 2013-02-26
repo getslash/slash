@@ -1,7 +1,9 @@
 from .interfaces import Activatable
+from . import ctx
 
 class Session(Activatable):
     def activate(self):
-        pass
+        assert ctx.ctx.session is None
+        ctx.ctx.session = self
     def deactivate(self):
-        pass
+        ctx.ctx.session = None

@@ -32,3 +32,6 @@ Bootstrap Theme for Sphinx
 --------------------------
 Licensed by Ryan Roemer (BSD-3). See https://github.com/ryan-roemer/sphinx-bootstrap-theme
 
+local.py
+--------
+Licensed by the Werkzeug team (BSD-3). See https://github.com/mitsuhiko/werkzeug/blob/master/werkzeug/local.py

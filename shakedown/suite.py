@@ -1,10 +1,9 @@
 from .interfaces import Activatable
+from .ctx import ctx
 
 class Suite(Activatable):
-    def __init__(self):
-        super(Suite, self).__init__()
     def activate(self):
-        pass
+        assert ctx.suite is None
+        ctx.suite = self
     def deactivate(self):
-        pass
-
+        ctx.suite = None
