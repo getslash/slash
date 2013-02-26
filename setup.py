@@ -13,9 +13,12 @@ install_requires = [
 
 setup(name="shakedown",
       classifiers = [
+          "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
           ],
-      description="",
+      description="A Testing Framework",
       license="BSD",
       author="Rotem Yaari",
       author_email="vmalloc@gmail.com",
