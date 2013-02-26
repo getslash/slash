@@ -9,6 +9,6 @@ def _execute(cmd):
 
 if __name__ == '__main__':
     if platform.python_version() < "3.3":
-        _execute("epylint setup.py")
-        _execute("epylint shakedown")
+        _execute("pylint --rcfile=.pylintrc setup.py")
+        _execute("pylint --rcfile=.pylintrc shakedown")
     _execute("nosetests -w tests")
