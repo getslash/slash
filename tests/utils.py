@@ -1,5 +1,6 @@
 from shakedown import RunnableTest
 from shakedown.exceptions import TestFailed
+from six.moves import xrange
 import itertools
 import uuid
 
@@ -9,7 +10,7 @@ class TestBucket(object):
     have run
     """
     __test__ = False # for nose
-    
+
     def __init__(self):
         super(TestBucket, self).__init__()
         self._expected = set()
