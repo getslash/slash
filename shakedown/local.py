@@ -51,10 +51,9 @@ except ImportError: # pragma: no cover
             except ImportError:
                 from threading import _get_ident as get_ident # for Python3.2 specifically
         else:
-            from thread import get_ident
+            from thread import get_ident # pylint: disable=F0401
     except ImportError: # pragma: no cover
-        from dummy_thread import get_ident
-
+        from dummy_thread import get_ident # pylint: disable=F0401
 
 def release_local(local):
     """Releases the contents of the local for the current context.
@@ -330,7 +329,7 @@ class LocalProxy(object):
 
     def __unicode__(self):
         try:
-            return unicode(self._get_current_object())
+            return unicode(self._get_current_object()) # pylint: disable=E0602
         except RuntimeError:
             return repr(self)
 
@@ -366,7 +365,7 @@ class LocalProxy(object):
     __ne__ = lambda x, o: x._get_current_object() != o # pylint: disable=W0212
     __gt__ = lambda x, o: x._get_current_object() > o # pylint: disable=W0212
     __ge__ = lambda x, o: x._get_current_object() >= o # pylint: disable=W0212
-    __cmp__ = lambda x, o: cmp(x._get_current_object(), o) # pylint: disable=W0212
+    __cmp__ = lambda x, o: cmp(x._get_current_object(), o) # pylint: disable=W0212,E0602
     __hash__ = lambda x: hash(x._get_current_object()) # pylint: disable=W0212
     __call__ = lambda x, *a, **kw: x._get_current_object()(*a, **kw) # pylint: disable=W0212,W0142
     __len__ = lambda x: len(x._get_current_object()) # pylint: disable=W0212
@@ -394,7 +393,7 @@ class LocalProxy(object):
     __invert__ = lambda x: ~(x._get_current_object()) # pylint: disable=W0212
     __complex__ = lambda x: complex(x._get_current_object()) # pylint: disable=W0212
     __int__ = lambda x: int(x._get_current_object()) # pylint: disable=W0212
-    __long__ = lambda x: long(x._get_current_object()) # pylint: disable=W0212
+    __long__ = lambda x: long(x._get_current_object()) # pylint: disable=W0212,E0602
     __float__ = lambda x: float(x._get_current_object()) # pylint: disable=W0212
     __oct__ = lambda x: oct(x._get_current_object()) # pylint: disable=W0212
     __hex__ = lambda x: hex(x._get_current_object()) # pylint: disable=W0212
