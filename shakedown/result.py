@@ -19,3 +19,10 @@ class Result(object):
         self._errors.append(e)
     def add_failure(self, f):
         self._failures.append(f)
+
+class AggregatedResult(object):
+    def __init__(self, result_iterator_func):
+        super(AggregatedResult, self).__init__()
+        self._iterator = result_iterator_func
+    def is_success(self):
+        return all(result.is_success() for result in self._iterator())

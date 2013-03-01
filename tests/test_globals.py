@@ -1,7 +1,7 @@
 from .utils import TestCase
 from shakedown.session import Session
 from shakedown.suite import Suite
-from shakedown.ctx import ctx
+from shakedown import context
 
 class GlobalsTest(TestCase):
     def setUp(self):
@@ -12,10 +12,10 @@ class GlobalsTest(TestCase):
         self.suite.activate()
     def tearDown(self):
         self.suite.deactivate()
-        self.assertIsNone(ctx.suite)
+        self.assertIsNone(context.suite)
         self.session.deactivate()
-        self.assertIsNone(ctx.session)
+        self.assertIsNone(context.session)
     def test__get_current_session(self):
-        self.assertIs(ctx.session, self.session)
+        self.assertIs(context.session, self.session)
     def test__get_current_suite(self):
-        self.assertIs(ctx.suite, self.suite)
+        self.assertIs(context.suite, self.suite)
