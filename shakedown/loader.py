@@ -24,12 +24,12 @@ class Loader(object):
         return filename.endswith(".py")
 
     def _iter_runnable_tests_in_module(self, module):
-        for object_name, obj in iteritems(vars(module)):
-            if obj is RunnableTestFactory:
+        for factory_name, factory in iteritems(vars(module)):
+            if factory is RunnableTestFactory: # probably imported directly
                 continue
-            if isinstance(obj, type) and issubclass(obj, RunnableTestFactory):
-                _logger.debug("Getting tests from {0}:{1}..", module, object_name)
-                for test in obj().generate_tests():
+            if isinstance(factory, type) and issubclass(factory, RunnableTestFactory):
+                _logger.debug("Getting tests from {0}:{1}..", module, factory_name)
+                for test in factory.generate_tests():
                     yield test
 
 def _walk(p):

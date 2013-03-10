@@ -118,7 +118,8 @@ class {test_class_name}(RunnableTest):
 
 _TEST_FACTORY_SOURCE_TEMPLATE = """
 class F{{test_class_name}}(RunnableTestFactory):
-    def generate_tests(self):
+    @classmethod
+    def generate_tests(cls):
 {0}
         return [{{test_class_name}}()]
 """.format("\n".join((" " * 8 + line) for line in _TEST_SOURCE_TEMPLATE.splitlines()))
