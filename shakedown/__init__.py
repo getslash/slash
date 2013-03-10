@@ -2,7 +2,6 @@ from .__version__ import __version__
 from .ctx import context
 from .runnable_test_factory import RunnableTestFactory
 from .runnable_test import RunnableTest
-
 # assertions
 from .should import (
     assert_contains,
@@ -24,3 +23,4 @@ from .should import (
     assert_raises,
     assert_true,
     )
+from .test import Test
