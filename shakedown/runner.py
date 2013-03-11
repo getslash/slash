@@ -1,5 +1,5 @@
+from .cleanups import call_cleanups
 from .ctx import context
-from .exceptions import TestFailed
 from .metadata import ensure_shakedown_metadata
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
@@ -14,8 +14,11 @@ def run_tests(iterable):
         _logger.debug("Running {0}...", test)
         ensure_shakedown_metadata(test).id = context.suite.id_space.allocate()
         with _set_current_test_context(test):
-            with _report_result_context():
-                test.run()
+            with _register_result_context():
+                try:
+                    test.run()
+                finally:
+                    call_cleanups()
 
 @contextmanager
 def _set_current_test_context(test):
@@ -27,7 +30,7 @@ def _set_current_test_context(test):
         context.test = prev
 
 @contextmanager
-def _report_result_context():
+def _register_result_context():
     result = context.suite.create_result(context.test)
     try:
         try:
@@ -35,9 +38,7 @@ def _report_result_context():
         except:
             _logger.exception("Exception escaped test")
             raise
-    except TestFailed as e:
-        result.add_failure(e)
-    except Exception as e: # pylint: disable=W0702
-        result.add_error(e)
+    except:
+        result.add_exception()
     finally:
         result.mark_finished()

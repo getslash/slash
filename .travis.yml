@@ -7,6 +7,6 @@ python:
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   - "python setup.py develop"
-  - "pip install nose six pylint --use-mirrors"
+  - "pip install nose six pylint pyforge --use-mirrors"
 # command to run tests, e.g. python setup.py test
 script: python travis_build.py

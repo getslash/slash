@@ -18,4 +18,7 @@ We can save this as a Python file, for instance as ``my_test.py``. Then we can r
 
     $ shake run my_test.py
 
+Cleanups
+--------
 
+**STUB**

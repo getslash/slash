@@ -1,3 +1,6 @@
+import sys
+from .exceptions import TestFailed
+
 class Result(object):
     def __init__(self):
         super(Result, self).__init__()
@@ -15,10 +18,20 @@ class Result(object):
         return self._finished
     def mark_finished(self):
         self._finished = True
-    def add_error(self, e):
-        self._errors.append(e)
-    def add_failure(self, f):
-        self._failures.append(f)
+    def add_exception(self):
+        _, exc_value, _ = sys.exc_info()
+        if isinstance(exc_value, TestFailed):
+            self.add_failure()
+        else:
+            self.add_error()
+    def add_error(self):
+        self._errors.append(sys.exc_info()[1])
+    def add_failure(self):
+        self._failures.append(sys.exc_info()[1])
+    def get_errors(self):
+        return self._errors
+    def get_failures(self):
+        return self._failures
 
 class AggregatedResult(object):
     def __init__(self, result_iterator_func):
