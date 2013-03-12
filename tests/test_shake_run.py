@@ -1,7 +1,7 @@
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
 from shakedown.ctx import context
-from shakedown.frontend.shake_run import shake_run
+from shakedown.frontend import shake_run
 from shakedown.session import Session
 from shakedown.suite import Suite
 import os
@@ -25,7 +25,7 @@ class ShakeRunTest(TestCase):
             }
         )
     def test__shake_run_directory_success(self):
-        result = shake_run([self.root_path])
+        result = shake_run.shake_run([self.root_path])
         self.assertEquals(result, 0, "shake run did not return 0 on success")
     def test__shake_run_directory_failure(self):
         self._test__shake_run_directory_unsuccessful(self.generator.make_test_fail)
@@ -34,7 +34,7 @@ class ShakeRunTest(TestCase):
     def _test__shake_run_directory_unsuccessful(self, fault):
         expected = self.generator.get_expected_test_ids()
         fault(expected[2])
-        result = shake_run([self.root_path])
+        result = shake_run.shake_run([self.root_path])
         self.assertNotEquals(result, 0, "shake run unexpectedly returned 0 for failure")
     def test__shake_run_specific_file(self):
         for path in [
@@ -42,7 +42,7 @@ class ShakeRunTest(TestCase):
                 "dir_1/dir_2/test_2.py",
                 "dir_1/test_3.py"
         ]:
-            result = shake_run([os.path.join(self.root_path, path)])
+            result = shake_run.shake_run([os.path.join(self.root_path, path)])
             self.assertEquals(result, 0, "shake run did not return successfully for {0}".format(path))
     def tearDown(self):
         self.generator.assert_all_run()

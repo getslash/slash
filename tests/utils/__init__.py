@@ -1,7 +1,11 @@
 from logbook.compat import LoggingHandler
 import platform
 import forge
-
+from confetti.utils import (
+    assign_path,
+    get_path,
+    )
+from shakedown.conf import config
 if platform.python_version() < "2.7":
     import unittest2 as unittest
 else:
@@ -12,6 +16,9 @@ class TestCase(unittest.TestCase):
         super(TestCase, self).setUp()
         self._handler = LoggingHandler()
         self._handler.push_application()
+    def override_config(self, path, value):
+        self.addCleanup(assign_path, config, path, get_path(config, path))
+        assign_path(config, path, value)
     _forge = None
     @property
     def forge(self):
