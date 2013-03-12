@@ -22,6 +22,7 @@ Contents:
 
    tutorial
    assertions
+   configuration
    development
 
 
