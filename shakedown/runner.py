@@ -1,3 +1,4 @@
+import sys
 from .cleanups import call_cleanups
 from .ctx import context
 from .metadata import ensure_shakedown_metadata
@@ -36,7 +37,7 @@ def _register_result_context():
         try:
             yield
         except:
-            _logger.exception("Exception escaped test")
+            _logger.debug("Exception escaped test", exc_info=sys.exc_info())
             raise
     except:
         result.add_exception()
