@@ -37,5 +37,19 @@ class AggregatedResult(object):
     def __init__(self, result_iterator_func):
         super(AggregatedResult, self).__init__()
         self._iterator = result_iterator_func
+    def __iter__(self):
+        return self._iterator()
     def is_success(self):
         return all(result.is_success() for result in self._iterator())
+    def get_num_successful(self):
+        return count(result for result in self if result.is_success())
+    def get_num_errors(self):
+        return count(result for result in self if result.is_error())
+    def get_num_failures(self):
+        return count(result for result in self if result.is_failure() and not result.is_error())
+
+def count(iterable):
+    i = 0
+    for _ in iterable:
+        i += 1
+    return i

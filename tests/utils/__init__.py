@@ -36,3 +36,7 @@ class TestCase(unittest.TestCase):
             self._forge.verify()
         self._handler.pop_application()
         super(TestCase, self).tearDown()
+
+class NullFile(object):
+    def write(self, s):
+        pass
