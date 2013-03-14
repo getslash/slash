@@ -33,6 +33,7 @@ class TestCase(unittest.TestCase):
         return self._events
     def tearDown(self):
         if self._forge is not None:
+            self._forge.restore_all_replacements()
             self._forge.verify()
         self._handler.pop_application()
         super(TestCase, self).tearDown()
@@ -40,3 +41,6 @@ class TestCase(unittest.TestCase):
 class NullFile(object):
     def write(self, s):
         pass
+
+class CustomException(Exception):
+    pass

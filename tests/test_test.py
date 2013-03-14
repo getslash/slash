@@ -1,4 +1,7 @@
-from .utils import TestCase
+from .utils import (
+    TestCase,
+    CustomException,
+    )
 import shakedown
 
 class TestTest(TestCase):
@@ -53,6 +56,3 @@ class TestTest(TestCase):
         with self.assertRaises(CustomException):
             test.run()
         self.assertEquals(events, ["before", "test", "after"])
-
-class CustomException(Exception):
-    pass

@@ -1,4 +1,7 @@
-from .utils import TestCase
+from .utils import (
+    TestCase,
+    CustomException,
+    )
 from contextlib import contextmanager
 from shakedown import should
 from shakedown.exceptions import TestFailed
@@ -65,9 +68,6 @@ class AssertionsTest(TestCase):
             self.fail("should.raise_exception allowed success")
 
 ## boilerplate
-
-class CustomException(BaseException):
-    pass
 
 class OtherException(BaseException):
     pass
