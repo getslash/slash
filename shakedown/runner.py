@@ -1,6 +1,10 @@
 import sys
 from .cleanups import call_cleanups
 from .ctx import context
+from .exceptions import (
+    TestFailed,
+    SkipTest,
+    )
 from .metadata import ensure_shakedown_metadata
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
@@ -39,7 +43,11 @@ def _register_result_context():
         except:
             _logger.debug("Exception escaped test", exc_info=sys.exc_info())
             raise
+    except SkipTest as e:
+        result.add_skip(e.reason)
+    except TestFailed:
+        result.add_failure()
     except:
-        result.add_exception()
+        result.add_error()
     finally:
         result.mark_finished()

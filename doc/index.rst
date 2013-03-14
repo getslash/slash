@@ -21,6 +21,7 @@ Contents:
    :maxdepth: 2
 
    tutorial
+   test_lifetime
    assertions
    configuration
    development

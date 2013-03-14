@@ -5,6 +5,7 @@ _REPORT_COLUMNS = [
     ("Successful", "get_num_successful"),
     ("Failures", "get_num_failures"),
     ("Errors", "get_num_errors"),
+    ("Skipped", "get_num_skipped"),
     ]
 
 class Reporter(object):

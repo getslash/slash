@@ -1,5 +1,8 @@
 import shakedown
-from shakedown.exceptions import TestFailed
+from shakedown.exceptions import (
+    SkipTest,
+    TestFailed,
+    )
 from tempfile import mkdtemp
 import itertools
 import os
@@ -68,6 +71,8 @@ class TestGenerator(object):
         self.add_test_run_callback(testpromise, self.do_raise_exception)
     def make_test_fail(self, testpromise):
         self.add_test_run_callback(testpromise, self.do_fail)
+    def make_test_skip(self, testpromise):
+        self.add_test_run_callback(testpromise, self.do_skip)
     def add_test_run_callback(self, testpromise, handler):
         self._run_callbacks.setdefault(self._get_test_promise_id(testpromise), []).append(handler)
     def _get_test_promise_id(self, p):
@@ -81,6 +86,8 @@ class TestGenerator(object):
         raise OSError("Sample exception")
     def do_fail(self, _):
         raise TestFailed("Test failed")
+    def do_skip(self, _):
+        raise SkipTest("Reason here")
 
 class TestPromise(object):
     __test__ = False # for nose
