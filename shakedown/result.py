@@ -2,8 +2,9 @@ import sys
 from .exceptions import TestFailed
 
 class Result(object):
-    def __init__(self):
+    def __init__(self, test_metadata=None):
         super(Result, self).__init__()
+        self.test_metadata = test_metadata
         self._errors = []
         self._failures = []
         self._skips = []

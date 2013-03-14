@@ -33,3 +33,6 @@ class Test(RunnableTest, RunnableTestFactory):
         Gets called after each separate case from this test class executed, assuming :meth:`before` was successful.
         """
         pass
+    def get_canonical_name(self):
+        return "{0}:{1}".format(super(Test, self).get_canonical_name(), self._test_method_name)
+

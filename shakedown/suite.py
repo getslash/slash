@@ -23,7 +23,7 @@ class Suite(Activatable):
         return self._results[test.__shakedown__.id]
     def create_result(self, test):
         assert test.__shakedown__.id not in self._results
-        returned = Result()
+        returned = Result(test.__shakedown__)
         self._results[test.__shakedown__.id] = returned
         return returned
     def iter_results(self):
