@@ -3,6 +3,8 @@ Exceptions
 
 Exceptions are an important part of the testing workflow. They happen all the time -- whether they indicate a test lifetime event or an actual error condition. Exceptions need to be debugged, handled, responded to, and sometimes with delicate logic of what to do when.
 
+As explained in the :ref:`quickstart` section, you can enter a debugger when exceptions occur via the ``--pdb`` flag. Shakedown will attempt to invoke ``pudb`` or ``ipdb`` if you have them installed, but will revert to the default ``pdb`` if they are not present.
+
 Exception Handling Context
 --------------------------
 

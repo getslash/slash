@@ -6,6 +6,7 @@ from .exceptions import (
     SkipTest,
     )
 from .metadata import ensure_shakedown_metadata
+from .exception_handling import handling_exceptions
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
 
@@ -19,9 +20,10 @@ def run_tests(iterable):
         _logger.debug("Running {0}...", test)
         ensure_shakedown_metadata(test).id = context.suite.id_space.allocate()
         with _set_current_test_context(test):
-            with _register_result_context():
+            with _update_result_context():
                 try:
-                    test.run()
+                    with handling_exceptions():
+                        test.run()
                 finally:
                     call_cleanups()
 
@@ -35,7 +37,7 @@ def _set_current_test_context(test):
         context.test = prev
 
 @contextmanager
-def _register_result_context():
+def _update_result_context():
     result = context.suite.create_result(context.test)
     try:
         try:

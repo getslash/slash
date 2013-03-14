@@ -1,3 +1,5 @@
+.. _quickstart:
+
 Quick Start
 ===========
 
@@ -23,3 +25,9 @@ We can save this as a Python file, for instance as ``my_test.py``. Then we can r
 
 The above runs the test in your file, and reports the result at the end. If all went well, you should see 1 successful execution.
 
+Debugging
+---------
+
+You can make shakedown enter a debugger when exceptions are encountered, by specifying the ``--pdb`` flag to ``shake run``.
+
+Shakedown will try to use either ``pudb`` or ``ipdb`` if they can be invoked. Otherwise, the default ``pdb`` is invoked for debugging.

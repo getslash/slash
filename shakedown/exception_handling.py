@@ -1,7 +1,9 @@
 from contextlib import contextmanager
+from .utils.debug import debug_if_needed
 import sys
 
 _EXCEPTION_HANDLERS = [
+    debug_if_needed
     ]
 
 @contextmanager
