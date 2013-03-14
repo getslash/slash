@@ -24,6 +24,7 @@ Contents:
    test_lifetime
    assertions
    configuration
+   exceptions
    development
 
 
