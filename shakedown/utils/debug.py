@@ -38,9 +38,3 @@ def debug_if_needed(exc_info=None):
             break
     else:
         assert False, "No debug function available!"
-
-if __name__ == '__main__':
-    try:
-        1/0
-    except:
-        debug()
