@@ -10,6 +10,8 @@ class Test(RunnableTest, RunnableTestFactory):
         self._test_method_name = test_method_name
     @classmethod
     def generate_tests(cls):
+        if is_abstract_base_class(cls):
+            return []
         return [cls(test_method_name)
                 for test_method_name in dir(cls)
                 if test_method_name.startswith("test")]
@@ -36,3 +38,20 @@ class Test(RunnableTest, RunnableTestFactory):
     def get_canonical_name(self):
         return "{0}:{1}".format(super(Test, self).get_canonical_name(), self._test_method_name)
 
+
+def abstract_test_class(cls):
+    """
+    Marks a class as **abstract**, thus meaning it is not to be run
+    directly, but rather via a subclass.
+    """
+    assert issubclass(cls, Test), "abstract_test_class only operates on shakedown.Test subclasses"
+    cls.__shakedown_abstract__ = True
+    return cls
+
+def is_abstract_base_class(cls):
+    """
+    Checks if a given class is abstract.
+
+    .. seealso:: :func:`abstract_test_class`
+    """
+    return bool(cls.__dict__.get("__shakedown_abstract__", False))

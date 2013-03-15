@@ -56,3 +56,17 @@ class TestTest(TestCase):
         with self.assertRaises(CustomException):
             test.run()
         self.assertEquals(events, ["before", "test", "after"])
+    def test_abstract_tests(self):
+        @shakedown.abstract_test_class
+        class Abstract(shakedown.Test):
+            def test1(self):
+                pass
+            def test2(self):
+                pass
+            def test3(self):
+                pass
+        self.assertEquals(list(Abstract.generate_tests()), [])
+        class Derived(Abstract):
+            pass
+        self.assertEquals(len(list(Derived.generate_tests())), 3)
+

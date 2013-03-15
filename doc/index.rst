@@ -23,6 +23,7 @@ Contents:
    tutorial
    test_lifetime
    assertions
+   the_test_test
    configuration
    exceptions
    development

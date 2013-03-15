@@ -26,3 +26,4 @@ from .should import (
     )
 from .test import Test
 from .utils import skip_test
+from .test import abstract_test_class
