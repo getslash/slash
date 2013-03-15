@@ -1,6 +1,19 @@
 Test Lifetime
 =============
 
+Construction and Discovery
+--------------------------
+
+Shakedown deals with *runnable tests* and *test factories*. *Runnable tests* are any objects deriving from :class:`.RunnableTest`. Assuming these tests are constructed, it is pretty much straightforward to run them using their ``run`` method.
+
+To obtain runnable tests, Shakedown looks for :class:`.RunnableTestFactory` objects, and calls their ``generate_tests`` method, which should return an iterable of ``RunnableTest`` objects.
+
+.. autoclass:: shakedown.runnable_test.RunnableTest
+   :members:
+
+.. autoclass:: shakedown.runnable_test_factory.RunnableTestFactory
+   :members:
+
 Errors and Failures
 -------------------
 

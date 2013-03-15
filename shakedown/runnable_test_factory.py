@@ -1,3 +1,4 @@
 class RunnableTestFactory(object):
-    def generate_tests(self):
+    @classmethod
+    def generate_tests(cls):
         raise NotImplementedError() # pragma: no cover
