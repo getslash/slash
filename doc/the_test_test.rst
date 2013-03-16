@@ -41,3 +41,32 @@ This is solved with the :func:`shakedown.abstract_test_class` decorator::
             assert_true(hasattr(self.file, "read"))
 
 .. autofunction:: shakedown.abstract_test_class
+
+Test Parameters
+---------------
+
+Shakedown's :class:`.Test` supports adding parameters to your tests via the ``shakedown.parameters`` module.
+
+Use the :func:`shakedown.parameters.iterate` decorator to multiply a test function for different parameter values::
+
+    class SomeTest(Test):
+        @shakedown.parameters.iterate(x=[1, 2, 3])
+	def test(self, x):
+            # use x here
+
+The above example will yield 3 test cases, one for each value of ``x``. It is also useful to provide parameters to the ``before`` and ``after`` methods, thus multiplying each case by several possible setups::
+
+    class SomeTest(Test):
+        @shakedown.parameters.iterate(x=[1, 2, 3])
+	def before(self, x):
+            # ...
+
+        @shakedown.parameters.iterate(y=[4, 5, 6])
+	def test(self, y):
+            # ...
+
+        @shakedown.parameters.iterate(z=[7, 8, 9])
+	def after(self, z):
+            # ...
+
+The above will yield 9 different runnable tests, one for each cartesian product of the ``before``, ``test`` and ``after`` possible parameter values.

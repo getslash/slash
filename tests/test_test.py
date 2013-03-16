@@ -2,6 +2,7 @@ from .utils import (
     TestCase,
     CustomException,
     )
+import itertools
 import shakedown
 
 class TestTest(TestCase):
@@ -19,7 +20,7 @@ class TestTest(TestCase):
                 events.append("test_1")
             def test_2(self):
                 events.append("test_2")
-        tests = Test.generate_tests()
+        tests = list(Test.generate_tests())
         for test in tests:
             self.assertIsInstance(test, Test)
         self.assertEquals(len(tests), 2)
@@ -56,6 +57,8 @@ class TestTest(TestCase):
         with self.assertRaises(CustomException):
             test.run()
         self.assertEquals(events, ["before", "test", "after"])
+
+class AbstractTestTest(TestCase):
     def test_abstract_tests(self):
         @shakedown.abstract_test_class
         class Abstract(shakedown.Test):
@@ -70,3 +73,30 @@ class TestTest(TestCase):
             pass
         self.assertEquals(len(list(Derived.generate_tests())), 3)
 
+class TestParametersTest(TestCase):
+    def test_parameters(self):
+        variations = []
+        a_values = [1, 2]
+        b_values = [3, 4]
+        c_values = [5, 6]
+        d_values = [7, 8]
+        class Parameterized(shakedown.Test):
+            @shakedown.parameters.iterate(a=a_values)
+            def before(self, a):
+                variations.append([a])
+            @shakedown.parameters.iterate(b=b_values, c=c_values)
+            def test(self, b, c):
+                variations[-1].extend([b, c])
+            @shakedown.parameters.iterate(d=d_values)
+            def after(self, d):
+                variations[-1].append(d)
+        for test in Parameterized.generate_tests():
+            test.run()
+        self.assertEquals(
+            set(tuple(x) for x in variations),
+            set(itertools.product(
+                a_values,
+                b_values,
+                c_values,
+                d_values
+            )))
