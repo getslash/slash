@@ -12,11 +12,11 @@ class ConfigDoc(Directive):
     def run(self):
         returned = []
         for path, leaf in config.traverse_leaves():
-            p = nodes.paragraph()
-            returned.append(p)
-            p.append(nodes.strong(text=path))
+            section = nodes.section(ids=[path])
+            returned.append(section)
+            section.append(nodes.title(text=path))
             if leaf.metadata and "doc" in leaf.metadata:
-                p.append(nodes.paragraph(text=str(leaf.metadata["doc"])))
+                section.append(nodes.paragraph(text=str(leaf.metadata["doc"])))
         return returned
 
 def setup(app):

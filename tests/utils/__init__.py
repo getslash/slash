@@ -16,6 +16,7 @@ class TestCase(unittest.TestCase):
         super(TestCase, self).setUp()
         self._handler = LoggingHandler()
         self._handler.push_application()
+        self.override_config("hooks.swallow_exceptions", False)
     def override_config(self, path, value):
         self.addCleanup(assign_path, config, path, get_path(config, path))
         assign_path(config, path, value)
