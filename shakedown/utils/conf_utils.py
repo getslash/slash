@@ -1,5 +1,5 @@
 from confetti import Metadata
-from confetti.utils import assign_path, get_path
+from confetti.utils import assign_path, get_path, assign_path_expression
 from contextlib import contextmanager
 import argparse
 import itertools
@@ -40,11 +40,15 @@ def get_parsed_config_args_context(config, args):
     try:
         yield args
     finally:
-        for path, value in backups:
-            assign_path(config, path, value)
+        _restore_backups(config, backups)
 
 def _parse_args(config, args):
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-o", dest="config_overrides", metavar="PATH=VALUE", action="append",
+        default=[],
+        help="Provide overrides for configuration"
+    )
     assignment_map = {}
     for path, cfg in config.traverse_leaves():
         cmdline = (cfg.metadata or {}).get("cmdline")
@@ -56,10 +60,22 @@ def _parse_args(config, args):
 
 def _assign_paths(config, assignment_map, parsed_args):
     backups = []
-    for dest, path in iteritems(assignment_map):
-        value = getattr(parsed_args, dest, None)
-        if value is None:
-            continue
-        backups.append((path, get_path(config, path)))
-        assign_path(config, path, value)
+    try:
+        for dest, path in iteritems(assignment_map):
+            value = getattr(parsed_args, dest, None)
+            if value is None:
+                continue
+            backups.append((path, get_path(config, path)))
+            assign_path(config, path, value)
+        for override_string in parsed_args.config_overrides:
+            path, _ = override_string.split("=", 1)
+            backups.append((path, get_path(config, path)))
+            assign_path_expression(config, override_string, deduce_type=True)
+    except:
+        _restore_backups(config, backups)
+        raise
     return backups
+
+def _restore_backups(config, backups):
+    for path, value in backups:
+        assign_path(config, path, value)

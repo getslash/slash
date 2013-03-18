@@ -1,10 +1,7 @@
 from .utils import TestCase
 from .utils import NullFile
 from .utils.test_generator import TestGenerator
-from shakedown.ctx import context
 from shakedown.frontend import shake_run
-from shakedown.session import Session
-from shakedown.suite import Suite
 import os
 
 class ShakeRunTest(TestCase):
