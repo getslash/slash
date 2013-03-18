@@ -1,9 +1,17 @@
 from contextlib import contextmanager
 from .utils.debug import debug_if_needed
+from . import hooks as trigger_hook
 import sys
 
+def trigger_hooks_before_debugger(_):
+    trigger_hook.exception_caught_before_debugger()
+def trigger_hooks_after_debugger(_):
+    trigger_hook.exception_caught_after_debugger()
+
 _EXCEPTION_HANDLERS = [
-    debug_if_needed
+    trigger_hooks_before_debugger,
+    debug_if_needed,
+    trigger_hooks_after_debugger,
     ]
 
 @contextmanager

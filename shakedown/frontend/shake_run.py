@@ -1,4 +1,5 @@
 from ..conf import config
+from .. import hooks as trigger_hook
 from ..loader import Loader
 from ..runner import run_tests
 from ..session import Session
@@ -19,6 +20,7 @@ def shake_run(args, report_stream=sys.stderr):
         with _suite_context() as suite:
             for path in args.paths:
                 run_tests(test_loader.iter_runnable_tests(path))
+            trigger_hook.result_summary()
         Reporter(report_stream).report_suite(suite)
         if suite.result.is_success():
             return 0
