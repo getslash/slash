@@ -15,9 +15,8 @@ When running tests via ``shake run``, you can use the ``-o`` flag to override se
 
     $ shake run -o hooks.swallow_exceptions=yes ...
 
-Configuration Paths
--------------------
-
+List of Available Configuration Values
+--------------------------------------
 
 .. config_doc:: 
 
