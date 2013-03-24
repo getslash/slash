@@ -11,7 +11,9 @@ The Basics
 Abstract Base Tests
 -------------------
 
-Sometimes you want tests that won't be executed on their own, but rather function as bases to derived tests::
+Sometimes you want tests that won't be executed on their own, but rather function as bases to derived tests:
+
+.. code-block:: python
 
     class FileTestBase(Test):
         def test_has_write_method(self):
@@ -31,8 +33,10 @@ Sometimes you want tests that won't be executed on their own, but rather functio
 
 If you try running the above code via Shakedown, it will fail. This is because Shakedown tries to run all cases in ``FileTestBase``, which cannot run due to the lack of a ``before()`` method.
 
-This is solved with the :func:`shakedown.abstract_test_class` decorator::
-    
+This is solved with the :func:`shakedown.abstract_test_class` decorator:
+
+.. code-block:: python
+  
     @shakedown.abstract_test_class
     class FileTestBase(Test):
         def test_has_write_method(self):
@@ -47,14 +51,18 @@ Test Parameters
 
 Shakedown's :class:`.Test` supports adding parameters to your tests via the ``shakedown.parameters`` module.
 
-Use the :func:`shakedown.parameters.iterate` decorator to multiply a test function for different parameter values::
+Use the :func:`shakedown.parameters.iterate` decorator to multiply a test function for different parameter values:
+
+.. code-block:: python
 
     class SomeTest(Test):
         @shakedown.parameters.iterate(x=[1, 2, 3])
 	def test(self, x):
             # use x here
 
-The above example will yield 3 test cases, one for each value of ``x``. It is also useful to provide parameters to the ``before`` and ``after`` methods, thus multiplying each case by several possible setups::
+The above example will yield 3 test cases, one for each value of ``x``. It is also useful to provide parameters to the ``before`` and ``after`` methods, thus multiplying each case by several possible setups:
+
+.. code-block:: python
 
     class SomeTest(Test):
         @shakedown.parameters.iterate(x=[1, 2, 3])
