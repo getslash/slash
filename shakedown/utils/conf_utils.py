@@ -1,5 +1,4 @@
 from confetti import Metadata
-from confetti.utils import assign_path, get_path, assign_path_expression
 from contextlib import contextmanager
 import argparse
 import itertools
@@ -65,12 +64,12 @@ def _assign_paths(config, assignment_map, parsed_args):
             value = getattr(parsed_args, dest, None)
             if value is None:
                 continue
-            backups.append((path, get_path(config, path)))
-            assign_path(config, path, value)
+            backups.append((path, config.get_path(path)))
+            config.assign_path(path, value)
         for override_string in parsed_args.config_overrides:
             path, _ = override_string.split("=", 1)
-            backups.append((path, get_path(config, path)))
-            assign_path_expression(config, override_string, deduce_type=True)
+            backups.append((path, config.get_path(path)))
+            config.assign_path_expression(override_string, deduce_type=True)
     except:
         _restore_backups(config, backups)
         raise
@@ -78,4 +77,4 @@ def _assign_paths(config, assignment_map, parsed_args):
 
 def _restore_backups(config, backups):
     for path, value in backups:
-        assign_path(config, path, value)
+        config.assign_path(path, value)

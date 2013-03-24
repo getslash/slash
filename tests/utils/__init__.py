@@ -1,10 +1,6 @@
 from logbook.compat import LoggingHandler
 import platform
 import forge
-from confetti.utils import (
-    assign_path,
-    get_path,
-    )
 from shakedown.conf import config
 if platform.python_version() < "2.7":
     import unittest2 as unittest
@@ -18,8 +14,8 @@ class TestCase(unittest.TestCase):
         self._handler.push_application()
         self.override_config("hooks.swallow_exceptions", False)
     def override_config(self, path, value):
-        self.addCleanup(assign_path, config, path, get_path(config, path))
-        assign_path(config, path, value)
+        self.addCleanup(config.assign_path, path, config.get_path(path))
+        config.assign_path(path, value)
     _forge = None
     @property
     def forge(self):

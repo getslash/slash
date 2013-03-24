@@ -10,7 +10,7 @@ with open(_in_same_dir("shakedown", "__version__.py")) as version_file:
     exec(version_file.read())  # pylint: disable=W0122
 
 install_requires = [
-    "confetti>1.1.0",
+    "confetti>=2.0.0.dev0",
     "six",
 ]
 
