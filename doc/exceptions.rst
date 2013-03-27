@@ -40,6 +40,8 @@ Marks with Special Meanings
 
 TODO
 
+.. _exception_swallowing:
+
 Exception Swallowing
 --------------------
 

@@ -13,5 +13,8 @@ config = Config({
     },
     "hooks" : {
         "swallow_exceptions" : False // Doc("If set, exceptions inside hooks will be re-raised"),
-    }
+    },
+    "plugins" : {
+        "search_paths" : [] // Doc("List of paths in which to search for plugin modules"),
+    },
 })
