@@ -36,6 +36,37 @@ The exception handling context relies on a convenience mechanism for marking exc
 
 
 Marks with Special Meanings
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TODO
+
+Exception Swallowing
+--------------------
+
+Shakedown provides a convenience context for swallowing exceptions in various places. This is useful in case you want to write fail-safe code. This is done with :func:`.get_exception_swallowing_context`.
+
+Swallowed exceptions get reported to log as debug logs, and assuming the ``sentry.dsn`` configuration path is set, also get reported to `sentry <http://getsentry.com>`_.
+
+You can force certain exceptions through by using the ``noswallow`` or ``disable_exception_swallowing`` functions:
+
+.. code-block:: python
+
+   from shakedown.exception_handling import (
+       noswallow,
+       disable_exception_swallowing,
+       )
+
+   def func1():
+      raise noswallow(Exception("CRITICAL!"))
+
+   def func2():
+      e = Exception("CRITICAL!")
+      disable_exception_swallowing(e)
+      raise e
+
+   @disable_exception_swallowing
+   def func3():
+      raise Exception("CRITICAL!")
+
+.. autofunction:: shakedown.exception_handling.get_exception_swallowing_context
+
