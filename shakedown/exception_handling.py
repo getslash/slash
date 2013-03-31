@@ -5,7 +5,7 @@ from .conf import config
 import functools
 import logbook
 try:
-    import raven
+    import raven # pylint: disable=F0401
 except ImportError:
     raven = None
 import sys
