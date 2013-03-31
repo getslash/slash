@@ -6,7 +6,7 @@ The ``shakedown.Test`` class is a fusion between :class:`.RunnableTest` and :cla
 The Basics
 ----------
 
-*TODO*
+By default, derivatives of the ``shakedown.Test`` class will run all methods beginning with ``test``, each as a separate runnable test. This is similar to the ``unittest.TestCase`` behavior. The ``before`` and ``after`` methods, if exist, will be called before and after each runnable test as a setup/teardown fixture (this is also similar to ``setUp``, ``tearDown`` from ``unittest``). Very much like ``tearDown``, ``after`` will only be called if ``before`` finished successfully, and it will be called even in the face of failures and errors.
 
 Abstract Base Tests
 -------------------
