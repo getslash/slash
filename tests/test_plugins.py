@@ -96,7 +96,7 @@ class PluginActivationTest(TestCase):
         )
         plugins.manager.deactivate(self.plugin)
         self.assertEquals(plugins.manager.get_active_plugins(), {})
-        
+
     def test__hook_registration(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)

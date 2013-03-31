@@ -24,28 +24,36 @@ def get_cli_environment_context(argv=None, config=conf.config, parser=None):
 
 @contextmanager
 def _get_active_plugins_context(argv):
-    activated_plugin_names = []
-    installed = plugins.manager.get_installed_plugins()
-    active = set(plugins.manager.get_active_plugins())
+    cleanups = []
+    prev_active = set(plugins.manager.get_active_plugins())
     try:
-        for index, arg_name in reversed(list(enumerate(argv))):
-            plugin_name = _get_activated_plugin_name_from_arg(arg_name)
-            if plugin_name in installed and plugin_name not in active:
-                activated_plugin_names.append(plugin_name)
-                plugins.manager.activate(plugin_name)
-                active.add(plugin_name)
-                argv.pop(index)
+        new_active, new_argv = _get_new_active_plugins_from_args(argv)
+        for plugin_name in new_active - prev_active:
+            plugins.manager.activate(plugin_name)
+            cleanups.append((plugins.manager.deactivate, plugin_name))
+        for plugin_name in prev_active - new_active:
+            plugins.manager.deactivate(plugin_name)
+            cleanups.append((plugins.manager.activate, plugin_name))
+        del argv[:]
+        argv.extend(new_argv)
         yield
     finally:
-        for activated_name in activated_plugin_names:
-            plugins.manager.deactivate(activated_name)
-
+        for cleanup_func, plugin_name in reversed(cleanups):
+            cleanup_func(plugin_name)
 
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
-def _get_activated_plugin_name_from_arg(arg):
-    if arg.startswith(_PLUGIN_ACTIVATION_PREFIX):
-        return arg[len(_PLUGIN_ACTIVATION_PREFIX):]
-    return None
+_PLUGIN_DEACTIVATION_PREFIX = "--without-"
+def _get_new_active_plugins_from_args(argv):
+    new_active = set(plugins.manager.get_active_plugins())
+    returned_argv = []
+    for arg in argv:
+        if arg.startswith(_PLUGIN_DEACTIVATION_PREFIX):
+            new_active.discard(arg[len(_PLUGIN_DEACTIVATION_PREFIX):])
+        elif arg.startswith(_PLUGIN_ACTIVATION_PREFIX):
+            new_active.add(arg[len(_PLUGIN_ACTIVATION_PREFIX):])
+        else:
+            returned_argv.append(arg)
+    return new_active, returned_argv
 
 def _configure_parser_by_active_plugins(parser):
     for plugin in itervalues(plugins.manager.get_active_plugins()):

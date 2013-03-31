@@ -43,7 +43,9 @@ Plugin Activation
 
 Plugins are activated via :func:`shakedown.plugins.manager.activate <.plugins.PluginManager.activate>`. During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
 
-Activating plugins from command-line is usually done with the ``--with-`` prefix. For example, to activate a plugin called ``test-plugin``, you can pass ``--with-test-plugin`` when running ``shake run``.
+Activating plugins from command-line is usually done with the ``--with-`` prefix. For example, to activate a plugin called ``test-plugin``, you can pass ``--with-test-plugin`` when running ``shake run``. 
+
+Also, since some plugins can be activated from other locations, you can also override and deactivate plugins using ``--without-X`` (e.g. ``--without-test-plugin``).
 
 Plugin Command-Line Interaction
 -------------------------------

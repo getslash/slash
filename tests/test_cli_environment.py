@@ -62,8 +62,14 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
             with cli_utils.get_cli_environment_context(argv=args):
                 pass
     def test_activation(self):
-        with cli_utils.get_cli_environment_context(argv=["--with-sample-plugin"]) as new_args:
+        with cli_utils.get_cli_environment_context(argv=["--with-sample-plugin"]):
             self.assertIn(self.plugin.get_name(), plugins.manager.get_active_plugins(), "plugin was not activated")
+
+    def test_deactivation(self):
+        plugins.manager.activate(self.plugin)
+        with cli_utils.get_cli_environment_context(argv=["--without-sample-plugin"]):
+            self.assertNotIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
+        self.assertIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
 
     def test_argument_passing(self):
         with cli_utils.get_cli_environment_context(argv=["--with-sample-plugin", "--plugin-option", "value"]):
