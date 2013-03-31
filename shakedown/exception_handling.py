@@ -4,7 +4,10 @@ from . import hooks as trigger_hook
 from .conf import config
 import functools
 import logbook
-import raven
+try:
+    import raven
+except ImportError:
+    raven = None
 import sys
 
 _logger = logbook.Logger(__name__)
@@ -78,7 +81,7 @@ def get_exception_swallowing_context(report_to_sentry=True):
         if not get_exception_mark(sys.exc_info()[1], "swallow", True):
             raise
         if report_to_sentry:
-            get_sentry_client().captureException()
+            capture_sentry_exception()
         _logger.debug("Ignoring exception", exc_info=sys.exc_info())
 
 def noswallow(exception):
@@ -105,6 +108,11 @@ def disable_exception_swallowing(func_or_exception):
             raise
     return func
 
+def capture_sentry_exception():
+    client = get_sentry_client()
+    if client is not None:
+        client.captureException()
 
 def get_sentry_client():
-    return raven.Client(config.root.sentry.dsn)
+    if raven is not None:
+        return raven.Client(config.root.sentry.dsn)
