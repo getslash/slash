@@ -1,4 +1,5 @@
 from .. import hooks as trigger_hook
+from .. import site
 from ..loader import Loader
 from ..runner import run_tests
 from ..session import Session
@@ -12,6 +13,7 @@ import sys
 _logger = logbook.Logger(__name__)
 
 def shake_run(args, report_stream=sys.stderr):
+    site.load()
     parser = _build_parser()
     with cli_utils.get_cli_environment_context(argv=args, parser=parser) as args:
         test_loader = Loader()

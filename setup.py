@@ -11,6 +11,7 @@ with open(_in_same_dir("shakedown", "__version__.py")) as version_file:
 
 install_requires = [
     "confetti>=2.0.0.dev0",
+    "requests>=1.1.0",
     "six",
 ]
 

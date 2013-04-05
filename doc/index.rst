@@ -28,6 +28,7 @@ Contents:
    hooks
    plugins
    exceptions
+   customize
    development
 
 
