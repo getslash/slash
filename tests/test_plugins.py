@@ -109,6 +109,12 @@ class PluginActivationTest(TestCase):
         hooks.suite_start()
         self.assertEquals(self.plugin.suite_start_call_count, 1)
 
+    def test_install_and_activate(self):
+        """test plugins.manager.install(..., activate=True)"""
+        plugins.manager.install(self.plugin, activate=True)
+        self.addCleanup(plugins.manager.uninstall, self.plugin)
+        self.assertIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
+
     def test_uninstall_also_deactivates(self):
         plugins.manager.install(self.plugin)
         plugins.manager.activate(self.plugin)

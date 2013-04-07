@@ -55,14 +55,17 @@ class PluginManager(object):
         """
         return self._installed[plugin_name]
 
-    def install(self, plugin):
+    def install(self, plugin, activate=False):
         """
         Installs a plugin object to the plugin mechanism. ``plugin`` must be an object deriving from
         :class:`shakedown.plugins.interface.PluginInterface`.
         """
         if not isinstance(plugin, PluginInterface):
             raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))
-        self._installed[plugin.get_name()] = plugin
+        plugin_name = plugin.get_name()
+        self._installed[plugin_name] = plugin
+        if activate:
+            self.activate(plugin_name)
 
     def uninstall(self, plugin):
         """
