@@ -15,6 +15,7 @@ class TestRunningTestBase(TestCase):
         self.generator = TestGenerator()
         self.total_num_tests = 10
         self.runnables = [t.generate_test() for t in self.generator.generate_tests(self.total_num_tests)]
+        self.configure()
         with Session() as session:
             self.session = session
             with Suite() as suite:
@@ -22,8 +23,17 @@ class TestRunningTestBase(TestCase):
                 self.suite = suite
                 self.prepare_runnables()
                 run_tests(self.runnables)
+        self.assertEquals(
+            self.suite.is_complete(),
+            self.should_be_complete(),
+            "Suite unexpectedly complete" if self.suite.is_complete() else "Suite unexpectedly incomplete"
+        )
     def prepare_runnables(self):
         pass
+    def configure(self):
+        pass
+    def should_be_complete(self):
+        return True
 
 class AllSuccessfulTest(TestRunningTestBase):
     def test_all_executed(self):
@@ -68,6 +78,25 @@ class FailedItemsTest(TestRunningTestBase):
                 self.assertEquals(predicate_result,
                                   predicate in true_predicates,
                                   "Predicate {0} unexpectedly returned {1}".format(predicate, predicate_result))
+
+class StopOnFailuresTest(TestRunningTestBase):
+    def configure(self):
+        self.override_config("run.stop_on_error", True)
+    def prepare_runnables(self):
+        self.num_successful = 4
+        self.generator.make_test_raise_exception(self.runnables[self.num_successful])
+        # make sure that skips are not considered failures
+        self.generator.make_test_skip(self.runnables[1])
+    def should_be_complete(self):
+        return False
+    def test_stopped_after_failure(self):
+        for index, runnable in enumerate(self.runnables):
+            if index <= self.num_successful:
+                result = self.suite.get_result(runnable)
+                self.assertTrue(result.is_finished())
+            else:
+                with self.assertRaises(LookupError):
+                    self.suite.get_result(runnable)
 
 ### make nosetests ignore stuff we don't want to run
 run_tests.__test__ = False

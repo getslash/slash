@@ -7,6 +7,9 @@ config = Config({
     "debug" : {
         "enabled" : False // Doc("Enter pdb on failures and errors") // Cmdline(on="--pdb"),
     },
+    "run" : {
+        "stop_on_error" : False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
+    },
     "sentry" : {
         "dsn" : None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "
                             "See http://getsentry.com for details"),

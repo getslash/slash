@@ -1,5 +1,6 @@
 import sys
 from .cleanups import call_cleanups
+from .conf import config
 from .ctx import context
 from .exceptions import (
     TestFailed,
@@ -17,15 +18,19 @@ def run_tests(iterable):
     Runs tests from an iterable using the current suite
     """
     for test in iterable:
-        _logger.debug("Running {0}...", test)
         ensure_shakedown_metadata(test).id = context.suite.id_space.allocate()
+        _logger.debug("Running {0}...", test)
         with _set_current_test_context(test):
-            with _update_result_context():
+            with _update_result_context() as result:
                 try:
                     with handling_exceptions():
                         test.run()
                 finally:
                     call_cleanups()
+        if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
+            _logger.debug("Stopping (run.stop_on_error==True)")
+            context.suite.mark_incomplete()
+            break
 
 @contextmanager
 def _set_current_test_context(test):
@@ -41,7 +46,7 @@ def _update_result_context():
     result = context.suite.create_result(context.test)
     try:
         try:
-            yield
+            yield result
         except:
             _logger.debug("Exception escaped test", exc_info=sys.exc_info())
             raise

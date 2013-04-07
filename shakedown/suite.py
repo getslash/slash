@@ -11,6 +11,7 @@ class Suite(Activatable):
         super(Suite, self).__init__()
         self.id = self.id_space = None
         self._results = {}
+        self._complete = True
         self.result = AggregatedResult(self.iter_results)
     def activate(self):
         assert context.suite is None
@@ -23,6 +24,8 @@ class Suite(Activatable):
         hooks.suite_end()
         context.suite = None
     def get_result(self, test):
+        if test.__shakedown__ is None:
+            raise LookupError("Could not find result for {0}".format(test))
         return self._results[test.__shakedown__.id]
     def create_result(self, test):
         assert test.__shakedown__.id not in self._results
@@ -31,3 +34,7 @@ class Suite(Activatable):
         return returned
     def iter_results(self):
         return itervalues(self._results)
+    def mark_incomplete(self):
+        self._complete = False
+    def is_complete(self):
+        return self._complete
