@@ -2,6 +2,7 @@ from . import ctx
 from .interfaces import Activatable
 from .result import AggregatedResult
 from .utils.id_space import IDSpace
+from . import hooks
 import uuid
 
 class Session(Activatable):
@@ -19,7 +20,9 @@ class Session(Activatable):
         ctx.context.session = self
         self.id = str(uuid.uuid1())
         self.id_space = IDSpace(self.id)
+        hooks.session_start()
     def deactivate(self):
+        hooks.session_end()
         ctx.pop_context()
     def add_suite(self, suite):
         self._suites.append(suite)

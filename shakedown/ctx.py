@@ -2,10 +2,16 @@ from .local import LocalStack
 from .local import LocalProxy
 import functools
 
-__all__ = ["context", "session", "suite", "test"]
+__all__ = ["context", "session", "suite", "test", "fixture"]
+
+class Fixture(object):
+    pass
 
 class Context(object):
     session = suite = test = None
+    def __init__(self):
+        super(Context, self).__init__()
+        self.fixture = Fixture()
 
 class NullContext(object):
     def __setattr__(self, attr, value):
@@ -18,6 +24,9 @@ class NullContext(object):
         return None
     @property
     def test(self):
+        return None
+    @property
+    def fixture(self):
         return None
 
 _ctx = LocalStack()
@@ -34,6 +43,7 @@ def _lookup_object(name):
 session = LocalProxy(functools.partial(_lookup_object, "session"))
 suite   = LocalProxy(functools.partial(_lookup_object, "suite"))
 test    = LocalProxy(functools.partial(_lookup_object, "test"))
+fixture = LocalProxy(functools.partial(_lookup_object, "fixture"))
 
 def push_context():
     _ctx.push(Context())
