@@ -6,6 +6,16 @@ from shakedown.plugins import IncompatiblePlugin
 from tempfile import mkdtemp
 import os
 
+class BuiltinPluginsTest(TestCase):
+    def test_hooks_start_condition(self):
+        "make sure that all hooks are either empty, or contain callbacks marked with `shakedown.<identifier>`"
+        for hook_name, hook in hooks.get_all_hooks():
+            for identifier, registered in hook.iter_registered():
+                self.assertTrue(
+                    identifier.startswith("shakedown."),
+                    "Callback {0}.{1} is not a builtin!".format(hook_name, identifier)
+                )
+
 class PluginInstallationTest(TestCase):
     def test_cannot_install_incompatible_subclasses(self):
         class Incompatible(object):

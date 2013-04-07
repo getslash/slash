@@ -22,7 +22,7 @@ class Callback(object):
         return set(self._arg_names)
     def __call__(self, **kwargs):
         last_exc_info = None
-        for (callback, _) in self._callbacks:
+        for (_, callback) in self._callbacks:
             try:
                 callback(**kwargs)
             except:
@@ -37,12 +37,19 @@ class Callback(object):
 
         Optional argument identifier for later removal by :func:`shakedown.utils.callback.Callback.unregister_by_identifier`.
         """
-        self._callbacks.append((func, identifier))
+        self._callbacks.append((identifier, func))
         return func # useful for decorators
+
     def unregister_by_identifier(self, identifier):
         """
         Unregisters a callback identified by ``identifier``.
         """
-        for index, (_, callback_id) in reversed(list(enumerate(self._callbacks))):
+        for index, (callback_id, _) in reversed(list(enumerate(self._callbacks))):
             if callback_id == identifier:
                 self._callbacks.pop(index)
+
+    def iter_registered(self):
+        """
+        Yields tuples of (identifier, callback) for each registered callback
+        """
+        return iter(self._callbacks)
