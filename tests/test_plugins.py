@@ -7,7 +7,7 @@ from tempfile import mkdtemp
 import os
 
 class PluginInstallationTest(TestCase):
-    def test__cannot_install_incompatible_subclasses(self):
+    def test_cannot_install_incompatible_subclasses(self):
         class Incompatible(object):
             pass
         for invalid in (Incompatible, Incompatible(), PluginInterface, object(), 1, "string"):
@@ -15,7 +15,7 @@ class PluginInstallationTest(TestCase):
                 plugins.manager.install(invalid)
         self.assertEquals(plugins.manager.get_installed_plugins(), {})
 
-    def test__install_uninstall(self):
+    def test_install_uninstall(self):
         plugin_name = "some_plugin_name"
         class CustomPlugin(PluginInterface):
             def get_name(self):
@@ -72,7 +72,7 @@ def install_plugins():
     def tearDown(self):
         plugins.manager.uninstall_all()
         super(PluginDiscoveryTest, self).tearDown()
-    def test__discovery(self):
+    def test_discovery(self):
         plugins.manager.discover()
         self.assertEquals(
             set(plugins.manager.get_installed_plugins().keys()),
@@ -85,7 +85,7 @@ class PluginActivationTest(TestCase):
         super(PluginActivationTest, self).setUp()
         self.plugin = StartSuitePlugin()
 
-    def test__get_active_plugins(self):
+    def test_get_active_plugins(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
         self.assertEquals(plugins.manager.get_active_plugins(), {})
@@ -97,7 +97,7 @@ class PluginActivationTest(TestCase):
         plugins.manager.deactivate(self.plugin)
         self.assertEquals(plugins.manager.get_active_plugins(), {})
 
-    def test__hook_registration(self):
+    def test_hook_registration(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
         hooks.suite_start()
@@ -109,21 +109,21 @@ class PluginActivationTest(TestCase):
         hooks.suite_start()
         self.assertEquals(self.plugin.suite_start_call_count, 1)
 
-    def test__uninstall_also_deactivates(self):
+    def test_uninstall_also_deactivates(self):
         plugins.manager.install(self.plugin)
         plugins.manager.activate(self.plugin)
         plugins.manager.uninstall(self.plugin)
         hooks.suite_start()
         self.assertEquals(self.plugin.suite_start_call_count, 0)
 
-    def test__cannot_activate_uninstalled_plugin(self):
+    def test_cannot_activate_uninstalled_plugin(self):
         class Plugin(PluginInterface):
             def get_name(self):
                 return "Test plugin"
         with self.assertRaisesRegexp(ValueError, ".*not installed.*"):
             plugins.manager.activate(Plugin())
 
-    def test__unknown_hook_names(self):
+    def test_unknown_hook_names(self):
         "Make sure that plugins with unknown hook names get discarded"
         class Plugin(PluginInterface):
             def get_name(self):

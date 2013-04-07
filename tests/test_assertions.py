@@ -7,11 +7,11 @@ from shakedown import should
 from shakedown.exceptions import TestFailed
 
 class AssertionsTest(TestCase):
-    def test__assert_equals(self):
+    def test_assert_equals(self):
         with checking(should.equal, should.not_equal):
             good(1, 1)
             bad(1, 2)
-    def test__assert_isinstance(self):
+    def test_assert_isinstance(self):
         with checking(should.be_a, should.not_be_a):
             good(1, int)
             good("a", str)
@@ -19,25 +19,25 @@ class AssertionsTest(TestCase):
             bad(1, 1)
             bad(1, str)
             bad(None, str)
-    def test__is_none(self):
+    def test_is_none(self):
         with checking(should.be_none, should.not_be_none):
             good(None)
             bad("None")
-    def test__is(self):
+    def test_is(self):
         obj = object()
         with checking(should.be, should.not_be):
             good(obj, obj)
             good(self, self)
             bad(obj, object())
             bad({}, {})
-    def test__truth(self):
+    def test_truth(self):
         with checking(should.be_true, should.be_false):
             good(True)
             good("hello")
             bad(False)
             bad("")
             bad({})
-    def test__in(self):
+    def test_in(self):
         with checking(should.be_in, should.not_be_in):
             good(1, [1, 2, 3])
             good("e", "hello")
@@ -47,7 +47,7 @@ class AssertionsTest(TestCase):
             good([1, 2, 3], 1)
             good("hello", "e")
             bad("fdfdfd", "e")
-    def test__raises_exception(self):
+    def test_raises_exception(self):
         thrown = CustomException()
         with should.raise_exception(CustomException) as caught:
             raise thrown

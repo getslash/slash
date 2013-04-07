@@ -26,7 +26,7 @@ class TestRunningTestBase(TestCase):
         pass
 
 class AllSuccessfulTest(TestRunningTestBase):
-    def test__all_executed(self):
+    def test_all_executed(self):
         self.generator.assert_all_run()
 
 _RESULT_PREDICATES = set([
@@ -50,13 +50,13 @@ class FailedItemsTest(TestRunningTestBase):
             self.generator.make_test_skip(skipped_test)
         for error_test in self.error_tests:
             self.generator.make_test_raise_exception(error_test)
-    def test__all_executed(self):
+    def test_all_executed(self):
         self.generator.assert_all_run()
-    def test__failed_items_failed(self):
+    def test_failed_items_failed(self):
         self._test_results(self.failed_tests, [Result.is_finished, Result.is_failure, Result.is_just_failure])
-    def test__error_items_error(self):
+    def test_error_items_error(self):
         self._test_results(self.error_tests, [Result.is_finished, Result.is_error])
-    def test__skipped_items_skipped(self):
+    def test_skipped_items_skipped(self):
         self._test_results(self.skipped_tests, [Result.is_finished, Result.is_skip])
     def _test_results(self, tests, true_predicates):
         true_predicates = set(true_predicates)

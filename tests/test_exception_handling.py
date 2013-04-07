@@ -7,7 +7,7 @@ from forge import Anything
 from shakedown import exception_handling
 
 class ExceptionMarksTest(TestCase):
-    def test__exception_mark(self):
+    def test_exception_mark(self):
         e = CustomException()
         mark = object()
         self.assertFalse(exception_handling.is_exception_marked(e, "a"))
@@ -26,7 +26,7 @@ class HandlingExceptionsContextTest(TestCase):
         self.raised = CustomException()
         self.handler((CustomException, self.raised, Anything()))
         self.forge.replay()
-    def test__handling_exceptions(self):
+    def test_handling_exceptions(self):
         with self.assertRaises(CustomException) as caught:
             with exception_handling.handling_exceptions():
                 with exception_handling.handling_exceptions():
@@ -35,17 +35,17 @@ class HandlingExceptionsContextTest(TestCase):
         self.assertIs(caught.exception, self.raised)
 
 class ExceptionSwallowingTest(TestCase):
-    def test__swallow(self):
+    def test_swallow(self):
         with exception_handling.get_exception_swallowing_context():
             raise CustomException("!!!")
-    def test__no_swallow(self):
+    def test_no_swallow(self):
         with self.assertNoSwallow() as raised:
             raise exception_handling.noswallow(raised)
-    def test__disable_exception_swallowing_function(self):
+    def test_disable_exception_swallowing_function(self):
         with self.assertNoSwallow() as raised:
             exception_handling.disable_exception_swallowing(raised)
             raise raised
-    def test__disable_exception_swallowing_decorator(self):
+    def test_disable_exception_swallowing_decorator(self):
         @exception_handling.disable_exception_swallowing
         def func():
             raise raised

@@ -2,7 +2,7 @@ from .utils import TestCase
 import shakedown
 
 class SkipTestTest(TestCase):
-    def test__skip_test(self):
+    def test_skip_test(self):
         "Make sure the skip_test function raises a SkipTest exception"
         for args in [
                 (), ("message",)

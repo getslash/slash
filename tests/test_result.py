@@ -27,7 +27,7 @@ class AggregatedResultTest(TestCase):
         for result in results[:num_finished]:
             result.mark_finished()
         self.result = AggregatedResult(results.__iter__)
-    def test__counts(self):
+    def test_counts(self):
         self.assertEquals(self.result.get_num_successful(), 2)
         # errors take precedence over failures
         self.assertEquals(self.result.get_num_errors(), 3)

@@ -25,22 +25,22 @@ class ArgumentParsingTest(OutputCaptureTest):
             "int_value" : 0,
             })
 
-    def test__config_off_flag(self):
+    def test_config_off_flag(self):
         with cli_utils.get_cli_environment_context(argv=["--no-flag1"], config=self.config):
             self.assertFalse(self.config["a"]["a1"]["flag1"])
         self.assertTrue(self.config["a"]["a1"]["flag1"])
 
-    def test__config_on_flag(self):
+    def test_config_on_flag(self):
         with cli_utils.get_cli_environment_context(argv=["--flag2"], config=self.config):
             self.assertTrue(self.config["b"]["b1"]["flag2"])
         self.assertFalse(self.config["b"]["b1"]["flag2"])
 
-    def test__config_assign_flag(self):
+    def test_config_assign_flag(self):
         with cli_utils.get_cli_environment_context(argv=["-o", "string_value=hello", "-o", "int_value=666"], config=self.config):
             self.assertEquals(self.config.root.string_value, "hello")
             self.assertEquals(self.config.root.int_value, 666)
 
-    def test__config_assign_wrong_path_restores_config(self):
+    def test_config_assign_wrong_path_restores_config(self):
         "Given a bad override, the get_parsed_config_args_context() should leave the configuration untouched"
         with self.assertRaises(SystemExit) as caught:
             with cli_utils.get_cli_environment_context(argv=["-o", "string_value=bla", "-o", "int_value=hello"],

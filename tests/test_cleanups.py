@@ -5,7 +5,7 @@ from shakedown.session import Session
 from shakedown.suite import Suite
 
 class CleanupsTest(TestCase):
-    def test__cleanups(self):
+    def test_cleanups(self):
         class Test(shakedown.Test):
             def test1(self_):
                 self.events.test1()
@@ -26,7 +26,7 @@ class CleanupsTest(TestCase):
         with Session():
             with Suite():
                 shakedown.runner.run_tests(Test.generate_tests())
-    def test__error_cleanups(self):
+    def test_error_cleanups(self):
         class Test(shakedown.Test):
             def test(self_):
                 shakedown.add_cleanup(self.events.cleanup, 1)

@@ -15,7 +15,7 @@ class GlobalsTest(TestCase):
         self.assertIsNone(context.suite)
         self.session.deactivate()
         self.assertIsNone(context.session)
-    def test__get_current_session(self):
+    def test_get_current_session(self):
         self.assertIs(context.session, self.session)
-    def test__get_current_suite(self):
+    def test_get_current_suite(self):
         self.assertIs(context.suite, self.suite)

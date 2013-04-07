@@ -22,19 +22,19 @@ class ShakeRunTest(TestCase):
                 }
             }
         )
-    def test__shake_run_directory_success(self):
+    def test_shake_run_directory_success(self):
         result = self._execute_shake_run([self.root_path])
         self.assertEquals(result, 0, "shake run did not return 0 on success")
-    def test__shake_run_directory_failure(self):
+    def test_shake_run_directory_failure(self):
         self._test__shake_run_directory_unsuccessful(self.generator.make_test_fail)
-    def test__shake_run_directory_error(self):
+    def test_shake_run_directory_error(self):
         self._test__shake_run_directory_unsuccessful(self.generator.make_test_raise_exception)
     def _test__shake_run_directory_unsuccessful(self, fault):
         expected = self.generator.get_expected_test_ids()
         fault(expected[2])
         result = self._execute_shake_run([self.root_path])
         self.assertNotEquals(result, 0, "shake run unexpectedly returned 0 for failure")
-    def test__shake_run_specific_file(self):
+    def test_shake_run_specific_file(self):
         for path in [
                 "test_1.py",
                 "dir_1/dir_2/test_2.py",
