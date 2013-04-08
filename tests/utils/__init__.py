@@ -1,6 +1,7 @@
 from logbook.compat import LoggingHandler
 import platform
 import forge
+import shakedown
 from shakedown.conf import config
 if platform.python_version() < "2.7":
     import unittest2 as unittest
@@ -44,3 +45,11 @@ class CustomException(Exception):
 
 def no_op(*args, **kwargs):
     pass
+
+def run_tests_assert_success(test_class):
+    with shakedown.session.Session() as session:
+        with shakedown.suite.Suite():
+            shakedown.runner.run_tests(test_class.generate_tests())
+    assert session.result.is_success(), "Run did not succeed"
+    return session
+run_tests_assert_success.__test__ = False

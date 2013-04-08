@@ -1,4 +1,5 @@
 import sys
+from . import log
 from .cleanups import call_cleanups
 from .conf import config
 from .ctx import context
@@ -20,7 +21,7 @@ def run_tests(iterable):
     for test in iterable:
         ensure_shakedown_metadata(test).id = context.suite.id_space.allocate()
         _logger.debug("Running {0}...", test)
-        with _set_current_test_context(test):
+        with _get_test_context(test):
             with _update_result_context() as result:
                 try:
                     with handling_exceptions():
@@ -31,6 +32,12 @@ def run_tests(iterable):
             _logger.debug("Stopping (run.stop_on_error==True)")
             context.suite.mark_incomplete()
             break
+
+@contextmanager
+def _get_test_context(test):
+    with _set_current_test_context(test):
+        with log.get_test_logging_context():
+            yield
 
 @contextmanager
 def _set_current_test_context(test):

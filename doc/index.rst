@@ -25,6 +25,7 @@ Contents:
    assertions
    the_test_test
    configuration
+   logging
    hooks
    plugins
    exceptions
