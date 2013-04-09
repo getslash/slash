@@ -10,6 +10,10 @@ config = Config({
     "run" : {
         "stop_on_error" : False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
     },
+    "notifications" : {
+        "prowl_api_key" : None,
+        "nma_api_key" : None,
+    },
     "sentry" : {
         "dsn" : None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "
                             "See http://getsentry.com for details"),

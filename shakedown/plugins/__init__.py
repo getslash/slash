@@ -17,6 +17,7 @@ class PluginManager(object):
         super(PluginManager, self).__init__()
         self._installed = {}
         self._active = set()
+        self.install_builtin_plugins()
 
     def discover(self):
         """
@@ -66,6 +67,21 @@ class PluginManager(object):
         self._installed[plugin_name] = plugin
         if activate:
             self.activate(plugin_name)
+
+    def install_builtin_plugins(self):
+        for builtin_plugin_module in self._iter_builtin_plugin_modules():
+            module = __import__(
+                "shakedown.plugins.builtin.{0}".format(builtin_plugin_module),
+                fromlist=[""]
+            )
+            self.install(module.Plugin())
+
+    def _iter_builtin_plugin_modules(self):
+        builtin_dir = os.path.join(os.path.dirname(__file__), "builtin")
+        for filename in os.listdir(builtin_dir):
+            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
+                continue
+            yield filename[:-3]
 
     def uninstall(self, plugin):
         """

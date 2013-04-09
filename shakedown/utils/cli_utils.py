@@ -100,7 +100,7 @@ def _get_modified_configuration_from_args_context(parser, config, args):
             path, _ = override.split("=", 1)
             to_restore.append((path, config.get_path(path)))
             try:
-                config.assign_path_expression(override, deduce_type=True)
+                config.assign_path_expression(override, deduce_type=True, default_type=str)
             except ValueError:
                 parser.error("Invalid value for config override: {0}".format(override))
         yield

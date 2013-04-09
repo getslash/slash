@@ -15,9 +15,18 @@ class BuiltinPluginsTest(TestCase):
                     identifier.startswith("shakedown."),
                     "Callback {0}.{1} is not a builtin!".format(hook_name, identifier)
                 )
+    def test_builtin_plugins_are_installed(self):
+        installed = plugins.manager.get_installed_plugins()
+        self.assertNotEquals(installed, {})
+        for filename in os.listdir(os.path.join(os.path.dirname(plugins.__file__), "builtin")):
+            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
+                continue
+            self.assertIn(filename[:-3], installed)
 
 class PluginInstallationTest(TestCase):
     def test_cannot_install_incompatible_subclasses(self):
+        plugins.manager.uninstall_all()
+        self.addCleanup(plugins.manager.install_builtin_plugins)
         class Incompatible(object):
             pass
         for invalid in (Incompatible, Incompatible(), PluginInterface, object(), 1, "string"):
@@ -81,8 +90,11 @@ def install_plugins():
         self.override_config("plugins.search_paths", [self.root_path])
     def tearDown(self):
         plugins.manager.uninstall_all()
+        plugins.manager.install_builtin_plugins()
         super(PluginDiscoveryTest, self).tearDown()
     def test_discovery(self):
+        plugins.manager.uninstall_all()
+        self.addCleanup(plugins.manager.install_builtin_plugins)
         plugins.manager.discover()
         self.assertEquals(
             set(plugins.manager.get_installed_plugins().keys()),
