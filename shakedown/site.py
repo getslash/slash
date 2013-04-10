@@ -1,5 +1,6 @@
 import os
 import requests
+import pkg_resources
 
 def load(thing=None):
     """
@@ -16,6 +17,7 @@ def load(thing=None):
 def _load_defaults():
     _load_shakerc()
     _load_environment()
+    _load_entry_points()
 
 def _load_shakerc():
     site_file = os.path.expanduser("~/.shakedown/shakerc")
@@ -26,6 +28,11 @@ def _load_environment():
     loaded_url_or_file = os.environ.get("SHAKEDOWN_SETTINGS")
     if loaded_url_or_file:
         load(loaded_url_or_file)
+
+def _load_entry_points():
+    for customize_function_loader in pkg_resources.iter_entry_points("shakedown.site.customize"):
+        func = customize_function_loader.load()
+        func()
 
 def _load_filename_or_url(filename_or_url):
     if os.path.isfile(filename_or_url):

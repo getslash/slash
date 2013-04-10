@@ -1,7 +1,9 @@
 from .utils import TestCase
+from .utils import no_op
 from .utils import NullFile
 from .utils.test_generator import TestGenerator
 from shakedown.frontend import shake_run
+from shakedown import site
 import os
 
 class ShakeRunTest(TestCase):
@@ -9,6 +11,7 @@ class ShakeRunTest(TestCase):
         super(ShakeRunTest, self).setUp()
         self.generator = TestGenerator()
         make_test = self.generator.generate_test
+        self.forge.replace_with(site, "load", no_op)
         self.root_path = self.generator.write_test_directory(
             {
                 "test_1.py" : make_test(),

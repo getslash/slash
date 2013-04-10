@@ -6,6 +6,7 @@ import shakedown
 import shakedown.site
 from shakedown.frontend import shake_run
 import requests
+import pkg_resources
 from six.moves import cStringIO as StringIO
 
 site_customized = False
@@ -23,10 +24,13 @@ class ShakeRunSiteCustomizationTest(TestCase):
             shake_run.shake_run([])
 
 class CustomizationTest(TestCase):
-    def setUp(self):
-        super(CustomizationTest, self).setUp()
     def get_customization_source(self):
         return "import {0}; {0}.site_customized=True".format(__name__)
+    def get_customization_function(self):
+        def _customize():
+            global site_customized
+            site_customized = True
+        return _customize
     def test_customize_via_shakerc(self):
         shakedownrc_path = mktemp()
         self.forge.replace(os.path, "expanduser")
@@ -50,6 +54,13 @@ class CustomizationTest(TestCase):
         requests.get(url).and_return(fake_response)
         os.environ["SHAKEDOWN_SETTINGS"] = url
         self.addCleanup(os.environ.pop, "SHAKEDOWN_SETTINGS")
+        self.forge.replay()
+        self.assert_customization_loaded()
+    def test_customize_via_pkgutil_entry_point(self):
+        self.forge.replace(pkg_resources, "iter_entry_points")
+        entry_point = self.forge.create_wildcard_mock()
+        pkg_resources.iter_entry_points("shakedown.site.customize").and_return(iter([entry_point]))
+        entry_point.load().and_return(self.get_customization_function())
         self.forge.replay()
         self.assert_customization_loaded()
     def assert_customization_loaded(self):

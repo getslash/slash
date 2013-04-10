@@ -41,3 +41,6 @@ class NullFile(object):
 
 class CustomException(Exception):
     pass
+
+def no_op(*args, **kwargs):
+    pass

@@ -78,10 +78,41 @@ You can also defer or add loading to specific external sources, like URLs or fil
 Loading the Site File
 ---------------------
 
-Shakedown looks for several places to load custom site files:
+Customizing shakedown can be done in several ways.
 
-1. A file named ``~/.shakedown/shakerc`` will be loaded, if found
-2. An environment variable, SHAKEDOWN_SETTINGS=..., which points at either a URL or a file to load
+User Configuration File
+=======================
+
+Shakedown attempts to load the ``shakerc`` file, if it exists, under ``~/.shakedown/shakerc``.
+
+Environment Variable
+====================
+
+If an environment variable named ``SHAKEDOWN_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a customization file.
+
+Pkgutils Entry Points
+=====================
+
+In many cases you want to implement your customization in a separate package. This way you can have multiple virtual environments, each with a different customization of shakedown.
+
+This is supported through the use of ``setuptools``'s *entry point* mechanism. 
+
+First, implement your customization logic in a function. Let's say you have it as a function named ``customize`` in a module named ``mypkg.shake_customize``.
+
+Append the following to your ``setup.py`` script:
+
+..code-block:: python
+
+ setup(name="mypkg",
+    # ...
+    entry_points = {
+        "shakedown.site.customize": [
+            "some_arbitrary_name = mypkg.shake_customize:customize"
+            ]
+        },
+    # ...
+    )
+  
 
 .. autofunction:: shakedown.site.load
 
