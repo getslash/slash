@@ -34,12 +34,15 @@ def run_tests(iterable):
 
 @contextmanager
 def _set_current_test_context(test):
-    prev = context.test
+    prev_test = context.test
+    prev_test_id = context.test_id
     context.test = test
+    context.test_id = test.__shakedown__.id
     try:
         yield
     finally:
-        context.test = prev
+        context.test = prev_test
+        context.test_id = prev_test_id
 
 @contextmanager
 def _update_result_context():
