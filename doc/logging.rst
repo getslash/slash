@@ -16,6 +16,11 @@ Shakedown exposes a global logger intended for tests, and it is recommended to u
      def test_1(self):
          shakedown.logger.debug("Hello!")
 
+Console Log
+-----------
+
+By default logs above **WARNING** get emitted to the console. This can be changed via the ``log.console_level`` config variable. You can also use **-v**/**-q** to increase/decrease console verbosity accordingly.
+
 Logging To Files
 ----------------
 

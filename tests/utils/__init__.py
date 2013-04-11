@@ -14,6 +14,7 @@ class TestCase(unittest.TestCase):
         self._handler = LoggingHandler()
         self._handler.push_application()
         self.override_config("hooks.swallow_exceptions", False)
+        self.override_config("log.console_level", 10000) # silence console in tests
     def override_config(self, path, value):
         self.addCleanup(config.assign_path, path, config.get_path(path))
         config.assign_path(path, value)

@@ -69,14 +69,8 @@ def _configure_parser_by_config(parser, config):
         default=[],
         help="Provide overrides for configuration"
     )
-    for _, cfg, cmdline in _iter_cmdline_config(config):
-        arg_help = (cfg.metadata or {}).get("doc", "")
-        if cmdline.arg:
-            parser.add_argument(cmdline.arg, dest=cmdline.dest, default=None, help=arg_help)
-        if cmdline.on:
-            parser.add_argument(cmdline.on, action="store_true", dest=cmdline.dest, default=None, help=arg_help)
-        if cmdline.off:
-            parser.add_argument(cmdline.off, action="store_false", dest=cmdline.dest, default=None, help=arg_help)
+    for _, _, cmdline in _iter_cmdline_config(config):
+        cmdline.configure_parser(parser)
 
 def _iter_cmdline_config(config):
     for path, cfg in config.traverse_leaves():
@@ -90,10 +84,11 @@ def _get_modified_configuration_from_args_context(parser, config, args):
     to_restore = []
     try:
         for path, cfg, cmdline in _iter_cmdline_config(config):
-            new_value = getattr(args, cmdline.dest)
-            if new_value is not None:
+            old_value = cfg.get_value()
+            new_value = cmdline.update_value(old_value, args)
+            if new_value != old_value:
                 to_restore.append((path, cfg.get_value()))
-            config.assign_path(path, new_value)
+                config.assign_path(path, new_value)
         for override in args.config_overrides:
             if "=" not in override:
                 parser.error("Invalid config override: {0}".format(override))

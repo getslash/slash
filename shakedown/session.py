@@ -29,7 +29,6 @@ class Session(Activatable):
     def add_suite(self, suite):
         self._suites.append(suite)
 
-# TODO: move this back into session and change the Activatable interface
 @contextmanager
 def _session_context(session):
     assert ctx.context.session is None
