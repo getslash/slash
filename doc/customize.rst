@@ -101,7 +101,7 @@ First, implement your customization logic in a function. Let's say you have it a
 
 Append the following to your ``setup.py`` script:
 
-..code-block:: python
+.. code-block:: python
 
  setup(name="mypkg",
     # ...
