@@ -3,8 +3,6 @@ Plugins
 
 Plugins are a comfortable way of extending Shakedown's behavior. They are objects inheriting from a :class:`common base class <.PluginInterface>` that can be activated to modify or what happens in select point of the infrastructure. 
 
-*TODO*: describe fixture setup using plugins
-
 The Plugin Interface
 --------------------
 

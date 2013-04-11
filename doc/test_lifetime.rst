@@ -25,6 +25,13 @@ The :class:`.exceptions.TestFailed` exception (or any class derived from it) is 
 
 .. note:: Unlike in ``unittest``, ``AssertionError`` **DOES NOT** mean a failure, but rather an error. This is mainly because you wouldn't want internal assertions in your code and/or libraries that you use to be considered failures.
 
+Cleanups
+--------
+
+Cleanups functions can be added from anywhere in your code (not just the runnable test class), through the :func:`.add_cleanup` function. Once added to the cleanup list, cleanup callbacks will be executed in reverse order when tests are finished. This enables you to call ``add_cleanup`` from utility libraries and toolkits.
+
+.. autofunction:: shakedown.add_cleanup
+
 Skips
 -----
 

@@ -2,6 +2,11 @@ from collections import deque
 from .ctx import context
 
 def add_cleanup(_func, *args, **kwargs):
+    """
+    Adds a cleanup function to the cleanup stack. Cleanups are executed in a LIFO order.
+
+    Positional arguments and keywords are passed to the cleanup function when called.
+    """
     _get_cleanups().append((_func, args, kwargs))
 
 def call_cleanups():
