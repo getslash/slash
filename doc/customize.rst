@@ -15,7 +15,7 @@ Let's assume we are now working in a microwave company, *microtech*, and we woul
 3. We would like to add update malfunctions test to a manufacturing-related web service which is specific to our company, at ``http://mfg.microtech.com/notify_malfunction``
 
 Writing the Site File
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 The **site file** is a Python source file that when executed, customizes shakedown to your needs. We'll start by writing a plugin that will enable us to initialize a microwave object at the beginning of each test:
 
@@ -76,22 +76,22 @@ You can also defer or add loading to specific external sources, like URLs or fil
  shakedown.site.load("http://company.server.com/shakedown_customization.py")
 
 Loading the Site File
----------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 Customizing shakedown can be done in several ways.
 
 User Configuration File
-=======================
++++++++++++++++++++++++
 
 Shakedown attempts to load the ``shakerc`` file, if it exists, under ``~/.shakedown/shakerc``.
 
 Environment Variable
-====================
+++++++++++++++++++++
 
 If an environment variable named ``SHAKEDOWN_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a customization file.
 
 Pkgutils Entry Points
-=====================
++++++++++++++++++++++
 
 In many cases you want to implement your customization in a separate package. This way you can have multiple virtual environments, each with a different customization of shakedown.
 
