@@ -1,5 +1,5 @@
-The ``shakedown.Test`` Class
-============================
+Using shakedown.Test
+====================
 
 The ``shakedown.Test`` class is a fusion between :class:`.RunnableTest` and :class:`.RunnableTestFactory`, where the generated tests are customized constructions of the test itself.
 
