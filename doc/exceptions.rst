@@ -47,7 +47,7 @@ Exception Swallowing
 
 Shakedown provides a convenience context for swallowing exceptions in various places. This is useful in case you want to write fail-safe code. This is done with :func:`.get_exception_swallowing_context`.
 
-Swallowed exceptions get reported to log as debug logs, and assuming the ``sentry.dsn`` configuration path is set, also get reported to `sentry <http://getsentry.com>`_.
+Swallowed exceptions get reported to log as debug logs, and assuming the :ref:`conf.sentry.dsn` configuration path is set, also get reported to `sentry <http://getsentry.com>`_.
 
 You can force certain exceptions through by using the ``noswallow`` or ``disable_exception_swallowing`` functions:
 

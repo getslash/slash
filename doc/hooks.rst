@@ -19,7 +19,7 @@ You can add callbacks to be called in various points of Shakedown's execution vi
 Hook Errors
 -----------
 
-Since hooks are rarely related to each other, an error in a hook callback does not terminate the call chain, and is swallowed while issuing a warning. The ``hooks.swallow_exceptions`` configuration options controls this behavior. When disabled, exceptions will be propagated after all hooks are called. The first encountered exception will be the one raised eventually.
+Since hooks are rarely related to each other, an error in a hook callback does not terminate the call chain, and is swallowed while issuing a warning. The :ref:`conf.hooks.swallow_exceptions` configuration options controls this behavior. When disabled, exceptions will be propagated after all hooks are called. The first encountered exception will be the one raised eventually.
 
 This mechanism makes use of the :ref:`exception_swallowing` mechanism of Shakedown, so you can bypass it in several ways if you want. See :ref:`the exception swallowing documentation <exception_swallowing>` for more details.
 
