@@ -1,3 +1,5 @@
+import functools
+from .utils import skip_test
 from .parameters import iterate_kwargs_options
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
@@ -12,6 +14,12 @@ class Test(RunnableTest, RunnableTestFactory):
         self._before_kwargs = before_kwargs or {}
         self._after_kwargs = after_kwargs or {}
         self._test_kwargs = test_kwargs or {}
+    __shakedown_skipped__ = False
+    __shakedown_skipped_reason__ = None
+    @classmethod
+    def skip_all(cls, reason=None):
+        cls.__shakedown_skipped__ = True
+        cls.__shakedown_skipped_reason__ = reason
     @classmethod
     def generate_tests(cls):
         if is_abstract_base_class(cls):
@@ -26,13 +34,19 @@ class Test(RunnableTest, RunnableTestFactory):
             for before_kwargs in before_kwarg_sets:
                 for test_kwargs in iterate_kwargs_options(test_method):
                     for after_kwargs in after_kwarg_sets:
-                        yield cls(
+                        case = cls(
                             test_method_name,
                             before_kwargs=before_kwargs,
                             test_kwargs=test_kwargs,
                             after_kwargs=after_kwargs
+                        )
+                        if cls.__shakedown_skipped__:
+                            case.run = functools.partial(
+                                skip_test,
+                                cls.__shakedown_skipped_reason__
                             )
-    def run(self):
+                        yield case
+    def run(self): # pylint: disable=E0202
         """
         Not to be overriden
         """

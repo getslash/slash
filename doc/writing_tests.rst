@@ -91,6 +91,22 @@ In some case you want to skip certain methods. This is done by raising the :clas
          if self.microwave.model() == "Microtech Shitbox":
              shakedown.skip_test("Microwave model too old")
 
+Shakedown also provides :func:`skipped`, which is a decorator to skip specific methods or entire classes:
+
+.. code-block:: python
+
+ class MicrowaveTest(shakedown.Test):
+     @shakedown.skipped("reason")
+     def test_1(self):
+         # ...
+     @shakedown.skipped # no reason
+     def test_2(self):
+         # ...
+
+ @shakedown.skipped("reason")
+ class EntirelySkippedTest(shakedown.Test):
+     # ...
+
 
 .. autoclass:: shakedown.exceptions.SkipTest
 
