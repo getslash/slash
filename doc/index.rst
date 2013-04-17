@@ -37,19 +37,18 @@
            :maxdepth: 2
       
            tutorial
-           test_lifetime
+           writing_tests
            assertions
-           the_test_test
            configuration
            logging
            hooks
+           plugins
 
        .. container:: span6
 
          .. toctree::
            :maxdepth: 2
 
-           plugins
            exceptions
            features
            customize
