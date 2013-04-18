@@ -117,7 +117,7 @@ Advanced Features
 -----------------
 
 Abstract Base Tests
-===================
+~~~~~~~~~~~~~~~~~~~
 
 Sometimes you want tests that won't be executed on their own, but rather function as bases to derived tests:
 
@@ -155,7 +155,7 @@ This is solved with the :func:`shakedown.abstract_test_class` decorator:
 .. autofunction:: shakedown.abstract_test_class
 
 Test Parameters
-===============
+~~~~~~~~~~~~~~~
 
 Shakedown's :class:`.Test` supports adding parameters to your tests via the ``shakedown.parameters`` module.
 
