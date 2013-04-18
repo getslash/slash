@@ -1,6 +1,7 @@
 from .__version__ import __version__
 from . import parameters
 from .cleanups import add_cleanup
+from .conf import config
 from .ctx import context
 from .ctx import fixture
 from .runnable_test_factory import RunnableTestFactory
