@@ -1,5 +1,6 @@
 import sys
 from . import log
+from . import hooks
 from .cleanups import call_cleanups
 from .conf import config
 from .ctx import context
@@ -23,11 +24,12 @@ def run_tests(iterable):
         _logger.debug("Running {0}...", test)
         with _get_test_context(test):
             with _update_result_context() as result:
-                try:
-                    with handling_exceptions():
-                        test.run()
-                finally:
-                    call_cleanups()
+                with _get_test_hooks_context():
+                    try:
+                        with handling_exceptions():
+                            test.run()
+                    finally:
+                        call_cleanups()
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             context.suite.mark_incomplete()
@@ -38,6 +40,23 @@ def _get_test_context(test):
     with _set_current_test_context(test):
         with log.get_test_logging_context():
             yield
+
+@contextmanager
+def _get_test_hooks_context():
+    hooks.test_start()
+    try:
+        yield
+    except SkipTest:
+        hooks.test_skip()
+        raise
+    except TestFailed:
+        hooks.test_failure()
+        raise
+    except:
+        hooks.test_error()
+        raise
+    finally:
+        hooks.test_end()
 
 @contextmanager
 def _set_current_test_context(test):
