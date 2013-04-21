@@ -105,7 +105,7 @@ def install_plugins():
 class PluginActivationTest(TestCase):
     def setUp(self):
         super(PluginActivationTest, self).setUp()
-        self.plugin = StartSuitePlugin()
+        self.plugin = StartSessionPlugin()
 
     def test_get_active_plugins(self):
         plugins.manager.install(self.plugin)
@@ -122,14 +122,14 @@ class PluginActivationTest(TestCase):
     def test_hook_registration(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
-        hooks.suite_start()
-        self.assertEquals(self.plugin.suite_start_call_count, 0)
+        hooks.session_start()
+        self.assertEquals(self.plugin.session_start_call_count, 0)
         plugins.manager.activate(self.plugin)
-        hooks.suite_start()
-        self.assertEquals(self.plugin.suite_start_call_count, 1)
+        hooks.session_start()
+        self.assertEquals(self.plugin.session_start_call_count, 1)
         plugins.manager.deactivate(self.plugin)
-        hooks.suite_start()
-        self.assertEquals(self.plugin.suite_start_call_count, 1)
+        hooks.session_start()
+        self.assertEquals(self.plugin.session_start_call_count, 1)
 
     def test_install_and_activate(self):
         """test plugins.manager.install(..., activate=True)"""
@@ -141,8 +141,8 @@ class PluginActivationTest(TestCase):
         plugins.manager.install(self.plugin)
         plugins.manager.activate(self.plugin)
         plugins.manager.uninstall(self.plugin)
-        hooks.suite_start()
-        self.assertEquals(self.plugin.suite_start_call_count, 0)
+        hooks.session_start()
+        self.assertEquals(self.plugin.session_start_call_count, 0)
 
     def test_cannot_activate_uninstalled_plugin(self):
         class Plugin(PluginInterface):
@@ -166,11 +166,11 @@ class PluginActivationTest(TestCase):
             plugins.manager.activate(plugin)
 
 
-class StartSuitePlugin(PluginInterface):
+class StartSessionPlugin(PluginInterface):
     def __init__(self):
-        super(StartSuitePlugin, self).__init__()
-        self.suite_start_call_count = 0
+        super(StartSessionPlugin, self).__init__()
+        self.session_start_call_count = 0
     def get_name(self):
-        return "start-suite"
-    def suite_start(self):
-        self.suite_start_call_count += 1
+        return "start-session"
+    def session_start(self):
+        self.session_start_call_count += 1

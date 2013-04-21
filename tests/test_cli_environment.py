@@ -57,7 +57,7 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
     def test_arguments_are_not_parsed_if_not_activated(self):
-        args = ["--start-suite-option", "2"]
+        args = ["--start-session-option", "2"]
         with self.assertRaises(SystemExit):
             with cli_utils.get_cli_environment_context(argv=args):
                 pass

@@ -15,7 +15,7 @@ def get_test_logging_context():
 
 @contextmanager
 def get_session_logging_context():
-    handler = _get_file_log_handler(config.root.log.suite_subpath)
+    handler = _get_file_log_handler(config.root.log.session_subpath)
     with handler:
         with _get_console_handler():
             yield

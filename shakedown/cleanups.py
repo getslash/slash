@@ -16,7 +16,7 @@ def call_cleanups():
         try:
             func(*args, **kwargs) # pylint: disable=W0142
         except:
-            context.suite.get_result(context.test).add_error()
+            context.session.get_result(context.test).add_error()
 
 def _get_cleanups():
     returned = getattr(context, "cleanups", None)

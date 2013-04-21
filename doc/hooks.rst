@@ -12,9 +12,9 @@ You can add callbacks to be called in various points of Shakedown's execution vi
 
     import shakedown
     
-    @shakedown.hooks.suite_start.register
+    @shakedown.hooks.session_start.register
     def handler():
-        print("Suite has started: ", shakedown.context.suite)
+        print("Session has started: ", shakedown.context.session)
 
 Hook Errors
 -----------

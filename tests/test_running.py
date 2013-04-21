@@ -2,7 +2,6 @@
 from .utils.test_generator import TestGenerator
 from shakedown.runner import run_tests
 from shakedown.session import Session
-from shakedown.suite import Suite
 from shakedown.result import Result
 from shakedown.ctx import context
 import six # pylint: disable=F0401
@@ -18,15 +17,13 @@ class TestRunningTestBase(TestCase):
         self.configure()
         with Session() as session:
             self.session = session
-            with Suite() as suite:
-                context.current_test_generator = self.generator
-                self.suite = suite
-                self.prepare_runnables()
-                run_tests(self.runnables)
+            context.current_test_generator = self.generator
+            self.prepare_runnables()
+            run_tests(self.runnables)
         self.assertEquals(
-            self.suite.is_complete(),
+            self.session.is_complete(),
             self.should_be_complete(),
-            "Suite unexpectedly complete" if self.suite.is_complete() else "Suite unexpectedly incomplete"
+            "Session unexpectedly complete" if self.session.is_complete() else "Session unexpectedly incomplete"
         )
     def prepare_runnables(self):
         pass
@@ -72,7 +69,7 @@ class FailedItemsTest(TestRunningTestBase):
         true_predicates = set(true_predicates)
         assert _RESULT_PREDICATES >= true_predicates, "{0} is not a superset of {1}".format(_RESULT_PREDICATES, true_predicates)
         for test in tests:
-            result = self.suite.get_result(test)
+            result = self.session.get_result(test)
             for predicate in _RESULT_PREDICATES:
                 predicate_result = predicate(result)
                 self.assertEquals(predicate_result,
@@ -92,11 +89,11 @@ class StopOnFailuresTest(TestRunningTestBase):
     def test_stopped_after_failure(self):
         for index, runnable in enumerate(self.runnables):
             if index <= self.num_successful:
-                result = self.suite.get_result(runnable)
+                result = self.session.get_result(runnable)
                 self.assertTrue(result.is_finished())
             else:
                 with self.assertRaises(LookupError):
-                    self.suite.get_result(runnable)
+                    self.session.get_result(runnable)
 
 ### make nosetests ignore stuff we don't want to run
 run_tests.__test__ = False

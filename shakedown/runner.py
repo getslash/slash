@@ -17,10 +17,10 @@ _logger = logbook.Logger(__name__)
 
 def run_tests(iterable):
     """
-    Runs tests from an iterable using the current suite
+    Runs tests from an iterable using the current session
     """
     for test in iterable:
-        ensure_shakedown_metadata(test).id = context.suite.id_space.allocate()
+        ensure_shakedown_metadata(test).id = context.session.id_space.allocate()
         _logger.debug("Running {0}...", test)
         with _get_test_context(test):
             with _update_result_context() as result:
@@ -32,8 +32,9 @@ def run_tests(iterable):
                         call_cleanups()
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
-            context.suite.mark_incomplete()
             break
+    else:
+        context.session.mark_complete()
 
 @contextmanager
 def _get_test_context(test):
@@ -72,7 +73,7 @@ def _set_current_test_context(test):
 
 @contextmanager
 def _update_result_context():
-    result = context.suite.create_result(context.test)
+    result = context.session.create_result(context.test)
     try:
         try:
             yield result

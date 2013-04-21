@@ -150,7 +150,7 @@ Fortunately, Shakedown plugins can control the way command-line arguments are pr
          parser.add_argument("-m", "--microwave-address", help="IP Address of microwave we are testing")
      def configure_from_parsed_args(self, args):
          self.microwave_address = args.microwave_address
-     def start_suite(self):
+     def start_session(self):
          fixture.microwave = Microwave(self.microwave_address)
      # ...
 

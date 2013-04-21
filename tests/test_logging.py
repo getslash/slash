@@ -6,8 +6,8 @@ import os
 import shakedown
 
 _IDENTIFIER = "logging-test"
-_SUITE_START_MARK = "suite-start-mark"
-_SUITE_END_MARK = "suite-end-mark"
+_SESSION_START_MARK = "session-start-mark"
+_SESSION_END_MARK = "session-end-mark"
 
 class LoggingTest(TestCase):
     def test(self):
@@ -21,22 +21,21 @@ class LoggingTest(TestCase):
             os.path.join("{context.session.id}", "{context.test_id}", "debug.log")
         )
         self.override_config(
-            "log.suite_subpath",
+            "log.session_subpath",
             os.path.join("{context.session.id}", "debug.log")
         )
 
-        shakedown.hooks.suite_start.register(functools.partial(_mark, _SUITE_START_MARK), identifier=_IDENTIFIER)
-        self.addCleanup(shakedown.hooks.suite_start.unregister_by_identifier, _IDENTIFIER)
+        shakedown.hooks.session_start.register(functools.partial(_mark, _SESSION_START_MARK), identifier=_IDENTIFIER)
+        self.addCleanup(shakedown.hooks.session_start.unregister_by_identifier, _IDENTIFIER)
 
-        shakedown.hooks.suite_end.register(functools.partial(_mark, _SUITE_END_MARK), identifier=_IDENTIFIER)
-        self.addCleanup(shakedown.hooks.suite_end.unregister_by_identifier, _IDENTIFIER)
+        shakedown.hooks.session_end.register(functools.partial(_mark, _SESSION_END_MARK), identifier=_IDENTIFIER)
+        self.addCleanup(shakedown.hooks.session_end.unregister_by_identifier, _IDENTIFIER)
 
         self.session = run_tests_assert_success(SampleTest)
-        self.test_ids = [result.test_metadata.id for suite in self.session.iter_suites()
-                         for result in suite.iter_results()]
+        self.test_ids = [result.test_metadata.id for result in self.session.iter_results()]
         self._test_all_run()
         self._test_test_logs_written()
-        self._test_suite_logs()
+        self._test_session_logs()
 
     def _test_all_run(self):
         methods = [
@@ -54,14 +53,14 @@ class LoggingTest(TestCase):
             for other_test_id in self.test_ids:
                 if other_test_id != test_id:
                     self.assertNotIn(other_test_id, data)
-            self.assertNotIn(_SUITE_START_MARK, data)
-            self.assertNotIn(_SUITE_END_MARK, data)
+            self.assertNotIn(_SESSION_START_MARK, data)
+            self.assertNotIn(_SESSION_END_MARK, data)
 
-    def _test_suite_logs(self):
+    def _test_session_logs(self):
         with open(os.path.join(self.log_path, self.session.id, "debug.log")) as f:
             data = f.read()
-        self.assertIn(_SUITE_START_MARK, data)
-        self.assertIn(_SUITE_END_MARK, data)
+        self.assertIn(_SESSION_START_MARK, data)
+        self.assertIn(_SESSION_END_MARK, data)
         for test_id in self.test_ids:
             self.assertNotIn(test_id, data)
 
