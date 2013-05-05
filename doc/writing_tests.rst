@@ -112,6 +112,41 @@ Shakedown also provides :func:`skipped`, which is a decorator to skip specific m
 
 .. autofunction:: shakedown.skip_test
 
+Global State
+------------
+
+Shakedown uses global (thread-local) objects for various purposes. This is particularly useful for accessing them from utility libraries and external packages.
+
+Session
+=======
+
+The :class:`.Session` represents the current test execution session. It has a unique id, used to designate the session in various contexts. Tests must run under an active session, as the test results and other important pieces of data are kept on it.
+
+The currently active session is accessible through ``shakedown.session``:
+
+.. code-block:: python
+
+  from shakedown import session
+
+  print("The current session id is", session.id)
+
+.. autoclass:: shakedown.session.Session
+
+Fixture
+=======
+
+In many cases objects need to be passed between tests and utility libraries. These libraries don't want to be aware of the interface of the currently running test, but would rather a single place to hold the shared state. ``shakedown.fixture`` is such a placeholder. It can be assigned with various objects and values that comprise the global state of the current run:
+
+.. code-block:: python
+
+  from shakedown import fixture
+  
+  # ...
+  
+  fixture.obj = some_object
+
+This is particularly useful for customization purposes, :ref:`as described in the relevant section <customize>`.
+
 
 Advanced Features
 -----------------

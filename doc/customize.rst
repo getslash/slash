@@ -1,3 +1,5 @@
+.. _customize:
+
 Customization
 =============
 
