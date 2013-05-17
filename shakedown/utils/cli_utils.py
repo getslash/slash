@@ -69,8 +69,8 @@ def _configure_parser_by_config(parser, config):
         default=[],
         help="Provide overrides for configuration"
     )
-    for _, _, cmdline in _iter_cmdline_config(config):
-        cmdline.configure_parser(parser)
+    for path, node, cmdline in _iter_cmdline_config(config):
+        cmdline.configure_parser(parser, path, node)
 
 def _iter_cmdline_config(config):
     for path, cfg in config.traverse_leaves():

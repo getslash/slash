@@ -24,21 +24,30 @@ class _Cmdline(object):
         self.off = off
         self.increase = increase
         self.decrease = decrease
-    def configure_parser(self, parser):
+    def configure_parser(self, parser, path, node):
         """
         Add all required flags to a parser to support updating the config value from commandline
         """
+        description = node.metadata.get('doc', path)
         if self.arg is not None:
-            parser.add_argument(self.arg, dest=self.arg_dest, default=None, metavar="VALUE")
-        self._add_arg(parser, self.on, callback=_set_true)
-        self._add_arg(parser, self.off, callback=_set_false)
-        self._add_arg(parser, self.increase, callback=_increase)
-        self._add_arg(parser, self.decrease, callback=_decrease)
+            parser.add_argument(self.arg,
+                                dest=self.arg_dest,
+                                default=None,
+                                help=description,
+                                metavar="VALUE")
+        self._add_arg(parser, self.on, callback=_set_true,
+                      description="Turn on " + description)
+        self._add_arg(parser, self.off, callback=_set_false,
+                      description="Turn off " + description)
+        self._add_arg(parser, self.increase, callback=_increase,
+                      description="Increase " + description)
+        self._add_arg(parser, self.decrease, callback=_decrease,
+                      description="Decrease " + description)
 
-    def _add_arg(self, parser, flag, callback):
+    def _add_arg(self, parser, flag, callback, description):
         if flag is None:
             return
-        parser.add_argument(flag, dest=self.callback_dest, action="append_const", const=callback)
+        parser.add_argument(flag, dest=self.callback_dest, action="append_const", const=callback, help=description)
 
     def update_value(self, value, args):
         """
