@@ -23,8 +23,8 @@ def run_tests(iterable):
         ensure_shakedown_metadata(test).id = context.session.id_space.allocate()
         _logger.debug("Running {0}...", test)
         with _get_test_context(test):
-            with _update_result_context() as result:
-                with _get_test_hooks_context():
+            with _get_test_hooks_context():
+                with _update_result_context() as result:
                     try:
                         with handling_exceptions():
                             test.run()
@@ -49,13 +49,12 @@ def _get_test_hooks_context():
         yield
     except SkipTest:
         hooks.test_skip()
-        raise
     except TestFailed:
         hooks.test_failure()
-        raise
     except:
         hooks.test_error()
-        raise
+    else:
+        hooks.test_success()
     finally:
         hooks.test_end()
 
@@ -82,9 +81,12 @@ def _update_result_context():
             raise
     except SkipTest as e:
         result.add_skip(e.reason)
+        raise
     except TestFailed:
         result.add_failure()
+        raise
     except:
         result.add_error()
+        raise
     finally:
         result.mark_finished()
