@@ -5,7 +5,7 @@ from ..runner import run_tests
 from ..session import Session
 from ..utils import cli_utils
 from ..utils.interactive import start_interactive_shell
-from ..utils.reporter import Reporter
+from ..utils.reporter import report_context
 import logbook
 import sys
 
@@ -17,14 +17,14 @@ def shake_run(args, report_stream=sys.stderr):
     with cli_utils.get_cli_environment_context(argv=args, parser=parser) as args:
         test_loader = Loader()
         with Session() as session:
-            if not args.paths and not args.interactive:
-                parser.error("No tests specified")
-            if args.interactive:
-                start_interactive_shell()
-            for path in args.paths:
-                run_tests(test_loader.iter_runnable_tests(path))
+            with report_context(report_stream):
+                if not args.paths and not args.interactive:
+                    parser.error("No tests specified")
+                if args.interactive:
+                    start_interactive_shell()
+                for path in args.paths:
+                    run_tests(test_loader.iter_runnable_tests(path))
             trigger_hook.result_summary()
-        Reporter(report_stream).report_session(session)
         if session.result.is_success():
             return 0
         return -1

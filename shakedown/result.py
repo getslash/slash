@@ -1,4 +1,13 @@
+import traceback
+import logbook
 import sys
+from .conf import config
+
+def get_exception_info():
+    if config.root.log.console_level > logbook.NOTICE:
+        return sys.exc_info()[1]
+    else:
+        return traceback.format_exc()
 
 class Result(object):
     def __init__(self, test_metadata=None):
@@ -24,15 +33,17 @@ class Result(object):
     def mark_finished(self):
         self._finished = True
     def add_error(self):
-        self._errors.append(sys.exc_info()[1])
+        self._errors.append(get_exception_info())
     def add_failure(self):
-        self._failures.append(sys.exc_info()[1])
+        self._failures.append(get_exception_info())
     def add_skip(self, reason):
         self._skips.append(reason)
     def get_errors(self):
         return self._errors
     def get_failures(self):
         return self._failures
+    def get_skips(self):
+        return self._skips
 
 class AggregatedResult(object):
     def __init__(self, result_iterator_func):
