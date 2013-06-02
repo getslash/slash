@@ -118,6 +118,7 @@ from shakedown import RunnableTest, RunnableTestFactory
 
 _TEST_SOURCE_TEMPLATE = r"""
 class {test_class_name}(RunnableTest):
+    TESTGENERATOR_TEST_ID = {bucket_test_id!r}
     def run(self):
         from {test_generator_module_name} import _current_test_generator
         _current_test_generator.notify_run({bucket_test_id!r}, self)

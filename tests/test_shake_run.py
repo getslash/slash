@@ -5,6 +5,7 @@ from .utils.test_generator import TestGenerator
 from shakedown.frontend import shake_run
 from shakedown import site
 import os
+import shutil
 
 class ShakeRunTest(TestCase):
     def setUp(self):
@@ -25,6 +26,7 @@ class ShakeRunTest(TestCase):
                 }
             }
         )
+        self.addCleanup(shutil.rmtree, self.root_path)
     def test_shake_run_directory_success(self):
         result = self._execute_shake_run([self.root_path])
         self.assertEquals(result, 0, "shake run did not return 0 on success")

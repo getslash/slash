@@ -1,18 +1,18 @@
-.. _customize:
+.. _building_solution:
 
-Customization
-=============
+Building a Testing Solution with Shakedown
+==========================================
 
-Shakedown's can be customized for various projects and workflows pretty easily. It can change from "generic testing framework" to "the testing framework for X" in a matter of a few lines of code, and without any changes to Shakedown's code itself. In this section we will explain how to do this, with a fictitious example.
+Shakedown is aimed at building complete testing solutions. In this section we will explain a basic way to accomplish this. We will be covering how to create a testing package containing tests and global state for those tests, as well as how to lay the entire solution out and create a basic runner entry point.
 
 Let's say we're working in a company called *Microtech*, a company which manufactures microwaves. Let's also say we're now tasked with building the testing infrastructure for our microwave product line.
 
-First Steps
------------
+Creating a Package
+------------------
 
-The simplest way to tailor Shakedown to our needs is by implementing an *adapter package*. This is a regular (installable) python package which, when installed, customizes Shakedown to our needs. We won't cover the theory or gory details of creating a Python package, but we'll show a simple example which covers it.
+The tests, as well as support code, will be implemented in a regular python package which we will be creating. We won't cover the theory or gory details of creating a Python package, but we'll show a simple example which covers it.
 
-Our package name will be ``microtech_testing`` (the name plays no role in our integration, so you can choose whatever name you like). We will create a directory structure as follows::
+Our package name will be ``microtech_testing`` (the name plays no role in our solution, so you can choose whatever name you like). We will create a directory structure as follows::
 
   + src
      - setup.py
@@ -26,45 +26,35 @@ A minimalistic ``setup.py`` would be:
  from setuptools import setup, find_packages
 
  setup(name="microtech_testing",
-      description="An adapter layer for shakedown, to test ",
+      description="The testing solution for Microtech",
       version="1.0", 
-      packages=find_packages(exclude=["tests"]),
+      packages=find_packages(),
       install_requires=["shakedown"],
       )
 
 .. note:: we require shakedown from this package. This is good because people will only have to install the ``microtech_testing`` package, and it will install Shakedown along with it as a dependency.
 
-The main entry point for the customization is a function we are going to implement. Let's call it ``customize_shakedown``, and we'll put it in ``__init__.py``:
+Creating the Tests
+------------------
 
-.. code-block:: python
- 
- # microtech_testing/__init__.py
+When building our in-house testing solution it is important to consider where to store the tests we are going to run. We can choose many different places, but two options make slightly more sense than others:
 
- def customize_shakedown():
-     pass
+1. We can initializa a separate source repository for the tests (outside the testing package)
+2. We can store them in a path inside the testing package
 
-To let shakedown load our customization on startup, we'll use a feature of ``setuptools`` called *entry points*. This lets us register specific functions in "slots", to be read by other packages. We'll append the following to our ``setup.py`` file:
+Since we are going to write utilities and helpers in our testing package to help our tests, it would be better to hold the tests inside ``michrotech_testing``. This way the tests are versioned alongside the utility code, and they can be both checked out at the same time conveniently.
 
-.. code-block:: python
+We will create a path under the source root, calling it ``testsuite`` (although any other name will do as well)::
 
- # setup.py
- 
- ...
- setup(...
-    # ...
-    entry_points = {
-        "shakedown.site.customize": [
-            "microtech_testing_customize = microtech_testing:customize_shakedown"
-            ]
-        },
-    # ...
- )
+  + src
+     - setup.py
+     + microtech_testing
+         - __init__.py
+         + testsuite       # <--┬- added
+             - __init__.py # <--┤
+             - test_1.py   # <--┘
 
-.. note:: the ``microwave_testing_customize`` above is an arbitrary name. It only serves as an identification for your customization entry point. 
-.. note:: You can read more about setuptools entry points `here <http://stackoverflow.com/questions/774824/explain-python-entry-points>`_.
-
-Now Shakedown will call our customize function when loading. Now it's time to add actual customization to our package. 
-
+For now we will leave our test files empty. We'll get right back to them after setting up the environment in which they will run.
 
 The Fixture
 -----------
@@ -73,7 +63,9 @@ All of our tests will have to test a microwave device. In many cases this is cal
 
 However, our job isn't over. Since all tests need to access the object representing the microwave under test, this means we will have to initialize it somewhere, and make it accessible to all tests.
 
-One approach for doing this is to add the initialization code to the ``before`` method of all tests involved, or even create a base class for all tests that does so. However, this is far from ideal, and has several downsides. The Shakedown approach to solving this is by using a mix of *plugins and fixtures*, as described below.
+One approach for doing this is to add the initialization code to the ``before`` method of all tests involved, or even create a base class for all tests that does so. However, this is far from ideal, and has several downsides. 
+
+Another possibility is to create a `test context <test_contexts>` and decorate all tests with it. This is slightly better, but here we'll explain how to do this using Shakedown's plugins and the global fixture it supports.
 
 First, we will add the ``microtech`` package as a dependency of ``microtech_testing``. This makes sense, and will once again automatically install the SDK when the testing package is installed:
 
@@ -103,19 +95,6 @@ Now we will use Shakedown's plugin mechanism, and create our customization plugi
       def get_name(self):
           return "microtech"
 
-We also want to install and activate it by default, so we'll add this to our customize function:
-
-.. code-block:: python
-
- # microtech_testing/__init__.py
- import shakedown
- from .shakedown_plugin iport MicrotechTestingPlugin
-
- def customize_shakedown():
-     shakedown.plugins.manager.install(MicrotechTestingPlugin(), activate=True)
-
-Now each run of shakedown will automatically load and activate our plugin.
-
 To initialize and make accessible a microwave instance, we'll use *the shakedown fixture global*. We already covered :ref:`the fixture global in brief in an earlier section <fixtures>`. We'll simply initialize and assign a microwave object at the beginning of the :ref:`session <sessions>`:
 
 .. code-block:: python
@@ -133,6 +112,25 @@ To initialize and make accessible a microwave instance, we'll use *the shakedown
          fixture.microwave = Microwave("192.168.120.120")
 
 .. note:: Yes. Our microwaves have IP addresses. Deal with it.
+
+Creating the Runner
+-------------------
+
+We need a basic frontend to load and run our tests, as well as activate our plugin. Let's create it:
+
+.. code-block:: python
+
+ # src/microtech_testing/runner.py
+ import shakedown
+ import sys
+ 
+ if __name__ == "__main__":
+     with shakedown.get_application_context() as app:
+         shakedown.run_tests(
+             app.test_loader.iter_package("microtech_testing.testsuite")
+         )
+     sys.exit(0 if app.session.result.is_success() else -1)
+
 
 Configuration and Parameters
 ----------------------------

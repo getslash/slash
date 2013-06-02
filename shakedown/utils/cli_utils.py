@@ -8,11 +8,12 @@ from six.moves import cStringIO # pylint: disable=F0401
 import sys
 
 @contextmanager
-def get_cli_environment_context(argv=None, config=conf.config, parser=None):
+def get_cli_environment_context(argv=None, config=conf.config, extra_args=()):
     if argv is None:
-        argv = sys.argv
-    if parser is None:
-        parser = PluginAwareArgumentParser()
+        argv = sys.argv[1:]
+    parser = PluginAwareArgumentParser()
+    if extra_args:
+        _populate_extra_args(parser, extra_args)
     argv = list(argv) # copy the arguments, as we'll be gradually removing known arguments
     with _get_active_plugins_context(argv):
         _configure_parser_by_active_plugins(parser)
@@ -20,7 +21,11 @@ def get_cli_environment_context(argv=None, config=conf.config, parser=None):
         parsed_args = parser.parse_args(argv)
         _configure_plugins_from_args(parsed_args)
         with _get_modified_configuration_from_args_context(parser, config, parsed_args):
-            yield parsed_args
+            yield parser, parsed_args
+
+def _populate_extra_args(parser, extra_args):
+    for argument in extra_args:
+        parser.add_argument(*argument.args, **argument.kwargs)
 
 @contextmanager
 def _get_active_plugins_context(argv):
@@ -127,3 +132,12 @@ class PluginAwareArgumentParser(argparse.ArgumentParser):
         for plugin_name, plugin in iteritems(plugins.manager.get_installed_plugins()):
             if plugin_name not in active_plugin_names:
                 yield plugin_name, plugin
+
+class Argument(object):
+    """
+    helper to defer initialization of cmdline parsers to later stages
+    """
+    def __init__(self, *args, **kwargs):
+        super(Argument, self).__init__()
+        self.args = args
+        self.kwargs = kwargs

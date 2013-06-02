@@ -51,7 +51,8 @@
 
            exceptions
            features
-           customize
+           building_solution
+	   advanced
            development
 
 

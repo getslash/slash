@@ -3,14 +3,15 @@ from .utils.imports import import_file
 from .runnable_test_factory import RunnableTestFactory
 from logbook import Logger # pylint: disable=F0401
 import os
+import sys
 
 _logger = Logger(__name__)
 
 class Loader(object):
     """
-    A class responsible for finding runnable tests in a path
+    Provides iteration interfaces to load runnable tests from various places
     """
-    def iter_runnable_tests(self, path):
+    def iter_path(self, path):
         for file_path in _walk(path):
             _logger.debug("Checking {0}", file_path)
             if not self._is_file_wanted(file_path):
@@ -19,6 +20,14 @@ class Loader(object):
             module = import_file(file_path)
             for runnable in self._iter_runnable_tests_in_module(module):
                 yield runnable
+
+    def iter_package(self, package_name):
+        if package_name not in sys.modules:
+            __import__(package_name)
+        path = sys.modules[package_name].__file__
+        if os.path.basename(path) in ("__init__.py", "__init__.pyc"):
+            path = os.path.dirname(path)
+        return self.iter_path(path)
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")
