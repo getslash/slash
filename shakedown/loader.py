@@ -21,6 +21,10 @@ class Loader(object):
             for runnable in self._iter_runnable_tests_in_module(module):
                 yield runnable
 
+    def iter_test_factory(self, factory):
+        for test in factory.generate_tests():
+            yield test
+
     def iter_package(self, package_name):
         if package_name not in sys.modules:
             __import__(package_name)
@@ -38,7 +42,7 @@ class Loader(object):
                 continue
             if isinstance(factory, type) and issubclass(factory, RunnableTestFactory):
                 _logger.debug("Getting tests from {0}:{1}..", module, factory_name)
-                for test in factory.generate_tests():
+                for test in self.iter_test_factory(factory):
                     yield test
 
 def _walk(p):

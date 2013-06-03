@@ -1,12 +1,17 @@
+import logbook
 from logbook.compat import LoggingHandler
 import platform
+import itertools
 import forge
 import shakedown
 from shakedown.conf import config
+from shakedown import RunnableTestFactory
 if platform.python_version() < "2.7":
     import unittest2 as unittest
 else:
     import unittest
+
+_logger = logbook.Logger(__name__)
 
 class TestCase(unittest.TestCase):
     def setUp(self):
@@ -47,9 +52,14 @@ class CustomException(Exception):
 def no_op(*args, **kwargs):
     pass
 
-def run_tests_assert_success(test_class):
+def run_tests_assert_success(test_class_or_iterator):
+    if isinstance(test_class_or_iterator, type) and issubclass(test_class_or_iterator, RunnableTestFactory):
+        test_class_or_iterator = test_class_or_iterator.generate_tests()
     with shakedown.session.Session() as session:
-        shakedown.runner.run_tests(test_class.generate_tests())
+        shakedown.runner.run_tests(test_class_or_iterator)
+    for result in session.iter_results():
+        for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):
+            _logger.debug("Unsuccessful result: {0}", err)
     assert session.result.is_success(), "Run did not succeed"
     return session
 run_tests_assert_success.__test__ = False

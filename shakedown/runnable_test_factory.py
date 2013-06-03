@@ -1,6 +1,7 @@
 from .metadata import ensure_shakedown_metadata
 
 class RunnableTestFactory(object):
+
     @classmethod
     def generate_tests(cls):
         """
@@ -15,3 +16,6 @@ class RunnableTestFactory(object):
     @classmethod
     def _generate_tests(cls):
         raise NotImplementedError() # pragma: no cover
+
+    __shakedown_needed_contexts__ = None
+

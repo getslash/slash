@@ -132,6 +132,20 @@ We need a basic frontend to load and run our tests, as well as activate our plug
      sys.exit(0 if app.session.result.is_success() else -1)
 
 
+The above skeleton takes care of most of the stuff you'd expect to see in a test runner (and in fact is very similar to ``shake run``). In order to make this play nicely with our plugin, we need to install and activate our plugin. This is how can achieve this:
+
+.. code-block:: python
+
+ # src/microtech_testing/runner.py
+ ...
+ from microtech_testing.shakedown_plugin import MicrotechTestingPlugin
+ ...
+ if __name__ == "__main__":
+     shakedown.plugins.install(MicrotechTestingPlugin(), activate=True)
+     with shakedown.get_application_context() as app:
+     ...
+
+
 Configuration and Parameters
 ----------------------------
 

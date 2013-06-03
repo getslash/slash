@@ -5,6 +5,7 @@ from shakedown.plugins import PluginInterface
 from shakedown.plugins import IncompatiblePlugin
 from tempfile import mkdtemp
 import os
+import shutil
 
 class BuiltinPluginsTest(TestCase):
     def test_hooks_start_condition(self):
@@ -52,6 +53,7 @@ class PluginDiscoveryTest(TestCase):
     def setUp(self):
         super(PluginDiscoveryTest, self).setUp()
         self.root_path = mkdtemp()
+        self.addCleanup(shutil.rmtree, self.root_path)
         self.expected_names = set()
         for index, path in enumerate([
                 "a/b/p1.py",

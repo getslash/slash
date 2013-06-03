@@ -20,6 +20,7 @@ class Test(RunnableTest, RunnableTestFactory):
     def skip_all(cls, reason=None):
         cls.__shakedown_skipped__ = True
         cls.__shakedown_skipped_reason__ = reason
+
     @classmethod
     def _generate_tests(cls):
         if is_abstract_base_class(cls):

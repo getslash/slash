@@ -8,8 +8,10 @@ from .exceptions import (
     TestFailed,
     SkipTest,
     )
-from .metadata import ensure_shakedown_metadata
 from .exception_handling import handling_exceptions
+from .metadata import ensure_shakedown_metadata
+from .test_context import get_test_context_setup
+from .utils.peekable_iterator import PeekableIterator
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
 
@@ -19,7 +21,8 @@ def run_tests(iterable):
     """
     Runs tests from an iterable using the current session
     """
-    for test in iterable:
+    test_iterator = PeekableIterator(iterable)
+    for test in test_iterator:
         ensure_shakedown_metadata(test).id = context.session.id_space.allocate()
         _logger.debug("Running {0}...", test)
         with _get_test_context(test):
@@ -27,7 +30,8 @@ def run_tests(iterable):
                 with _update_result_context() as result:
                     try:
                         with handling_exceptions():
-                            test.run()
+                            with get_test_context_setup(test, test_iterator.peek_or_none()):
+                                test.run()
                     finally:
                         call_cleanups()
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:

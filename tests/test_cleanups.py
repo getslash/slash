@@ -2,6 +2,7 @@ from .utils import TestCase
 import shakedown
 import shakedown.runner
 from shakedown.session import Session
+from shakedown.loader import Loader
 
 class CleanupsTest(TestCase):
     def test_cleanups(self):
@@ -23,7 +24,7 @@ class CleanupsTest(TestCase):
 
         self.forge.replay()
         with Session():
-            shakedown.runner.run_tests(Test.generate_tests())
+            shakedown.runner.run_tests(Loader().iter_test_factory(Test))
     def test_error_cleanups(self):
         class Test(shakedown.Test):
             def test(self_):
@@ -34,7 +35,7 @@ class CleanupsTest(TestCase):
         self.events.cleanup(2).and_raise(SecondException())
         self.forge.replay()
         with Session() as session:
-            shakedown.runner.run_tests(Test.generate_tests())
+            shakedown.runner.run_tests(Loader().iter_test_factory(Test))
         [result] = session.iter_results()
         [err1, err2, err3] = result.get_errors()
 

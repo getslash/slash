@@ -152,6 +152,47 @@ This is particularly useful for customization purposes, :ref:`as described in th
 Advanced Features
 -----------------
 
+Test Contexts
+~~~~~~~~~~~~~
+
+Test contexts allow you to specify a set of contexts enveloping your tests. These can control what happens before and after each test case.
+
+This feature is useful when you don't want to complicate your tests by inheriting from several base classes acting as setup/teardown bases, but still would like the surrounding environment to be composable.
+
+To implement a test context you create a class deriving from :class:`shakedown.test_context.TestContext`:
+
+.. code-block:: python
+
+ from shakedown import TestContext, fixture
+ import subprocess
+
+ class ProcessRunningContext(TestContext):
+     """Ensure that the program we're testing is still running before each test, and runs it if needed"""
+     def before_case(self):
+         process = getattr(fixture, "process", None)
+         if process is None or process.poll() is not None:
+             # run/rerun our process
+	     fixture.process = subprocess.Popen(....)
+
+
+Now we wrap an ordinary test with the context using the :func:`shakedown.test_context.with_context` helper:
+
+.. code-block:: python
+
+  from shakedown import with_context, Test
+
+  @with_context(ProcessRunningContext)
+  class ProcessTest(Test):
+      def test(self):
+          ... # do something with shakdedown.fixture.process
+
+
+.. autoclass:: shakedown.test_context.TestContext
+
+When a test context is first entered, its :func:`shakedown.test_context.TestContext.before` method is called. After that, each time a case is started and finished, the :func:`shakedown.test_context.TestContext.before_case` and :func:`shakedown.test_context.TestContext.after_case` are called respectively.
+
+Test contexts are carried from case to case and from class to class. Whenever a context is not needed anymore in a new case or class about to be run, it is terminated (calling its :func:`shakedown.test_context.TestContext.after` method).
+
 Abstract Base Tests
 ~~~~~~~~~~~~~~~~~~~
 
