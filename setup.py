@@ -11,16 +11,13 @@ with open(_in_same_dir("shakedown", "__version__.py")) as version_file:
 
 install_requires = [
     "confetti>=2.0.0.dev2",
+    "logbook",
     "requests>=1.1.0",
     "six",
 ]
 
 if _PYTHON_VERSION < "3.0":
-    install_requires.append("logbook")
     install_requires.append("raven")
-else:
-    # logbook 0.4.1 is broken under python 3
-    install_requires.append("logbook==0.4.0")
 
 if _PYTHON_VERSION < "2.7":
     install_requires.append("argparse")
