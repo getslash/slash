@@ -59,7 +59,7 @@ class PluginManager(object):
     def install(self, plugin, activate=False):
         """
         Installs a plugin object to the plugin mechanism. ``plugin`` must be an object deriving from
-        :class:`shakedown.plugins.interface.PluginInterface`.
+        :class:`slash.plugins.interface.PluginInterface`.
         """
         if not isinstance(plugin, PluginInterface):
             raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))
@@ -71,7 +71,7 @@ class PluginManager(object):
     def install_builtin_plugins(self):
         for builtin_plugin_module in self._iter_builtin_plugin_modules():
             module = __import__(
-                "shakedown.plugins.builtin.{0}".format(builtin_plugin_module),
+                "slash.plugins.builtin.{0}".format(builtin_plugin_module),
                 fromlist=[""]
             )
             self.install(module.Plugin())

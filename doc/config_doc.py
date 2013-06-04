@@ -1,6 +1,6 @@
 from docutils.parsers.rst import directives, Directive
 from docutils import nodes
-from shakedown.conf import config
+from slash.conf import config
 
 class ConfigDoc(Directive):
     required_arguments = 0

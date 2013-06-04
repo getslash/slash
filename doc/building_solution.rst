@@ -1,9 +1,9 @@
 .. _building_solution:
 
-Building a Testing Solution with Shakedown
+Building a Testing Solution with Slash
 ==========================================
 
-Shakedown is aimed at building complete testing solutions. In this section we will explain a basic way to accomplish this. We will be covering how to create a testing package containing tests and global state for those tests, as well as how to lay the entire solution out and create a basic runner entry point.
+Slash is aimed at building complete testing solutions. In this section we will explain a basic way to accomplish this. We will be covering how to create a testing package containing tests and global state for those tests, as well as how to lay the entire solution out and create a basic runner entry point.
 
 Let's say we're working in a company called *Microtech*, a company which manufactures microwaves. Let's also say we're now tasked with building the testing infrastructure for our microwave product line.
 
@@ -29,10 +29,10 @@ A minimalistic ``setup.py`` would be:
       description="The testing solution for Microtech",
       version="1.0", 
       packages=find_packages(),
-      install_requires=["shakedown"],
+      install_requires=["slash"],
       )
 
-.. note:: we require shakedown from this package. This is good because people will only have to install the ``microtech_testing`` package, and it will install Shakedown along with it as a dependency.
+.. note:: we require slash from this package. This is good because people will only have to install the ``microtech_testing`` package, and it will install Slash along with it as a dependency.
 
 Creating the Tests
 ------------------
@@ -65,7 +65,7 @@ However, our job isn't over. Since all tests need to access the object represent
 
 One approach for doing this is to add the initialization code to the ``before`` method of all tests involved, or even create a base class for all tests that does so. However, this is far from ideal, and has several downsides. 
 
-Another possibility is to create a `test context <test_contexts>` and decorate all tests with it. This is slightly better, but here we'll explain how to do this using Shakedown's plugins and the global fixture it supports.
+Another possibility is to create a `test context <test_contexts>` and decorate all tests with it. This is slightly better, but here we'll explain how to do this using Slash's plugins and the global fixture it supports.
 
 First, we will add the ``microtech`` package as a dependency of ``microtech_testing``. This makes sense, and will once again automatically install the SDK when the testing package is installed:
 
@@ -76,34 +76,34 @@ First, we will add the ``microtech`` package as a dependency of ``microtech_test
  setup(...
     #...
     install_requires=[
-        "shakedown",
+        "slash",
         "microtech", # <-- added
     ],
     #...
  )
 
-Now we will use Shakedown's plugin mechanism, and create our customization plugin to do the work. We'll create the following under ``src/microtech_testing/shakedown_plugin.py``:
+Now we will use Slash's plugin mechanism, and create our customization plugin to do the work. We'll create the following under ``src/microtech_testing/slash_plugin.py``:
 
 .. code-block:: python
 
-  # src/microtech_testing/shakedown_plugin.py
+  # src/microtech_testing/slash_plugin.py
   # microtech_site.py
   
-  from shakedown import plugins
+  from slash import plugins
    
   class MicrotechTestingPlugin(plugins.PluginInterface):
       def get_name(self):
           return "microtech"
 
-To initialize and make accessible a microwave instance, we'll use *the shakedown fixture global*. We already covered :ref:`the fixture global in brief in an earlier section <fixtures>`. We'll simply initialize and assign a microwave object at the beginning of the :ref:`session <sessions>`:
+To initialize and make accessible a microwave instance, we'll use *the slash fixture global*. We already covered :ref:`the fixture global in brief in an earlier section <fixtures>`. We'll simply initialize and assign a microwave object at the beginning of the :ref:`session <sessions>`:
 
 .. code-block:: python
 
- # src/microtech_testing/shakedown_plugin.py
+ # src/microtech_testing/slash_plugin.py
 
  #...
  from microtech import Microwave
- from shakedown import fixture
+ from slash import fixture
  #...
 
  class MicrotechTestingPlugin(plugins.PluginInterface):
@@ -121,28 +121,28 @@ We need a basic frontend to load and run our tests, as well as activate our plug
 .. code-block:: python
 
  # src/microtech_testing/runner.py
- import shakedown
+ import slash
  import sys
  
  if __name__ == "__main__":
-     with shakedown.get_application_context() as app:
-         shakedown.run_tests(
+     with slash.get_application_context() as app:
+         slash.run_tests(
              app.test_loader.iter_package("microtech_testing.testsuite")
          )
      sys.exit(0 if app.session.result.is_success() else -1)
 
 
-The above skeleton takes care of most of the stuff you'd expect to see in a test runner (and in fact is very similar to ``shake run``). In order to make this play nicely with our plugin, we need to install and activate our plugin. This is how can achieve this:
+The above skeleton takes care of most of the stuff you'd expect to see in a test runner (and in fact is very similar to ``slash run``). In order to make this play nicely with our plugin, we need to install and activate our plugin. This is how can achieve this:
 
 .. code-block:: python
 
  # src/microtech_testing/runner.py
  ...
- from microtech_testing.shakedown_plugin import MicrotechTestingPlugin
+ from microtech_testing.slash_plugin import MicrotechTestingPlugin
  ...
  if __name__ == "__main__":
-     shakedown.plugins.install(MicrotechTestingPlugin(), activate=True)
-     with shakedown.get_application_context() as app:
+     slash.plugins.install(MicrotechTestingPlugin(), activate=True)
+     with slash.get_application_context() as app:
      ...
 
 
@@ -151,11 +151,11 @@ Configuration and Parameters
 
 In the previous example we hard-coded the microwave's address in our plugin. We would like, however, for each engineer running tests to specify his own microwave's address, most likely from the command line. 
 
-Fortunately, Shakedown plugins can control the way command-line arguments are processed, with the ``configure_argument_parser`` and ``configure_from_parsed_args`` methods:
+Fortunately, Slash plugins can control the way command-line arguments are processed, with the ``configure_argument_parser`` and ``configure_from_parsed_args`` methods:
 
 .. code-block:: python
 
- # src/microtech_testing/shakedown_plugin.py
+ # src/microtech_testing/slash_plugin.py
  #...
 
  class MicrotechTestingPlugin(plugins.PluginInterface):
@@ -168,7 +168,7 @@ Fortunately, Shakedown plugins can control the way command-line arguments are pr
          fixture.microwave = Microwave(self.microwave_address)
      # ...
 
-Let's say we also want to contain configurable parameters relevant to our tests -- for instance, microwave boot time in seconds. These can of course be hard-coded in our plugins, but are much better of as values in Shakedown's :ref:`configuration`. This way they can be changed from the outside world (e.g. with the -o flag).
+Let's say we also want to contain configurable parameters relevant to our tests -- for instance, microwave boot time in seconds. These can of course be hard-coded in our plugins, but are much better of as values in Slash's :ref:`configuration`. This way they can be changed from the outside world (e.g. with the -o flag).
 
 This is very easy to do in our ``customize`` function:
 
@@ -177,9 +177,9 @@ This is very easy to do in our ``customize`` function:
  # microtech_testing/__init__.py
  # ...
 
- def customize_shakedown():
+ def customize_slash():
      # ...
-     shakedown.config.extend({
+     slash.config.extend({
          "microtech" : { 
              "microwave_boot_time_seconds" : 600,
          }
@@ -187,7 +187,7 @@ This is very easy to do in our ``customize`` function:
 
 .. note:: Yes. Our microwave takes 10 minutes to boot. Deal with it.
 
-The ``extend`` method updates Shakedown's configuration with the given structure, allowing for the addition of the new paths. Now when we run our tests, we can, for instance, override the default value with ``-o microtech.microwave_boot_time_seconds=60000``.
+The ``extend`` method updates Slash's configuration with the given structure, allowing for the addition of the new paths. Now when we run our tests, we can, for instance, override the default value with ``-o microtech.microwave_boot_time_seconds=60000``.
 
 Additional Hooks
 ----------------
@@ -196,7 +196,7 @@ Let's say we would like to automatically report all test exceptions to a central
 
 .. code-block:: python
 
- # src/microtech_testing/shakedown_plugin.py
+ # src/microtech_testing/slash_plugin.py
  #...
 
  class MicrotechTestingPlugin(plugins.PluginInterface):
@@ -212,17 +212,17 @@ For further reading, refer to the `hooks documentation <hooks>` to examine more 
 Notes About Packaging
 ---------------------
 
-When using the above customization method, once the ``microtech_testing`` package is installed, shakedown will *always* load it when starting up. This means that if you would like to have several different customizations of Shakedown, it will have to be in separate **virtualenvs**, or separate Python installations.
+When using the above customization method, once the ``microtech_testing`` package is installed, slash will *always* load it when starting up. This means that if you would like to have several different customizations of Slash, it will have to be in separate **virtualenvs**, or separate Python installations.
 
 On the upside, this means that you can have several customization packages working together. For instance, if Microtech were to expand to another product line, say coffee machines, you can have two separate specific packages and one generic. Namely, ``microtech_microwave_testing`` will set up microwave testing fixtures and ``microtech_coffee_testing`` will set up coffee machine testing fixtures. Both can depend on a single common package (``microtech_testing`` for instance) which will only supply the generic facilities for testing any product that's produced by Microtech.
 
 Other Customization Options
 ---------------------------
 
-In addition to entry points, Shakedown looks for other locations to load code on startup. These can sometimes be used for customization as well.
+In addition to entry points, Slash looks for other locations to load code on startup. These can sometimes be used for customization as well.
 
-**shakerc file**
-  If the file ``~/.shakedown/shakerc`` exists, it is loaded and executed as a regular Python file by Shakedown on startup.
+**slashrc file**
+  If the file ``~/.slash/slashrc`` exists, it is loaded and executed as a regular Python file by Slash on startup.
 
 **SHAKEDOWN_SETTINGS**
   If an environment variable named ``SHAKEDOWN_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.

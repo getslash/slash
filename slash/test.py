@@ -14,12 +14,12 @@ class Test(RunnableTest, RunnableTestFactory):
         self._before_kwargs = before_kwargs or {}
         self._after_kwargs = after_kwargs or {}
         self._test_kwargs = test_kwargs or {}
-    __shakedown_skipped__ = False
-    __shakedown_skipped_reason__ = None
+    __slash_skipped__ = False
+    __slash_skipped_reason__ = None
     @classmethod
     def skip_all(cls, reason=None):
-        cls.__shakedown_skipped__ = True
-        cls.__shakedown_skipped_reason__ = reason
+        cls.__slash_skipped__ = True
+        cls.__slash_skipped_reason__ = reason
 
     @classmethod
     def _generate_tests(cls):
@@ -41,10 +41,10 @@ class Test(RunnableTest, RunnableTestFactory):
                             test_kwargs=test_kwargs,
                             after_kwargs=after_kwargs
                         )
-                        if cls.__shakedown_skipped__:
+                        if cls.__slash_skipped__:
                             case.run = functools.partial(
                                 skip_test,
-                                cls.__shakedown_skipped_reason__
+                                cls.__slash_skipped_reason__
                             )
                         yield case
     def run(self): # pylint: disable=E0202
@@ -76,8 +76,8 @@ def abstract_test_class(cls):
     Marks a class as **abstract**, thus meaning it is not to be run
     directly, but rather via a subclass.
     """
-    assert issubclass(cls, Test), "abstract_test_class only operates on shakedown.Test subclasses"
-    cls.__shakedown_abstract__ = True
+    assert issubclass(cls, Test), "abstract_test_class only operates on slash.Test subclasses"
+    cls.__slash_abstract__ = True
     return cls
 
 def is_abstract_base_class(cls):
@@ -86,4 +86,4 @@ def is_abstract_base_class(cls):
 
     .. seealso:: :func:`abstract_test_class`
     """
-    return bool(cls.__dict__.get("__shakedown_abstract__", False))
+    return bool(cls.__dict__.get("__slash_abstract__", False))

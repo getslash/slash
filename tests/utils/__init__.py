@@ -3,9 +3,9 @@ from logbook.compat import LoggingHandler
 import platform
 import itertools
 import forge
-import shakedown
-from shakedown.conf import config
-from shakedown import RunnableTestFactory
+import slash
+from slash.conf import config
+from slash import RunnableTestFactory
 if platform.python_version() < "2.7":
     import unittest2 as unittest
 else:
@@ -55,8 +55,8 @@ def no_op(*args, **kwargs):
 def run_tests_assert_success(test_class_or_iterator):
     if isinstance(test_class_or_iterator, type) and issubclass(test_class_or_iterator, RunnableTestFactory):
         test_class_or_iterator = test_class_or_iterator.generate_tests()
-    with shakedown.session.Session() as session:
-        shakedown.runner.run_tests(test_class_or_iterator)
+    with slash.session.Session() as session:
+        slash.runner.run_tests(test_class_or_iterator)
     for result in session.iter_results():
         for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):
             _logger.debug("Unsuccessful result: {0}", err)

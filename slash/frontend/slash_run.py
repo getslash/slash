@@ -7,7 +7,7 @@ import sys
 
 _logger = logbook.Logger(__name__)
 
-def shake_run(args, report_stream=sys.stderr):
+def slash_run(args, report_stream=sys.stderr):
     with get_application_context(
             argv=args, args=_get_extra_cli_args(),
             report_stream=report_stream) as app:

@@ -35,7 +35,7 @@ class Callback(object):
         """
         Registers a function to this callback.
 
-        Optional argument identifier for later removal by :func:`shakedown.utils.callback.Callback.unregister_by_identifier`.
+        Optional argument identifier for later removal by :func:`slash.utils.callback.Callback.unregister_by_identifier`.
         """
         self._callbacks.append((identifier, func))
         return func # useful for decorators

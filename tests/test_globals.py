@@ -1,7 +1,7 @@
 from .utils import TestCase
-import shakedown
-from shakedown.session import Session
-from shakedown import context
+import slash
+from slash.session import Session
+from slash import context
 
 class GlobalsTest(TestCase):
     def setUp(self):
@@ -17,9 +17,9 @@ class GlobalsTest(TestCase):
         self.assertIsNone(context.test)
         self.assertIsNone(context.test_id)
         parent_test = self
-        class Test(shakedown.Test):
+        class Test(slash.Test):
             def test(self):
                 parent_test.assertIs(context.test, self)
-                parent_test.assertEquals(context.test_id, self.__shakedown__.id)
-        shakedown.runner.run_tests(Test.generate_tests())
+                parent_test.assertEquals(context.test_id, self.__slash__.id)
+        slash.runner.run_tests(Test.generate_tests())
         self.assertTrue(self.session.result.is_success())

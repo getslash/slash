@@ -21,14 +21,14 @@ class Session(Activatable):
     def iter_results(self):
         return itervalues(self._results)
     def create_result(self, test):
-        assert test.__shakedown__.id not in self._results
-        returned = Result(test.__shakedown__)
-        self._results[test.__shakedown__.id] = returned
+        assert test.__slash__.id not in self._results
+        returned = Result(test.__slash__)
+        self._results[test.__slash__.id] = returned
         return returned
     def get_result(self, test):
-        if test.__shakedown__ is None:
+        if test.__slash__ is None:
             raise LookupError("Could not find result for {0}".format(test))
-        return self._results[test.__shakedown__.id]
+        return self._results[test.__slash__.id]
     def activate(self):
         assert self._context is None
         self._context = _session_context(self)

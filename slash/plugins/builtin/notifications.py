@@ -15,5 +15,5 @@ class Plugin(PluginInterface):
                 ]:
             if api_key is None:
                 continue
-            resp = requests.post(url, {"apikey": api_key, "application": "shakedown", "event": title, "description": message})
+            resp = requests.post(url, {"apikey": api_key, "application": "slash", "event": title, "description": message})
             resp.raise_for_status()

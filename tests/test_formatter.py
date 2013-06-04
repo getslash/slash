@@ -1,5 +1,5 @@
 from six.moves import cStringIO as StringIO
-from shakedown.utils.formatter import Formatter
+from slash.utils.formatter import Formatter
 from .utils import TestCase
 
 class FormatterTest(TestCase):

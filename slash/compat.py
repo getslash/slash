@@ -1,5 +1,5 @@
 """
-Shakedown python compatibility library for cross-python support
+Slash python compatibility library for cross-python support
 """
 #pylint: disable=W0611
 import sys

@@ -4,7 +4,7 @@ from ..runnable_test_factory import RunnableTestFactory
 
 def skip_test(*args):
     """
-    Skips the current test execution by raising a :class:`shakedown.exceptions.SkipTest`
+    Skips the current test execution by raising a :class:`slash.exceptions.SkipTest`
     exception. It can optionally receive a reason argument.
     """
     raise SkipTest(*args)

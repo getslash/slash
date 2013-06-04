@@ -1,5 +1,5 @@
-import shakedown
-from shakedown.exceptions import (
+import slash
+from slash.exceptions import (
     SkipTest,
     TestFailed,
     )
@@ -76,7 +76,7 @@ class TestGenerator(object):
     def add_test_run_callback(self, testpromise, handler):
         self._run_callbacks.setdefault(self._get_test_promise_id(testpromise), []).append(handler)
     def _get_test_promise_id(self, p):
-        if isinstance(p, shakedown.RunnableTest):
+        if isinstance(p, slash.RunnableTest):
             p = p.__test_generator_promise__
         if isinstance(p, str):
             return p # test id
@@ -106,14 +106,14 @@ class TestPromise(object):
             "test_class_name" : self._test_class_name,
         }
     def generate_test(self):
-        d = {"RunnableTest" : shakedown.RunnableTest}
+        d = {"RunnableTest" : slash.RunnableTest}
         exec(self.generate_test_source(), d)
         returned = d[self._test_class_name]()
         returned.__test_generator_promise__ = self
         return returned
 
 _TESTFILE_HEADER = """
-from shakedown import RunnableTest, RunnableTestFactory
+from slash import RunnableTest, RunnableTestFactory
 """
 
 _TEST_SOURCE_TEMPLATE = r"""

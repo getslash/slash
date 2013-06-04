@@ -17,11 +17,11 @@ def iterate(**parameters_and_values):
 def _get_or_create_parameter_specs(func):
     returned = _get_parameter_specs(func)
     if returned is None:
-        returned = func.__shakedown_parameters__ = {}
+        returned = func.__slash_parameters__ = {}
     return returned
 
 def _get_parameter_specs(func):
-    return getattr(func, "__shakedown_parameters__", None)
+    return getattr(func, "__slash_parameters__", None)
 
 def iterate_kwargs_options(func):
     specs = _get_parameter_specs(func)

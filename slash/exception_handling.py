@@ -65,9 +65,9 @@ def get_exception_mark(e, name, default=None):
     return _ensure_exception_marks(e).get(name, default)
 
 def _ensure_exception_marks(e):
-    returned = getattr(e, "__shakedown_exc_marks__", None)
+    returned = getattr(e, "__slash_exc_marks__", None)
     if returned is None:
-        returned = e.__shakedown_exc_marks__ = {}
+        returned = e.__slash_exc_marks__ = {}
     return returned
 
 @contextmanager
@@ -86,7 +86,7 @@ def get_exception_swallowing_context(report_to_sentry=True):
 
 def noswallow(exception):
     """
-    Marks an exception to prevent swallowing by :func:`shakedown.exception_handling.get_exception_swallowing_context`,
+    Marks an exception to prevent swallowing by :func:`slash.exception_handling.get_exception_swallowing_context`,
     and returns it
     """
     mark_exception(exception, "swallow", False)

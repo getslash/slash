@@ -3,8 +3,8 @@ from .utils import (
     CustomException,
     )
 from contextlib import contextmanager
-from shakedown import should
-from shakedown.exceptions import TestFailed
+from slash import should
+from slash.exceptions import TestFailed
 
 class AssertionsTest(TestCase):
     def test_assert_equals(self):

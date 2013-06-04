@@ -1,4 +1,4 @@
-from .metadata import ensure_shakedown_metadata
+from .metadata import ensure_slash_metadata
 
 class RunnableTestFactory(object):
 
@@ -10,12 +10,12 @@ class RunnableTestFactory(object):
         Do not override this method directly. Use :func:`.RunnableTestFactory._generate_tests` instead.
         """
         for test in cls._generate_tests():
-            ensure_shakedown_metadata(test).factory = cls
+            ensure_slash_metadata(test).factory = cls
             yield test
 
     @classmethod
     def _generate_tests(cls):
         raise NotImplementedError() # pragma: no cover
 
-    __shakedown_needed_contexts__ = None
+    __slash_needed_contexts__ = None
 

@@ -1,5 +1,5 @@
 from .utils import TestCase
-from shakedown.utils.peekable_iterator import PeekableIterator
+from slash.utils.peekable_iterator import PeekableIterator
 
 class PeekableIteratorTest(TestCase):
     def test_full_iteration(self):

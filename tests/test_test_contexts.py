@@ -1,12 +1,12 @@
 import itertools
-import shakedown
+import slash
 from .utils import TestCase
 from .utils import run_tests_assert_success
 from .utils.event_recorder import EventRecorder
 
 _recorder = None
 
-class _SampleContextBase(shakedown.TestContext):
+class _SampleContextBase(slash.TestContext):
     def before(self):
         self._record("before")
     def after(self):
@@ -18,7 +18,7 @@ class _SampleContextBase(shakedown.TestContext):
     def _record(self, event_name):
         event_name = "{0}.{1}".format(type(self).__name__, event_name)
         if "_case" in event_name:
-            test = shakedown.context.test
+            test = slash.context.test
             event_name += "({0}.{1})".format(
                 type(test).__name__,
                 test._test_method_name,
@@ -44,15 +44,15 @@ class EventRecordingTest(TestCase):
 
 class MultipleContextsTest(EventRecordingTest):
     def test_multiple_contexts(self):
-        @shakedown.with_context(Context1)
-        @shakedown.with_context(Context2)
-        class Test1(shakedown.Test):
+        @slash.with_context(Context1)
+        @slash.with_context(Context2)
+        class Test1(slash.Test):
             def test_1(self):
                 assert _recorder["Context1.before_case(Test1.test_1)"].timestamp < \
                        _recorder["Context2.before_case(Test1.test_1)"].timestamp, "Context1 did not happen before Context2"
 
-        @shakedown.with_context(Context2)
-        class Test2(shakedown.Test):
+        @slash.with_context(Context2)
+        class Test2(slash.Test):
             def test_1(self):
                 assert "Context1.before_case(Test2.test_1)" not in _recorder.events, "Context1 unexpectedly called"
                 assert _recorder.events["Context2.before_case(Test2.test_1)"].happened

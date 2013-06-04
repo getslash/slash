@@ -1,6 +1,6 @@
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
-from shakedown.loader import Loader
+from slash.loader import Loader
 
 from uuid import uuid1
 import shutil

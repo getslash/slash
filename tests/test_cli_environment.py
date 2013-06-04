@@ -1,9 +1,9 @@
 from .utils import TestCase
 from confetti import Config
-from shakedown import plugins
-from shakedown.utils import conf_utils
-from shakedown.utils import cli_utils
-from shakedown.plugins import PluginInterface
+from slash import plugins
+from slash.utils import conf_utils
+from slash.utils import cli_utils
+from slash.plugins import PluginInterface
 import six
 import sys
 

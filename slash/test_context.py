@@ -34,11 +34,11 @@ class TestContext(object):
         pass
 
 def _add_context_to_class(context, cls):
-    if cls.__shakedown_needed_contexts__ is None:
-        cls.__shakedown_needed_contexts__ = collections.deque()
+    if cls.__slash_needed_contexts__ is None:
+        cls.__slash_needed_contexts__ = collections.deque()
     # we call appendleft because class decorators are executed bottom-up
     # this will cause iteration to happen in the right order
-    cls.__shakedown_needed_contexts__.appendleft(context)
+    cls.__slash_needed_contexts__.appendleft(context)
     return cls
 
 def with_context(ctx):
@@ -62,7 +62,7 @@ def get_test_context_setup(current_test, next_test):
     yield
 
 def _get_needed_contexts(test):
-    needed = getattr(getattr(getattr(test, "__shakedown__", None), "factory", None), "__shakedown_needed_contexts__", None)
+    needed = getattr(getattr(getattr(test, "__slash__", None), "factory", None), "__slash_needed_contexts__", None)
     if needed is None:
         needed = ()
     return needed

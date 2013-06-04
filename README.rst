@@ -1,9 +1,9 @@
 Overview
 ========
 
-.. image:: https://secure.travis-ci.org/vmalloc/shakedown.png?branch=master,dev
+.. image:: https://secure.travis-ci.org/vmalloc/slash.png?branch=master,dev
 
 Documentation
 =============
 
-Hosted at readthedocs: https://shakedown.readthedocs.org/en/latest/
+Hosted at readthedocs: https://slash.readthedocs.org/en/latest/
