@@ -21,7 +21,7 @@ class Test(RunnableTest, RunnableTestFactory):
         cls.__shakedown_skipped__ = True
         cls.__shakedown_skipped_reason__ = reason
     @classmethod
-    def generate_tests(cls):
+    def _generate_tests(cls):
         if is_abstract_base_class(cls):
             return
 
