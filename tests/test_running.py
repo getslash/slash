@@ -1,9 +1,9 @@
 # pylint: disable-msg=W0201
 from .utils.test_generator import TestGenerator
-from shakedown.runner import run_tests
-from shakedown.session import Session
-from shakedown.result import Result
-from shakedown.ctx import context
+from slash.runner import run_tests
+from slash.session import Session
+from slash.result import Result
+from slash.ctx import context
 import six # pylint: disable=F0401
 import random
 from .utils import TestCase

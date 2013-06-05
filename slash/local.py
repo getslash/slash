@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-shakedown.local - context-local objects.
+slash.local - context-local objects.
 
 The source code in this file is derived from werkzeug's local.py (Copyright 2011 by the Werkzeug Team)
 

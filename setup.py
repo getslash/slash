@@ -6,7 +6,7 @@ import platform
 _PYTHON_VERSION = platform.python_version()
 _in_same_dir = functools.partial(os.path.join, os.path.dirname(__file__))
 
-with open(_in_same_dir("shakedown", "__version__.py")) as version_file:
+with open(_in_same_dir("slash", "__version__.py")) as version_file:
     exec(version_file.read())  # pylint: disable=W0122
 
 install_requires = [
@@ -25,7 +25,7 @@ else:
 if _PYTHON_VERSION < "2.7":
     install_requires.append("argparse")
 
-setup(name="shakedown",
+setup(name="slash",
       classifiers = [
           "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
@@ -41,7 +41,7 @@ setup(name="shakedown",
       install_requires=install_requires,
       entry_points = dict(
           console_scripts = [
-              "shake  = shakedown.frontend.main:main_entry_point",
+              "slash  = slash.frontend.main:main_entry_point",
               ]
           ),
 

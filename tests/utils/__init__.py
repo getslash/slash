@@ -1,8 +1,8 @@
 from logbook.compat import LoggingHandler
 import platform
 import forge
-import shakedown
-from shakedown.conf import config
+import slash
+from slash.conf import config
 if platform.python_version() < "2.7":
     import unittest2 as unittest
 else:
@@ -48,8 +48,8 @@ def no_op(*args, **kwargs):
     pass
 
 def run_tests_assert_success(test_class):
-    with shakedown.session.Session() as session:
-        shakedown.runner.run_tests(test_class.generate_tests())
+    with slash.session.Session() as session:
+        slash.runner.run_tests(test_class.generate_tests())
     assert session.result.is_success(), "Run did not succeed"
     return session
 run_tests_assert_success.__test__ = False

@@ -8,7 +8,7 @@ from .exceptions import (
     TestFailed,
     SkipTest,
     )
-from .metadata import ensure_shakedown_metadata
+from .metadata import ensure_slash_metadata
 from .exception_handling import handling_exceptions
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
@@ -20,7 +20,7 @@ def run_tests(iterable):
     Runs tests from an iterable using the current session
     """
     for test in iterable:
-        ensure_shakedown_metadata(test).id = context.session.id_space.allocate()
+        ensure_slash_metadata(test).id = context.session.id_space.allocate()
         _logger.debug("Running {0}...", test)
         with _get_test_context(test):
             with _update_result_context() as result:
@@ -64,7 +64,7 @@ def _set_current_test_context(test):
     prev_test = context.test
     prev_test_id = context.test_id
     context.test = test
-    context.test_id = test.__shakedown__.id
+    context.test_id = test.__slash__.id
     try:
         yield
     finally:

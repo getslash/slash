@@ -1,17 +1,17 @@
 from .utils import TestCase
-import shakedown
-import shakedown.runner
-from shakedown.session import Session
+import slash
+import slash.runner
+from slash.session import Session
 
 class CleanupsTest(TestCase):
     def test_cleanups(self):
-        class Test(shakedown.Test):
+        class Test(slash.Test):
             def test1(self_):
                 self.events.test1()
-                shakedown.add_cleanup(self.events.cleanup, "test1 cleanup")
+                slash.add_cleanup(self.events.cleanup, "test1 cleanup")
             def test2(self_):
                 self.events.test2()
-                shakedown.add_cleanup(self.events.cleanup, "test2 cleanup")
+                slash.add_cleanup(self.events.cleanup, "test2 cleanup")
 
         with self.forge.any_order():
             with self.forge.ordered():
@@ -23,18 +23,18 @@ class CleanupsTest(TestCase):
 
         self.forge.replay()
         with Session():
-            shakedown.runner.run_tests(Test.generate_tests())
+            slash.runner.run_tests(Test.generate_tests())
     def test_error_cleanups(self):
-        class Test(shakedown.Test):
+        class Test(slash.Test):
             def test(self_):
-                shakedown.add_cleanup(self.events.cleanup, 1)
-                shakedown.add_cleanup(self.events.cleanup, 2)
+                slash.add_cleanup(self.events.cleanup, 1)
+                slash.add_cleanup(self.events.cleanup, 2)
                 raise Exception("!!!")
         self.events.cleanup(1).and_raise(FirstException())
         self.events.cleanup(2).and_raise(SecondException())
         self.forge.replay()
         with Session() as session:
-            shakedown.runner.run_tests(Test.generate_tests())
+            slash.runner.run_tests(Test.generate_tests())
         [result] = session.iter_results()
         [err1, err2, err3] = result.get_errors()
 

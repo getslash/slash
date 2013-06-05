@@ -1,9 +1,9 @@
 class RunnableTest(object):
     """
     This class is meant to serve as a base class to any test that can
-    actually be executed by the Shakedown runner.
+    actually be executed by the Slash runner.
     """
-    __shakedown__ = None
+    __slash__ = None
     def run(self):
         """
         This method is meant to be overriden by derived classes to actually
@@ -14,4 +14,4 @@ class RunnableTest(object):
     def get_canonical_name(self):
         return "{0}.{1}".format(type(self).__module__, type(self).__name__)
     def __repr__(self):
-        return repr(self.__shakedown__)
+        return repr(self.__slash__)

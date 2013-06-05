@@ -11,7 +11,7 @@ import sys
 
 _logger = logbook.Logger(__name__)
 
-def shake_run(args, report_stream=sys.stderr):
+def slash_run(args, report_stream=sys.stderr):
     site.load()
     parser = _build_parser()
     with cli_utils.get_cli_environment_context(argv=args, parser=parser) as args:
@@ -30,7 +30,7 @@ def shake_run(args, report_stream=sys.stderr):
         return -1
 
 def _build_parser():
-    returned = cli_utils.PluginAwareArgumentParser("shake run")
+    returned = cli_utils.PluginAwareArgumentParser("slash run")
     returned.add_argument("-i", "--interactive", help="Enter an interactive shell before running tests",
                           action="store_true", default=False)
     returned.add_argument("paths", metavar="TEST", nargs="*",

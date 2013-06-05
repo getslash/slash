@@ -3,7 +3,7 @@
 Assertions
 ==========
 
-*Shakedown* uses assertions to perform test logic. Unlike ``unittest``, assertions in Shakedown are global functions rather than methods.
+*Slash* uses assertions to perform test logic. Unlike ``unittest``, assertions in Slash are global functions rather than methods.
 
 Another big difference from ``unittest`` is the fact that *failed assertions don't raise ``AssertionError``s* -- they raise :class:`TestFailed`, which derives from ``AssertionError``. Since the code you'll be testing might have ``assert`` statements embedded inside, it is important to differentiate real (test) assertions from in-code assertions. 
 
@@ -12,70 +12,70 @@ There are several ways to perform assertions, and many assertion functions have 
 Using the ``should`` module
 ---------------------------
 
-One syntax for assertions can be done via the ``shakedown.should`` module:
+One syntax for assertions can be done via the ``slash.should`` module:
 
-.. autofunction:: shakedown.should.be
+.. autofunction:: slash.should.be
 
-.. autofunction:: shakedown.should.not_be
+.. autofunction:: slash.should.not_be
 
-.. autofunction:: shakedown.should.be_a
+.. autofunction:: slash.should.be_a
 
-.. autofunction:: shakedown.should.not_be_a
+.. autofunction:: slash.should.not_be_a
 
-.. autofunction:: shakedown.should.be_true
+.. autofunction:: slash.should.be_true
 
-.. autofunction:: shakedown.should.be_false
+.. autofunction:: slash.should.be_false
 
-.. autofunction:: shakedown.should.be_in
+.. autofunction:: slash.should.be_in
 
-.. autofunction:: shakedown.should.not_be_in
+.. autofunction:: slash.should.not_be_in
 
-.. autofunction:: shakedown.should.be_none
+.. autofunction:: slash.should.be_none
 
-.. autofunction:: shakedown.should.not_be_none
+.. autofunction:: slash.should.not_be_none
 
-.. autofunction:: shakedown.should.contain
+.. autofunction:: slash.should.contain
 
    also known as ``contains``
 
-.. autofunction:: shakedown.should.not_contain
+.. autofunction:: slash.should.not_contain
 
-.. autofunction:: shakedown.should.equal
+.. autofunction:: slash.should.equal
 
    also known as ``equals``
 
-.. autofunction:: shakedown.should.not_equal
+.. autofunction:: slash.should.not_equal
 
    also known as ``not_equals``
 
-.. autofunction:: shakedown.should.raise_exception
+.. autofunction:: slash.should.raise_exception
 
-Using ``shakedown.assert_X`` functions
+Using ``slash.assert_X`` functions
 --------------------------------------
 
-.. autofunction:: shakedown.assert_contains
-.. autofunction:: shakedown.assert_not_contains
+.. autofunction:: slash.assert_contains
+.. autofunction:: slash.assert_not_contains
 
-.. autofunction:: shakedown.assert_in
-.. autofunction:: shakedown.assert_not_in
+.. autofunction:: slash.assert_in
+.. autofunction:: slash.assert_not_in
 
-.. autofunction:: shakedown.assert_equal
+.. autofunction:: slash.assert_equal
 
    also known as ``assert_equals``
-.. autofunction:: shakedown.assert_not_equal
+.. autofunction:: slash.assert_not_equal
 
    also known as ``assert_not_equals``
 
-.. autofunction:: shakedown.assert_true
-.. autofunction:: shakedown.assert_false
+.. autofunction:: slash.assert_true
+.. autofunction:: slash.assert_false
 
-.. autofunction:: shakedown.assert_is
-.. autofunction:: shakedown.assert_is_not
+.. autofunction:: slash.assert_is
+.. autofunction:: slash.assert_is_not
 
-.. autofunction:: shakedown.assert_is_none
-.. autofunction:: shakedown.assert_is_not_none
+.. autofunction:: slash.assert_is_none
+.. autofunction:: slash.assert_is_not_none
 
-.. autofunction:: shakedown.assert_isinstance
-.. autofunction:: shakedown.assert_not_isinstance
+.. autofunction:: slash.assert_isinstance
+.. autofunction:: slash.assert_not_isinstance
 
-.. autofunction:: shakedown.assert_raises
+.. autofunction:: slash.assert_raises

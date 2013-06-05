@@ -1,24 +1,24 @@
 Writing Tests
 =============
 
-The easiest way to implement tests in shakedown is to write classes inheriting from :class:`shakedown.Test`.
+The easiest way to implement tests in slash is to write classes inheriting from :class:`slash.Test`.
 
 The Basics
 ----------
 
-Subclasses of :class:`shakedown.Test` are run by shakedown in a manner quite similar to the ``unittest.TestCase`` class. Classes can contain multiple methods, each will be run as a separate "case".
+Subclasses of :class:`slash.Test` are run by slash in a manner quite similar to the ``unittest.TestCase`` class. Classes can contain multiple methods, each will be run as a separate "case".
 
-Shakedown only runs methods beginning with ``test`` as cases. A minimalistic test implementation, therefore, can be written as follows:
+Slash only runs methods beginning with ``test`` as cases. A minimalistic test implementation, therefore, can be written as follows:
 
 .. code-block:: python
 
- from shakedown import Test
+ from slash import Test
  
  class SomeCoolTest(Test):
      def test(self):
          pass # <-- test logic goes here
 
-Before and after each case, very much like ``unittest``'s ``setUp`` and ``tearDown``, :func:`shakedown.Test.before` and :func:`shakedown.Test.after` are run respectively. This is very useful when including multiple test cases in a single class:
+Before and after each case, very much like ``unittest``'s ``setUp`` and ``tearDown``, :func:`slash.Test.before` and :func:`slash.Test.after` are run respectively. This is very useful when including multiple test cases in a single class:
 
 .. code-block:: python
 
@@ -59,24 +59,24 @@ Cleanups functions can be added from anywhere in your code (not just the runnabl
 
 .. code-block:: python
 
- import shakedown
+ import slash
 
  def microwave_power_on_sequence(microwave):
      microwave.plug_to_outlet()
-     shakedown.add_cleanup(microwave.plug_out_of_outlet)
+     slash.add_cleanup(microwave.plug_out_of_outlet)
      microwave.press_power()
-     shakedown.add_cleanup(microwave.wait_until_off)
-     shakedown.add_cleanup(microwave.press_power)
+     slash.add_cleanup(microwave.wait_until_off)
+     slash.add_cleanup(microwave.press_power)
      microwave.wait_until_on()
 
- class MicrowaveTest(shakedown.Test):
+ class MicrowaveTest(slash.Test):
      def begin(self):
          # ...
          microwave_power_on_sequence(self.microwave)
      def test_microwave_is_working(self):
-         shakedown.should.be_true(self.microwave.is_working())
+         slash.should.be_true(self.microwave.is_working())
 
-.. autofunction:: shakedown.add_cleanup
+.. autofunction:: slash.add_cleanup
 
 Skips
 -----
@@ -85,61 +85,61 @@ In some case you want to skip certain methods. This is done by raising the :clas
 
 .. code-block:: python
 
- class MicrowaveTest(shakedown.Test):
+ class MicrowaveTest(slash.Test):
      # ...
      def test_has_supercool_feature(self):
          if self.microwave.model() == "Microtech Shitbox":
-             shakedown.skip_test("Microwave model too old")
+             slash.skip_test("Microwave model too old")
 
-Shakedown also provides :func:`skipped`, which is a decorator to skip specific methods or entire classes:
+Slash also provides :func:`skipped`, which is a decorator to skip specific methods or entire classes:
 
 .. code-block:: python
 
- class MicrowaveTest(shakedown.Test):
-     @shakedown.skipped("reason")
+ class MicrowaveTest(slash.Test):
+     @slash.skipped("reason")
      def test_1(self):
          # ...
-     @shakedown.skipped # no reason
+     @slash.skipped # no reason
      def test_2(self):
          # ...
 
- @shakedown.skipped("reason")
- class EntirelySkippedTest(shakedown.Test):
+ @slash.skipped("reason")
+ class EntirelySkippedTest(slash.Test):
      # ...
 
 
-.. autoclass:: shakedown.exceptions.SkipTest
+.. autoclass:: slash.exceptions.SkipTest
 
-.. autofunction:: shakedown.skip_test
+.. autofunction:: slash.skip_test
 
 Global State
 ------------
 
-Shakedown uses global (thread-local) objects for various purposes. This is particularly useful for accessing them from utility libraries and external packages.
+Slash uses global (thread-local) objects for various purposes. This is particularly useful for accessing them from utility libraries and external packages.
 
 Session
 =======
 
 The :class:`.Session` represents the current test execution session. It has a unique id, used to designate the session in various contexts. Tests must run under an active session, as the test results and other important pieces of data are kept on it.
 
-The currently active session is accessible through ``shakedown.session``:
+The currently active session is accessible through ``slash.session``:
 
 .. code-block:: python
 
-  from shakedown import session
+  from slash import session
 
   print("The current session id is", session.id)
 
-.. autoclass:: shakedown.session.Session
+.. autoclass:: slash.session.Session
 
 Fixture
 =======
 
-In many cases objects need to be passed between tests and utility libraries. These libraries don't want to be aware of the interface of the currently running test, but would rather a single place to hold the shared state. ``shakedown.fixture`` is such a placeholder. It can be assigned with various objects and values that comprise the global state of the current run:
+In many cases objects need to be passed between tests and utility libraries. These libraries don't want to be aware of the interface of the currently running test, but would rather a single place to hold the shared state. ``slash.fixture`` is such a placeholder. It can be assigned with various objects and values that comprise the global state of the current run:
 
 .. code-block:: python
 
-  from shakedown import fixture
+  from slash import fixture
   
   # ...
   
@@ -174,32 +174,32 @@ Sometimes you want tests that won't be executed on their own, but rather functio
             super(SocketFileTest, self).before()
             self.file = connect_to_some_server().makefile()
 
-If you try running the above code via Shakedown, it will fail. This is because Shakedown tries to run all cases in ``FileTestBase``, which cannot run due to the lack of a ``before()`` method.
+If you try running the above code via Slash, it will fail. This is because Slash tries to run all cases in ``FileTestBase``, which cannot run due to the lack of a ``before()`` method.
 
-This is solved with the :func:`shakedown.abstract_test_class` decorator:
+This is solved with the :func:`slash.abstract_test_class` decorator:
 
 .. code-block:: python
   
-    @shakedown.abstract_test_class
+    @slash.abstract_test_class
     class FileTestBase(Test):
         def test_has_write_method(self):
             assert_true(hasattr(self.file, "write"))
         def test_has_read_method(self):
             assert_true(hasattr(self.file, "read"))
 
-.. autofunction:: shakedown.abstract_test_class
+.. autofunction:: slash.abstract_test_class
 
 Test Parameters
 ~~~~~~~~~~~~~~~
 
-Shakedown's :class:`.Test` supports adding parameters to your tests via the ``shakedown.parameters`` module.
+Slash's :class:`.Test` supports adding parameters to your tests via the ``slash.parameters`` module.
 
-Use the :func:`shakedown.parameters.iterate` decorator to multiply a test function for different parameter values:
+Use the :func:`slash.parameters.iterate` decorator to multiply a test function for different parameter values:
 
 .. code-block:: python
 
     class SomeTest(Test):
-        @shakedown.parameters.iterate(x=[1, 2, 3])
+        @slash.parameters.iterate(x=[1, 2, 3])
 	def test(self, x):
             # use x here
 
@@ -208,15 +208,15 @@ The above example will yield 3 test cases, one for each value of ``x``. It is al
 .. code-block:: python
 
     class SomeTest(Test):
-        @shakedown.parameters.iterate(x=[1, 2, 3])
+        @slash.parameters.iterate(x=[1, 2, 3])
 	def before(self, x):
             # ...
 
-        @shakedown.parameters.iterate(y=[4, 5, 6])
+        @slash.parameters.iterate(y=[4, 5, 6])
 	def test(self, y):
             # ...
 
-        @shakedown.parameters.iterate(z=[7, 8, 9])
+        @slash.parameters.iterate(z=[7, 8, 9])
 	def after(self, z):
             # ...
 

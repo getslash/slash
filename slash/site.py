@@ -15,22 +15,22 @@ def load(thing=None):
     _load_filename_or_url(thing)
 
 def _load_defaults():
-    _load_shakerc()
+    _load_slashrc()
     _load_environment()
     _load_entry_points()
 
-def _load_shakerc():
-    site_file = os.path.expanduser("~/.shakedown/shakerc")
+def _load_slashrc():
+    site_file = os.path.expanduser("~/.slash/slashrc")
     if os.path.isfile(site_file):
         _load_filename(site_file)
 
 def _load_environment():
-    loaded_url_or_file = os.environ.get("SHAKEDOWN_SETTINGS")
+    loaded_url_or_file = os.environ.get("SLASH_SETTINGS")
     if loaded_url_or_file:
         load(loaded_url_or_file)
 
 def _load_entry_points():
-    for customize_function_loader in pkg_resources.iter_entry_points("shakedown.site.customize"):
+    for customize_function_loader in pkg_resources.iter_entry_points("slash.site.customize"):
         func = customize_function_loader.load()
         func()
 

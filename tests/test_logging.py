@@ -3,7 +3,7 @@ from .utils import run_tests_assert_success
 from tempfile import mkdtemp
 import functools
 import os
-import shakedown
+import slash
 
 _IDENTIFIER = "logging-test"
 _SESSION_START_MARK = "session-start-mark"
@@ -25,11 +25,11 @@ class LoggingTest(TestCase):
             os.path.join("{context.session.id}", "debug.log")
         )
 
-        shakedown.hooks.session_start.register(functools.partial(_mark, _SESSION_START_MARK), identifier=_IDENTIFIER)
-        self.addCleanup(shakedown.hooks.session_start.unregister_by_identifier, _IDENTIFIER)
+        slash.hooks.session_start.register(functools.partial(_mark, _SESSION_START_MARK), identifier=_IDENTIFIER)
+        self.addCleanup(slash.hooks.session_start.unregister_by_identifier, _IDENTIFIER)
 
-        shakedown.hooks.session_end.register(functools.partial(_mark, _SESSION_END_MARK), identifier=_IDENTIFIER)
-        self.addCleanup(shakedown.hooks.session_end.unregister_by_identifier, _IDENTIFIER)
+        slash.hooks.session_end.register(functools.partial(_mark, _SESSION_END_MARK), identifier=_IDENTIFIER)
+        self.addCleanup(slash.hooks.session_end.unregister_by_identifier, _IDENTIFIER)
 
         self.session = run_tests_assert_success(SampleTest)
         self.test_ids = [result.test_metadata.id for result in self.session.iter_results()]
@@ -64,7 +64,7 @@ class LoggingTest(TestCase):
         for test_id in self.test_ids:
             self.assertNotIn(test_id, data)
 
-class SampleTest(shakedown.Test):
+class SampleTest(slash.Test):
     def test_1(self):
         _mark()
     def test_2(self):
@@ -72,5 +72,5 @@ class SampleTest(shakedown.Test):
 
 def _mark(text=None):
     if text is None:
-        text = shakedown.context.test_id
-    shakedown.logger.debug(text)
+        text = slash.context.test_id
+    slash.logger.debug(text)

@@ -1,4 +1,4 @@
-.. Shakedown documentation master file, created by
+.. Slash documentation master file, created by
    sphinx-quickstart on Fri Feb 22 23:34:56 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -15,11 +15,11 @@
 
      .. raw:: html
 
-      <h1>Welcome to Shakedown</h1>
+      <h1>Welcome to Slash</h1>
 
-     Shakedown is a testing framework written in Python. Unlike many other testing frameworks out there, Shakedown focuses on building in-house testing solutions for large projects. 
+     Slash is a testing framework written in Python. Unlike many other testing frameworks out there, Slash focuses on building in-house testing solutions for large projects. 
    
-     Shakedown provides several key features:
+     Slash provides several key features:
    
      * A solid execution model based on fixtures, test factories and tests. This provides you with the flexibility you need to express your testing logic.
      * A rich configuration mechanism, helping you setting up your environment parameters and their various flavours.

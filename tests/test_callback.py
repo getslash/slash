@@ -1,6 +1,6 @@
 from .utils import TestCase
 from .utils import CustomException
-from shakedown.utils.callback import Callback
+from slash.utils.callback import Callback
 
 class CallbackTestBase(TestCase):
     def setUp(self):

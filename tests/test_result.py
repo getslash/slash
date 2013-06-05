@@ -1,6 +1,6 @@
 from .utils import TestCase
-from shakedown.result import Result
-from shakedown.result import AggregatedResult
+from slash.result import Result
+from slash.result import AggregatedResult
 
 class AggregatedResultTest(TestCase):
     def setUp(self):

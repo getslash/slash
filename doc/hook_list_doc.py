@@ -1,7 +1,7 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
-from shakedown import hooks
-from shakedown.utils.callback import Callback
+from slash import hooks
+from slash.utils.callback import Callback
 
 from sphinx.util.compat import Directive
 
@@ -21,7 +21,7 @@ class HookListDoc(Directive):
         for hook_name, hook in all_hooks:
             section = nodes.section(ids=[hook_name])
             returned.append(section)
-            section.append(nodes.title(text="shakedown.hooks.{0}".format(hook_name)))
+            section.append(nodes.title(text="slash.hooks.{0}".format(hook_name)))
             section.append(nodes.paragraph(text=hook.doc))
         return returned
 

@@ -7,8 +7,8 @@ class Metadata(object):
     def __repr__(self):
         return self.canonical_name
 
-def ensure_shakedown_metadata(test):
-    returned = getattr(test, "__shakedown__", None)
+def ensure_slash_metadata(test):
+    returned = getattr(test, "__slash__", None)
     if returned is None:
-        returned = test.__shakedown__ = Metadata(test)
+        returned = test.__slash__ = Metadata(test)
     return returned

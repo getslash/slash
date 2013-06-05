@@ -4,7 +4,7 @@ from .utils import (
     )
 from contextlib import contextmanager
 from forge import Anything
-from shakedown import exception_handling
+from slash import exception_handling
 
 class ExceptionMarksTest(TestCase):
     def test_exception_mark(self):

@@ -1,18 +1,18 @@
 from .utils import TestCase
-from shakedown import hooks
-from shakedown import plugins
-from shakedown.plugins import PluginInterface
-from shakedown.plugins import IncompatiblePlugin
+from slash import hooks
+from slash import plugins
+from slash.plugins import PluginInterface
+from slash.plugins import IncompatiblePlugin
 from tempfile import mkdtemp
 import os
 
 class BuiltinPluginsTest(TestCase):
     def test_hooks_start_condition(self):
-        "make sure that all hooks are either empty, or contain callbacks marked with `shakedown.<identifier>`"
+        "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
         for hook_name, hook in hooks.get_all_hooks():
             for identifier, registered in hook.iter_registered():
                 self.assertTrue(
-                    identifier.startswith("shakedown."),
+                    identifier.startswith("slash."),
                     "Callback {0}.{1} is not a builtin!".format(hook_name, identifier)
                 )
     def test_builtin_plugins_are_installed(self):
@@ -65,8 +65,8 @@ class PluginDiscoveryTest(TestCase):
                 os.makedirs(os.path.dirname(path))
             with open(path, "w") as f:
                 f.write("""
-import shakedown.plugins
-from shakedown.plugins.interface import PluginInterface
+import slash.plugins
+from slash.plugins.interface import PluginInterface
 
 class {name}(PluginInterface):
     def get_name(self):
@@ -79,7 +79,7 @@ def install_plugins():
                     f.write("     pass")
                 else:
                     self.expected_names.add(plugin_name)
-                    f.write("     shakedown.plugins.manager.install({name}())".format(name=plugin_name))
+                    f.write("     slash.plugins.manager.install({name}())".format(name=plugin_name))
         for junk_file in [
                 "a/junk1.p",
                 "a/b/junk2",
