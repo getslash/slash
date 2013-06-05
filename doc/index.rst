@@ -6,10 +6,12 @@
 .. container:: row-fluid
 
    .. container:: span2 visible-desktop
-
-     .. image:: logo.png
-        :align: left
-        :width: 12 em
+   
+     .. raw:: html
+  
+       <div style="padding-top: 2em">
+         <img src="_images/logo.png" style="width: 14em">
+       </div>
    
    .. container:: span10
 
