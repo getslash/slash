@@ -40,8 +40,8 @@ class CustomizationTest(TestCase):
         self.forge.replay()
         self.assert_customization_loaded()
     def test_customize_via_env_var(self):
-        os.environ["SHAKEDOWN_SETTINGS"] = custom_filename = mktemp()
-        self.addCleanup(os.environ.pop, "SHAKEDOWN_SETTINGS")
+        os.environ["SLASH_SETTINGS"] = custom_filename = mktemp()
+        self.addCleanup(os.environ.pop, "SLASH_SETTINGS")
         with open(custom_filename, "w") as f:
             f.write(self.get_customization_source())
         self.assert_customization_loaded()
@@ -52,8 +52,8 @@ class CustomizationTest(TestCase):
         fake_response.raise_for_status().whenever()
         fake_response.content = self.get_customization_source()
         requests.get(url).and_return(fake_response)
-        os.environ["SHAKEDOWN_SETTINGS"] = url
-        self.addCleanup(os.environ.pop, "SHAKEDOWN_SETTINGS")
+        os.environ["SLASH_SETTINGS"] = url
+        self.addCleanup(os.environ.pop, "SLASH_SETTINGS")
         self.forge.replay()
         self.assert_customization_loaded()
     def test_customize_via_pkgutil_entry_point(self):

@@ -224,7 +224,7 @@ In addition to entry points, Slash looks for other locations to load code on sta
 **slashrc file**
   If the file ``~/.slash/slashrc`` exists, it is loaded and executed as a regular Python file by Slash on startup.
 
-**SHAKEDOWN_SETTINGS**
-  If an environment variable named ``SHAKEDOWN_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.
+**SLASH_SETTINGS**
+  If an environment variable named ``SLASH_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.
 
 

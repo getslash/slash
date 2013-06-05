@@ -25,7 +25,7 @@ def _load_slashrc():
         _load_filename(site_file)
 
 def _load_environment():
-    loaded_url_or_file = os.environ.get("SHAKEDOWN_SETTINGS")
+    loaded_url_or_file = os.environ.get("SLASH_SETTINGS")
     if loaded_url_or_file:
         load(loaded_url_or_file)
 
