@@ -7,11 +7,16 @@
 
    .. container:: span2 visible-desktop
    
-     .. raw:: html
-  
-       <div style="padding-top: 2em">
-         <img src="_images/slash-logo.png" style="width: 14em">
-       </div>
+     .. container:: brand-logo
+        
+	.. image:: transparent.png
+	   :height: 2em
+	   :align: left           
+
+        .. image:: slash-logo.png
+           :align: left
+	   :width: 120px
+
    
    .. container:: span10
 
