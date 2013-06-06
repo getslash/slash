@@ -10,7 +10,7 @@
      .. raw:: html
   
        <div style="padding-top: 2em">
-         <img src="_images/logo.png" style="width: 14em">
+         <img src="_images/slash-logo.png" style="width: 14em">
        </div>
    
    .. container:: span10
