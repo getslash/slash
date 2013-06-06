@@ -117,6 +117,8 @@ Global State
 
 Slash uses global (thread-local) objects for various purposes. This is particularly useful for accessing them from utility libraries and external packages.
 
+.. _sessions:
+
 Session
 +++++++
 
@@ -133,6 +135,8 @@ The currently active session is accessible through ``slash.session``:
 .. autoclass:: slash.session.Session
   :members:
 
+.. _fixtures:
+
 Fixture
 +++++++
 
@@ -146,14 +150,14 @@ In many cases objects need to be passed between tests and utility libraries. The
   
   fixture.obj = some_object
 
-This is particularly useful for customization purposes, :ref:`as described in the relevant section <customize>`.
+This is particularly useful for customization purposes, :ref:`as described in the relevant section <building_solution>`.
 
 
 Advanced Features
 -----------------
 
 Test Contexts
-~~~~~~~~~~~~~
++++++++++++++
 
 Test contexts allow you to specify a set of contexts enveloping your tests. These can control what happens before and after each test case.
 
@@ -194,7 +198,7 @@ When a test context is first entered, its :func:`slash.test_context.TestContext.
 Test contexts are carried from case to case and from class to class. Whenever a context is not needed anymore in a new case or class about to be run, it is terminated (calling its :func:`slash.test_context.TestContext.after` method).
 
 Abstract Base Tests
-~~~~~~~~~~~~~~~~~~~
++++++++++++++++++++
 
 Sometimes you want tests that won't be executed on their own, but rather function as bases to derived tests:
 
@@ -232,7 +236,7 @@ This is solved with the :func:`slash.abstract_test_class` decorator:
 .. autofunction:: slash.abstract_test_class
 
 Test Parameters
-~~~~~~~~~~~~~~~
++++++++++++++++
 
 Slash's :class:`.Test` supports adding parameters to your tests via the ``slash.parameters`` module.
 

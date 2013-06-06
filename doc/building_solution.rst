@@ -140,11 +140,17 @@ The above skeleton takes care of most of the stuff you'd expect to see in a test
  ...
  from microtech_testing.slash_plugin import MicrotechTestingPlugin
  ...
- if __name__ == "__main__":
+
+ def customize_slash():
      slash.plugins.install(MicrotechTestingPlugin(), activate=True)
+     
+
+ if __name__ == "__main__":
+     customize_slash()
      with slash.get_application_context() as app:
      ...
 
+We'll be using the ``customize_slash`` function for further enhancements in the next paragraphs.
 
 Configuration and Parameters
 ----------------------------
@@ -155,8 +161,6 @@ Fortunately, Slash plugins can control the way command-line arguments are proces
 
 .. code-block:: python
 
- # src/microtech_testing/slash_plugin.py
- #...
 
  class MicrotechTestingPlugin(plugins.PluginInterface):
      # ...
@@ -174,7 +178,6 @@ This is very easy to do in our ``customize`` function:
 
 .. code-block:: python
  
- # microtech_testing/__init__.py
  # ...
 
  def customize_slash():
@@ -196,9 +199,6 @@ Let's say we would like to automatically report all test exceptions to a central
 
 .. code-block:: python
 
- # src/microtech_testing/slash_plugin.py
- #...
-
  class MicrotechTestingPlugin(plugins.PluginInterface):
      # ...
      def exception_caught_before_debugger(self):
@@ -208,23 +208,3 @@ Let's say we would like to automatically report all test exceptions to a central
          )
 
 For further reading, refer to the `hooks documentation <hooks>` to examine more ways you can use to customize the test running process.
-
-Notes About Packaging
----------------------
-
-When using the above customization method, once the ``microtech_testing`` package is installed, slash will *always* load it when starting up. This means that if you would like to have several different customizations of Slash, it will have to be in separate **virtualenvs**, or separate Python installations.
-
-On the upside, this means that you can have several customization packages working together. For instance, if Microtech were to expand to another product line, say coffee machines, you can have two separate specific packages and one generic. Namely, ``microtech_microwave_testing`` will set up microwave testing fixtures and ``microtech_coffee_testing`` will set up coffee machine testing fixtures. Both can depend on a single common package (``microtech_testing`` for instance) which will only supply the generic facilities for testing any product that's produced by Microtech.
-
-Other Customization Options
----------------------------
-
-In addition to entry points, Slash looks for other locations to load code on startup. These can sometimes be used for customization as well.
-
-**slashrc file**
-  If the file ``~/.slash/slashrc`` exists, it is loaded and executed as a regular Python file by Slash on startup.
-
-**SLASH_SETTINGS**
-  If an environment variable named ``SLASH_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.
-
-

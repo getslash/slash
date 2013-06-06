@@ -59,7 +59,7 @@
            exceptions
            features
            building_solution
-	   advanced
+	   advanced_usage
            development
 
 
