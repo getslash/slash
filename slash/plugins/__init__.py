@@ -108,6 +108,7 @@ class PluginManager(object):
         """
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
+        plugin.activate()
         for hook, callback in self._get_plugin_registrations(plugin):
             hook.register(callback, plugin_name)
         self._active.add(plugin_name)

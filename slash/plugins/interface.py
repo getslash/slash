@@ -6,6 +6,11 @@ class PluginInterface(object):
     """
     __metaclass__ = abc.ABCMeta
 
+    def activate(self):
+        """
+        Called when the plugin is activated
+        """
+        pass
 
     def configure_argument_parser(self, parser):
         """
