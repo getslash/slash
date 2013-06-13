@@ -1,0 +1,10 @@
+0.0.2 (Under development)
+=========================
+New Features:
+
+- #40: Added test context support - you can now decorate tests to provide externally implemented contexts for more flexible setups
+
+
+0.0.1 (Released May 5th, 2013)
+==============================
+- Initial stable release
