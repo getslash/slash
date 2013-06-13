@@ -14,7 +14,7 @@ def _decrease(value):
     return value - 1
 
 class _Cmdline(object):
-    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None):
+    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False):
         super(_Cmdline, self).__init__()
         dest = next(_dest_generator)
         self.callback_dest = dest + ":callbacks"
@@ -22,8 +22,10 @@ class _Cmdline(object):
         self.arg = arg
         self.on = on
         self.off = off
+        self.required = required
         self.increase = increase
         self.decrease = decrease
+        self.metavar = metavar
     def configure_parser(self, parser, path, node):
         """
         Add all required flags to a parser to support updating the config value from commandline
@@ -32,9 +34,10 @@ class _Cmdline(object):
         if self.arg is not None:
             parser.add_argument(self.arg,
                                 dest=self.arg_dest,
+                                metavar=self.metavar,
                                 default=None,
-                                help=description,
-                                metavar="VALUE")
+                                required=self.required,
+                                help=description)
         self._add_arg(parser, self.on, callback=_set_true,
                       description="Turn on " + description)
         self._add_arg(parser, self.off, callback=_set_false,
