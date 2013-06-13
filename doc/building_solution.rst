@@ -142,7 +142,7 @@ The above skeleton takes care of most of the stuff you'd expect to see in a test
  ...
 
  def customize_slash():
-     slash.plugins.install(MicrotechTestingPlugin(), activate=True)
+     slash.plugins.manager.install(MicrotechTestingPlugin(), activate=True)
      
 
  if __name__ == "__main__":
