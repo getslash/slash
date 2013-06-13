@@ -1,6 +1,5 @@
 import os
 import requests
-import pkg_resources
 
 def load(thing=None):
     """
@@ -30,6 +29,7 @@ def _load_environment():
         load(loaded_url_or_file)
 
 def _load_entry_points():
+    import pkg_resources
     for customize_function_loader in pkg_resources.iter_entry_points("slash.site.customize"):
         func = customize_function_loader.load()
         func()
