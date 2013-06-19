@@ -4,6 +4,7 @@ New Features:
 
 - #46: Added plugin.activate() to provide plugins with the ability to control what happens upon activation
 - #40: Added test context support - you can now decorate tests to provide externally implemented contexts for more flexible setups
+- Renamed slash.fixture to slash.g (fixture is an overloaded term that will maybe refer to test contexts down the road)
 
 
 0.0.1 (Released May 5th, 2013)
