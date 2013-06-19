@@ -3,7 +3,7 @@ from . import parameters
 from .cleanups import add_cleanup
 from .conf import config
 from .ctx import context
-from .ctx import fixture
+from .ctx import g
 from .runnable_test_factory import RunnableTestFactory
 from .runnable_test import RunnableTest
 # assertions

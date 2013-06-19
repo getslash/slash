@@ -2,17 +2,17 @@ from .local import LocalStack
 from .local import LocalProxy
 import functools
 
-__all__ = ["context", "session", "test", "test_id", "fixture", "internal_fixture"]
+__all__ = ["context", "session", "test", "test_id", "g", "internal_globals"]
 
-class Fixture(object):
+class GlobalStorage(object):
     pass
 
 class Context(object):
     session = test = test_id = None
     def __init__(self):
         super(Context, self).__init__()
-        self.fixture = Fixture()
-        self.internal_fixture = Fixture()
+        self.g = GlobalStorage()
+        self.internal_globals = GlobalStorage()
 
 class NullContext(object):
     def __setattr__(self, attr, value):
@@ -20,7 +20,7 @@ class NullContext(object):
     @property
     def _always_none(self):
         pass
-    session = test = test_id = fixture = internal_fixture = _always_none
+    session = test = test_id = g = internal_globals = _always_none
 
 _ctx = LocalStack()
 _ctx.push(NullContext())
@@ -36,8 +36,8 @@ def _lookup_object(name):
 session = LocalProxy(functools.partial(_lookup_object, "session"))
 test    = LocalProxy(functools.partial(_lookup_object, "test"))
 test_id    = LocalProxy(functools.partial(_lookup_object, "test_id"))
-fixture = LocalProxy(functools.partial(_lookup_object, "fixture"))
-internal_fixture = LocalProxy(functools.partial(_lookup_object, "internal_fixture"))
+g = LocalProxy(functools.partial(_lookup_object, "g"))
+internal_globals = LocalProxy(functools.partial(_lookup_object, "internal_globals"))
 
 def push_context():
     _ctx.push(Context())

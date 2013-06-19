@@ -135,20 +135,20 @@ The currently active session is accessible through ``slash.session``:
 .. autoclass:: slash.session.Session
   :members:
 
-.. _fixtures:
+.. _global_storage:
 
-Fixture
-+++++++
+The Global Storage
+++++++++++++++++++
 
-In many cases objects need to be passed between tests and utility libraries. These libraries don't want to be aware of the interface of the currently running test, but would rather a single place to hold the shared state. ``slash.fixture`` is such a placeholder. It can be assigned with various objects and values that comprise the global state of the current run:
+In many cases objects need to be passed between tests and utility libraries. These libraries don't want to be aware of the interface of the currently running test, but would rather a single place to hold the shared state. ``slash.g`` is such a placeholder. It can be assigned with various objects and values that comprise the global state of the current run:
 
 .. code-block:: python
 
-  from slash import fixture
+  from slash import g
   
   # ...
   
-  fixture.obj = some_object
+  g.obj = some_object
 
 This is particularly useful for customization purposes, :ref:`as described in the relevant section <building_solution>`.
 
@@ -167,16 +167,16 @@ To implement a test context you create a class deriving from :class:`slash.test_
 
 .. code-block:: python
 
- from slash import TestContext, fixture
+ from slash import TestContext, g
  import subprocess
 
  class ProcessRunningContext(TestContext):
      """Ensure that the program we're testing is still running before each test, and runs it if needed"""
      def before_case(self):
-         process = getattr(fixture, "process", None)
+         process = getattr(g, "process", None)
          if process is None or process.poll() is not None:
              # run/rerun our process
-	     fixture.process = subprocess.Popen(....)
+	     g.process = subprocess.Popen(....)
 
 
 Now we wrap an ordinary test with the context using the :func:`slash.test_context.with_context` helper:
@@ -188,7 +188,7 @@ Now we wrap an ordinary test with the context using the :func:`slash.test_contex
   @with_context(ProcessRunningContext)
   class ProcessTest(Test):
       def test(self):
-          ... # do something with shakdedown.fixture.process
+          ... # do something with slash.g.process
 
 
 .. autoclass:: slash.test_context.TestContext

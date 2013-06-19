@@ -5,7 +5,7 @@ import logbook
 
 from .cleanups import add_cleanup
 from .compat import xrange
-from .ctx import internal_fixture
+from .ctx import internal_globals
 
 _logger = logbook.Logger(__name__)
 
@@ -68,9 +68,9 @@ def _get_needed_contexts(test):
     return needed
 
 def _get_currently_active_contexts():
-    returned = getattr(internal_fixture, "active_test_contexts", None)
+    returned = getattr(internal_globals, "active_test_contexts", None)
     if returned is None:
-        returned = internal_fixture.active_test_contexts = ActiveContexts()
+        returned = internal_globals.active_test_contexts = ActiveContexts()
     return returned
 
 class ActiveContexts(object):

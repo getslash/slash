@@ -56,8 +56,8 @@ We will create a path under the source root, calling it ``testsuite`` (although 
 
 For now we will leave our test files empty. We'll get right back to them after setting up the environment in which they will run.
 
-The Fixture
------------
+The Global State
+----------------
 
 All of our tests will have to test a microwave device. In many cases this is called the *DUT*, or Device Under Test. Luckily for us, our company already has an SDK for accessing a microwave, and it published it as a Python package called ``microtech``.
 
@@ -65,7 +65,7 @@ However, our job isn't over. Since all tests need to access the object represent
 
 One approach for doing this is to add the initialization code to the ``before`` method of all tests involved, or even create a base class for all tests that does so. However, this is far from ideal, and has several downsides. 
 
-Another possibility is to create a `test context <test_contexts>` and decorate all tests with it. This is slightly better, but here we'll explain how to do this using Slash's plugins and the global fixture it supports.
+Another possibility is to create a `test context <test_contexts>` and decorate all tests with it. This is slightly better, but here we'll explain how to do this using Slash's plugins and the global context it supports.
 
 First, we will add the ``microtech`` package as a dependency of ``microtech_testing``. This makes sense, and will once again automatically install the SDK when the testing package is installed:
 
@@ -95,7 +95,7 @@ Now we will use Slash's plugin mechanism, and create our customization plugin to
       def get_name(self):
           return "microtech"
 
-To initialize and make accessible a microwave instance, we'll use *the slash fixture global*. We already covered :ref:`the fixture global in brief in an earlier section <fixtures>`. We'll simply initialize and assign a microwave object at the beginning of the :ref:`session <sessions>`:
+To initialize and make accessible a microwave instance, we'll use *the slash global storage*. We already covered :ref:`the global storage in brief in an earlier section <global_storage>`. We'll simply initialize and assign a microwave object at the beginning of the :ref:`session <sessions>`:
 
 .. code-block:: python
 
@@ -103,13 +103,13 @@ To initialize and make accessible a microwave instance, we'll use *the slash fix
 
  #...
  from microtech import Microwave
- from slash import fixture
+ from slash import g
  #...
 
  class MicrotechTestingPlugin(plugins.PluginInterface):
      # ...
      def session_start(self):
-         fixture.microwave = Microwave("192.168.120.120")
+         g.microwave = Microwave("192.168.120.120")
 
 .. note:: Yes. Our microwaves have IP addresses. Deal with it.
 
@@ -169,7 +169,7 @@ Fortunately, Slash plugins can control the way command-line arguments are proces
      def configure_from_parsed_args(self, args):
          self.microwave_address = args.microwave_address
      def start_session(self):
-         fixture.microwave = Microwave(self.microwave_address)
+         g.microwave = Microwave(self.microwave_address)
      # ...
 
 Let's say we also want to contain configurable parameters relevant to our tests -- for instance, microwave boot time in seconds. These can of course be hard-coded in our plugins, but are much better of as values in Slash's :ref:`configuration`. This way they can be changed from the outside world (e.g. with the -o flag).
@@ -204,7 +204,7 @@ Let's say we would like to automatically report all test exceptions to a central
      def exception_caught_before_debugger(self):
          requests.post(
             "http://bug_reports.microtech.com/report", 
-            data={"microwave_id" : fixture.microwave.get_id()}
+            data={"microwave_id" : g.microwave.get_id()}
          )
 
 For further reading, refer to the `hooks documentation <hooks>` to examine more ways you can use to customize the test running process.
