@@ -3,7 +3,6 @@ from ..exceptions import SlashException
 from ..runner import run_tests
 from ..utils import cli_utils
 import logbook
-import os
 import sys
 
 _logger = logbook.Logger(__name__)
