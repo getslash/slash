@@ -1,4 +1,5 @@
 from six import iteritems # pylint: disable=F0401
+from .exceptions import CannotLoadTests
 from .utils.imports import import_file
 from .runnable_test_factory import RunnableTestFactory
 from logbook import Logger # pylint: disable=F0401
@@ -12,14 +13,21 @@ class Loader(object):
     Provides iteration interfaces to load runnable tests from various places
     """
     def iter_path(self, path):
-        for file_path in _walk(path):
-            _logger.debug("Checking {0}", file_path)
-            if not self._is_file_wanted(file_path):
-                _logger.debug("{0} is not wanted. Skipping...", file_path)
-                continue
-            module = import_file(file_path)
-            for runnable in self._iter_runnable_tests_in_module(module):
-                yield runnable
+        return self.iter_paths([path])
+    def iter_paths(self, paths):
+        paths = list(paths)
+        for path in paths:
+            if not os.path.exists(path):
+                raise CannotLoadTests("Path {0} could not be found".format(path))
+        for path in paths:
+            for file_path in _walk(path):
+                _logger.debug("Checking {0}", file_path)
+                if not self._is_file_wanted(file_path):
+                    _logger.debug("{0} is not wanted. Skipping...", file_path)
+                    continue
+                module = import_file(file_path)
+                for runnable in self._iter_runnable_tests_in_module(module):
+                    yield runnable
 
     def iter_test_factory(self, factory):
         for test in factory.generate_tests():

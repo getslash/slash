@@ -7,6 +7,11 @@ from slash import site
 import os
 import shutil
 
+class MissingFilesTest(TestCase):
+    def test_slash_run_fails_fast_for_missing_files(self):
+        result = slash_run.slash_run(["/non/existing/path"], report_stream=NullFile())
+        self.assertNotEquals(result, 0, "slash run unexpectedly succeeded for a missing path")
+
 class SlashRunTest(TestCase):
     def setUp(self):
         super(SlashRunTest, self).setUp()

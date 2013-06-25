@@ -1,7 +1,9 @@
 from ..app import get_application_context
+from ..exceptions import SlashException
 from ..runner import run_tests
 from ..utils import cli_utils
 import logbook
+import os
 import sys
 
 _logger = logbook.Logger(__name__)
@@ -13,8 +15,11 @@ def slash_run(args, report_stream=sys.stderr):
             report_stream=report_stream) as app:
         if not app.args.paths and not app.args.interactive:
             app.error("No tests specified")
-        for path in app.args.paths:
-            run_tests(app.test_loader.iter_path(path))
+        try:
+            run_tests(app.test_loader.iter_paths(app.args.paths))
+        except SlashException as e:
+            logbook.error(e)
+            return -1
         if app.session.result.is_success():
             return 0
         return -1

@@ -1,3 +1,10 @@
+
+class SlashException(Exception):
+    pass
+
+class CannotLoadTests(SlashException):
+    pass
+
 class TestFailed(AssertionError):
     """
     This exception class distinguishes actual test failures (mostly assertion errors,
