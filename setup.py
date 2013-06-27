@@ -10,6 +10,7 @@ with open(_in_same_dir("slash", "__version__.py")) as version_file:
     exec(version_file.read())  # pylint: disable=W0122
 
 install_requires = [
+    "colorama",
     "confetti>=2.0.0.dev2",
     "logbook",
     "requests>=1.1.0",

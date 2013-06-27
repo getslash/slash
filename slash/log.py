@@ -3,6 +3,7 @@ from .conf import config
 from .utils.path import ensure_containing_directory
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
+from logbook.more import ColorizedStderrHandler # pylint: disable=F0401
 import os
 import sys
 
@@ -21,7 +22,7 @@ def get_session_logging_context():
             yield
 
 def _get_console_handler():
-    return logbook.StreamHandler(sys.stderr, bubble=True, level=config.root.log.console_level)
+    return ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
 
 def _get_file_log_handler(subpath):
     root_path = config.root.log.root

@@ -1,3 +1,4 @@
+import colorama
 import logbook
 import itertools
 from contextlib import contextmanager
@@ -19,11 +20,14 @@ def _format_unsuccessfull(formatter, result):
         for x in itertools.chain(result.get_failures(), result.get_errors(), result.get_skips()):
             formatter.writeln(x)
 
+def _build_colorizer(fore_color):
+    return "{color}{{0}}{reset}".format(color=fore_color, reset=colorama.Fore.RESET).format
+
 _REPORT_COLUMNS = [
-    ("Successful", "get_num_successful"),
-    ("Failures", "get_num_failures"),
-    ("Errors", "get_num_errors"),
-    ("Skipped", "get_num_skipped"),
+    ("Successful", "get_num_successful", _build_colorizer(colorama.Fore.GREEN)),
+    ("Failures", "get_num_failures", _build_colorizer(colorama.Fore.RED)),
+    ("Errors", "get_num_errors", _build_colorizer(colorama.Fore.RED)),
+    ("Skipped", "get_num_skipped", _build_colorizer(colorama.Fore.YELLOW)),
     ]
 
 class SummaryReporter(object):
@@ -42,12 +46,26 @@ class SummaryReporter(object):
             _format_unsuccessfull(self._formatter, result)
     def _describe_summary(self, session):
         self._formatter.write_separator()
-        for col, _ in _REPORT_COLUMNS:
-            self._formatter.write(col.ljust(len(col)+2))
-        self._formatter.writeln()
-        for col, method_name in _REPORT_COLUMNS:
-            self._formatter.write(str(getattr(session.result, method_name)()).ljust(len(col)+2))
-        self._formatter.writeln()
+
+        summary = dict(
+            (column_title, getattr(session.result, method_name)())
+            for column_title, method_name, _ in _REPORT_COLUMNS
+        )
+
+        for is_header in (True, False):
+            for column_title, method_name, colorizer in _REPORT_COLUMNS:
+                count = summary[column_title]
+                if is_header:
+                    s = column_title
+                else:
+                    s = str(count)
+                column_width = len(column_title) + 2
+                if count:
+                    colorized = colorizer(s)
+                    column_width += len(colorized) - len(s)
+                    s = colorized
+                self._formatter.write(s.ljust(column_width))
+            self._formatter.writeln()
 
 class BaseLiveReporter(HooksContextManager):
     def __init__(self, report_stream):
