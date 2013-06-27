@@ -9,10 +9,12 @@ from ..ctx import context
 
 @contextmanager
 def report_context(report_stream):
-    live_reporter_type = ConciseLiveReporter if config.root.log.console_level > logbook.NOTICE \
-                         else VerboseLiveReporter
+    is_concise = config.root.log.console_level > logbook.NOTICE
+    live_reporter_type = ConciseLiveReporter if is_concise else VerboseLiveReporter
     with live_reporter_type(report_stream):
         yield
+    if is_concise:
+        report_stream.write("\n")
     SummaryReporter(report_stream).report_session(context.session)
 
 def _format_unsuccessfull(formatter, result):
