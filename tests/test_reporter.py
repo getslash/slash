@@ -39,8 +39,8 @@ class SlashRunTest(TestCase):
         self.override_config("log.console_level", logbook.WARNING)
         self._slash_run()
         result = self.get_live_part()
-        self.assertEqual(set(result), set("EFS."))
-        self.assertEqual(len(result), 4)
+        self.assertEqual(set(result) - set("\n"), set("EFS."))
+        self.assertEqual(len(result), 5)
     def test_live_verbose(self):
         self.override_config("log.console_level", logbook.INFO)
         self._slash_run()

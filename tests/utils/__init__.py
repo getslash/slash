@@ -45,6 +45,8 @@ class TestCase(unittest.TestCase):
 class NullFile(object):
     def write(self, s):
         pass
+    def isatty(self):
+        return False
 
 class CustomException(Exception):
     pass

@@ -5,7 +5,6 @@ from contextlib import contextmanager
 import logbook # pylint: disable=F0401
 from logbook.more import ColorizedStderrHandler # pylint: disable=F0401
 import os
-import sys
 
 @contextmanager
 def get_test_logging_context():
