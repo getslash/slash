@@ -5,6 +5,8 @@ from .utils import (
 from contextlib import contextmanager
 from forge import Anything
 from slash import exception_handling
+from slash.utils import debug
+from slash.exceptions import SkipTest
 
 class ExceptionMarksTest(TestCase):
     def test_exception_mark(self):
@@ -33,6 +35,33 @@ class HandlingExceptionsContextTest(TestCase):
                     with exception_handling.handling_exceptions():
                         raise self.raised
         self.assertIs(caught.exception, self.raised)
+
+class DebuggingTest(TestCase):
+    def setUp(self):
+        super(DebuggingTest, self).setUp()
+        self.orig_debuggers = debug._KNOWN_DEBUGGERS
+        self.addCleanup(setattr, debug, "_KNOWN_DEBUGGERS", self.orig_debuggers)
+        self.debugger_called = False
+        debug._KNOWN_DEBUGGERS = [self.dummy_debugger]
+    def dummy_debugger(self, *args, **kwargs):
+        self.debugger_called = True
+    def test_debugging_not_configured(self):
+        self._raise_exception_in_context(ZeroDivisionError)
+        self.assertFalse(self.debugger_called)
+    def test_debugging_configured_no_skips(self):
+        self.override_config("debug.debug_skips", False)
+        self.override_config("debug.enabled", True)
+        self._raise_exception_in_context(SkipTest)
+        self.assertFalse(self.debugger_called)
+    def test_debugging_skips(self):
+        self.override_config("debug.debug_skips", True)
+        self.override_config("debug.enabled", True)
+        self._raise_exception_in_context(SkipTest)
+        self.assertTrue(self.debugger_called)
+    def _raise_exception_in_context(self, exception_type):
+        with self.assertRaises(exception_type):
+            with exception_handling.handling_exceptions():
+                raise exception_type()
 
 class ExceptionSwallowingTest(TestCase):
     def test_swallow(self):
