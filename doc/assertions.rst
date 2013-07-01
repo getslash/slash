@@ -9,6 +9,12 @@ Another big difference from ``unittest`` is the fact that *failed assertions don
 
 There are several ways to perform assertions, and many assertion functions have aliases for greater readability in code, as described below.
 
+To quickly import all assertions into your module/namespace, you can just do this:
+
+.. code-block:: python
+
+ from slash.assertions import *
+
 Using the ``should`` module
 ---------------------------
 
@@ -79,3 +85,4 @@ Using ``slash.assert_X`` functions
 .. autofunction:: slash.assert_not_isinstance
 
 .. autofunction:: slash.assert_raises
+

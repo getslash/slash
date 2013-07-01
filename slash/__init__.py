@@ -7,7 +7,9 @@ from .ctx import g
 from .runnable_test_factory import RunnableTestFactory
 from .runnable_test import RunnableTest
 # assertions
-from .should import (
+from . import assertions
+should = assertions
+from .assertions import (
     assert_contains,
     assert_equal,
     assert_equals,
