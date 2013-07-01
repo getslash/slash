@@ -2,6 +2,7 @@ from six import itervalues
 from . import ctx
 from . import hooks
 from . import log
+from .exception_handling import handling_exceptions
 from .result import Result
 from .interfaces import Activatable
 from .result import AggregatedResult
@@ -32,9 +33,11 @@ class Session(Activatable):
     def activate(self):
         assert self._context is None
         self._context = _session_context(self)
-        self._context.__enter__()
+        with handling_exceptions():
+            self._context.__enter__()
     def deactivate(self):
-        self._context.__exit__(None, None, None)
+        with handling_exceptions():
+            self._context.__exit__(None, None, None)
     def mark_complete(self):
         self._complete = True
     def is_complete(self):
