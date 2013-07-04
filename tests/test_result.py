@@ -9,18 +9,21 @@ class SessionResultTest(TestCase):
             Result() for _ in range(10)
             ]
         # one result with both errors and failures
-        results[1].add_error()
-        results[1].add_failure()
-        # one result with failure
-        results[2].add_failure()
-        # one result with error
-        results[3].add_error()
+        try:
+            1 / 0
+        except:
+            results[1].add_error()
+            results[1].add_failure()
+            # one result with failure
+            results[2].add_failure()
+            # one result with error
+            results[3].add_error()
+            results[5].add_error()
 
         # one result will skip
         results[4].add_skip("Reason")
 
         # and one result will skip with error
-        results[5].add_error()
         results[5].add_skip("Reason")
         num_finished = 7
 
