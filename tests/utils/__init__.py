@@ -59,7 +59,7 @@ def run_tests_assert_success(test_class_or_iterator):
         test_class_or_iterator = test_class_or_iterator.generate_tests()
     with slash.session.Session() as session:
         slash.runner.run_tests(test_class_or_iterator)
-    for result in session.iter_results():
+    for result in session.result.iter_test_results():
         for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):
             _logger.debug("Unsuccessful result: {0}", err)
     assert session.result.is_success(), "Run did not succeed"

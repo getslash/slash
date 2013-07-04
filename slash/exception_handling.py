@@ -24,14 +24,25 @@ _EXCEPTION_HANDLERS = [
     ]
 
 @contextmanager
-def handling_exceptions():
+def handling_exceptions(**kwargs):
     try:
         yield
     except:
-        handle_exception(sys.exc_info())
+        handle_exception(sys.exc_info(), **kwargs)
         raise
 
-def handle_exception(exc_info):
+def handle_exception(exc_info, context=None):
+    """
+    Call any handlers or debugging code before propagating an exception onwards.
+
+    This makes sure that the exception can be handled as close as possible to its originating point.
+
+    .. note:: this *DOES NOT* take care of adding the error to the session or test results!
+    """
+    msg = "Handling exception"
+    if context is not None:
+        msg += " (Context: {})"
+    _logger.debug(msg, context, exc_info=exc_info)
     if not is_exception_handled(exc_info[1]):
         for handler in _EXCEPTION_HANDLERS:
             handler(exc_info)

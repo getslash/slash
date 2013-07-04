@@ -32,7 +32,7 @@ class LoggingTest(TestCase):
         self.addCleanup(slash.hooks.session_end.unregister_by_identifier, _IDENTIFIER)
 
         self.session = run_tests_assert_success(SampleTest)
-        self.test_ids = [result.test_metadata.id for result in self.session.iter_results()]
+        self.test_ids = [result.test_metadata.id for result in self.session.result.iter_test_results()]
         self._test_all_run()
         self._test_test_logs_written()
         self._test_session_logs()

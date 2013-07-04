@@ -1,4 +1,5 @@
 import colorama
+from six import string_types
 import logbook
 import itertools
 from contextlib import contextmanager
@@ -7,20 +8,26 @@ from .hooks_context_manager import HooksContextManager
 from ..conf import config
 from ..ctx import context
 
+def _is_concise():
+    return config.root.log.console_level > logbook.NOTICE
+
+
 @contextmanager
 def report_context(report_stream):
-    is_concise = config.root.log.console_level > logbook.NOTICE
-    live_reporter_type = ConciseLiveReporter if is_concise else VerboseLiveReporter
+    live_reporter_type = ConciseLiveReporter if _is_concise() else VerboseLiveReporter
     with live_reporter_type(report_stream):
         yield
-    if is_concise:
+    if _is_concise():
         report_stream.write("\n")
     SummaryReporter(report_stream).report_session(context.session)
 
 def _format_unsuccessfull(formatter, result):
     with formatter.indented():
         for x in itertools.chain(result.get_failures(), result.get_errors(), result.get_skips()):
-            formatter.writeln(x)
+            if isinstance(x, string_types) or _is_concise():
+                formatter.writeln(x)
+            else:
+                formatter.writeln(x.exception_text)
 
 def _build_colorizer(fore_color_name):
     fore_color = getattr(colorama.Fore, fore_color_name.upper())
@@ -43,10 +50,13 @@ class SummaryReporter(object):
         self._describe_summary(session)
     def _describe_unsuccessful(self, session):
         self._formatter.write_separator()
-        for result in session.iter_results():
+        for result in session.result.iter_all_results():
             if result.is_success():
                 continue
-            self._formatter.writeln("> ", result.test_metadata)
+            if result.test_metadata is None:
+                self._formatter.writeln("> (Outside tests)")
+            else:
+                self._formatter.writeln("> ", result.test_metadata)
             _format_unsuccessfull(self._formatter, result)
     def _describe_summary(self, session):
         self._formatter.write_separator()

@@ -1,8 +1,11 @@
-from six import iteritems # pylint: disable=F0401
 from .exceptions import CannotLoadTests
-from .utils.imports import import_file
+from .exception_handling import handling_exceptions
 from .runnable_test_factory import RunnableTestFactory
+from .utils.imports import import_file
+from .ctx import context
+from contextlib import contextmanager
 from logbook import Logger # pylint: disable=F0401
+from six import iteritems # pylint: disable=F0401
 import os
 import sys
 
@@ -25,9 +28,20 @@ class Loader(object):
                 if not self._is_file_wanted(file_path):
                     _logger.debug("{0} is not wanted. Skipping...", file_path)
                     continue
-                module = import_file(file_path)
+                with self._handling_import_errors():
+                    module = import_file(file_path)
                 for runnable in self._iter_runnable_tests_in_module(module):
                     yield runnable
+
+    @contextmanager
+    def _handling_import_errors(self):
+        try:
+            with handling_exceptions(context="during import"):
+                yield
+        except Exception: # pylint: disable=W0703
+            if not context.session:
+                raise
+            context.session.result.global_result.add_error()
 
     def iter_test_factory(self, factory):
         for test in factory.generate_tests():

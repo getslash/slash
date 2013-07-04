@@ -1,3 +1,4 @@
+import functools
 from six import itervalues
 from . import ctx
 from . import hooks
@@ -5,7 +6,7 @@ from . import log
 from .exception_handling import handling_exceptions
 from .result import Result
 from .interfaces import Activatable
-from .result import AggregatedResult
+from .result import SessionResult
 from .utils.id_space import IDSpace
 from contextlib import contextmanager
 import uuid
@@ -18,9 +19,8 @@ class Session(Activatable):
         self._complete = False
         self._context = None
         self._results = {}
-        self.result = AggregatedResult(self.iter_results)
-    def iter_results(self):
-        return itervalues(self._results)
+        #: an aggregate result summing all test results and the global result
+        self.result = SessionResult(functools.partial(itervalues, self._results))
     def create_result(self, test):
         assert test.__slash__.id not in self._results
         returned = Result(test.__slash__)
@@ -35,7 +35,9 @@ class Session(Activatable):
         self._context = _session_context(self)
         with handling_exceptions():
             self._context.__enter__()
+
     def deactivate(self):
+        self.result.global_result.mark_finished()
         with handling_exceptions():
             self._context.__exit__(None, None, None)
     def mark_complete(self):

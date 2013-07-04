@@ -1,10 +1,10 @@
 from .utils import TestCase
 from slash.result import Result
-from slash.result import AggregatedResult
+from slash.result import SessionResult
 
-class AggregatedResultTest(TestCase):
+class SessionResultTest(TestCase):
     def setUp(self):
-        super(AggregatedResultTest, self).setUp()
+        super(SessionResultTest, self).setUp()
         results = [
             Result() for _ in range(10)
             ]
@@ -26,7 +26,7 @@ class AggregatedResultTest(TestCase):
 
         for result in results[:num_finished]:
             result.mark_finished()
-        self.result = AggregatedResult(results.__iter__)
+        self.result = SessionResult(results.__iter__)
     def test_counts(self):
         self.assertEquals(self.result.get_num_successful(), 2)
         # errors take precedence over failures

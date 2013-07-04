@@ -70,4 +70,3 @@ class SlashRunTest(TestCase):
         self.assertEqual(output.count('Traceback'), 0) # not tracebacks!
         self.assertIn("Sample exception", output) # error
         self.assertIn("Test failed", output) # fail
-        

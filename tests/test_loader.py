@@ -1,14 +1,16 @@
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
 from slash.loader import Loader
+from slash.session import Session
 
 from uuid import uuid1
 import shutil
 import sys
+import os
 
-class PathLoadingTest(TestCase):
+class TestRepositoryTest(TestCase):
     def setUp(self):
-        super(PathLoadingTest, self).setUp()
+        super(TestRepositoryTest, self).setUp()
         self.generator = TestGenerator()
         self.package_name = "package_{0}".format(str(uuid1()).replace("-", "_"))
         self.root = self.generator.write_test_directory({
@@ -23,11 +25,36 @@ class PathLoadingTest(TestCase):
                             "test_1.py": self.generator.generate_test(),
                             "test_2.py": self.generator.generate_test(),
                         },
-                    }
-                }
-            }
-        })
+                    }}}})
         self.addCleanup(shutil.rmtree, self.root)
+
+class ImportErrorsTest(TestRepositoryTest):
+    def setUp(self):
+        super(ImportErrorsTest, self).setUp()
+        self.path = os.path.join(self.root, self.package_name, "tests", "dir1", "dir2")
+        with open(os.path.join(self.path, "test_3.py"), "w") as f:
+            f.write(":::")
+        with open(os.path.join(self.path, "test_4.py"), "w") as f:
+            f.write("import nonexistent_module_here")
+
+    def test_import_errors_without_session(self):
+        with self.assertRaises((SyntaxError, ImportError)):
+            list(Loader().iter_path(self.root))
+
+    def test_import_errors_with_session(self):
+        with Session() as s:
+            tests = list(Loader().iter_path(self.root))
+        self.assertTrue(tests)
+        self.assertFalse(s.result.global_result.is_success())
+        errors = s.result.global_result.get_errors()
+        self._assert_file_failed_with(errors, "test_3.py", SyntaxError)
+        self._assert_file_failed_with(errors, "test_4.py", ImportError)
+
+    def _assert_file_failed_with(self, errors, filename, error_type):
+        [err] = [e for e in errors if e.exception_type is error_type]
+        self.assertIn(filename, err.exception_text)
+
+class PathLoadingTest(TestRepositoryTest):
     def test_iter_path(self):
         self.assert_all_discovered(Loader().iter_path(self.root))
     def test_iter_package_import_first(self):
