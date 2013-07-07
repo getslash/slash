@@ -11,7 +11,7 @@ with open(_in_same_dir("slash", "__version__.py")) as version_file:
 
 install_requires = [
     "colorama",
-    "confetti>=2.0.0.dev2",
+    "confetti>=2.0.0",
     "logbook",
     "requests>=1.1.0",
     "six",
