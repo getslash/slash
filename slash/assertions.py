@@ -2,6 +2,9 @@ from .exceptions import TestFailed
 from .utils import operator_information
 from contextlib import contextmanager
 import operator
+import sys
+
+sys.modules["slash.should"] = sys.modules[__name__]
 
 def _binary_assertion(name, operator_func):
     op = operator_information.get_operator_by_func(operator_func)
