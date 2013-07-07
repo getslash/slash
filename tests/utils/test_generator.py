@@ -63,13 +63,14 @@ class TestGenerator(object):
         ))
 
     def notify_run(self, test_id, test):
-        _logger.debug("Notifying run: {0}", test_id)
+        _logger.debug("Running: {0}", test_id)
         self._expected.remove(test_id)
         callback_list = self._run_callbacks.get(test_id, [])
         while callback_list:
             callback_list.pop(0)(test)
     def assert_all_run(self):
         assert not self._expected, "These tests have not run: {0}".format(", ".join(self._expected))
+
     ### Functions to manage test execution
     def make_test_raise_exception(self, testpromise):
         self.add_test_run_callback(testpromise, self.do_raise_exception)

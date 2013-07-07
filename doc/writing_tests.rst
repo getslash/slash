@@ -78,7 +78,11 @@ Cleanups functions can be added from anywhere in your code (not just the runnabl
      def test_microwave_is_working(self):
          slash.should.be_true(self.microwave.is_working())
 
+.. note:: When a test is interrupted, most likely due to a ``KeyboardInterrupt``, cleanups are not called unless added witht he :func:`.add_critical_cleanup` function. This is in order to save time during interruption handling. See :ref:`interruptions <KeyboardInterrupt>`.
+
 .. autofunction:: slash.add_cleanup
+
+.. autofunction:: slash.add_critical_cleanup
 
 Skips
 -----

@@ -33,12 +33,15 @@ def run_tests(iterable):
                             with get_test_context_setup(test, test_iterator.peek_or_none()):
                                 test.run()
                     finally:
-                        call_cleanups()
+                        _call_cleanups()
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             break
     else:
         context.session.mark_complete()
+
+def _call_cleanups():
+    call_cleanups(critical_only=sys.exc_info()[0] is KeyboardInterrupt)
 
 @contextmanager
 def _get_test_context(test):

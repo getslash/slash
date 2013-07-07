@@ -1,6 +1,6 @@
 from .__version__ import __version__
 from . import parameters
-from .cleanups import add_cleanup
+from .cleanups import add_cleanup, add_critical_cleanup
 from .conf import config
 from .ctx import context
 from .ctx import g

@@ -14,7 +14,7 @@ Handling KeyboardInterrupt
 
 Usually when a user hits Ctrl+C this means he wants to terminate the running program as quickly as possible without corruption or undefined state. Slash treats KeyboardInterrupt a bit differently than other exceptions, and tries to quit as quickly as possible when they are encountered.
 
-.. note:: ``KeyboardInterrupt`` also causes regular cleanups to be skipped. You can set critical cleanups to be carried out on both cases, as described in the `relevant section <cleanups>`.
+.. note:: ``KeyboardInterrupt`` also causes regular cleanups to be skipped. You can set critical cleanups to be carried out on both cases, as described in the :ref:`relevant section <cleanup>`.
 
 Exception Handling Context
 --------------------------

@@ -7,6 +7,7 @@ New Features:
 - Renamed slash.fixture to slash.g (fixture is an overloaded term that will maybe refer to test contexts down the road)
 - #48, #54: handle import errors and improve captured exceptions
 - #3: Handle KeyboardInterrupts (quit fast), added the test_interrupt hook
+- #5: add_critical_cleanup for adding cleanups that are always called (even on interruptions)
 
 
 0.0.1 (Released May 5th, 2013)

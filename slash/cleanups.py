@@ -1,5 +1,18 @@
 from collections import deque
 from .ctx import context
+import logbook
+
+_logger = logbook.Logger(__name__)
+
+class _Cleanup(object):
+    def __init__(self, func, args, kwargs, critical=False):
+        super(_Cleanup, self).__init__()
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        self.critical = critical
+    def __call__(self):
+        return self.func(*self.args, **self.kwargs) # pylint: disable=W0142
 
 def add_cleanup(_func, *args, **kwargs):
     """
@@ -7,14 +20,25 @@ def add_cleanup(_func, *args, **kwargs):
 
     Positional arguments and keywords are passed to the cleanup function when called.
     """
-    _get_cleanups().append((_func, args, kwargs))
+    _add_cleanup(_Cleanup(_func, args, kwargs))
 
-def call_cleanups():
+def add_critical_cleanup(_func, *args, **kwargs):
+    """
+    Same as :func:`.add_cleanup`, only the cleanup will be called even on interrupted tests
+    """
+    _add_cleanup(_Cleanup(_func, args, kwargs, critical=True))
+
+def _add_cleanup(cleanup):
+    _get_cleanups().append(cleanup)
+
+def call_cleanups(critical_only=False):
     cleanups = _get_cleanups()
     while cleanups:
-        func, args, kwargs = cleanups.popleft()
+        cleanup = cleanups.popleft()
+        if critical_only and not cleanup.critical:
+            continue
         try:
-            func(*args, **kwargs) # pylint: disable=W0142
+            cleanup()
         except:
             context.session.get_result(context.test).add_error()
 
