@@ -41,7 +41,7 @@ def handle_exception(exc_info, context=None):
     """
     msg = "Handling exception"
     if context is not None:
-        msg += " (Context: {})"
+        msg += " (Context: {0})"
     _logger.debug(msg, context, exc_info=exc_info)
     if not is_exception_handled(exc_info[1]):
         for handler in _EXCEPTION_HANDLERS:
