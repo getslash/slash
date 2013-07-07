@@ -52,6 +52,8 @@ The :class:`.exceptions.TestFailed` exception (or any class derived from it) is 
 
 .. note:: Unlike in ``unittest``, ``AssertionError`` **DOES NOT** mean a failure, but rather an error. This is mainly because you wouldn't want internal assertions in your code and/or libraries that you use to be considered failures.
 
+.. _cleanup:
+
 Cleanups
 --------
 

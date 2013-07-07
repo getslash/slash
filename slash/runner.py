@@ -55,6 +55,9 @@ def _get_test_hooks_context():
         hooks.test_skip()
     except TestFailed:
         hooks.test_failure()
+    except KeyboardInterrupt:
+        hooks.test_interrupt()
+        raise
     except:
         hooks.test_error()
     else:

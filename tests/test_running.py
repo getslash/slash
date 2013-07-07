@@ -1,12 +1,12 @@
 # pylint: disable-msg=W0201
 from .utils.test_generator import TestGenerator
+from .utils import TestCase
 from slash.runner import run_tests
 from slash.session import Session
 from slash.result import Result
 from slash.ctx import context
 import six # pylint: disable=F0401
 import random
-from .utils import TestCase
 
 class TestRunningTestBase(TestCase):
     def setUp(self):

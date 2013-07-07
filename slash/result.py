@@ -39,6 +39,14 @@ class Result(object):
         return self._failures
     def get_skips(self):
         return self._skips
+    def __repr__(self):
+        return "< Result ({0})>".format(
+            ", ".join(
+                attr
+                for attr in ("success", "error", "failure", "skip", "finished")
+                if getattr(self, "is_{0}".format(attr))()
+                )
+            )
 
 class GlobalResult(Result):
     pass

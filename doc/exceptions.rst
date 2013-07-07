@@ -7,6 +7,15 @@ As explained in the :ref:`quickstart` section, you can enter a debugger when exc
 
 Note that the hooks named ``exception_caught_after_debugger``, and ``exception_caught_before_debugger`` handle exception cases. It is important to plan your hook callbacks and decide which of these two hooks should call them, since a debugger might stall for a long time until a user notices it.
 
+.. _KeyboardInterrupt:
+
+Handling KeyboardInterrupt
+--------------------------
+
+Usually when a user hits Ctrl+C this means he wants to terminate the running program as quickly as possible without corruption or undefined state. Slash treats KeyboardInterrupt a bit differently than other exceptions, and tries to quit as quickly as possible when they are encountered.
+
+.. note:: ``KeyboardInterrupt`` also causes regular cleanups to be skipped. You can set critical cleanups to be carried out on both cases, as described in the `relevant section <cleanups>`.
+
 Exception Handling Context
 --------------------------
 
