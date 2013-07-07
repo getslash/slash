@@ -1,4 +1,6 @@
 import functools
+from collections import OrderedDict
+
 from six import itervalues
 from . import ctx
 from . import hooks
@@ -18,7 +20,7 @@ class Session(Activatable):
         self.id_space = IDSpace(self.id)
         self._complete = False
         self._context = None
-        self._results = {}
+        self._results = OrderedDict()
         #: an aggregate result summing all test results and the global result
         self.result = SessionResult(functools.partial(itervalues, self._results))
     def create_result(self, test):

@@ -30,6 +30,7 @@ class SessionResultTest(TestCase):
         for result in results[:num_finished]:
             result.mark_finished()
         self.result = SessionResult(results.__iter__)
+
     def test_counts(self):
         self.assertEquals(self.result.get_num_successful(), 2)
         # errors take precedence over failures
