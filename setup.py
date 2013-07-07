@@ -22,6 +22,7 @@ if _PYTHON_VERSION < "3.0":
 
 if _PYTHON_VERSION < "2.7":
     install_requires.append("argparse")
+    install_requires.append("ordereddict")
 
 setup(name="slash",
       classifiers = [

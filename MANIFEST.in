@@ -1,0 +1,1 @@
+include MANIFEST.in CHANGES tests/* tox.ini travis_build.py .pylintrc

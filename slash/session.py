@@ -1,5 +1,8 @@
 import functools
-from collections import OrderedDict
+try:
+    from collections import OrderedDict # pylint: disable=E0611
+except ImportError: # python 2.6
+    from ordereddict import OrderedDict # pylint: disable=F0401
 
 from six import itervalues
 from . import ctx

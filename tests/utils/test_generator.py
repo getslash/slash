@@ -63,7 +63,7 @@ class TestGenerator(object):
         ))
 
     def notify_run(self, test_id, test):
-        _logger.debug("Notifying run: {}", test_id)
+        _logger.debug("Notifying run: {0}", test_id)
         self._expected.remove(test_id)
         callback_list = self._run_callbacks.get(test_id, [])
         while callback_list:
@@ -79,7 +79,7 @@ class TestGenerator(object):
         self.add_test_run_callback(testpromise, self.do_skip)
     def add_test_run_callback(self, testpromise, handler):
         test_promise_id = self._get_test_promise_id(testpromise)
-        _logger.debug("Adding test run callback: {} ==> {}", test_promise_id, handler)
+        _logger.debug("Adding test run callback: {0} ==> {1}", test_promise_id, handler)
         self._run_callbacks.setdefault(test_promise_id, []).append(handler)
     def _get_test_promise_id(self, p):
         if isinstance(p, slash.RunnableTest):
