@@ -10,6 +10,7 @@ class Result(object):
         self._failures = []
         self._skips = []
         self._finished = False
+        self._interrupted = False
     def is_error(self):
         return bool(self._errors)
     def is_failure(self):
@@ -20,13 +21,17 @@ class Result(object):
     def is_skip(self):
         return bool(self._skips)
     def is_success(self):
-        return not self._errors and not self._failures and not self._skips
+        return not self._errors and not self._failures and not self._skips and not self._interrupted
     def is_success_finished(self):
         return self.is_success() and self.is_finished()
     def is_finished(self):
         return self._finished
     def mark_finished(self):
         self._finished = True
+    def mark_interrupted(self):
+        self._interrupted = True
+    def is_interrupted(self):
+        return self._interrupted
     def add_error(self):
         self._errors.append(Error(sys.exc_info()))
     def add_failure(self):
@@ -43,7 +48,7 @@ class Result(object):
         return "< Result ({0})>".format(
             ", ".join(
                 attr
-                for attr in ("success", "error", "failure", "skip", "finished")
+                for attr in ("success", "error", "failure", "skip", "finished", "interrupted")
                 if getattr(self, "is_{0}".format(attr))()
                 )
             )

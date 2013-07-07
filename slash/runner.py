@@ -28,20 +28,29 @@ def run_tests(iterable):
         with _get_test_context(test):
             with _get_test_hooks_context():
                 with _update_result_context() as result:
-                    try:
+                    with _cleanup_context():
                         with handling_exceptions():
                             with get_test_context_setup(test, test_iterator.peek_or_none()):
                                 test.run()
-                    finally:
-                        _call_cleanups()
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             break
     else:
         context.session.mark_complete()
 
-def _call_cleanups():
-    call_cleanups(critical_only=sys.exc_info()[0] is KeyboardInterrupt)
+@contextmanager
+def _cleanup_context():
+    # In Python 2.6, exc_info() in finally is sometimes (None, None, None), so we capture it explicitly
+    exc_info = None
+    try:
+        try:
+            yield
+        except:
+            exc_info = sys.exc_info()
+            raise
+    finally:
+        call_cleanups(critical_only=exc_info is not None and exc_info[0] is KeyboardInterrupt)
+        del exc_info
 
 @contextmanager
 def _get_test_context(test):
@@ -94,6 +103,9 @@ def _update_result_context():
         raise
     except TestFailed:
         result.add_failure()
+        raise
+    except KeyboardInterrupt:
+        result.mark_interrupted()
         raise
     except:
         result.add_error()
