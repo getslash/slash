@@ -21,7 +21,9 @@ Exception Handling Context
 
 Slash contains a special context, :func:`slash.handling_exceptions`. The purpose of this context is to give your infrastructure a chance to handle an erroneous case as close as possible to its occurrence. 
 
-This context can be safely nested -- once an exception is handled, it is appropriately marked, so the outer contexts will skip handling it::
+This context can be safely nested -- once an exception is handled, it is appropriately marked, so the outer contexts will skip handling it:
+
+.. code-block:: python
 
     from slash import handling_exceptions
 
