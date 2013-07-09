@@ -125,5 +125,6 @@ def capture_sentry_exception():
         client.captureException()
 
 def get_sentry_client():
-    if raven is not None:
+    if raven is not None and config.root.sentry.dsn:
         return raven.Client(config.root.sentry.dsn)
+    return None
