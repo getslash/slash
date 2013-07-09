@@ -1,10 +1,10 @@
 from .exceptions import CannotLoadTests
 from .exception_handling import handling_exceptions
 from .runnable_test_factory import RunnableTestFactory
-from .utils.imports import import_file
 from .ctx import context
 from contextlib import contextmanager
 from logbook import Logger # pylint: disable=F0401
+from emport import import_file
 from six import iteritems # pylint: disable=F0401
 import os
 import sys

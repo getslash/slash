@@ -4,7 +4,7 @@ import os
 from .interface import PluginInterface
 from .. import hooks
 from ..conf import config
-from ..utils.imports import import_file
+from emport import import_file
 from six import iteritems, itervalues
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
