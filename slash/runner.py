@@ -13,6 +13,10 @@ from .metadata import ensure_slash_metadata
 from .test_context import get_test_context_setup
 from .utils.peekable_iterator import PeekableIterator
 from contextlib import contextmanager
+try:
+    from contextlib import ExitStack
+except ImportError:
+    from contextlib2 import ExitStack
 import logbook # pylint: disable=F0401
 
 _logger = logbook.Logger(__name__)
@@ -25,18 +29,24 @@ def run_tests(iterable):
     for test in test_iterator:
         ensure_slash_metadata(test).id = context.session.id_space.allocate()
         _logger.debug("Running {0}...", test)
-        with _get_test_context(test):
-            with _get_test_hooks_context():
-                with _update_result_context() as result:
-                    with _cleanup_context():
-                        with handling_exceptions():
-                            with get_test_context_setup(test, test_iterator.peek_or_none()):
-                                test.run()
+        with _get_run_context_stack(test, test_iterator) as result:
+            test.run()
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             break
     else:
         context.session.mark_complete()
+
+@contextmanager
+def _get_run_context_stack(test, test_iterator):
+    with ExitStack() as stack:
+        stack.enter_context(_get_test_context(test))
+        stack.enter_context(_get_test_hooks_context())
+        result = stack.enter_context(_update_result_context())
+        stack.enter_context(_cleanup_context())
+        stack.enter_context(handling_exceptions())
+        stack.enter_context(get_test_context_setup(test, test_iterator.peek_or_none()))
+        yield result
 
 @contextmanager
 def _cleanup_context():

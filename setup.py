@@ -25,6 +25,9 @@ if _PYTHON_VERSION < "2.7":
     install_requires.append("argparse")
     install_requires.append("ordereddict")
 
+if _PYTHON_VERSION < "3.3":
+    install_requires.append("contextlib2")
+
 setup(name="slash",
       classifiers = [
           "Programming Language :: Python :: 2.6",
