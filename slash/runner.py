@@ -14,7 +14,7 @@ from .test_context import get_test_context_setup
 from .utils.peekable_iterator import PeekableIterator
 from contextlib import contextmanager
 try:
-    from contextlib import ExitStack
+    from contextlib import ExitStack #pylint: disable=E0611
 except ImportError:
     from contextlib2 import ExitStack
 import logbook # pylint: disable=F0401
