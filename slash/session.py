@@ -4,17 +4,16 @@ try:
 except ImportError: # python 2.6
     from ordereddict import OrderedDict # pylint: disable=F0401
 
+import uuid
 from six import itervalues
-from . import ctx
-from . import hooks
-from . import log
+from contextlib import contextmanager
+from . import ctx, hooks, log
 from .exception_handling import handling_exceptions
 from .result import Result
 from .interfaces import Activatable
 from .result import SessionResult
 from .utils.id_space import IDSpace
-from contextlib import contextmanager
-import uuid
+from .warnings import WarnHandler
 
 class Session(Activatable):
     def __init__(self):
@@ -24,6 +23,7 @@ class Session(Activatable):
         self._complete = False
         self._context = None
         self._results = OrderedDict()
+        self.warnings = WarnHandler()
         #: an aggregate result summing all test results and the global result
         self.result = SessionResult(functools.partial(itervalues, self._results))
     def create_result(self, test):
