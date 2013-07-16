@@ -11,7 +11,6 @@ from ..ctx import context
 def _is_concise():
     return config.root.log.console_level > logbook.NOTICE
 
-
 @contextmanager
 def report_context(report_stream):
     live_reporter_type = ConciseLiveReporter if _is_concise() else VerboseLiveReporter
