@@ -9,8 +9,9 @@ from .utils import run_tests_assert_success
 _IDENTIFIER = "logging-test"
 _SESSION_START_MARK = "session-start-mark"
 _SESSION_END_MARK = "session-end-mark"
-_WARNING_FORMAT = "WARNING: slash: {}"
-_DEBUG_FORMAT = "DEBUG: slash: {}"
+_WARNING_FILE_FORMAT = "WARNING: slash: {0}"
+_WARNING_CONSOLE_FORMAT = "WARNING: {0}: {1}"
+_DEBUG_FORMAT = "DEBUG: slash: {0}"
 
 class WarningTest(TestCase):
     def test(self):
@@ -62,7 +63,7 @@ class WarningTest(TestCase):
             with open(log_path) as f:
                 data = f.read()
             self.assertIn(_DEBUG_FORMAT.format(test_id), data)
-            self.assertIn(_WARNING_FORMAT.format(test_id), data)
+            self.assertIn(_WARNING_FILE_FORMAT.format(test_id), data)
             for other_test_id in self.test_ids:
                 if other_test_id != test_id:
                     self.assertNotIn(other_test_id, data)
@@ -72,18 +73,18 @@ class WarningTest(TestCase):
     def _test_session_logs(self):
         with open(os.path.join(self.log_path, self.session.id, "debug.log")) as f:
             data = f.read()
-        self.assertIn(_WARNING_FORMAT.format(_SESSION_START_MARK), data)
-        self.assertIn(_WARNING_FORMAT.format(_SESSION_END_MARK), data)
+        self.assertIn(_WARNING_FILE_FORMAT.format(_SESSION_START_MARK), data)
+        self.assertIn(_WARNING_FILE_FORMAT.format(_SESSION_END_MARK), data)
         for test_id in self.test_ids:
             self.assertNotIn(_DEBUG_FORMAT.format(test_id), data)
-            self.assertNotIn(_WARNING_FORMAT.format(test_id), data)
+            self.assertNotIn(_WARNING_FILE_FORMAT.format(test_id), data)
 
         output = self.stderr.getvalue().strip()
-        self.assertIn(_WARNING_FORMAT.format(_SESSION_START_MARK), output)
-        self.assertIn(_WARNING_FORMAT.format(_SESSION_END_MARK), output)
+        self.assertIn(_WARNING_CONSOLE_FORMAT.format(self.session.id, _SESSION_START_MARK), output)
+        self.assertIn(_WARNING_CONSOLE_FORMAT.format(self.session.id, _SESSION_END_MARK), output)
         for test_id in self.test_ids:
             self.assertNotIn(_DEBUG_FORMAT.format(test_id), output)
-            self.assertIn(_WARNING_FORMAT.format(test_id), output)
+            self.assertIn(_WARNING_CONSOLE_FORMAT.format(test_id, test_id), output)
 
 class SampleTest(slash.Test):
     def test_1(self):

@@ -6,7 +6,7 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     This logger provides some ways to store warnings to log again at the end of the session.
     """
     default_format_string = six.u('[{record.time:%Y-%m-%d %H:%M}] '
-      '{record.level_name}: {record.channel}: {record.extras.test}: {record.message}')
+      '{record.level_name}: {record.extra[source]}: {record.message}')
 
     def __init__(self, format_string=None, filter=None, bubble=True):
         logbook.Handler.__init__(self, logbook.WARNING, filter, bubble)
