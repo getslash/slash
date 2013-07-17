@@ -81,7 +81,7 @@ class SummaryReporter(object):
                 self._formatter.write(s.ljust(column_width))
             self._formatter.writeln()
     def _describe_warnings(self, session):
-        warnings = session.warnings.formatted_records
+        warnings = session.warnings.records
         if warnings:
             self._formatter.writeln()
             self._formatter.writeln("Warnings:")

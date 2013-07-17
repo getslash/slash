@@ -65,7 +65,7 @@ def _cleanup_context():
 @contextmanager
 def _get_test_context(test):
     with _set_current_test_context(test):
-        with log.get_test_logging_context():
+        with context.session.logging.get_test_logging_context():
             yield
 
 @contextmanager

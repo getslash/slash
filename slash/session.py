@@ -13,7 +13,7 @@ from .result import Result
 from .interfaces import Activatable
 from .result import SessionResult
 from .utils.id_space import IDSpace
-from .warnings import WarnHandler
+from .warnings import SessionWarnings
 
 class Session(Activatable):
     def __init__(self):
@@ -23,7 +23,8 @@ class Session(Activatable):
         self._complete = False
         self._context = None
         self._results = OrderedDict()
-        self.warnings = WarnHandler()
+        self.warnings = SessionWarnings()
+        self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result
         self.result = SessionResult(functools.partial(itervalues, self._results))
     def create_result(self, test):
@@ -50,14 +51,13 @@ class Session(Activatable):
     def is_complete(self):
         return self._complete
 
-
 @contextmanager
 def _session_context(session):
     assert ctx.context.session is None
     ctx.push_context()
     ctx.context.session = session
     try:
-        with log.get_session_logging_context():
+        with session.logging.get_session_logging_context():
             hooks.session_start()
             try:
                 yield

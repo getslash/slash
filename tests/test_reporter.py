@@ -1,4 +1,6 @@
+import sys
 import logbook
+from slash import log
 from six.moves import cStringIO
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
@@ -26,6 +28,7 @@ class SlashRunTest(TestCase):
         )
         self.report_stream = cStringIO()
         self.separator = "-" * 80
+
     def _get_output_part(self, part):
         self.report_stream.seek(0)
         return self.report_stream.getvalue().split(self.separator)[part]
