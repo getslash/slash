@@ -1,5 +1,6 @@
 import sys
 import logbook
+import slash
 from slash import log
 from six.moves import cStringIO
 from .utils import TestCase
@@ -28,6 +29,11 @@ class SlashRunTest(TestCase):
         )
         self.report_stream = cStringIO()
         self.separator = "-" * 80
+        slash.hooks.session_start.register(self._silence_console_logger, "silence_console")
+        self.addCleanup(slash.hooks.session_start.unregister_by_identifier, "silence_console")
+
+    def _silence_console_logger(self):
+        slash.context.session.logging.console_handler.level = 1000000
 
     def _get_output_part(self, part):
         self.report_stream.seek(0)
