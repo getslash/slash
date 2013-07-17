@@ -47,6 +47,7 @@ class SummaryReporter(object):
     def report_session(self, session):
         self._describe_unsuccessful(session)
         self._describe_summary(session)
+        self._describe_warnings(session)
     def _describe_unsuccessful(self, session):
         self._formatter.write_separator()
         for result in session.result.iter_all_results():
@@ -79,6 +80,13 @@ class SummaryReporter(object):
                     s = colorized
                 self._formatter.write(s.ljust(column_width))
             self._formatter.writeln()
+    def _describe_warnings(self, session):
+        warnings = session.warnings.formatted_records
+        if warnings:
+            self._formatter.writeln()
+            self._formatter.writeln("Warnings:")
+            for record in warnings:
+                self._formatter.writeln(record)
 
 class BaseLiveReporter(HooksContextManager):
     def __init__(self, report_stream):

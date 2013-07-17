@@ -11,17 +11,25 @@ def get_test_logging_context():
     handler = _get_file_log_handler(config.root.log.subpath)
     with handler:
         with _get_console_handler():
-            yield
+            with _get_warning_handler():
+                with _process_test_record():
+                    yield
 
 @contextmanager
 def get_session_logging_context():
     handler = _get_file_log_handler(config.root.log.session_subpath)
     with handler:
-        with _get_console_handler():
-            yield
+        console_handler = _get_console_handler()
+        with console_handler:
+            with _get_warning_handler():
+                with _process_test_record():
+                    yield
 
 def _get_console_handler():
     return ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
+
+def _get_warning_handler():
+    return context.session.warnings
 
 def _get_file_log_handler(subpath):
     root_path = config.root.log.root
@@ -32,3 +40,10 @@ def _get_file_log_handler(subpath):
         ensure_containing_directory(log_path)
         handler = logbook.FileHandler(log_path, bubble=False)
     return handler
+
+def _add_current_test(record):
+    record.extra['source'] = context.test_id or context.session.id
+
+def _process_test_record():
+    return logbook.Processor(_add_current_test)
+

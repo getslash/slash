@@ -9,17 +9,19 @@ class SlashRunTest(TestCase):
         super(SlashRunTest, self).setUp()
         self.generator = TestGenerator()
         (self.success_test, self.fail_test,
-         self.error_test, self.skip_test) = self.generator.generate_tests(4)
+         self.error_test, self.skip_test, self.warn_test) = self.generator.generate_tests(5)
         self.generator.make_test_skip(self.skip_test)
         self.generator.make_test_fail(self.fail_test)
         self.generator.make_test_raise_exception(self.error_test)
+        self.generator.make_test_warn(self.warn_test)
 
         self.root_path = self.generator.write_test_directory(
             {
                 "success_test.py" : self.success_test,
                 "fail_test.py" : self.fail_test,
                 "error_test.py" : self.error_test,
-                "skip_test.py" : self.skip_test
+                "skip_test.py" : self.skip_test,
+                "warn_test.py" : self.warn_test,
             }
         )
         self.report_stream = cStringIO()
@@ -40,7 +42,7 @@ class SlashRunTest(TestCase):
         self._slash_run()
         result = self.get_live_part()
         self.assertEqual(set(result) - set("\n"), set("EFS."))
-        self.assertEqual(len(result), 5)
+        self.assertEqual(len(result), 6)
     def test_live_verbose(self):
         self.override_config("log.console_level", logbook.INFO)
         self._slash_run()
@@ -52,8 +54,11 @@ class SlashRunTest(TestCase):
     def test_summary(self):
         self._slash_run()
         output = self.get_summary_part()
-        headers, values = output.strip().splitlines()
-        self.assertEqual(values.split(), ['1'] * 4)
+        headers, values, empty_line, warning_header, warning = output.strip().splitlines()
+        self.assertEqual(values.split(), ['2', '1', '1', '1'])
+        self.assertEqual("", empty_line) # warn
+        self.assertIn("Warnings:", warning_header) # warn
+        self.assertIn("This is a warning", warning) # warn
     def test_exceptions_summary_verbose(self):
         self.override_config("log.console_level", logbook.INFO)
         self._slash_run()
