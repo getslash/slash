@@ -54,6 +54,17 @@ The :class:`.exceptions.TestFailed` exception (or any class derived from it) is 
 
 .. _cleanup:
 
+Warnings
+--------
+
+In many cases test executions succeed, but warnings are emitted. These warnings can mean a lot of things, and in some cases even invalidate the success of the test completely.
+
+Slash collects warnings emitted through loggers in the ``session.warnings`` (instance of :class:`.warnings.SessionWarnings`)
+
+.. autoclass:: slash.warnings.SessionWarnings
+  :members:
+  :special-members: 
+
 Cleanups
 --------
 

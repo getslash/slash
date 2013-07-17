@@ -1,9 +1,21 @@
 import logbook, six
 
 class SessionWarnings(object):
+    """
+    Holds all warnings emitted during the session
+    """
     def __init__(self):
         super(SessionWarnings, self).__init__()
         self.records = []
+
+    def __iter__(self):
+        "Iterates through stored warnings"
+        return iter(self.records)
+
+    def __nonzero__(self):
+        return bool(self.records)
+
+    __bool__ = __nonzero__
 
 class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     """

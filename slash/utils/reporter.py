@@ -81,11 +81,10 @@ class SummaryReporter(object):
                 self._formatter.write(s.ljust(column_width))
             self._formatter.writeln()
     def _describe_warnings(self, session):
-        warnings = session.warnings.records
-        if warnings:
+        if session.warnings:
             self._formatter.writeln()
             self._formatter.writeln("Warnings:")
-            for record in warnings:
+            for record in session.warnings:
                 self._formatter.writeln(record)
 
 class BaseLiveReporter(HooksContextManager):
