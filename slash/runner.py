@@ -1,5 +1,4 @@
 import sys
-from . import log
 from . import hooks
 from .cleanups import call_cleanups
 from .conf import config
