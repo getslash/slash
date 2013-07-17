@@ -13,7 +13,7 @@ from .result import Result
 from .interfaces import Activatable
 from .result import SessionResult
 from .utils.id_space import IDSpace
-from .log import WarnHandler
+from .warnings import WarnHandler
 
 class Session(Activatable):
     def __init__(self):
