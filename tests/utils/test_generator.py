@@ -78,6 +78,8 @@ class TestGenerator(object):
         self.add_test_run_callback(testpromise, self.do_fail)
     def make_test_skip(self, testpromise):
         self.add_test_run_callback(testpromise, self.do_skip)
+    def make_test_warn(self, testpromise):
+        self.add_test_run_callback(testpromise, self.do_warn)
     def add_test_run_callback(self, testpromise, handler):
         test_promise_id = self._get_test_promise_id(testpromise)
         _logger.debug("Adding test run callback: {0} ==> {1}", test_promise_id, handler)
@@ -95,6 +97,8 @@ class TestGenerator(object):
         raise TestFailed("Test failed")
     def do_skip(self, _):
         raise SkipTest("Reason here")
+    def do_warn(self, _):
+        _logger.warn("This is a warning")
 
 class TestPromise(object):
     __test__ = False # for nose

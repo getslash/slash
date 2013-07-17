@@ -30,4 +30,6 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
         record.keep_open = True
         self.records.append(record)
 
-
+    @property
+    def formatted_records(self):
+        return [self.format(r) for r in self.records]

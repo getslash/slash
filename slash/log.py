@@ -24,19 +24,12 @@ def get_session_logging_context():
             with _get_warning_handler():
                 with _process_test_record():
                     yield
-            _log_warnings_before_session_close(console_handler)
 
 def _get_console_handler():
     return ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
 
 def _get_warning_handler():
     return context.session.warnings
-
-def _log_warnings_before_session_close(console_handler):
-    warn_handler = _get_warning_handler()
-    console_handler.format_string = warn_handler.format_string
-    for record in warn_handler.records:
-        console_handler.handle(record)
 
 def _get_file_log_handler(subpath):
     root_path = config.root.log.root
