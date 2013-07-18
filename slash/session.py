@@ -27,15 +27,18 @@ class Session(Activatable):
         self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result
         self.result = SessionResult(functools.partial(itervalues, self._results))
+
     def create_result(self, test):
         assert test.__slash__.id not in self._results
         returned = Result(test.__slash__)
         self._results[test.__slash__.id] = returned
         return returned
+
     def get_result(self, test):
         if test.__slash__ is None:
             raise LookupError("Could not find result for {0}".format(test))
         return self._results[test.__slash__.id]
+
     def activate(self):
         assert self._context is None
         self._context = _session_context(self)
@@ -46,8 +49,10 @@ class Session(Activatable):
         self.result.global_result.mark_finished()
         with handling_exceptions():
             self._context.__exit__(None, None, None)
+
     def mark_complete(self):
         self._complete = True
+
     def is_complete(self):
         return self._complete
 
