@@ -28,10 +28,7 @@ class PeekableIterator(object):
 
     def peek(self):
         if self._peeked is _NOTHING:
-            try:
-                self._peeked = next(self._iterator)
-            except StopIteration:
-                self._peeked = _END
+            self._peeked = next(self._iterator, _END)
         if self._peeked is _END:
             raise StopIteration()
         return self._peeked
