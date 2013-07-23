@@ -1,4 +1,5 @@
 from .utils.callback import Callback
+from .exceptions import HookAlreadyExists
 import six
 
 session_start = Callback(doc="Called right after session starts")
@@ -20,6 +21,40 @@ exception_caught_before_debugger = Callback(
 exception_caught_after_debugger = Callback(
     doc="Called whenever an exception is caught, and a debugger has already been run"
 )
+
+_CUSTOM_HOOKS = {}
+
+def add_custom_hook(hook_name):
+    """
+    Adds an additional hook to the set of availble hooks
+    """
+    globs = globals()
+    if hook_name in _CUSTOM_HOOKS or hook_name in globs:
+        raise HookAlreadyExists("Hook named {0!r} already exists!".format(hook_name))
+
+    returned = _CUSTOM_HOOKS[hook_name] = globs[hook_name] = Callback()
+    return returned
+
+def ensure_custom_hook(hook_name):
+    """
+    Like :func:`.add_custom_hook`, only forgives if the hook already exists
+    """
+    if hook_name in _CUSTOM_HOOKS:
+        return _CUSTOM_HOOKS[hook_name]
+    return add_custom_hook(hook_name)
+
+def remove_custom_hook(hook_name):
+    """
+    Removes a hook from the set of available hooks
+    """
+    _CUSTOM_HOOKS.pop(hook_name)
+    globals().pop(hook_name)
+
+def get_custom_hook_names():
+    """
+    Retrieves the names of all custom hooks currently installed
+    """
+    return list(_CUSTOM_HOOKS)
 
 def get_all_hooks():
     for name, callback in six.iteritems(globals()):

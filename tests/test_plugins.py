@@ -8,6 +8,7 @@ import os
 import shutil
 
 class BuiltinPluginsTest(TestCase):
+
     def test_hooks_start_condition(self):
         "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
         for hook_name, hook in hooks.get_all_hooks():
@@ -16,6 +17,7 @@ class BuiltinPluginsTest(TestCase):
                     identifier.startswith("slash."),
                     "Callback {0}.{1} is not a builtin!".format(hook_name, identifier)
                 )
+
     def test_builtin_plugins_are_installed(self):
         installed = plugins.manager.get_installed_plugins()
         self.assertNotEquals(installed, {})
@@ -25,6 +27,7 @@ class BuiltinPluginsTest(TestCase):
             self.assertIn(filename[:-3], installed)
 
 class PluginInstallationTest(TestCase):
+
     def test_cannot_install_incompatible_subclasses(self):
         plugins.manager.uninstall_all()
         self.addCleanup(plugins.manager.install_builtin_plugins)
@@ -174,6 +177,19 @@ class PluginActivationTest(TestCase):
         with self.assertRaisesRegexp(IncompatiblePlugin, r"\bUnknown hooks\b.*"):
             plugins.manager.activate(plugin)
 
+    def test_custom_hook_names(self):
+        "Make sure that plugins with unknown hook names get discarded"
+        class Plugin(PluginInterface):
+            def get_name(self):
+                return "Test plugin"
+            def custom_hook(self):
+                pass
+
+        hooks.add_custom_hook("custom_hook")
+        self.addCleanup(hooks.remove_custom_hook, "custom_hook")
+        plugin = Plugin()
+        plugins.manager.install(plugin, activate=True)
+        self.addCleanup(plugins.manager.uninstall, plugin)
 
 class StartSessionPlugin(PluginInterface):
     _activate_called = False

@@ -32,3 +32,32 @@ The following hooks are available from the ``slash.hooks`` module:
 
 .. hook_list_doc::
 
+Advanced Usage
+--------------
+
+Adding Custom Hooks
+~~~~~~~~~~~~~~~~~~~
+
+In some cases you want to add custom hooks to Slash. Let's assume, for example, that we are testing the `our microwave<building_solution>`_ and we would like to support a hook that is called when the microwave is shut down. To add the ``microwave_shutdown`` hook we can just call:
+
+.. code-block:: python
+
+  import slash
+  slash.hooks.ensure_custom_hook("microwave_shutdown")
+
+  ...
+
+  @slash.hooks.microwave_shutdown.register
+  def my_shutdown_handler():
+      slash.logger.info("SHUTDOWN!")
+
+  ...
+
+  # we still have to take care of actually calling our hook
+  def shutdown_microwave(microwave):
+      slash.hooks.microwave_shutdown() # trigger the hook
+      ...
+
+.. autofunction:: slash.hooks.add_custom_hook
+.. autofunction:: slash.hooks.ensure_custom_hook
+.. autofunction:: slash.hooks.remove_custom_hook

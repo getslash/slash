@@ -2,6 +2,9 @@
 class SlashException(Exception):
     pass
 
+class HookAlreadyExists(SlashException):
+    pass
+
 class CannotLoadTests(SlashException):
     pass
 
