@@ -2,10 +2,16 @@
 from .utils.test_generator import TestGenerator
 from .utils import TestCase
 from slash.runner import run_tests
+from slash.exceptions import NoActiveSession
 from slash.session import Session
 from slash.result import Result
 from slash.ctx import context
 import random
+
+class NoActiveSessionTest(TestCase):
+    def test_run_tests_fails_without_active_session(self):
+        with self.assertRaises(NoActiveSession):
+            run_tests([])
 
 class TestRunningTestBase(TestCase):
     def setUp(self):

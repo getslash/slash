@@ -5,6 +5,9 @@ class SlashException(Exception):
 class HookAlreadyExists(SlashException):
     pass
 
+class NoActiveSession(SlashException):
+    pass
+
 class CannotLoadTests(SlashException):
     pass
 

@@ -4,8 +4,9 @@ from .cleanups import call_cleanups
 from .conf import config
 from .ctx import context
 from .exceptions import (
-    TestFailed,
+    NoActiveSession,
     SkipTest,
+    TestFailed,
     )
 from .exception_handling import handling_exceptions
 from .metadata import ensure_slash_metadata
@@ -24,6 +25,8 @@ def run_tests(iterable):
     """
     Runs tests from an iterable using the current session
     """
+    if context.session is None:
+        raise NoActiveSession("A session is not currently active")
     test_iterator = PeekableIterator(iterable)
     for test in test_iterator:
         ensure_slash_metadata(test).id = context.session.id_space.allocate()
