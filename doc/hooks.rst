@@ -38,7 +38,7 @@ Advanced Usage
 Adding Custom Hooks
 ~~~~~~~~~~~~~~~~~~~
 
-In some cases you want to add custom hooks to Slash. Let's assume, for example, that we are testing the `our microwave<building_solution>`_ and we would like to support a hook that is called when the microwave is shut down. To add the ``microwave_shutdown`` hook we can just call:
+In some cases you want to add custom hooks to Slash. Let's assume, for example, that we are testing the `our microwave <building_solution>`_ and we would like to support a hook that is called when the microwave is shut down. To add the ``microwave_shutdown`` hook we can just call:
 
 .. code-block:: python
 

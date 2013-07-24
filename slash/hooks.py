@@ -11,7 +11,7 @@ test_end     = Callback(doc="Called right before a test ends, regardless of the 
 test_success = Callback(doc="Called on test success")
 test_error   = Callback(doc="Called on test error")
 test_failure = Callback(doc="Called on test failure")
-test_skip    = Callback(doc="Called on test skip")
+test_skip    = Callback(doc="Called on test skip", arg_names=("reason",))
 
 result_summary = Callback(doc="Called at the end of the execution, when printing results")
 

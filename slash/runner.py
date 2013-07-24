@@ -75,8 +75,8 @@ def _get_test_hooks_context():
     hooks.test_start()
     try:
         yield
-    except SkipTest:
-        hooks.test_skip()
+    except SkipTest as skip_exception:
+        hooks.test_skip(reason=skip_exception.reason)
     except TestFailed:
         hooks.test_failure()
     except KeyboardInterrupt:

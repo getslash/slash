@@ -104,7 +104,7 @@ class VerboseLiveReporter(BaseLiveReporter):
     def on_test_failure(self):
         self._formatter.writeln("fail")
         _format_unsuccessfull(self._formatter, context.session.get_result(context.test))
-    def on_test_skip(self):
+    def on_test_skip(self, reason):
         self._formatter.writeln("skip")
         _format_unsuccessfull(self._formatter, context.session.get_result(context.test))
 
@@ -115,7 +115,7 @@ class ConciseLiveReporter(BaseLiveReporter):
         self._formatter.write("E")
     def on_test_failure(self):
         self._formatter.write("F")
-    def on_test_skip(self):
+    def on_test_skip(self, reason):
         self._formatter.write("S")
     def on_result_summary(self):
         self._formatter.writeln("")

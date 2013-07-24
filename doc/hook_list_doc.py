@@ -21,7 +21,11 @@ class HookListDoc(Directive):
         for hook_name, hook in all_hooks:
             section = nodes.section(ids=[hook_name])
             returned.append(section)
-            section.append(nodes.title(text="slash.hooks.{0}".format(hook_name)))
+            title = "slash.hooks.{0}".format(hook_name)
+            args = hook.get_argument_names()
+            if args:
+                title += "({0})".format(", ".join(args))
+            section.append(nodes.title(text=title))
             section.append(nodes.paragraph(text=hook.doc))
         return returned
 
