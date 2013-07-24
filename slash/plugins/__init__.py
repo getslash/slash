@@ -124,6 +124,7 @@ class PluginManager(object):
         for hook, _ in self._get_plugin_registrations(plugin):
             hook.unregister_by_identifier(plugin_name)
         self._active.discard(plugin_name)
+        plugin.deactivate()
 
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):

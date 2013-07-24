@@ -131,6 +131,14 @@ class PluginActivationTest(TestCase):
         plugins.manager.activate(self.plugin)
         self.assertTrue(self.plugin._activate_called)
 
+    def test_deactivate_called_on_deactivate(self):
+        plugins.manager.install(self.plugin)
+        self.assertFalse(self.plugin._deactivate_called)
+        plugins.manager.activate(self.plugin)
+        self.assertFalse(self.plugin._deactivate_called)
+        plugins.manager.deactivate(self.plugin)
+        self.assertTrue(self.plugin._deactivate_called)
+
     def test_hook_registration(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
@@ -193,12 +201,20 @@ class PluginActivationTest(TestCase):
 
 class StartSessionPlugin(PluginInterface):
     _activate_called = False
+    _deactivate_called = False
     def __init__(self):
         super(StartSessionPlugin, self).__init__()
         self.session_start_call_count = 0
+
     def get_name(self):
         return "start-session"
+
     def session_start(self):
         self.session_start_call_count += 1
+
     def activate(self):
         self._activate_called = True
+
+    def deactivate(self):
+        self._deactivate_called = True
+

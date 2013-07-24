@@ -12,6 +12,16 @@ class PluginInterface(object):
         """
         pass
 
+    def deactivate(self):
+        """
+        Called when the plugin is deactivated
+
+        .. note:: this method might not be called in practice, since it is not guaranteed that plugins are always
+          deactivated upon process termination. The intention here is to make plugins friendlier to cases
+          in which multiple sessions get established one after another, each with a different set of plugins.
+        """
+        pass
+
     def configure_argument_parser(self, parser):
         """
         Gives a chance to the plugin to add options received from comand-line
