@@ -1,5 +1,5 @@
-import six
 import itertools
+from ._compat import iteritems
 
 def iterate(**parameters_and_values):
     """
@@ -9,7 +9,7 @@ def iterate(**parameters_and_values):
     """
     def _decorator(func):
         specs = _get_or_create_parameter_specs(func)
-        for parameter_name, options in six.iteritems(parameters_and_values):
+        for parameter_name, options in iteritems(parameters_and_values):
             specs.setdefault(parameter_name, []).extend(options)
         return func
     return _decorator
@@ -28,7 +28,7 @@ def iterate_kwargs_options(func):
     if specs is None:
         yield {}
         return
-    specs = list(six.iteritems(specs))
+    specs = list(iteritems(specs))
     names = [first for first, second in specs]
     values = [second for first, second in specs]
     for combination in itertools.product(*values): # pylint: disable=W0142

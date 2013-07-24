@@ -4,7 +4,7 @@ import functools
 import logbook
 
 from .cleanups import add_cleanup
-from .compat import xrange
+from ._compat import xrange
 from .ctx import internal_globals
 
 _logger = logbook.Logger(__name__)

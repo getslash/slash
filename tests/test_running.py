@@ -5,7 +5,6 @@ from slash.runner import run_tests
 from slash.session import Session
 from slash.result import Result
 from slash.ctx import context
-import six # pylint: disable=F0401
 import random
 
 class TestRunningTestBase(TestCase):
@@ -39,8 +38,8 @@ class AllSuccessfulTest(TestRunningTestBase):
 
     def test_iter_results_ordering(self):
         results = list(self.session.result.iter_test_results())
-        for result, test in zip(results, self.runnables):
-            self.assertIs(result.test_metadata, test.__slash__)
+        for index, (result, test) in enumerate(zip(results, self.runnables)):
+            self.assertIs(result.test_metadata, test.__slash__, "Test #{0} mismatch".format(index))
 
 _RESULT_PREDICATES = set([
     getattr(Result, method_name)
@@ -53,7 +52,7 @@ class FailedItemsTest(TestRunningTestBase):
         num_error_tests = 2
         assert 1 < num_unsuccessfull < len(self.runnables)
         unsuccessful = random.sample(self.runnables, num_unsuccessfull)
-        self.error_tests = [unsuccessful.pop(-1) for _ in six.moves.xrange(num_error_tests)]
+        self.error_tests = [unsuccessful.pop(-1) for _ in range(num_error_tests)]
         self.skipped_tests = [unsuccessful.pop(-1)]
         self.failed_tests = unsuccessful
         assert self.error_tests and self.failed_tests

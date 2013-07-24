@@ -1,4 +1,5 @@
 import slash
+from slash._compat import xrange, iteritems
 from slash.exceptions import (
     SkipTest,
     TestFailed,
@@ -6,7 +7,6 @@ from slash.exceptions import (
 from tempfile import mkdtemp
 import itertools
 import os
-import six # pylint: disable=F0401
 import uuid
 import logbook
 
@@ -32,7 +32,7 @@ class TestGenerator(object):
     def get_expected_test_ids(self):
         return list(self._expected)
     def generate_tests(self, num_tests=3):
-        return [self.generate_test() for _ in six.moves.xrange(num_tests)]
+        return [self.generate_test() for _ in xrange(num_tests)]
     def generate_test(self):
         test_id = next(self._uuid_generator)
         self._expected.add(test_id)
@@ -42,7 +42,7 @@ class TestGenerator(object):
             root = mkdtemp()
         if not os.path.isdir(root):
             os.makedirs(root)
-        for filename, item in six.iteritems(structure):
+        for filename, item in iteritems(structure):
             path = os.path.join(root, filename)
             if isinstance(item, dict):
                 self.write_test_directory(item, path)

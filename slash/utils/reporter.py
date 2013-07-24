@@ -1,10 +1,10 @@
 import colorama
-from six import string_types
 import logbook
 import itertools
 from contextlib import contextmanager
 from .formatter import Formatter
 from .hooks_context_manager import HooksContextManager
+from .._compat import string_types
 from ..conf import config
 from ..ctx import context
 

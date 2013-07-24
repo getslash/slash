@@ -1,4 +1,4 @@
-import logbook, six
+import logbook
 
 class SessionWarnings(object):
     """
@@ -22,9 +22,8 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     Like a stream handler but keeps the values in memory. 
     This logger provides some ways to store warnings to log again at the end of the session.
     """
-    default_format_string = six.u('[{record.time:%Y-%m-%d %H:%M}] '
+    default_format_string = (u'[{record.time:%Y-%m-%d %H:%M}] '
       '{record.level_name}: {record.extra[source]}: {record.message}')
-
     def __init__(self, session_warnings, format_string=None, filter=None, bubble=True):
         logbook.Handler.__init__(self, logbook.WARNING, filter, bubble)
         logbook.StringFormatterHandlerMixin.__init__(self, format_string)

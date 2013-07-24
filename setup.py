@@ -15,7 +15,6 @@ install_requires = [
     "emport==1.0.0",
     "logbook>=0.4.2",
     "requests>=1.1.0",
-    "six",
 ]
 
 if _PYTHON_VERSION < "3.0":

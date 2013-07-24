@@ -1,8 +1,8 @@
 import itertools
 import logbook
 import sys
-import six
 
+from .._compat import reraise
 from ..conf import config
 
 _declaration_index = itertools.count()
@@ -30,7 +30,7 @@ class Callback(object):
                 if last_exc_info is None:
                     last_exc_info = sys.exc_info()
         if last_exc_info and not config.root.hooks.swallow_exceptions:
-            six.reraise(*last_exc_info) # pylint: disable=W0142
+            reraise(*last_exc_info) # pylint: disable=W0142
     def register(self, func, identifier=None):
         """
         Registers a function to this callback.

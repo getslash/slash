@@ -1,6 +1,6 @@
 from .utils.callback import Callback
 from .exceptions import HookAlreadyExists
-import six
+from . import _compat
 
 session_start = Callback(doc="Called right after session starts")
 session_end   = Callback(doc="Called right before the session ends, regardless of the reason for termination")
@@ -57,7 +57,7 @@ def get_custom_hook_names():
     return list(_CUSTOM_HOOKS)
 
 def get_all_hooks():
-    for name, callback in six.iteritems(globals()):
+    for name, callback in _compat.iteritems(globals()):
         if not isinstance(callback, Callback):
             continue
         yield name, callback

@@ -3,8 +3,7 @@ from .. import plugins
 from .formatter import Formatter
 import argparse
 from contextlib import contextmanager
-from six import iteritems, itervalues
-from six.moves import cStringIO # pylint: disable=F0401
+from .._compat import iteritems, itervalues, cStringIO
 import sys
 
 @contextmanager

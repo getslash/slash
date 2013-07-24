@@ -1,11 +1,11 @@
-from six.moves import cStringIO as StringIO
+from slash._compat import cStringIO
 from slash.utils.formatter import Formatter
 from .utils import TestCase
 
 class FormatterTest(TestCase):
     def setUp(self):
         super(FormatterTest, self).setUp()
-        self.buff = StringIO()
+        self.buff = cStringIO()
         self.f = Formatter(self.buff)
     def assertOutput(self, v):
         self.assertEquals(self.buff.getvalue(), v)

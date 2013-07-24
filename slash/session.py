@@ -5,9 +5,9 @@ except ImportError: # python 2.6
     from ordereddict import OrderedDict # pylint: disable=F0401
 
 import uuid
-from six import itervalues
 from contextlib import contextmanager
 from . import ctx, hooks, log
+from ._compat import itervalues
 from .exception_handling import handling_exceptions
 from .result import Result
 from .interfaces import Activatable

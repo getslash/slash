@@ -1,18 +1,18 @@
 from .utils import TestCase
 from confetti import Config
 from slash import plugins
+from slash._compat import cStringIO
 from slash.utils import conf_utils
 from slash.utils import cli_utils
 from slash.plugins import PluginInterface
-import six
 import sys
 
 class OutputCaptureTest(TestCase):
     def setUp(self):
         super(OutputCaptureTest, self).setUp()
-        self.stderr = six.moves.cStringIO()
+        self.stderr = cStringIO()
         self.forge.replace_with(sys, "stderr", self.stderr)
-        self.stdout = six.moves.cStringIO()
+        self.stdout = cStringIO()
         self.forge.replace_with(sys, "stdout", self.stdout)
 
 class ArgumentParsingTest(OutputCaptureTest):

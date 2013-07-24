@@ -14,7 +14,6 @@ if __name__ == '__main__':
         "nose",
         "pyforge",
         "pylint",
-        "six",
     ]
     if sys.version_info < (2, 7):
         deps.append("unittest2")

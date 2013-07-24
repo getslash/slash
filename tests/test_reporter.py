@@ -2,7 +2,7 @@ import sys
 import logbook
 import slash
 from slash import log
-from six.moves import cStringIO
+from slash._compat import cStringIO
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
 from slash.frontend import slash_run
