@@ -6,6 +6,7 @@ from .ctx import context
 from .ctx import g
 from .runnable_test_factory import RunnableTestFactory
 from .runnable_test import RunnableTest
+from .session import Session
 # assertions
 from . import assertions
 should = assertions
