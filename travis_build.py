@@ -4,6 +4,8 @@ import subprocess
 import sys
 import os
 
+_PYPY = hasattr(sys, "pypy_version_info")
+
 def _execute(cmd):
     if 0 != subprocess.call(cmd, shell=True):
         sys.exit(-1)
@@ -22,7 +24,7 @@ if __name__ == '__main__':
 
     _execute("python setup.py develop")
 
-    if sys.version_info < (3, 3):
+    if sys.version_info < (3, 3) and not _PYPY:
         _execute("pylint --rcfile=.pylintrc setup.py")
         _execute("pylint --rcfile=.pylintrc slash")
     _execute("nosetests -w tests")
