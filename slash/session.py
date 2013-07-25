@@ -1,4 +1,3 @@
-import functools
 try:
     from collections import OrderedDict # pylint: disable=E0611
 except ImportError: # python 2.6
