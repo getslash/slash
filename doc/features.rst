@@ -10,4 +10,8 @@ To use it, specify either ``notifications.prowl_api_key`` or ``notifications.nma
 
   slash run my_test.py --with-notifications -o notifications.nma_api_key=XXXXXXXXXXXXXXX
 
+XUnit Export
+------------
+
+Pass ``--with-xunit``, ``--xunit-filenam=PATH`` to export results as xunit XMLs (useful for CI solutions and other consumers).
 
