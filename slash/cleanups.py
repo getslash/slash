@@ -1,4 +1,3 @@
-from collections import deque
 from .ctx import context
 import logbook
 
@@ -34,7 +33,7 @@ def _add_cleanup(cleanup):
 def call_cleanups(critical_only=False):
     cleanups = _get_cleanups()
     while cleanups:
-        cleanup = cleanups.popleft()
+        cleanup = cleanups.pop()
         if critical_only and not cleanup.critical:
             continue
         try:
@@ -45,5 +44,5 @@ def call_cleanups(critical_only=False):
 def _get_cleanups():
     returned = getattr(context, "cleanups", None)
     if returned is None:
-        returned = context.cleanups = deque()
+        returned = context.cleanups = []
     return returned
