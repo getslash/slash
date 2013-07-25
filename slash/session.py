@@ -1,11 +1,7 @@
-try:
-    from collections import OrderedDict # pylint: disable=E0611
-except ImportError: # python 2.6
-    from ordereddict import OrderedDict # pylint: disable=F0401
-
 import uuid
 from contextlib import contextmanager
 from . import ctx, hooks, log
+from ._compat import OrderedDict
 from .exception_handling import handling_exceptions
 from .result import Result
 from .interfaces import Activatable

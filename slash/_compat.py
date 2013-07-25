@@ -58,3 +58,8 @@ else:
         if value.__traceback__ is not tb:
             raise value.with_traceback(tb)
         raise value
+
+try:
+    from collections import OrderedDict # pylint: disable=E0611
+except ImportError: # python 2.6
+    from ordereddict import OrderedDict # pylint: disable=F0401

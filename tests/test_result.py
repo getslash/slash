@@ -1,5 +1,5 @@
 from .utils import TestCase
-from collections import OrderedDict
+from slash._compat import OrderedDict
 from slash.result import Result
 from slash.result import SessionResult
 
