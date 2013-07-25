@@ -1,4 +1,4 @@
-from .utils import TestCase
+from .utils import TestCase, CustomException
 from slash import hooks
 from slash import plugins
 from slash.plugins import PluginInterface
@@ -131,7 +131,27 @@ class PluginActivationTest(TestCase):
         self.assertFalse(self.plugin._deactivate_called, "Deactivate called even though plugin not activated")
 
     def test_activation_exception(self):
-        self.skipTest("n/i")
+        self.plugin.activate = CustomException.do_raise
+        plugins.manager.install(self.plugin)
+        self.addCleanup(plugins.manager.uninstall, self.plugin)
+
+        with self.assertRaises(CustomException):
+            plugins.manager.activate(self.plugin)
+
+        # make sure no registrations are in effect...
+        self.assert_hooks_not_registered()
+
+        plugins.manager.deactivate(self.plugin)
+        self.assertFalse(self.plugin._deactivate_called, "Deactivate unexpectedly called!")
+
+    def test_deactivation_exception(self):
+        self.plugin.deactivate = CustomException.do_raise
+        plugins.manager.install(self.plugin, activate=True)
+        self.addCleanup(plugins.manager.uninstall, self.plugin)
+
+        with self.assertRaises(CustomException):
+            plugins.manager.deactivate(self.plugin)
+        self.assert_hooks_not_registered()
 
     def test_activate_called(self):
         plugins.manager.install(self.plugin)
@@ -151,8 +171,7 @@ class PluginActivationTest(TestCase):
     def test_hook_registration(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
-        hooks.session_start()
-        self.assertEquals(self.plugin.session_start_call_count, 0)
+        self.assert_hooks_not_registered()
         plugins.manager.activate(self.plugin)
         hooks.session_start()
         self.assertEquals(self.plugin.session_start_call_count, 1)
@@ -208,6 +227,11 @@ class PluginActivationTest(TestCase):
         plugins.manager.install(plugin, activate=True)
         self.addCleanup(plugins.manager.uninstall, plugin)
 
+    def assert_hooks_not_registered(self):
+        hooks.session_start()
+        self.assertEquals(self.plugin.session_start_call_count, 0, "Hook unexpectedly registered!")
+
+
 class StartSessionPlugin(PluginInterface):
     _activate_called = False
     _deactivate_called = False
@@ -226,4 +250,3 @@ class StartSessionPlugin(PluginInterface):
 
     def deactivate(self):
         self._deactivate_called = True
-

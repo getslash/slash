@@ -49,7 +49,9 @@ class NullFile(object):
         return False
 
 class CustomException(Exception):
-    pass
+    @classmethod
+    def do_raise(cls):
+        raise cls("Custom exception")
 
 def no_op(*args, **kwargs):
     pass
