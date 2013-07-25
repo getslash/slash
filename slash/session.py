@@ -7,7 +7,6 @@ except ImportError: # python 2.6
 import uuid
 from contextlib import contextmanager
 from . import ctx, hooks, log
-from ._compat import itervalues
 from .exception_handling import handling_exceptions
 from .result import Result
 from .interfaces import Activatable
@@ -26,7 +25,7 @@ class Session(Activatable):
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result
-        self.result = SessionResult(functools.partial(itervalues, self._results))
+        self.result = SessionResult(self._results)
 
     def create_result(self, test):
         assert test.__slash__.id not in self._results

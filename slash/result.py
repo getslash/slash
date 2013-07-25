@@ -1,5 +1,7 @@
 import itertools
+import functools
 import sys
+from ._compat import itervalues
 from .utils.error_object import Error
 
 class Result(object):
@@ -57,14 +59,17 @@ class GlobalResult(Result):
     pass
 
 class SessionResult(object):
-    def __init__(self, test_result_iterator_func):
+    def __init__(self, session_results_dict):
         super(SessionResult, self).__init__()
         self.global_result = GlobalResult()
-        self._iterator = test_result_iterator_func
+        self._session_results_dict = session_results_dict
+        self._iterator = functools.partial(itervalues, session_results_dict)
     def __iter__(self):
         return self._iterator()
     def is_success(self):
         return self.global_result.is_success() and all(result.is_finished() and result.is_success() for result in self._iterator())
+    def get_num_results(self):
+        return len(self._session_results_dict)
     def get_num_successful(self):
         return self._count(Result.is_success_finished, include_global=False)
     def get_num_errors(self):
