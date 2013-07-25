@@ -124,6 +124,15 @@ class PluginActivationTest(TestCase):
         plugins.manager.deactivate(self.plugin)
         self.assertEquals(plugins.manager.get_active_plugins(), {})
 
+    def test_deactivaion_no_activation(self):
+        plugins.manager.install(self.plugin)
+        self.assertFalse(self.plugin._deactivate_called)
+        plugins.manager.uninstall(self.plugin)
+        self.assertFalse(self.plugin._deactivate_called, "Deactivate called even though plugin not activated")
+
+    def test_activation_exception(self):
+        self.skipTest("n/i")
+
     def test_activate_called(self):
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)

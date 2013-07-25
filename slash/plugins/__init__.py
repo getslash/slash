@@ -121,10 +121,12 @@ class PluginManager(object):
         """
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
-        for hook, _ in self._get_plugin_registrations(plugin):
-            hook.unregister_by_identifier(plugin_name)
-        self._active.discard(plugin_name)
-        plugin.deactivate()
+
+        if plugin_name in self._active:
+            for hook, _ in self._get_plugin_registrations(plugin):
+                hook.unregister_by_identifier(plugin_name)
+            self._active.discard(plugin_name)
+            plugin.deactivate()
 
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):
