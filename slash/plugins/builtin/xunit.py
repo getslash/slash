@@ -4,7 +4,7 @@ import sys
 from ..interface import PluginInterface
 from ...ctx import context
 from ...utils.traceback_utils import get_traceback_string
-from ...utils.conf_utils import Doc, Cmdline
+from ...utils.conf_utils import Cmdline
 from slash import config as slash_config
 from xml.etree.ElementTree import (
     tostring as xml_to_string,
