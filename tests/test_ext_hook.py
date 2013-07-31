@@ -19,8 +19,7 @@ class ExtHookTest(TestCase):
             f.write("value = {0!r}".format(self.expected_value))
 
     def test_ext_hook_import(self):
-        statement = "from slash.ext import {0} as module".format(self.module_name)
-        exec(statement)
+        module = __import__("slash.ext.{0}".format(self.module_name), fromlist=[''])
         self.assertEquals(module.value, self.expected_value)
 
     def test_ext_hook_import_nonexistent(self):
