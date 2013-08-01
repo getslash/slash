@@ -38,6 +38,7 @@ def run_tests(iterable):
 
 @contextmanager
 def _get_run_context_stack(test, test_iterator):
+    yielded = False
     with ExitStack() as stack:
         stack.enter_context(_get_test_context(test))
         stack.enter_context(_get_test_hooks_context())
@@ -45,6 +46,11 @@ def _get_run_context_stack(test, test_iterator):
         stack.enter_context(_cleanup_context())
         stack.enter_context(handling_exceptions())
         stack.enter_context(get_test_context_setup(test, test_iterator.peek_or_none()))
+        yielded = True
+        yield result
+    # if some of the context entries throw SkipTest, the yield result above will not be reached.
+    # we have to make sure that yield happens or else the context manager will raise on __exit__...
+    if not yielded:
         yield result
 
 @contextmanager

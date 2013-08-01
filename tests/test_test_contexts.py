@@ -31,6 +31,10 @@ class Context1(_SampleContextBase):
 class Context2(_SampleContextBase):
     pass
 
+class SkippingContext(_SampleContextBase):
+    def before(self):
+        slash.skip_test("context skipped")
+
 class EventRecordingTest(TestCase):
     def setUp(self):
         super(EventRecordingTest, self).setUp()
@@ -58,3 +62,23 @@ class MultipleContextsTest(EventRecordingTest):
                 assert _recorder.events["Context2.before_case(Test2.test_1)"].happened
 
         run_tests_assert_success(itertools.chain(Test1.generate_tests(), Test2.generate_tests()))
+
+class ContextSkipTest(EventRecordingTest):
+    def test_context_skip_skips_all_depending_test(self):
+        @slash.with_context(SkippingContext)
+        @slash.with_context(Context1)
+        class Test1(slash.Test):
+            def test_1(self):
+                pass
+        @slash.with_context(Context1)
+        @slash.with_context(SkippingContext)
+        class Test2(slash.Test):
+            def test_2(self):
+                pass
+
+        with slash.session.Session() as session:
+            slash.runner.run_tests(itertools.chain(Test1.generate_tests(), Test2.generate_tests()))
+
+        [result1, result2] = session.result.iter_test_results()
+        self.assertTrue(result1.is_skip())
+        self.assertTrue(result2.is_skip(), "{0} is not skipped".format(result2))

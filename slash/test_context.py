@@ -82,9 +82,9 @@ class ActiveContexts(object):
         if context_type in self.by_type:
             return
         ctx = context_type()
+        ctx.before()
         self.by_type[context_type] = ctx
         self.stack.append(ctx)
-        ctx.before()
 
     def pop_all_except(self, needed_context_types):
         needed_context_types = set(needed_context_types)
