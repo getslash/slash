@@ -14,6 +14,7 @@ config = Config({
         "root" : None // Doc("Root directory for logs") // Cmdline(arg="-l", metavar="DIR"),
         "subpath" : "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),
         "session_subpath" : "session.log",
+        "silence_loggers": [] // Doc("Logger names to silence"),
     },
     "run" : {
         "stop_on_error" : False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),

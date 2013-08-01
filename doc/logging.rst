@@ -33,3 +33,13 @@ The :ref:`conf.log.root` config variable controls the root dir for logs. Under t
 The filenames created under the root are controlled with the :ref:`conf.log.subpath` config variable, which can be also a format string receiving the *context* variable from slash (e.g. ``sessions/{context.session.id}/{context.test.id}/logfile.log``).
 
 Another important config path is ``log.session_subpath``. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
+
+Silencing Logs
+--------------
+
+In certain cases you can silence specific loggers from the logging output. This is done with the :ref:`conf.log.silence_loggers` config path::
+
+  slash run -i -o "log.silence_loggers=['a','b']"
+
+
+

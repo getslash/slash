@@ -1,6 +1,7 @@
 from .utils import TestCase
 from .utils import run_tests_assert_success
 from tempfile import mkdtemp
+import logbook
 import functools
 import os
 import slash
@@ -8,6 +9,8 @@ import slash
 _IDENTIFIER = "logging-test"
 _SESSION_START_MARK = "session-start-mark"
 _SESSION_END_MARK = "session-end-mark"
+
+_silenced_logger = logbook.Logger("silenced_logger")
 
 class LoggingTest(TestCase):
     def test(self):
@@ -24,6 +27,10 @@ class LoggingTest(TestCase):
             "log.session_subpath",
             os.path.join("{context.session.id}", "debug.log")
         )
+        self.override_config(
+            "log.silence_loggers",
+            [_silenced_logger.name]
+        )
 
         slash.hooks.session_start.register(functools.partial(_mark, _SESSION_START_MARK), identifier=_IDENTIFIER)
         self.addCleanup(slash.hooks.session_start.unregister_by_identifier, _IDENTIFIER)
@@ -36,6 +43,7 @@ class LoggingTest(TestCase):
         self._test_all_run()
         self._test_test_logs_written()
         self._test_session_logs()
+        self._test_no_silenced_logger_records()
 
     def _test_all_run(self):
         methods = [
@@ -64,10 +72,21 @@ class LoggingTest(TestCase):
         for test_id in self.test_ids:
             self.assertNotIn(test_id, data)
 
+    def _test_no_silenced_logger_records(self):
+        for path, _, filenames in os.walk(self.log_path):
+            for filename in filenames:
+                assert filename.endswith(".log")
+                filename = os.path.join(path, filename)
+                with open(filename) as f:
+                    assert _silenced_logger.name not in f.read(), "Silenced logs appear in log file {0}".format(filename)
+
 class SampleTest(slash.Test):
     def test_1(self):
         _mark()
     def test_2(self):
+        _silenced_logger.error("error")
+        _silenced_logger.info("info")
+        _silenced_logger.debug("debug")
         _mark()
 
 def _mark(text=None):

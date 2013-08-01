@@ -63,3 +63,8 @@ try:
     from collections import OrderedDict # pylint: disable=E0611
 except ImportError: # python 2.6
     from ordereddict import OrderedDict # pylint: disable=F0401
+
+try:
+    from contextlib import ExitStack #pylint: disable=E0611
+except ImportError:
+    from contextlib2 import ExitStack

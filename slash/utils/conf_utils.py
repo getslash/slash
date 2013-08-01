@@ -6,10 +6,13 @@ _dest_generator = ("dest_{0}".format(i) for i in itertools.count())
 # for use with callbacks
 def _set_true(_):
     return True
+
 def _set_false(_):
     return False
+
 def _increase(value):
     return value + 1
+
 def _decrease(value):
     return value - 1
 
@@ -26,6 +29,7 @@ class _Cmdline(object):
         self.increase = increase
         self.decrease = decrease
         self.metavar = metavar
+
     def configure_parser(self, parser, path, node):
         """
         Add all required flags to a parser to support updating the config value from commandline

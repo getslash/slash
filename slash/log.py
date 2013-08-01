@@ -5,6 +5,7 @@ from .warnings import WarnHandler
 from contextlib import contextmanager
 import logbook # pylint: disable=F0401
 from logbook.more import ColorizedStderrHandler # pylint: disable=F0401
+from ._compat import ExitStack
 import os
 
 class SessionLogging(object):
@@ -24,12 +25,18 @@ class SessionLogging(object):
 
     @contextmanager
     def _get_file_logging_context(self, filename_template):
-        handler = self._get_file_log_handler(filename_template)
-        with handler:
-            with self.console_handler:
-                with self.warnings_handler:
-                    with self._process_test_record():
-                        yield
+        with ExitStack() as stack:
+            stack.enter_context(self._get_file_log_handler(filename_template))
+            stack.enter_context(self.console_handler)
+            stack.enter_context(self.warnings_handler)
+            stack.enter_context(self._process_test_record())
+            stack.enter_context(self._get_silenced_logs_context())
+            yield
+
+    def _get_silenced_logs_context(self):
+        if not config.root.log.silence_loggers:
+            return ExitStack()
+        return SilencedLoggersHandler(config.root.log.silence_loggers)
 
     def _get_file_log_handler(self, subpath):
         root_path = config.root.log.root
@@ -46,3 +53,10 @@ class SessionLogging(object):
 
     def _process_test_record(self):
         return logbook.Processor(self._add_current_test)
+
+class SilencedLoggersHandler(logbook.Handler):
+    def __init__(self, silence_logger_names):
+        super(SilencedLoggersHandler, self).__init__(bubble=False)
+        self._silenced_names = set(silence_logger_names)
+    def should_handle(self, record):
+        return record.channel in self._silenced_names
