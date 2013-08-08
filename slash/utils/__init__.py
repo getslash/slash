@@ -20,6 +20,6 @@ def skipped(thing, reason=None):
         return thing
 
     @functools.wraps(thing)
-    def new_func(*_, **__):
+    def new_func(*_, **__): # pylint: disable=unused-argument
         skip_test(reason)
     return new_func

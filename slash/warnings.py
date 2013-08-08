@@ -19,7 +19,7 @@ class SessionWarnings(object):
 
 class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     """
-    Like a stream handler but keeps the values in memory. 
+    Like a stream handler but keeps the values in memory.
     This logger provides some ways to store warnings to log again at the end of the session.
     """
     default_format_string = (u'[{record.time:%Y-%m-%d %H:%M}] '

@@ -15,17 +15,18 @@ if __name__ == '__main__':
     deps = [
         "nose",
         "pyforge",
-        "pylint",
         "lxml", # for XSD validations
     ]
+    if not _PYPY:
+        deps.append("pylint>=1.0.0")
     if sys.version_info < (2, 7):
         deps.append("unittest2")
 
-    _execute("pip install --use-mirrors {0}".format(" ".join(deps)))
+    _execute("pip install --use-mirrors {0}".format(" ".join(repr(dep) for dep in deps)))
 
     _execute("python setup.py develop")
 
-    if sys.version_info < (3, 3) and not _PYPY:
+    if not _PYPY:
         _execute("pylint --rcfile=.pylintrc setup.py")
         _execute("pylint --rcfile=.pylintrc slash")
     _execute("nosetests -w tests")

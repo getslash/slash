@@ -42,18 +42,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # current thread ident.
 from . import _compat
 try:
-    from greenlet import getcurrent as get_ident # pylint: disable=F0401
+    from greenlet import getcurrent as get_ident # pylint: disable=import-error
 except ImportError: # pragma: no cover
     try:
         if _compat.PY2:
-            from thread import get_ident # pylint: disable=F0401
+            from thread import get_ident # pylint: disable=import-error
         else:
-            try:
-                from threading import get_ident # pylint: disable=F0401,E0611
-            except ImportError:
-                from threading import _get_ident as get_ident # for Python3.2 specifically
+            from threading import get_ident # pylint: disable=no-name-in-module
     except ImportError: # pragma: no cover
-        from dummy_thread import get_ident # pylint: disable=F0401
+        from dummy_thread import get_ident # pylint: disable=import-error
 
 def release_local(local):
     """Releases the contents of the local for the current context.
