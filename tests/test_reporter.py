@@ -56,10 +56,17 @@ class SlashRunTest(TestCase):
         self.override_config("log.console_level", logbook.INFO)
         self._slash_run()
         output = self.get_live_part()
-        self.assertIn('error_test.{0} ... error\n Traceback'.format(self.error_test._test_class_name), output)
-        self.assertIn('fail_test.{0} ... fail\n Traceback'.format(self.fail_test._test_class_name), output)
-        self.assertIn('skip_test.{0} ... skip\n Reason here'.format(self.skip_test._test_class_name), output)
-        self.assertIn('success_test.{0} ... ok'.format(self.success_test._test_class_name), output)
+        self._assert_reported(output, "error_test", "error\n Traceback")
+        self._assert_reported(output, "fail_test", "fail\n Traceback")
+        self._assert_reported(output, "skip_test", "skip\n Reason here")
+        self._assert_reported(output, "success_test", "ok")
+
+    def _assert_reported(self, output, test_name, additional_text):
+        test = getattr(self, test_name)
+        expected_output = "{0}.py:{1}.{2} ... {3}".format(
+            test_name, test._test_class_name, 0, additional_text)
+        if expected_output not in output:
+            self.fail("Expected output {0!r} not found. Output was:\n{1}".format(expected_output, output))
     def test_summary(self):
         self._slash_run()
         output = self.get_summary_part()

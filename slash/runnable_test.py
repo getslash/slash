@@ -11,7 +11,13 @@ class RunnableTest(object):
         """
         raise NotImplementedError() # pragma: no cover
 
-    def get_canonical_name(self):
-        return "{0}.{1}".format(type(self).__module__, type(self).__name__)
+    def get_address_in_factory(self):
+        """
+        Returns the 'address' of this test inside the factory that created it.
+
+        This is used in order to later refer to that test in its FQDN or when rerunning it.
+        """
+        return None
+
     def __repr__(self):
         return repr(self.__slash__)

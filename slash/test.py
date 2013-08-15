@@ -1,4 +1,6 @@
 import functools
+
+from ._compat import iteritems
 from .utils import skip_test
 from .parameters import iterate_kwargs_options
 from .runnable_test import RunnableTest
@@ -67,9 +69,18 @@ class Test(RunnableTest, RunnableTestFactory):
         Gets called after each separate case from this test class executed, assuming :meth:`before` was successful.
         """
         pass
-    def get_canonical_name(self):
-        return "{0}:{1}".format(super(Test, self).get_canonical_name(), self._test_method_name)
 
+    def get_address_in_factory(self):
+        returned = ""
+        if self._before_kwargs or self._after_kwargs:
+            returned += "({0})({1})".format(self._format_kwargs(self._before_kwargs), self._format_kwargs(self._after_kwargs))
+        returned += ".{0}".format(self._test_method_name)
+        if self._test_kwargs:
+            returned += "({0})".format(self._format_kwargs(self._test_kwargs))
+        return returned
+
+    def _format_kwargs(self, kwargs):
+        return ", ".join("{0}={1!r}".format(x, y) for x, y in iteritems(kwargs))
 
 def abstract_test_class(cls):
     """

@@ -26,17 +26,25 @@ class TestGenerator(object):
         self._expected = set()
         self._uuid_base = str(uuid.uuid1())
         self._uuid_generator = ("{0}/{1}".format(self._uuid_base, i) for i in itertools.count(1))
+        self._test_cases_by_promise_id = {}
         self._run_callbacks = {}
         global _current_test_generator
         _current_test_generator = self
+
+    def get_test_case_by_promise_id(self, id):
+        return self._test_cases_by_promise_id[id]
+
     def get_expected_test_ids(self):
         return list(self._expected)
+
     def generate_tests(self, num_tests=3):
-        return [self.generate_test() for _ in xrange(num_tests)]
+        return [self.generate_test() for _ in xrange(num_tests)]\
+
     def generate_test(self):
         test_id = next(self._uuid_generator)
         self._expected.add(test_id)
         return TestPromise(test_id)
+
     def write_test_directory(self, structure, root=None):
         if root is None:
             root = mkdtemp()
@@ -65,6 +73,7 @@ class TestGenerator(object):
     def notify_run(self, test_id, test):
         _logger.debug("Running: {0}", test_id)
         self._expected.remove(test_id)
+        self._test_cases_by_promise_id[test_id] = test
         callback_list = self._run_callbacks.get(test_id, [])
         while callback_list:
             callback_list.pop(0)(test)
@@ -106,22 +115,29 @@ class TestPromise(object):
         super(TestPromise, self).__init__()
         self.id = test_promise_id
         self._test_class_name = "T" + self.id.replace("-", "_").replace("/", "_")
+
     def generate_test_factory_source(self):
         return _TEST_FACTORY_SOURCE_TEMPLATE.format(**self._get_template_context())
+
     def generate_test_source(self):
         return _TEST_SOURCE_TEMPLATE.format(**self._get_template_context())
+
     def _get_template_context(self):
         return {
             "test_generator_module_name" : __name__,
             "bucket_test_id" : self.id,
             "test_class_name" : self._test_class_name,
         }
+
     def generate_test(self):
-        d = {"RunnableTest" : slash.RunnableTest}
+        d = {"RunnableTest" : slash.RunnableTest, "__name__": __name__}
         exec(self.generate_test_source(), d)
         returned = d[self._test_class_name]()
         returned.__test_generator_promise__ = self
         return returned
+
+    def get_test_case(self):
+        return _current_test_generator.get_test_case_by_promise_id(self.id)
 
 _TESTFILE_HEADER = """
 from slash import RunnableTest, RunnableTestFactory

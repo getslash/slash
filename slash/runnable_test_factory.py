@@ -1,4 +1,4 @@
-from .metadata import ensure_slash_metadata
+from .metadata import Metadata
 
 class RunnableTestFactory(object):
 
@@ -9,8 +9,9 @@ class RunnableTestFactory(object):
 
         Do not override this method directly. Use :func:`.RunnableTestFactory._generate_tests` instead.
         """
-        for test in cls._generate_tests():
-            ensure_slash_metadata(test).factory = cls
+        for index, test in enumerate(cls._generate_tests()):
+            assert test.__slash__ is None
+            test.__slash__ = Metadata(test, factory=cls, factory_index=index)
             yield test
 
     @classmethod

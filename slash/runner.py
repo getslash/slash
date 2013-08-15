@@ -9,7 +9,7 @@ from .exceptions import (
     TestFailed,
     )
 from .exception_handling import handling_exceptions
-from .metadata import ensure_slash_metadata
+from .metadata import ensure_test_metadata
 from .test_context import get_test_context_setup
 from .utils.peekable_iterator import PeekableIterator
 from contextlib import contextmanager
@@ -26,7 +26,7 @@ def run_tests(iterable):
         raise NoActiveSession("A session is not currently active")
     test_iterator = PeekableIterator(iterable)
     for test in test_iterator:
-        ensure_slash_metadata(test).id = context.session.id_space.allocate()
+        ensure_test_metadata(test)
         _logger.debug("Running {0}...", test)
         with _get_run_context_stack(test, test_iterator) as result:
             test.run()
@@ -69,6 +69,10 @@ def _cleanup_context():
 
 @contextmanager
 def _get_test_context(test):
+    ensure_test_metadata(test)
+    assert test.__slash__.id is None
+    test.__slash__.id = context.session.id_space.allocate()
+
     with _set_current_test_context(test):
         with context.session.logging.get_test_logging_context():
             yield
