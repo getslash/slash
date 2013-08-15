@@ -15,10 +15,8 @@ install_requires = [
     "emport==1.0.0",
     "logbook>=0.4.2",
     "requests>=1.1.0",
+    "raven",
 ]
-
-if _PYTHON_VERSION < "3.0":
-    install_requires.append("raven")
 
 if _PYTHON_VERSION < "2.7":
     install_requires.append("argparse")
