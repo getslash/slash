@@ -10,7 +10,7 @@ config = Config({
         "enabled" : False // Doc("Enter pdb on failures and errors") // Cmdline(on="--pdb"),
     },
     "log" : {
-        "console_level" : logbook.WARNING // Doc("console verbosity") // Cmdline(decrease="-v", increase="-q"),
+        "console_level" : logbook.WARNING // Doc("console verbosity (can be repeated)") // Cmdline(decrease="-v", increase="-q"),
         "root" : None // Doc("Root directory for logs") // Cmdline(arg="-l", metavar="DIR"),
         "subpath" : "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),
         "session_subpath" : "session.log",
@@ -24,7 +24,7 @@ config = Config({
                             "See http://getsentry.com for details"),
     },
     "hooks" : {
-        "swallow_exceptions" : False // Doc("If set, exceptions inside hooks will be re-raised"),
+        "swallow_exceptions" : False // Doc("If set, exceptions inside hooks will not be re-raised"),
     },
     "plugins" : {
         "search_paths" : [] // Doc("List of paths in which to search for plugin modules"),

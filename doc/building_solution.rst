@@ -39,7 +39,7 @@ Creating the Tests
 
 When building our in-house testing solution it is important to consider where to store the tests we are going to run. We can choose many different places, but two options make slightly more sense than others:
 
-1. We can initializa a separate source repository for the tests (outside the testing package)
+1. We can initialize a separate source repository for the tests (outside the testing package)
 2. We can store them in a path inside the testing package
 
 Since we are going to write utilities and helpers in our testing package to help our tests, it would be better to hold the tests inside ``michrotech_testing``. This way the tests are versioned alongside the utility code, and they can be both checked out at the same time conveniently.

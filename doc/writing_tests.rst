@@ -283,4 +283,4 @@ The above example will yield 3 test cases, one for each value of ``x``. It is al
 	def after(self, z):
             # ...
 
-The above will yield 9 different runnable tests, one for each cartesian product of the ``before``, ``test`` and ``after`` possible parameter values.
+The above will yield 27 different runnable tests, one for each cartesian product of the ``before``, ``test`` and ``after`` possible parameter values.

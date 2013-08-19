@@ -60,6 +60,11 @@ In many cases you would like to receive options from the command line. Plugins c
      def configure_parsed_args(self, args):
          self.output_filename = args.output_filename
 
+Plugin Examples
+---------------
+
+An example of a functioning plugin can be found in the :ref:`Building Solutions <building_solutions>` section.
+
 Errors in Plugins
 -----------------
 
