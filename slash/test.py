@@ -81,6 +81,8 @@ class Test(RunnableTest, RunnableTestFactory):
 
     def _format_kwargs(self, kwargs):
         return ", ".join("{0}={1!r}".format(x, y) for x, y in iteritems(kwargs))
+    def get_test_method(self):
+        return self._test_method_name
 
 def abstract_test_class(cls):
     """

@@ -14,15 +14,24 @@ _logger = Logger(__name__)
 class Loader(object):
     """
     Provides iteration interfaces to load runnable tests from various places
+    It also enables execution of single class/method within a module, using the syntax test_object.py:TestClass.test_method 
     """
     def iter_path(self, path):
         return self.iter_paths([path])
     def iter_paths(self, paths):
         paths = list(paths)
         for path in paths:
+            if ":" in path:
+                _logger.debug("Path {0} contains ':'. verify module exists".format(path))
+                path = path.split(":", 1)[0]
             if not os.path.exists(path):
                 raise CannotLoadTests("Path {0} could not be found".format(path))
         for path in paths:
+            if ":" in path:
+                path, name = path.split(":", 1)
+            else:
+                path, name = path, None
+
             for file_path in _walk(path):
                 _logger.debug("Checking {0}", file_path)
                 if not self._is_file_wanted(file_path):
@@ -30,7 +39,7 @@ class Loader(object):
                     continue
                 with self._handling_import_errors():
                     module = import_file(file_path)
-                for runnable in self._iter_runnable_tests_in_module(module):
+                for runnable in self._iter_runnable_tests_in_module(module, name):
                     yield runnable
 
     @contextmanager
@@ -58,13 +67,29 @@ class Loader(object):
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")
 
-    def _iter_runnable_tests_in_module(self, module):
+    def _iter_runnable_tests_in_module(self, module, name):
+        if name:
+            if "." in name:
+                test_class_name, test_method_name = name.split(".", 1)
+                _logger.debug("Found a period.")
+            else:
+                test_class_name, test_method_name = name, None
+                _logger.debug("No period found, working on the whole class")
+        else:
+            test_class_name, test_method_name = None, None
+            _logger.debug("No : found, working on the whole module")
+        _logger.debug("test_class_name={}, test_method_name={}".format(test_class_name, test_method_name))
+
         for factory_name, factory in iteritems(vars(module)):
             if factory is RunnableTestFactory: # probably imported directly
+                continue
+            if test_class_name and factory_name != test_class_name:
                 continue
             if isinstance(factory, type) and issubclass(factory, RunnableTestFactory):
                 _logger.debug("Getting tests from {0}:{1}..", module, factory_name)
                 for test in self.iter_test_factory(factory):
+                    if test_method_name and test_method_name != test.get_test_method():
+                        continue
                     yield test
 
 def _walk(p):
