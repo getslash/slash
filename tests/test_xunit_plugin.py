@@ -1,7 +1,6 @@
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
 from slash import config
-from tempfile import mkdtemp
 import os
 import slash
 from lxml import etree
@@ -12,7 +11,7 @@ class XUnitPluginTest(TestCase):
         super(XUnitPluginTest, self).setUp()
         self.generator = TestGenerator()
         [skipped, failed, errored, success] = self.runnables = [x.generate_test() for x in self.generator.generate_tests(4)]
-        self.temp_dir = mkdtemp()
+        self.temp_dir = self.get_new_path()
         self.xunit_filename = os.path.join(self.temp_dir, "xunit.xml")
         self.generator.make_test_skip(skipped)
         self.generator.make_test_fail(failed)

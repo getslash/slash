@@ -3,9 +3,7 @@ from slash import hooks
 from slash import plugins
 from slash.plugins import PluginInterface
 from slash.plugins import IncompatiblePlugin
-from tempfile import mkdtemp
 import os
-import shutil
 
 class BuiltinPluginsTest(TestCase):
 
@@ -55,8 +53,7 @@ class PluginInstallationTest(TestCase):
 class PluginDiscoveryTest(TestCase):
     def setUp(self):
         super(PluginDiscoveryTest, self).setUp()
-        self.root_path = mkdtemp()
-        self.addCleanup(shutil.rmtree, self.root_path)
+        self.root_path = self.get_new_path()
         self.expected_names = set()
         for index, path in enumerate([
                 "a/b/p1.py",

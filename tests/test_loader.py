@@ -4,7 +4,6 @@ from slash.loader import Loader
 from slash.session import Session
 
 from uuid import uuid1
-import shutil
 import sys
 import os
 
@@ -25,8 +24,7 @@ class TestRepositoryTest(TestCase):
                             "test_1.py": self.generator.generate_test(),
                             "test_2.py": self.generator.generate_test(),
                         },
-                    }}}})
-        self.addCleanup(shutil.rmtree, self.root)
+                    }}}}, self.get_new_path())
 
 class ImportErrorsTest(TestRepositoryTest):
     def setUp(self):
@@ -79,3 +77,4 @@ class PathLoadingTest(TestRepositoryTest):
             set(test.TESTGENERATOR_TEST_ID for test in tests),
             set(self.generator.get_expected_test_ids())
             )
+

@@ -16,8 +16,7 @@ class TestMetadataTest(TestCase):
             "pkg": {
                 "__init__.py": "",
                 "test_1.py": self.test_promise,
-            }})))
-        self.addCleanup(shutil.rmtree, self.root)
+            }}, self.get_new_path())))
         self.addCleanup(os.chdir, os.path.abspath("."))
         os.chdir(self.root)
         with slash.Session() as s:

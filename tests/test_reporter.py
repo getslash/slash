@@ -25,7 +25,7 @@ class SlashRunTest(TestCase):
                 "error_test.py" : self.error_test,
                 "skip_test.py" : self.skip_test,
                 "warn_test.py" : self.warn_test,
-            }
+            }, self.get_new_path()
         )
         self.report_stream = cStringIO()
         self.separator = "-" * 80

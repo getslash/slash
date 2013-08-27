@@ -5,7 +5,6 @@ from .utils.test_generator import TestGenerator
 from slash.frontend import slash_run
 from slash import site
 import os
-import shutil
 
 class MissingFilesTest(TestCase):
     def test_slash_run_fails_fast_for_missing_files(self):
@@ -29,9 +28,8 @@ class SlashRunTest(TestCase):
                     "regular_file.txt" : "some content here",
                     "other_regular_file" : "more contents",
                 }
-            }
+            }, self.get_new_path()
         )
-        self.addCleanup(shutil.rmtree, self.root_path)
     def test_slash_run_directory_success(self):
         result = self._execute_slash_run([self.root_path])
         self.assertEquals(result, 0, "slash run did not return 0 on success")

@@ -1,6 +1,5 @@
 from .utils import TestCase
 from .utils import run_tests_assert_success
-from tempfile import mkdtemp
 import logbook
 import functools
 import os
@@ -14,7 +13,7 @@ _silenced_logger = logbook.Logger("silenced_logger")
 
 class LoggingTest(TestCase):
     def test(self):
-        self.log_path = mkdtemp()
+        self.log_path = self.get_new_path()
         self.override_config(
             "log.root",
             self.log_path,

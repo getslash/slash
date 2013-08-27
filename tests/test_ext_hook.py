@@ -1,5 +1,4 @@
 from .utils import TestCase
-from tempfile import mkdtemp
 import itertools
 import os
 import sys
@@ -9,7 +8,7 @@ _module_name_generator = ("custom_module_{0}".format(x) for x in itertools.count
 class ExtHookTest(TestCase):
     def setUp(self):
         super(ExtHookTest, self).setUp()
-        self.path = mkdtemp()
+        self.path = self.get_new_path()
         self.addCleanup(setattr, sys, "path", list(sys.path))
         sys.path.insert(0, self.path)
         self.expected_value = 31337

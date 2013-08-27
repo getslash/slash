@@ -4,7 +4,6 @@ from slash.exceptions import (
     SkipTest,
     TestFailed,
     )
-from tempfile import mkdtemp
 import itertools
 import os
 import uuid
@@ -45,9 +44,7 @@ class TestGenerator(object):
         self._expected.add(test_id)
         return TestPromise(test_id)
 
-    def write_test_directory(self, structure, root=None):
-        if root is None:
-            root = mkdtemp()
+    def write_test_directory(self, structure, root):
         if not os.path.isdir(root):
             os.makedirs(root)
         for filename, item in iteritems(structure):

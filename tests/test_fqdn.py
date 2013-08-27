@@ -3,8 +3,6 @@ Test the usage of FQDNs in Slash, to uniquely identify tests being run.
 """
 import itertools
 import os
-import shutil
-import tempfile
 
 import slash
 from .utils import TestCase
@@ -14,8 +12,7 @@ class FQDNTestBase(TestCase):
 
     def setUp(self):
         super(FQDNTestBase, self).setUp()
-        self.root = tempfile.mkdtemp()
-        self.addCleanup(shutil.rmtree, self.root)
+        self.root = self.get_new_path()
         self.filename = os.path.join(self.root, "testfile.py")
         with open(self.filename, "w") as f:
             f.write(_TEST_FILE_TEMPLATE)

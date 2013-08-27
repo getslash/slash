@@ -3,13 +3,16 @@ from logbook.compat import LoggingHandler
 import platform
 import itertools
 import forge
-import slash
-from slash.conf import config
-from slash import RunnableTestFactory
+import shutil
+import tempfile
 if platform.python_version() < "2.7":
     import unittest2 as unittest
 else:
     import unittest
+
+import slash
+from slash.conf import config
+from slash import RunnableTestFactory
 
 _logger = logbook.Logger(__name__)
 
@@ -20,9 +23,16 @@ class TestCase(unittest.TestCase):
         self._handler.push_application()
         self.override_config("hooks.swallow_exceptions", False)
         self.override_config("log.console_level", 10000) # silence console in tests
+
     def override_config(self, path, value):
         self.addCleanup(config.assign_path, path, config.get_path(path))
         config.assign_path(path, value)
+
+    def get_new_path(self):
+        returned = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, returned)
+        return returned
+
     _forge = None
     @property
     def forge(self):
