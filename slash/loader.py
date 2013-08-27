@@ -2,10 +2,12 @@ from .exceptions import CannotLoadTests
 from .exception_handling import handling_exceptions
 from .runnable_test_factory import RunnableTestFactory
 from .ctx import context
+from .utils.fqn import TestPQN
 from contextlib import contextmanager
 from logbook import Logger # pylint: disable=F0401
 from emport import import_file
 from ._compat import iteritems # pylint: disable=F0401
+import itertools
 import os
 import sys
 
@@ -15,8 +17,21 @@ class Loader(object):
     """
     Provides iteration interfaces to load runnable tests from various places
     """
+
+    def iter_pqns(self, pqns):
+        return itertools.chain.from_iterable(
+            self.iter_fqn(pqn) if ":" in pqn else self.iter_path(pqn)
+            for pqn in pqns)
+
+    def iter_fqn(self, pqn):
+        pqn = TestPQN.from_string(pqn)
+        for test in self.iter_path(pqn.path):
+            if pqn.matches(test.__slash__.fqn):
+                yield test
+
     def iter_path(self, path):
         return self.iter_paths([path])
+
     def iter_paths(self, paths):
         paths = list(paths)
         for path in paths:

@@ -2,6 +2,7 @@ import functools
 
 from ._compat import iteritems
 from .utils import skip_test
+from .utils.fqn import ModuleTestAddress
 from .parameters import iterate_kwargs_options
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
@@ -16,8 +17,10 @@ class Test(RunnableTest, RunnableTestFactory):
         self._before_kwargs = before_kwargs or {}
         self._after_kwargs = after_kwargs or {}
         self._test_kwargs = test_kwargs or {}
+
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
+
     @classmethod
     def skip_all(cls, reason=None):
         cls.__slash_skipped__ = True
@@ -70,14 +73,14 @@ class Test(RunnableTest, RunnableTestFactory):
         """
         pass
 
-    def get_address_in_factory(self):
-        returned = ""
-        if self._before_kwargs or self._after_kwargs:
-            returned += "({0})({1})".format(self._format_kwargs(self._before_kwargs), self._format_kwargs(self._after_kwargs))
-        returned += ".{0}".format(self._test_method_name)
-        if self._test_kwargs:
-            returned += "({0})".format(self._format_kwargs(self._test_kwargs))
-        return returned
+    def get_address_in_module(self):
+        return ModuleTestAddress(
+            factory_name=type(self).__name__,
+            method_name=self._test_method_name,
+            method_kwargs=self._test_kwargs,
+            before_kwargs=self._before_kwargs,
+            after_kwargs=self._after_kwargs,
+            )
 
     def _format_kwargs(self, kwargs):
         return ", ".join("{0}={1!r}".format(x, y) for x, y in iteritems(kwargs))

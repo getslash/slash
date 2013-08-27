@@ -1,32 +1,59 @@
 from .utils import TestCase
+from .utils import run_tests_assert_success
 from .utils.test_generator import TestGenerator
+import itertools
 import os
 import shutil
 import slash
 import tempfile
 
-
 class TestMetadataTest(TestCase):
 
     def setUp(self):
         super(TestMetadataTest, self).setUp()
-        self.generator = TestGenerator()
-        self.test_promise = self.generator.generate_test()
-        self.root = os.path.abspath(os.path.realpath(self.generator.write_test_directory({
-            "pkg": {
-                "__init__.py": "",
-                "test_1.py": self.test_promise,
-            }}, self.get_new_path())))
-        self.addCleanup(os.chdir, os.path.abspath("."))
-        os.chdir(self.root)
-        with slash.Session() as s:
-            self.session = s
-            [self.test] = tests = list(slash.loader.Loader().iter_path(self.root))
-            slash.run_tests(tests)
-        [self.result] = self.session.result.iter_test_results()
-        self.test_case = self.test_promise.get_test_case()
+        self.root = self.get_new_path()
+        self.filename = os.path.join(self.root, "testfile.py")
+        with open(self.filename, "w") as f:
+            f.write(_TEST_FILE_TEMPLATE)
 
-    def test_test_metadata(self):
-        self.assertIs(self.test_case.__slash__, self.result.test_metadata)
-        self.assertEquals(self.test_case.__slash__.fqdn.get_abspath(), os.path.abspath(os.path.join(self.root, "pkg", "test_1.py")))
-        self.assertEquals(self.test_case.__slash__.fqdn.get_path(), os.path.join("pkg", "test_1.py"))
+        self.tests = list((slash.loader.Loader().iter_path(self.filename)))
+        self.session = run_tests_assert_success(self.tests)
+        self.results = list(self.session.result.iter_test_results())
+        self.results.sort(key = lambda result: str(result.test_metadata.fqn))
+
+    def test_tests_have_correct_metadata(self):
+        for test, result in zip(self.tests, self.session.result.iter_test_results()):
+            self.assertIs(test.__slash__, result.test_metadata)
+
+    def test_simple_test_fqn(self):
+        simple_test_fqn = self.results[0].test_metadata.fqn
+        self.assertEquals(simple_test_fqn, "{0}:T001.test_method".format(self.filename))
+
+    def test_parameterized_test_fqn(self):
+        parameterized = set(str(x.test_metadata.fqn) for x in self.results[1:])
+
+        self.assertEquals(parameterized, set(
+            "{0}:T002(a={1})(c={2}).test_parameters(b={3})".format(self.filename, a, c, b)
+            for a, b, c in itertools.product([1, 2], [3, 4], [5, 6])))
+
+_TEST_FILE_TEMPLATE = """
+import slash
+
+class T001(slash.Test):
+    def test_method(self):
+        pass
+
+class T002(slash.Test):
+
+    @slash.parameters.iterate(a=[1, 2])
+    def before(self, a):
+        pass
+
+    @slash.parameters.iterate(b=[3, 4])
+    def test_parameters(self, b):
+        pass
+
+    @slash.parameters.iterate(c=[5, 6])
+    def after(self, c):
+        pass
+"""

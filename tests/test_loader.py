@@ -78,3 +78,41 @@ class PathLoadingTest(TestRepositoryTest):
             set(self.generator.get_expected_test_ids())
             )
 
+class PQNLoadingTest(TestCase):
+
+    def setUp(self):
+        super(PQNLoadingTest, self).setUp()
+        self.root = self.get_new_path()
+        self.classname_1 = "TestClass001"
+        self.classname_2 = "TestClass002"
+
+        with open(os.path.join(self.root, "file1.py"), "w") as f:
+            f.write(_PARAMETERIZED_TEST_TEMPLATE.format(classname=self.classname_1))
+
+        with open(os.path.join(self.root, "file2.py"), "w") as f:
+            f.write(_PARAMETERIZED_TEST_TEMPLATE.format(classname=self.classname_1))
+
+    def test_single_class(self):
+        assert "@" not in _PARAMETERIZED_TEST_TEMPLATE, "Need to rewrite for parameters"
+        num_tests = _PARAMETERIZED_TEST_TEMPLATE.count("def ")
+
+        for pqn in ["file1.py:TestClass001", "file1.py"]:
+            self._assert_loads(pqn, ["file1.py:TestClass001.test_method_1", "file1.py:TestClass001.test_method_2"])
+
+    def _assert_loads(self, relative_pqn, expected_cases):
+        pqn = os.path.join(self.root, relative_pqn)
+        tests = Loader().iter_pqns([pqn])
+        expected_cases = [os.path.join(self.root, e) for e in expected_cases]
+        self.assertEquals(set(str(test.__slash__.fqn) for test in tests), set(expected_cases))
+
+_PARAMETERIZED_TEST_TEMPLATE = """
+import slash
+
+class {classname}(slash.Test):
+
+    def test_method_1(self):
+        pass
+
+    def test_method_2(self):
+        pass
+"""

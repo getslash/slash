@@ -11,11 +11,11 @@ class RunnableTest(object):
         """
         raise NotImplementedError() # pragma: no cover
 
-    def get_address_in_factory(self):
+    def get_address_in_module(self):
         """
-        Returns the 'address' of this test inside the factory that created it.
+        Returns the 'address' of this test inside the module in which it resides.
 
-        This is used in order to later refer to that test in its FQDN or when rerunning it.
+        This is used in order to later refer to that test in its FQN or when rerunning it.
         """
         return None
 

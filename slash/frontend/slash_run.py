@@ -15,7 +15,7 @@ def slash_run(args, report_stream=sys.stderr):
         if not app.args.paths and not app.args.interactive:
             app.error("No tests specified")
         try:
-            run_tests(app.test_loader.iter_paths(app.args.paths))
+            run_tests(app.test_loader.iter_pqns(app.args.paths))
         except SlashException as e:
             logbook.error(e)
             return -1
@@ -27,6 +27,6 @@ def _get_extra_cli_args():
     return [
         cli_utils.Argument(
             "paths", metavar="TEST", nargs="*",
-            help="Test name to run. This can be either a file or a test FQDN. "
+            help="Test name to run. This can be either a file or a test FQN. "
             "See documentation for details"),
         ]
