@@ -130,6 +130,21 @@ class PQNTest(TestCase):
         self._assert_not_matches("/tmp/testme.py:Factory.method", "/tmp/testme.py:Factory2.method")
         self._assert_not_matches("/tmp/testme.py:Factory", "/tmp/testme2.py:Factory.method")
 
+    def test_matching_parameters(self):
+        for before, after, params in [
+                ("(a=1)", "()", "()"),
+                ("()", "(d=4)", "()"),
+                ("()", "(d=4)", "(f=6)"),
+                ("()", "(d=4)", "(f=6, e=5)"),
+                ("(a=1, b=2)", "(d=4)", "(f=6, e=5)"),
+                ("(a=1, b=2)", "(d=4, c=3)", "(f=6, e=5)"),
+                ]:
+            pqn = "/tmp/testme.py:Factory{0}{1}.method{2}".format(before, after, params)
+            self._assert_matches(pqn, "/tmp/testme.py:Factory(a=1, b=2)(c=3, d=4).method(e=5, f=6)")
+            self._assert_not_matches(pqn, "/tmp/testme.py:Factory2(a=1, b=2)(c=3, d=4).method(e=5, f=6)")
+            self._assert_not_matches(pqn, "/tmp/testme.py:Factory(a=1, b=2)(c=3, d=4).method2(e=5, f=6)")
+            self._assert_not_matches(pqn, "/tmp/testme.py:Factory(a=2, b=2)(c=3, d=5).method(e=5, f=7)")
+
     def test_invalid_pqns(self):
         for pqn in [
                 "test.py:Factory-1",

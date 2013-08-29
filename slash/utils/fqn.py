@@ -65,11 +65,19 @@ class TestPQN(object):
                 if address_field_value is not None and address_field_value != getattr(other.address_in_module, address_field_name):
                     return False
 
-        return True
+            for keywords_field_name in ("before_kwargs", "after_kwargs", "method_kwargs"):
+                pattern_kwargs = getattr(self.address_in_module, keywords_field_name)
+                other_kwargs = getattr(other.address_in_module, keywords_field_name)
+                if not all(other_kwargs.get(arg_name, _NOTHING) == arg_value
+                           for arg_name, arg_value in iteritems(pattern_kwargs)):
+                    return False
 
+        return True
 
     def __repr__(self):
         return self.fqn
+
+_NOTHING = object()
 
 class TestFQN(TestPQN):
     """
