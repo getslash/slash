@@ -43,8 +43,7 @@
          .. toctree::
            :maxdepth: 2
       
-           tutorial
-           writing_tests
+           getting_started
            assertions
            configuration
            logging

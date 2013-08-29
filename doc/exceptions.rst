@@ -1,9 +1,9 @@
-Exceptions
-==========
+Exceptions and Debugging
+========================
 
 Exceptions are an important part of the testing workflow. They happen all the time -- whether they indicate a test lifetime event or an actual error condition. Exceptions need to be debugged, handled, responded to, and sometimes with delicate logic of what to do when.
 
-As explained in the :ref:`quickstart` section, you can enter a debugger when exceptions occur via the ``--pdb`` flag. Slash will attempt to invoke ``pudb`` or ``ipdb`` if you have them installed, but will revert to the default ``pdb`` if they are not present.
+You can enter a debugger when exceptions occur via the ``--pdb`` flag. Slash will attempt to invoke ``pudb`` or ``ipdb`` if you have them installed, but will revert to the default ``pdb`` if they are not present.
 
 Note that the hooks named ``exception_caught_after_debugger``, and ``exception_caught_before_debugger`` handle exception cases. It is important to plan your hook callbacks and decide which of these two hooks should call them, since a debugger might stall for a long time until a user notices it.
 

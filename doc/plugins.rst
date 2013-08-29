@@ -63,7 +63,7 @@ In many cases you would like to receive options from the command line. Plugins c
 Plugin Examples
 ---------------
 
-An example of a functioning plugin can be found in the :ref:`Building Solutions <building_solutions>` section.
+An example of a functioning plugin can be found in the :ref:`Building Solutions <building_solution>` section.
 
 Errors in Plugins
 -----------------
