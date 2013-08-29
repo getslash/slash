@@ -2,6 +2,7 @@ from .utils import TestCase
 from .utils.test_generator import TestGenerator
 from slash.loader import Loader
 from slash.session import Session
+from slash.exceptions import CannotLoadTests
 
 from uuid import uuid1
 import sys
@@ -98,6 +99,24 @@ class PQNLoadingTest(TestCase):
 
         for pqn in ["file1.py:TestClass001", "file1.py"]:
             self._assert_loads(pqn, ["file1.py:TestClass001.test_method_1", "file1.py:TestClass001.test_method_2"])
+
+    def test_one_pattern_not_found(self):
+        ok_pattern = os.path.join(self.root, "file1.py:TestClass001")
+        loader = Loader()
+        # this should work
+        unused = list(loader.iter_pqns([ok_pattern]))
+
+        for pattern in [
+                "file1.py:NonexistentTest",
+                "file1.py:TestClass001.nonexistent_method",
+                "file1.py:TestClass001(param=1)().test_method_1",
+                "file1.py:TestClass001()(param=1).test_method_1",
+                "file1.py:TestClass001()().test_method_1(param=1)",
+                ]:
+            pattern = os.path.join(self.root, pattern)
+
+            with self.assertRaises(CannotLoadTests):
+                list(Loader().iter_pqns([ok_pattern, pattern]))
 
     def _assert_loads(self, relative_pqn, expected_cases):
         pqn = os.path.join(self.root, relative_pqn)

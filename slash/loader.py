@@ -25,9 +25,13 @@ class Loader(object):
 
     def iter_fqn(self, pqn):
         pqn = TestPQN.from_string(pqn)
+        found = False
         for test in self.iter_path(pqn.path):
             if pqn.matches(test.__slash__.fqn):
+                found = True
                 yield test
+        if not found:
+            raise CannotLoadTests("Pattern {0!r} not matched any test".format(pqn))
 
     def iter_path(self, path):
         return self.iter_paths([path])
