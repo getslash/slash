@@ -36,11 +36,12 @@ class Operator(object):
         self.template = template
         self.func = func
         self.inverse_func = inverse_func
+
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
+
     def to_expression(self, *args, **kwargs):
         return self.template.format(*args, **kwargs)
-
 
 def get_operator_by_func(operator_func):
     return _OPERATORS[operator_func]
@@ -50,5 +51,5 @@ _op(operator.eq, "{0} == {1}", operator.ne, "{0} != {1}")
 _op(safe_isinstance, "{0} is instance of {1}", safe_not_isinstance, "{0} is not instance of {1}")
 _op(is_none, "{0} is None", is_not_none, "{0} is not None")
 _op(operator.is_, "{0} is {1}", operator.is_not, "{0} is not {1}")
-_op(operator.truth, "{0} is true", operator.not_, "{0} is not true")
+_op(operator.truth, "{0} is not false", operator.not_, "{0} is not true")
 _op(operator.contains, "{1} in {0}", not_contains, "{1} not in {0}")

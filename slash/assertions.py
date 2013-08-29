@@ -103,8 +103,6 @@ assert_raises.__doc__ = raise_exception.__doc__.replace("raise_exception", "asse
 class _CaughtException(object):
     exception = None
 
-#def assertIn(self, member, container, msg=None):
-#def assertNotIn(self, member, container, msg=None):
 #def assertDictEqual(self, d1, d2, msg=None):
 #def assertDictContainsSubset(self, expected, actual, msg=None):
 #def assertItemsEqual(self, expected_seq, actual_seq, msg=None):
