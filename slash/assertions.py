@@ -61,6 +61,12 @@ assert_true = be_true
 be_false = _unary_assertion("be_false", operator.not_)
 assert_false = be_false
 
+be_empty = _unary_assertion("be_empty", operator_information.is_empty)
+assert_empty = be_empty
+
+not_be_empty = _unary_assertion("not_be_empty", operator_information.is_not_empty)
+assert_not_empty = not_be_empty
+
 contain = _binary_assertion("contain", operator.contains)
 assert_contains = contains = contain
 

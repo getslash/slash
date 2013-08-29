@@ -7,10 +7,21 @@ from slash import should
 from slash.exceptions import TestFailed
 
 class AssertionsTest(TestCase):
+
     def test_assert_equals(self):
         with checking(should.equal, should.not_equal):
             good(1, 1)
             bad(1, 2)
+
+    def test_assert_empty(self):
+        with checking(should.be_empty, should.not_be_empty):
+            good([])
+            good({})
+            good(set())
+            bad([1, 2, 3])
+            bad({1: 2})
+            bad(set([1, 2, 3]))
+
     def test_assert_isinstance(self):
         with checking(should.be_a, should.not_be_a):
             good(1, int)

@@ -23,6 +23,12 @@ def not_contains(x, y):
     """
     return y not in x
 
+def is_empty(x):
+    return len(x) == 0
+
+def is_not_empty(x):
+    return not is_empty(x)
+
 ### Operator information
 _OPERATORS = {}
 
@@ -53,3 +59,4 @@ _op(is_none, "{0} is None", is_not_none, "{0} is not None")
 _op(operator.is_, "{0} is {1}", operator.is_not, "{0} is not {1}")
 _op(operator.truth, "{0} is not false", operator.not_, "{0} is not true")
 _op(operator.contains, "{1} in {0}", not_contains, "{1} not in {0}")
+_op(is_empty, "{0} is empty", is_not_empty, "{0} is not empty")
