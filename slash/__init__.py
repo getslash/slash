@@ -18,6 +18,8 @@ from .assertions import (
     assert_in,
     assert_is,
     assert_is_none,
+    assert_empty,
+    assert_not_empty,
     assert_is_not,
     assert_is_not_none,
     assert_isinstance,

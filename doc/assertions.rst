@@ -32,6 +32,10 @@ One syntax for assertions can be done via the ``slash.should`` module:
 
 .. autofunction:: slash.should.be_false
 
+.. autofunction:: slash.should.be_empty
+
+.. autofunction:: slash.should.not_be_empty
+
 .. autofunction:: slash.should.be_in
 
 .. autofunction:: slash.should.not_be_in
@@ -74,6 +78,9 @@ Using ``slash.assert_X`` functions
 
 .. autofunction:: slash.assert_true
 .. autofunction:: slash.assert_false
+
+.. autofunction:: slash.assert_empty
+.. autofunction:: slash.assert_not_empty
 
 .. autofunction:: slash.assert_is
 .. autofunction:: slash.assert_is_not
