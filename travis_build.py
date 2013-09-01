@@ -13,6 +13,8 @@ def _execute(cmd):
 if __name__ == '__main__':
     print("Running from", os.path.abspath("."))
     deps = [
+        "coverage",
+        "coveralls",
         "nose",
         "pyforge",
         "lxml", # for XSD validations
@@ -29,4 +31,4 @@ if __name__ == '__main__':
     if not _PYPY:
         _execute("pylint --rcfile=.pylintrc setup.py")
         _execute("pylint --rcfile=.pylintrc slash")
-    _execute("nosetests -w tests")
+    _execute("nosetests  --with-coverage --cover-package slash -w tests")
