@@ -24,7 +24,7 @@ class PluginInterface(object):
 
     def configure_argument_parser(self, parser):
         """
-        Gives a chance to the plugin to add options received from comand-line
+        Gives a chance to the plugin to add options received from command-line
         """
         pass
 
