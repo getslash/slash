@@ -77,7 +77,9 @@ The Slash Environment
 The Salsh Session
 +++++++++++++++++
 
-The :class:`.Session` represents the current test execution session. It has a unique id, used to designate the session in various contexts. Tests must run under an active session, as the test results and other important pieces of data are kept on it.
+Tests are always run in a context, called **a session**. A session is used to identify the test execution process, giving it a unique id and collecting the entire state of the run.
+
+The :class:`.Session` represents the current test execution session, and contains the various state elements needed to maintain it. Since sessions also contain test results and statuses, trying to run tests without an active session will fail.
 
 The currently active session is accessible through ``slash.session``:
 
@@ -86,6 +88,16 @@ The currently active session is accessible through ``slash.session``:
   from slash import session
 
   print("The current session id is", session.id)
+
+.. note:: Normally, you don't have to create slash sessions programmatically. Slash creates them for you when running tests. However, it is always possible to create sessions in an interpreter:
+
+    .. code-block:: python
+
+        from slash import Session 
+
+        ...
+        with slash.Session() as s:
+             ... # <--- in this context, s is the active session
 
 .. autoclass:: slash.Session
   :members:
