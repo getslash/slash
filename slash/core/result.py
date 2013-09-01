@@ -22,8 +22,11 @@ class Result(object):
         return self.is_failure() and not self.is_error()
     def is_skip(self):
         return bool(self._skips)
-    def is_success(self):
-        return not self._errors and not self._failures and not self._skips and not self._interrupted
+    def is_success(self, allow_skips=False):
+        returned = not self._errors and not self._failures and not self._interrupted
+        if not allow_skips:
+            returned &= not self._skips
+        return returned
     def is_success_finished(self):
         return self.is_success() and self.is_finished()
     def is_finished(self):
@@ -66,8 +69,10 @@ class SessionResult(object):
         self._iterator = functools.partial(itervalues, session_results_dict)
     def __iter__(self):
         return self._iterator()
-    def is_success(self):
-        return self.global_result.is_success() and all(result.is_finished() and result.is_success() for result in self._iterator())
+    def is_success(self, allow_skips=False):
+        return self.global_result.is_success() and \
+            all(result.is_finished() and result.is_success(allow_skips=allow_skips)
+                for result in self._iterator())
     def get_num_results(self):
         return len(self._session_results_dict)
     def get_num_successful(self):

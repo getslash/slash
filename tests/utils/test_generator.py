@@ -1,5 +1,5 @@
 import slash
-from slash._compat import xrange, iteritems
+from slash._compat import xrange, iteritems, itervalues
 from slash.exceptions import (
     SkipTest,
     TestFailed,
@@ -22,13 +22,20 @@ class TestGenerator(object):
 
     def __init__(self):
         super(TestGenerator, self).__init__()
-        self._expected = set()
         self._uuid_base = str(uuid.uuid1())
         self._uuid_generator = ("{0}/{1}".format(self._uuid_base, i) for i in itertools.count(1))
-        self._test_cases_by_promise_id = {}
-        self._run_callbacks = {}
+        self.reset()
         global _current_test_generator
         _current_test_generator = self
+
+    def reset(self):
+        self._expected = set()
+        self._test_cases_by_promise_id = {}
+        self._run_callbacks = {}
+
+    def forget_run_test_ids(self):
+        self._expected.update(self._test_cases_by_promise_id)
+        self._test_cases_by_promise_id.clear()
 
     def get_test_case_by_promise_id(self, id):
         return self._test_cases_by_promise_id[id]
@@ -36,8 +43,11 @@ class TestGenerator(object):
     def get_expected_test_ids(self):
         return list(self._expected)
 
+    def get_test_ids_run(self):
+        return list(self._test_cases_by_promise_id)
+
     def generate_tests(self, num_tests=3):
-        return [self.generate_test() for _ in xrange(num_tests)]\
+        return [self.generate_test() for _ in xrange(num_tests)]
 
     def generate_test(self):
         test_id = next(self._uuid_generator)
@@ -74,6 +84,7 @@ class TestGenerator(object):
         callback_list = self._run_callbacks.get(test_id, [])
         while callback_list:
             callback_list.pop(0)(test)
+
     def assert_all_run(self):
         assert not self._expected, "These tests have not run: {0}".format(", ".join(self._expected))
 
@@ -112,6 +123,7 @@ class TestPromise(object):
         super(TestPromise, self).__init__()
         self.id = test_promise_id
         self._test_class_name = "T" + self.id.replace("-", "_").replace("/", "_")
+        self._factory_class_name = "F" + self._test_class_name
 
     def generate_test_factory_source(self):
         return _TEST_FACTORY_SOURCE_TEMPLATE.format(**self._get_template_context())
@@ -124,6 +136,7 @@ class TestPromise(object):
             "test_generator_module_name" : __name__,
             "bucket_test_id" : self.id,
             "test_class_name" : self._test_class_name,
+            "factory_class_name": self._factory_class_name,
         }
 
     def generate_test(self):
@@ -149,9 +162,9 @@ class {test_class_name}(RunnableTest):
 """
 
 _TEST_FACTORY_SOURCE_TEMPLATE = """
-class F{{test_class_name}}(RunnableTestFactory):
+class {{factory_class_name}}(RunnableTestFactory):
     @classmethod
-    def generate_tests(cls):
+    def _generate_tests(cls):
 {0}
         return [{{test_class_name}}()]
 """.format("\n".join((" " * 8 + line) for line in _TEST_SOURCE_TEMPLATE.splitlines()))

@@ -21,6 +21,7 @@ class TestCase(unittest.TestCase):
         super(TestCase, self).setUp()
         self._handler = LoggingHandler()
         self._handler.push_application()
+        self.addCleanup(self._handler.pop_application)
         self.override_config("hooks.swallow_exceptions", False)
         self.override_config("log.console_level", 10000) # silence console in tests
 
@@ -49,7 +50,6 @@ class TestCase(unittest.TestCase):
         if self._forge is not None:
             self._forge.restore_all_replacements()
             self._forge.verify()
-        self._handler.pop_application()
         super(TestCase, self).tearDown()
 
 class NullFile(object):
@@ -66,14 +66,22 @@ class CustomException(Exception):
 def no_op(*args, **kwargs):
     pass
 
-def run_tests_assert_success(test_class_or_iterator):
-    if isinstance(test_class_or_iterator, type) and issubclass(test_class_or_iterator, RunnableTestFactory):
-        test_class_or_iterator = test_class_or_iterator.generate_tests()
+def run_tests_in_session(test_class_path_or_iterator):
+    if isinstance(test_class_path_or_iterator, str):
+        test_class_path_or_iterator = slash.loader.Loader().iter_paths([test_class_path_or_iterator])
+    if isinstance(test_class_path_or_iterator, type) and issubclass(test_class_path_or_iterator, RunnableTestFactory):
+        test_class_path_or_iterator = test_class_path_or_iterator.generate_tests()
     with slash.Session() as session:
-        slash.runner.run_tests(test_class_or_iterator)
+        slash.runner.run_tests(test_class_path_or_iterator)
     for result in session.result.iter_test_results():
         for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):
             _logger.debug("Unsuccessful result: {0}", err)
+    return session
+run_tests_in_session.__test__ = False
+
+def run_tests_assert_success(test_class_path_or_iterator):
+    session = run_tests_in_session(test_class_path_or_iterator)
     assert session.result.is_success(), "Run did not succeed"
     return session
+
 run_tests_assert_success.__test__ = False

@@ -5,7 +5,8 @@ import logbook # pylint: disable=F0401
 import sys
 
 _COMMANDS = {
-    "run" : "slash.frontend.slash_run:slash_run",
+    "run": "slash.frontend.slash_run:slash_run",
+    "rerun": "slash.frontend.slash_run:slash_rerun",
     }
 
 parser = argparse.ArgumentParser(
