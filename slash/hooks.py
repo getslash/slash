@@ -26,7 +26,7 @@ _CUSTOM_HOOKS = {}
 
 def add_custom_hook(hook_name):
     """
-    Adds an additional hook to the set of availble hooks
+    Adds an additional hook to the set of available hooks
     """
     globs = globals()
     if hook_name in _CUSTOM_HOOKS or hook_name in globs:
