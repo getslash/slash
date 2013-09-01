@@ -1,6 +1,6 @@
 from .utils import TestCase
 import slash
-from slash.session import Session
+from slash import Session
 from slash import context
 
 class GlobalsTest(TestCase):
@@ -10,6 +10,8 @@ class GlobalsTest(TestCase):
     def test_get_current_session(self):
         with self.session:
             self.assertIs(context.session, self.session)
+            self.assertIsNot(context.session, slash.session)
+            self.assertEquals(self.session, slash.session)
     def test_get_current_test(self):
         with self.session:
             self.assertIsNone(context.test)

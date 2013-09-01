@@ -1,9 +1,9 @@
 # pylint: disable-msg=W0201
 from .utils.test_generator import TestGenerator
-from slash.runner import run_tests
-from slash.session import Session
-from slash.result import Result
 import slash
+from slash.runner import run_tests
+from slash import Session
+from slash.core.result import Result
 from .utils import TestCase
 
 class InterruptionTest(TestCase):

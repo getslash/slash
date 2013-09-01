@@ -69,7 +69,7 @@ def no_op(*args, **kwargs):
 def run_tests_assert_success(test_class_or_iterator):
     if isinstance(test_class_or_iterator, type) and issubclass(test_class_or_iterator, RunnableTestFactory):
         test_class_or_iterator = test_class_or_iterator.generate_tests()
-    with slash.session.Session() as session:
+    with slash.Session() as session:
         slash.runner.run_tests(test_class_or_iterator)
     for result in session.result.iter_test_results():
         for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):

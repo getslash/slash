@@ -2,7 +2,7 @@
 """
 slash.local - context-local objects.
 
-The source code in this file is derived from werkzeug's local.py (Copyright 2011 by the Werkzeug Team)
+The source code in this file is derived from Werkzeug's local.py (Copyright 2011 by the Werkzeug Team)
 
 The license for the original code follows:
 

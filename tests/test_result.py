@@ -1,7 +1,7 @@
 from .utils import TestCase
 from slash._compat import OrderedDict
-from slash.result import Result
-from slash.result import SessionResult
+from slash.core.result import Result
+from slash.core.result import SessionResult
 
 class SessionResultTest(TestCase):
     def setUp(self):

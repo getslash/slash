@@ -3,10 +3,10 @@ from . import parameters
 from .cleanups import add_cleanup, add_critical_cleanup
 from .conf import config
 from .ctx import context
-from .ctx import g
+from .ctx import g, session
 from .runnable_test_factory import RunnableTestFactory
 from .runnable_test import RunnableTest
-from .session import Session
+from .core.session import Session
 # assertions
 from . import assertions
 should = assertions

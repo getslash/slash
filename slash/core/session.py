@@ -1,13 +1,13 @@
 import uuid
 from contextlib import contextmanager
-from . import ctx, hooks, log
-from ._compat import OrderedDict
-from .exception_handling import handling_exceptions
+from .. import ctx, hooks, log
+from .._compat import OrderedDict
+from ..exception_handling import handling_exceptions
+from ..interfaces import Activatable
 from .result import Result
-from .interfaces import Activatable
 from .result import SessionResult
-from .utils.id_space import IDSpace
-from .warnings import SessionWarnings
+from ..utils.id_space import IDSpace
+from ..warnings import SessionWarnings
 
 class Session(Activatable):
     def __init__(self):

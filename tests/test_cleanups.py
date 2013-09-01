@@ -1,7 +1,7 @@
 from .utils import TestCase
 import slash
 import slash.runner
-from slash.session import Session
+from slash import Session
 from slash.loader import Loader
 
 class CleanupsTest(TestCase):

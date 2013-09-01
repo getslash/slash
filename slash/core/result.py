@@ -1,8 +1,8 @@
 import itertools
 import functools
 import sys
-from ._compat import itervalues
-from .utils.error_object import Error
+from .._compat import itervalues
+from ..utils.error_object import Error
 
 class Result(object):
     def __init__(self, test_metadata=None):

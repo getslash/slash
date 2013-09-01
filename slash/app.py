@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import sys
 from . import hooks as trigger_hook
 from .loader import Loader
-from .session import Session
+from .core.session import Session
 from . import site
 from .utils import cli_utils
 from .utils.interactive import start_interactive_shell

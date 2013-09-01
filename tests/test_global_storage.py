@@ -16,6 +16,6 @@ class GlobalStorageTest(TestCase):
             slash.hooks.session_start.unregister_by_identifier,
             self.identifier
         )
-        with slash.session.Session():
+        with slash.Session():
             pass
         self.assertTrue(self.hook_called)

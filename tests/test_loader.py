@@ -1,7 +1,7 @@
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
+from slash import Session
 from slash.loader import Loader
-from slash.session import Session
 from slash.exceptions import CannotLoadTests
 
 from uuid import uuid1

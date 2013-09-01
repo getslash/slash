@@ -3,8 +3,8 @@ from .utils.test_generator import TestGenerator
 from .utils import TestCase
 from slash.runner import run_tests
 from slash.exceptions import NoActiveSession
-from slash.session import Session
-from slash.result import Result
+from slash import Session
+from slash.core.result import Result
 from slash.ctx import context
 import random
 

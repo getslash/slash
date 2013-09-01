@@ -1,5 +1,5 @@
 from .utils import TestCase
-from slash.session import Session
+from slash import Session
 
 class TestIDSpace(TestCase):
     def test_ids_are_unique(self):

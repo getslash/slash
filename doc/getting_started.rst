@@ -87,7 +87,7 @@ The currently active session is accessible through ``slash.session``:
 
   print("The current session id is", session.id)
 
-.. autoclass:: slash.session.Session
+.. autoclass:: slash.Session
   :members:
 
 The Global Storage
