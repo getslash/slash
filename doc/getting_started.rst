@@ -117,6 +117,7 @@ In many cases objects need to be passed between tests and utility libraries. The
 
 This is particularly useful for customization purposes, :ref:`as described in the relevant section <building_solution>`.
 
+.. note:: Globals are only usable under an :ref:`active session <sessions>`. Trying to use them outside of an active session will result in an exception. Also, different sessions will contain different global state, so it is not possible to reuse ``slash.g`` and others between sessions.
 
 Warnings
 --------
