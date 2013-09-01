@@ -95,7 +95,7 @@ class BaseLiveReporter(HooksContextManager):
 class VerboseLiveReporter(BaseLiveReporter):
     def on_test_start(self):
         self._formatter.write("> ", context.test)
-        self._formatter.write(" ... ")
+        self._formatter.writeln(" ...")
     def on_test_success(self):
         self._formatter.writeln("ok")
     def on_test_error(self):

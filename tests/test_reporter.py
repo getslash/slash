@@ -63,7 +63,7 @@ class SlashRunTest(TestCase):
 
     def _assert_reported(self, output, test_name, additional_text):
         test = getattr(self, test_name)
-        expected_output = "{0}.py:{1}.{2} ... {3}".format(
+        expected_output = "{0}.py:{1}.{2} ...\n{3}".format(
             test_name, test._test_class_name, 0, additional_text)
         if expected_output not in output:
             self.fail("Expected output {0!r} not found. Output was:\n{1}".format(expected_output, output))
