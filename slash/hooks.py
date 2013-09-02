@@ -61,3 +61,10 @@ def get_all_hooks():
         if not isinstance(callback, Callback):
             continue
         yield name, callback
+
+def get_hook_by_name(hook_name):
+    """
+    Returns a hook (if exists) by its name, otherwise returns None
+    """
+    return _CUSTOM_HOOKS.get(hook_name, None)
+
