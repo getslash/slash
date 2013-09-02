@@ -1,4 +1,3 @@
-import os
 import logbook
 from confetti import Config
 from .utils.conf_utils import Doc, Cmdline
