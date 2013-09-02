@@ -32,13 +32,10 @@ class CustomizationTest(TestCase):
             site_customized = True
         return _customize
     def test_customize_via_slashrc(self):
-        slashrc_path = mktemp()
-        self.forge.replace(os.path, "expanduser")
-        os.path.expanduser("~/.slash/slashrc").whenever().and_return(slashrc_path)
+        slashrc_path = os.path.join(self.get_new_path(), "slashrc")
+        self.override_config("run.user_customization_file_path", slashrc_path)
         with open(slashrc_path, "w") as f:
             f.write(self.get_customization_source())
-        self.forge.replay()
-        self.assert_customization_loaded()
     def test_customize_via_env_var(self):
         os.environ["SLASH_SETTINGS"] = custom_filename = mktemp()
         self.addCleanup(os.environ.pop, "SLASH_SETTINGS")
