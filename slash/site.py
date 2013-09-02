@@ -1,5 +1,6 @@
 import os
 import requests
+from .conf import config
 
 def load(thing=None):
     """
@@ -15,13 +16,19 @@ def load(thing=None):
 
 def _load_defaults():
     _load_slashrc()
+    _load_local_slashrc()
     _load_environment()
     _load_entry_points()
 
 def _load_slashrc():
-    site_file = os.path.expanduser("~/.slash/slashrc")
-    if os.path.isfile(site_file):
-        _load_filename(site_file)
+    _load_file_if_exists(os.path.expanduser(config.root.run.user_customization_file_path))
+
+def _load_local_slashrc():
+    _load_file_if_exists(os.path.expanduser(os.path.expanduser(config.root.run.local_customization_file_path)))
+
+def _load_file_if_exists(path):
+    if os.path.isfile(path):
+        _load_filename(path)
 
 def _load_environment():
     loaded_url_or_file = os.environ.get("SLASH_SETTINGS")

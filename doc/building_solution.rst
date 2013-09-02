@@ -113,44 +113,24 @@ To initialize and make accessible a microwave instance, we'll use *the slash glo
 
 .. note:: Yes. Our microwaves have IP addresses. Deal with it.
 
-Creating the Runner
--------------------
+Ensuring Our Plugin is Loaded
+-----------------------------
 
-We need a basic frontend to load and run our tests, as well as activate our plugin. Let's create it:
+In practice we will not be able to run our tests without our plugin loaded. In order to achieve this we need some kind of initialization code to set it up whenever our tests are run.
+
+Slash provides several such ways (some covered under :ref:`the advanced usage section<advanced_usage>`. In this example we will be using a fairly basic method.
+
+Slash supports initialization files (or *rc* files) in two main locations. The first is ``~/.slash/slashrc``, intended for your own personal customization needs. The other location is a ``.slashrc`` file located in the current directory. Assuming we intend to run our tests with ``slash run``, we can just create this file in the root of our project directory::
 
 .. code-block:: python
 
- # src/microtech_testing/runner.py
+ # src/.slashrc
  import slash
- import sys
- 
- if __name__ == "__main__":
-     with slash.get_application_context() as app:
-         slash.run_tests(
-             app.test_loader.iter_package("microtech_testing.testsuite")
-         )
-     sys.exit(0 if app.session.result.is_success() else -1)
+ from mocrotech_testing.slash_plugin import MicrotechTestingPlugin
 
+ slash.plugins.manager.install(MicrotechTestingPlugin)
 
-The above skeleton takes care of most of the stuff you'd expect to see in a test runner (and in fact is very similar to ``slash run``). In order to make this play nicely with our plugin, we need to install and activate our plugin. This is how can achieve this:
-
-.. code-block:: python
-
- # src/microtech_testing/runner.py
- ...
- from microtech_testing.slash_plugin import MicrotechTestingPlugin
- ...
-
- def customize_slash():
-     slash.plugins.manager.install(MicrotechTestingPlugin(), activate=True)
-     
-
- if __name__ == "__main__":
-     customize_slash()
-     with slash.get_application_context() as app:
-     ...
-
-We'll be using the ``customize_slash`` function for further enhancements in the next paragraphs.
+We will be adding more customization code to this file in the following paragraphs to make it even more useful.
 
 Configuration and Parameters
 ----------------------------
@@ -174,19 +154,16 @@ Fortunately, Slash plugins can control the way command-line arguments are proces
 
 Let's say we also want to contain configurable parameters relevant to our tests -- for instance, microwave boot time in seconds. These can of course be hard-coded in our plugins, but are much better of as values in Slash's :ref:`configuration`. This way they can be changed from the outside world (e.g. with the -o flag).
 
-This is very easy to do in our ``customize`` function:
+This is very easy to do in our ``.slashrc`` file:
 
 .. code-block:: python
  
  # ...
-
- def customize_slash():
-     # ...
-     slash.config.extend({
-         "microtech" : { 
-             "microwave_boot_time_seconds" : 600,
-         }
-     })
+ slash.config.extend({
+       "microtech" : { 
+           "microwave_boot_time_seconds" : 600,
+       }
+  })
 
 .. note:: Yes. Our microwave takes 10 minutes to boot. Deal with it.
 
