@@ -68,7 +68,12 @@ An example of a functioning plugin can be found in the :ref:`Building Solutions 
 Errors in Plugins
 -----------------
 
-Since plugins use hooks to achieve their functionality, the same rules of exception swallowing apply to them as well. See :ref:`exception swallowing <exception_swallowing>` and :ref:`the hook documentation <hooks>` for more information.
+As more logic is added into plugins it becomes more likely for exceptions to occur when running their logic. As seen above, most of what plugins do is done by registering callbacks onto hooks. Any exception that escapes these registered functions will be handled the same way any exception in a hook function is handled, and this depends on the current exception swallowing configuration.
+
+.. seealso:: 
+
+   * :ref:`exception swallowing <exception_swallowing>`
+   * :ref:`hooks documentation <hooks>`
 
 The PluginInterface Class
 -------------------------
