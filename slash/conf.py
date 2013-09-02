@@ -19,7 +19,7 @@ config = Config({
     },
     "run" : {
         "stop_on_error" : False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
-        "session_state_path": os.path.expanduser("~/.slash/last_session") // Doc("Where to keep last session serialized data"),
+        "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
     },
     "sentry" : {
         "dsn" : None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "

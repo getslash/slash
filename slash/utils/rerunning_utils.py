@@ -14,4 +14,4 @@ def get_last_session_state():
         return json.load(f)
 
 def _get_path():
-    return config.root.run.session_state_path
+    return os.path.expanduser(config.root.run.session_state_path)
