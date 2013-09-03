@@ -1,4 +1,25 @@
-0.0.2 (Under development)
+0.2.0 (Under development)
+=========================
+New Features:
+
+
+
+0.1.0 (3.9.2013)
+=========================
+New Features:
+
+- Add option for specifying default tests to run (#45)
+- Enable local .slashrc file (#74)
+- Clarify errors in plugins section (#72)
+- Support test rerunning via "slash rerun" (#26)
+- Coverage via coveralls
+- Documentation additions and enhancements
+- Move slash.session to slash.core.session. slash.session is now the session context proxy, as documented (#69)
+- Add should.be_empty, should.not_be_empty
+- Support matching by parameters in FQN (#75)
+- Support running specific or partial tests via FQN (#75)
+
+0.0.2 
 =========================
 New Features:
 
@@ -13,3 +34,4 @@ New Features:
 0.0.1 (Released May 5th, 2013)
 ==============================
 - Initial stable release
+
