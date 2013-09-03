@@ -43,6 +43,10 @@ class SlashRunTest(SlashRunTestBase):
         result = self._execute_slash_run([self.root_path])
         self.assertEquals(result, 0, "slash run did not return 0 on success")
 
+    def test_slash_run_default_directory(self):
+        self.override_config("run.default_sources", [self.root_path])
+        self.assertEquals(self._execute_slash_run([]), 0)
+
     def test_slash_run_success_if_skips(self):
         self.generator.make_test_skip(self.generator.get_expected_test_ids()[1])
         result = self._execute_slash_run([self.root_path])

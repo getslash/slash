@@ -1,4 +1,5 @@
 from ..app import get_application_context
+from ..conf import config
 from ..exceptions import SlashException
 from ..runner import run_tests
 from ..utils import cli_utils
@@ -23,6 +24,7 @@ def slash_run(args, report_stream=sys.stderr, rerun=False):
                 return -1
         else:
             app.prev_session_state = None
+
         iterator = _get_test_iterator(app, args)
         try:
             run_tests(iterator)
@@ -42,10 +44,13 @@ def _get_test_iterator(app, args): # pylint: disable=unused-argument
     if app.prev_session_state:
         return _get_rerun_test_iterator(app)
 
-    if not app.args.paths and not app.args.interactive:
+    paths = app.args.paths
+    if not paths:
+        paths = config.root.run.default_sources
+    if not paths and not app.args.interactive:
         app.error("No tests specified")
 
-    return app.test_loader.iter_pqns(app.args.paths)
+    return app.test_loader.iter_pqns(paths)
 
 def _get_rerun_test_iterator(app):
     saved_results = app.prev_session_state["results"]

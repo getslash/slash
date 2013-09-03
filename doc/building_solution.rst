@@ -169,6 +169,19 @@ This is very easy to do in our ``.slashrc`` file:
 
 The ``extend`` method updates Slash's configuration with the given structure, allowing for the addition of the new paths. Now when we run our tests, we can, for instance, override the default value with ``-o microtech.microwave_boot_time_seconds=60000``.
 
+Specifying Default Test Source
+------------------------------
+
+.. _default_test_source:
+
+
+If you use ``slash run`` for running your tests, it is often useful to specify a default for the test path to run. This is useful if you want to provide a sane default running environment for your users. This can be done with the :ref:`conf.run.default_sources` configuration option:
+
+.. code-block:: python
+
+    # ...
+    slash.config.root.run.default_sources = ["/my/default/path/to/tests"]
+
 Additional Hooks
 ----------------
 

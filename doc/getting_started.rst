@@ -73,6 +73,8 @@ Now you can fix test_failing_1.py
     Successful  Failures  Errors  Skipped
     1           0         0       0
 
+.. seealso:: :ref:`configuring default test sources <default_test_source>`
+
 Errors and Failures
 -------------------
 
