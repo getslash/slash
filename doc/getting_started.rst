@@ -65,7 +65,7 @@ When you run a large number of tests and only some of them fail, you may want to
     Successful  Failures  Errors  Skipped
     5           0         1       0
 
-Now you can fix test_failing_1.py
+Now you can fix test_failing_1.py::
 
     $ slash rerun
     .

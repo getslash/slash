@@ -118,7 +118,7 @@ Ensuring Our Plugin is Loaded
 
 In practice we will not be able to run our tests without our plugin loaded. In order to achieve this we need some kind of initialization code to set it up whenever our tests are run.
 
-Slash provides several such ways (some covered under :ref:`the advanced usage section<advanced_usage>`. In this example we will be using a fairly basic method.
+Slash provides several such ways (some covered under :ref:`the advanced usage section<advanced>`. In this example we will be using a fairly basic method.
 
 Slash supports initialization files (or *rc* files) in two main locations. The first is ``~/.slash/slashrc``, intended for your own personal customization needs. The other location is a ``.slashrc`` file located in the current directory. Assuming we intend to run our tests with ``slash run``, we can just create this file in the root of our project directory::
 
