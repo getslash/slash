@@ -111,7 +111,10 @@ To initialize and make accessible a microwave instance, we'll use *the slash glo
      def session_start(self):
          g.microwave = Microwave("192.168.120.120")
 
+.. note:: the ``session_start`` method is actually a hook registration, so it will get called by Slash's :ref:`hook mechanism<hooks>` every time a session starts. See :ref:`plugins` for more information
+
 .. note:: Yes. Our microwaves have IP addresses. Deal with it.
+
 
 Ensuring Our Plugin is Loaded
 -----------------------------
@@ -148,7 +151,7 @@ Fortunately, Slash plugins can control the way command-line arguments are proces
          parser.add_argument("-m", "--microwave-address", help="IP Address of microwave we are testing")
      def configure_from_parsed_args(self, args):
          self.microwave_address = args.microwave_address
-     def start_session(self):
+     def session_start(self):
          g.microwave = Microwave(self.microwave_address)
      # ...
 
