@@ -1,5 +1,6 @@
 from slash._compat import cStringIO
 from slash.utils.formatter import Formatter
+from slash.utils.color_string import ColorString
 from .utils import TestCase
 
 class FormatterTest(TestCase):
@@ -9,6 +10,7 @@ class FormatterTest(TestCase):
         self.f = Formatter(self.buff)
     def assertOutput(self, v):
         self.assertEquals(self.buff.getvalue(), v)
+
     def test_write_non_strings(self):
         class MyObject(object):
             def __repr__(self):
@@ -60,4 +62,24 @@ class FormatterTest(TestCase):
             self.f.writeln('b')
         self.f.writeln('c')
         self.assertOutput('a\n**b\nc\n')
+
+class FormatterColorTest(TestCase):
+    def setUp(self):
+        super(FormatterColorTest, self).setUp()
+        self.buff = self.forge.create_wildcard_mock()
+        self.buff.write("").whenever() # indentation of 0
+
+    def test_color_string_tty(self):
+        self.buff.isatty().whenever().and_return(True)
+        s = ColorString("hello", "red")
+        self.buff.write(s.get_colored())
+        self.forge.replay()
+        Formatter(self.buff).write(s)
+
+    def test_color_string_not_tty(self):
+        self.buff.isatty().whenever().and_return(False)
+        s = ColorString("hello", "red")
+        self.buff.write("hello")
+        self.forge.replay()
+        Formatter(self.buff).write(s)
 

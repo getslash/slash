@@ -2,6 +2,8 @@ from __future__ import print_function
 from contextlib import contextmanager
 import errno
 
+from .color_string import ColorString
+
 class Formatter(object):
     def __init__(self, stream, indentation_string=" "):
         super(Formatter, self).__init__()
@@ -9,6 +11,7 @@ class Formatter(object):
         self._indentation_list = []
         self._indentation = ""
         self._stream = stream
+        self._isatty = stream.isatty()
     def write_separator(self, length=80):
         self.writeln("-" * length)
     def writeln(self, *args, **kwargs):
@@ -17,6 +20,11 @@ class Formatter(object):
         try:
             end = kwargs.pop('end', '')
             for arg in args:
+                if isinstance(arg, ColorString):
+                    if self._isatty:
+                        arg = arg.get_colored()
+                    else:
+                        arg = str(arg)
                 lines = str(arg).splitlines()
                 for index, line in enumerate(lines):
                     self._stream.write(self._indentation)

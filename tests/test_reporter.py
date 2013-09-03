@@ -52,13 +52,21 @@ class SlashRunTest(TestCase):
         result = self.get_live_part()
         self.assertEqual(set(result) - set("\n"), set("EFS."))
         self.assertEqual(len(result), 6)
-    def test_live_verbose(self):
-        self.override_config("log.console_level", logbook.INFO)
+
+    def test_live_verbosity_info(self):
+        self._test_live_verbosity(logbook.INFO)
+
+    def test_live_verbosity_notice(self):
+        self._test_live_verbosity(logbook.NOTICE)
+
+    def _test_live_verbosity(self, level):
+        self.override_config("log.console_level", level)
         self._slash_run()
         output = self.get_live_part()
-        self._assert_reported(output, "error_test", "error\n Traceback")
-        self._assert_reported(output, "fail_test", "fail\n Traceback")
-        self._assert_reported(output, "skip_test", "skip\n Reason here")
+        self.assertNotIn("Traceback", output)
+        self._assert_reported(output, "error_test", "error")
+        self._assert_reported(output, "fail_test", "fail")
+        self._assert_reported(output, "skip_test", "skip")
         self._assert_reported(output, "success_test", "ok")
 
     def _assert_reported(self, output, test_name, additional_text):
@@ -67,6 +75,7 @@ class SlashRunTest(TestCase):
             test_name, test._factory_class_name, 0, additional_text)
         if expected_output not in output:
             self.fail("Expected output {0!r} not found. Output was:\n{1}".format(expected_output, output))
+
     def test_summary(self):
         self._slash_run()
         output = self.get_summary_part()
