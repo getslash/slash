@@ -1,5 +1,5 @@
-Overview
-========
+Slash Testing Framework
+=======================
 
 .. image:: https://secure.travis-ci.org/vmalloc/slash.png?branch=master,dev
 
@@ -9,12 +9,8 @@ Overview
 
 .. image:: https://pypip.in/v/slash/badge.png
 
-
 Slash is a testing framework written in Python for testing complex projects. 
 
-Fore more info, refer to the homepage at http://vmalloc.github.io/slash
+**Homepage**: `http://vmalloc.github.io/slash`
 
-Documentation
-=============
-
-Hosted at readthedocs: https://slash.readthedocs.org/en/latest/
+**Documentation**: `https://slash.readthedocs.org/en/latest/`
