@@ -56,6 +56,7 @@
            :maxdepth: 2
 
            exceptions
+	   test_metadata
            features
            building_solution
 	   advanced_usage

@@ -49,4 +49,34 @@ In addition to entry points, Slash looks for other locations to load code on sta
   If an environment variable named ``SLASH_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.
 
 
+Loading and Running Tests in Code
+---------------------------------
 
+Sometimes you would like to run a sequence of tests that you control in fine detail, like checking various properties of a test before it is being loaded and run. This can be done in many ways, but the easiest is to use the test loader explicitly. 
+
+.. code-block:: python
+
+ import slash
+
+ if __name__ == "__main__":
+     with slash.Session():
+          slash.run_tests(slash.loader.Loader().iter_paths(["/my_path", ...]))
+
+The parameter given above to :func:`.run_tests` is merely an iterator yielding runnable tests. You can interfere or skip specific tests quite easily:
+
+.. code-block:: python
+
+ import slash
+ ...
+ def _filter_tests(iterator):
+     for test in iterator:
+          if "forbidden" in test.__slash__.fqn.path:
+              continue
+          yield test
+
+ ...
+     slash.run_tests(_filter_tests(slash.loader.Loader().iter_paths(...)))
+
+.. seealso:: :ref:`Test Metadata <test_metadata>`
+
+.. seealso:: :ref:`building_solution`
