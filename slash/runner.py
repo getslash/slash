@@ -1,20 +1,18 @@
 import sys
+from contextlib import contextmanager
+
+import logbook
+
 from . import hooks
+from ._compat import ExitStack
 from .cleanups import call_cleanups
 from .conf import config
 from .ctx import context
-from .exceptions import (
-    NoActiveSession,
-    SkipTest,
-    TestFailed,
-    )
 from .exception_handling import handling_exceptions
+from .exceptions import NoActiveSession, SkipTest, TestFailed
 from .metadata import ensure_test_metadata
 from .test_context import get_test_context_setup
 from .utils.peekable_iterator import PeekableIterator
-from contextlib import contextmanager
-from ._compat import ExitStack
-import logbook # pylint: disable=F0401
 
 _logger = logbook.Logger(__name__)
 
@@ -42,16 +40,16 @@ def _get_run_context_stack(test, test_iterator):
     with ExitStack() as stack:
         stack.enter_context(_get_test_context(test))
         stack.enter_context(_get_test_hooks_context())
-        result = stack.enter_context(_update_result_context())
+        stack.enter_context(_update_result_context())
         stack.enter_context(_cleanup_context())
         stack.enter_context(handling_exceptions())
         stack.enter_context(get_test_context_setup(test, test_iterator.peek_or_none()))
         yielded = True
-        yield result
+        yield context.internal_globals.result
     # if some of the context entries throw SkipTest, the yield result above will not be reached.
     # we have to make sure that yield happens or else the context manager will raise on __exit__...
     if not yielded:
-        yield result
+        yield context.internal_globals.result
 
 @contextmanager
 def _cleanup_context():
@@ -110,7 +108,9 @@ def _set_current_test_context(test):
 
 @contextmanager
 def _update_result_context():
+    old_result = context.internal_globals.result
     result = context.session.create_result(context.test)
+    context.internal_globals.result = result
     try:
         try:
             yield result
@@ -131,3 +131,4 @@ def _update_result_context():
         raise
     finally:
         result.mark_finished()
+        context.internal_globals.result = old_result

@@ -2,7 +2,7 @@
 =========================
 New Features:
 
-
+- Add ability to add non-exception errors and failures to test results (#19)
 
 0.1.0 (3.9.2013)
 =========================

@@ -1,4 +1,5 @@
 import functools
+from ..ctx import context
 from ..exceptions import SkipTest
 from ..runnable_test_factory import RunnableTestFactory
 
@@ -23,3 +24,15 @@ def skipped(thing, reason=None):
     def new_func(*_, **__): # pylint: disable=unused-argument
         skip_test(reason)
     return new_func
+
+def add_error(msg):
+    """
+    Adds an error to the current test result
+    """
+    context.internal_globals.result.add_error(msg)
+
+def add_failure(msg):
+    """
+    Adds a failure to the current test result
+    """
+    context.internal_globals.result.add_failure(msg)

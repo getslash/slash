@@ -5,6 +5,7 @@ from .._compat import OrderedDict
 from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
 from .result import Result
+from ..ctx import internal_globals
 from .result import SessionResult
 from ..utils.id_space import IDSpace
 from ..warnings import SessionWarnings
@@ -38,8 +39,10 @@ class Session(Activatable):
         self._context = _session_context(self)
         with handling_exceptions():
             self._context.__enter__()
+        internal_globals.result = self.result.global_result
 
     def deactivate(self):
+        internal_globals.result = None
         self.result.global_result.mark_finished()
         with handling_exceptions():
             self._context.__exit__(None, None, None)
