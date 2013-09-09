@@ -28,11 +28,15 @@ def skipped(thing, reason=None):
 def add_error(msg):
     """
     Adds an error to the current test result
+
+    :param msg: can be either an object or a string representing a message
     """
     context.internal_globals.result.add_error(msg)
 
 def add_failure(msg):
     """
     Adds a failure to the current test result
+
+    :param msg: can be either an object or a string representing a message
     """
     context.internal_globals.result.add_failure(msg)

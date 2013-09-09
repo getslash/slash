@@ -3,7 +3,6 @@ import functools
 from .._compat import itervalues
 from ..utils.error_object import Error
 
-
 class Result(object):
 
     def __init__(self, test_metadata=None):

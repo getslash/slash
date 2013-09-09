@@ -93,7 +93,7 @@ Non-exception Errors and Failures
 
 Sometimes you would like to report errors and failures in mid-test without failing it immediately (letting it run to the end). This is good when you want to collect all possible failures before officially quitting, and this is more helpful for reporting.
 
-This is possible using the :func:`.Result.add_error` and :func:`.Result.add_failure` methods. They can accept strings (messages) or actual objects to be kept for reporting. It is also possible to add more than one failure or error for each test.
+This is possible using the :func:`slash.add_error` and :func:`slash.add_failure` methods. They can accept strings (messages) or actual objects to be kept for reporting. It is also possible to add more than one failure or error for each test.
 
 .. code-block:: python
 
@@ -104,6 +104,10 @@ This is possible using the :func:`.Result.add_error` and :func:`.Result.add_fail
             slash.add_error("Some condition is not met!")
 
 	# code keeps running here...
+
+.. autofunction:: slash.add_error
+
+.. autofunction:: slash.add_failure
 
 .. _cleanup:
 
