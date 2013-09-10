@@ -1,7 +1,7 @@
 from .utils import TestCase
 from slash._compat import OrderedDict
 from slash.core.result import Result
-from slash.core.result import SessionResult
+from slash.core.result import SessionResults
 
 class SessionResultTest(TestCase):
     def setUp(self):
@@ -30,7 +30,9 @@ class SessionResultTest(TestCase):
 
         for result in self.results[:num_finished]:
             result.mark_finished()
-        self.result = SessionResult(OrderedDict(enumerate(self.results)))
+        self.result = SessionResults()
+        for index, r in enumerate(self.results):
+            self.result._results_dict[index] = r
 
     def test_counts(self):
         self.assertEquals(self.result.get_num_results(), len(self.results))

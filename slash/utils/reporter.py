@@ -52,7 +52,7 @@ class SummaryReporter(object):
         self._describe_warnings(session)
     def _describe_unsuccessful(self, session):
         self._formatter.write_separator()
-        for result in session.result.iter_all_results():
+        for result in session.results.iter_all_results():
             if result.is_success():
                 continue
             self._formatter.write("> ")
@@ -74,7 +74,7 @@ class SummaryReporter(object):
         self._formatter.write_separator()
 
         summary = dict(
-            (column_title, getattr(session.result, method_name)())
+            (column_title, getattr(session.results, method_name)())
             for column_title, method_name, _ in _REPORT_COLUMNS
         )
 

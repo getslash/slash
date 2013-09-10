@@ -1,12 +1,9 @@
 import uuid
 from contextlib import contextmanager
 from .. import ctx, hooks, log
-from .._compat import OrderedDict
 from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
-from .result import Result
-from ..ctx import internal_globals
-from .result import SessionResult
+from .result import SessionResults
 from ..utils.id_space import IDSpace
 from ..warnings import SessionWarnings
 
@@ -17,33 +14,19 @@ class Session(Activatable):
         self.id_space = IDSpace(self.id)
         self._complete = False
         self._context = None
-        self._results = OrderedDict()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result
-        self.result = SessionResult(self._results)
-
-    def create_result(self, test):
-        assert test.__slash__.id not in self._results
-        returned = Result(test.__slash__)
-        self._results[test.__slash__.id] = returned
-        return returned
-
-    def get_result(self, test):
-        if test.__slash__ is None:
-            raise LookupError("Could not find result for {0}".format(test))
-        return self._results[test.__slash__.id]
+        self.results = SessionResults()
 
     def activate(self):
         assert self._context is None
         self._context = _session_context(self)
         with handling_exceptions():
             self._context.__enter__()
-        internal_globals.result = self.result.global_result
 
     def deactivate(self):
-        internal_globals.result = None
-        self.result.global_result.mark_finished()
+        self.results.global_result.mark_finished()
         with handling_exceptions():
             self._context.__exit__(None, None, None)
 

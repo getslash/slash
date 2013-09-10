@@ -26,8 +26,9 @@ def run_tests(iterable):
     for test in test_iterator:
         ensure_test_metadata(test)
         _logger.debug("Running {0}...", test)
-        with _get_run_context_stack(test, test_iterator) as result:
+        with _get_run_context_stack(test, test_iterator):
             test.run()
+        result = context.session.results[test]
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             break
@@ -45,11 +46,11 @@ def _get_run_context_stack(test, test_iterator):
         stack.enter_context(handling_exceptions())
         stack.enter_context(get_test_context_setup(test, test_iterator.peek_or_none()))
         yielded = True
-        yield context.internal_globals.result
+        yield
     # if some of the context entries throw SkipTest, the yield result above will not be reached.
     # we have to make sure that yield happens or else the context manager will raise on __exit__...
     if not yielded:
-        yield context.internal_globals.result
+        yield
 
 @contextmanager
 def _cleanup_context():
@@ -108,9 +109,7 @@ def _set_current_test_context(test):
 
 @contextmanager
 def _update_result_context():
-    old_result = context.internal_globals.result
-    result = context.session.create_result(context.test)
-    context.internal_globals.result = result
+    result = context.session.results.create_result(context.test)
     try:
         try:
             yield result
@@ -131,4 +130,3 @@ def _update_result_context():
         raise
     finally:
         result.mark_finished()
-        context.internal_globals.result = old_result

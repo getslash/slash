@@ -43,10 +43,10 @@ class FailuresAndErrorsTest(TestCase):
         with slash.Session() as session:
             if in_specific_test:
                 slash.run_tests(slash.loader.Loader().iter_test_factory(Test))
-                [result] = session.result.iter_test_results()
+                [result] = session.results.iter_test_results()
             else:
                 list(Test.generate_tests())[0].run()
-                result = session.result.global_result
+                result = session.results.global_result
 
         self.assertFalse(result.is_success())
 

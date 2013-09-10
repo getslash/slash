@@ -18,11 +18,11 @@ class TestMetadataTest(TestCase):
 
         self.tests = list((slash.loader.Loader().iter_path(self.filename)))
         self.session = run_tests_assert_success(self.tests)
-        self.results = list(self.session.result.iter_test_results())
+        self.results = list(self.session.results.iter_test_results())
         self.results.sort(key = lambda result: str(result.test_metadata.fqn))
 
     def test_tests_have_correct_metadata(self):
-        for test, result in zip(self.tests, self.session.result.iter_test_results()):
+        for test, result in zip(self.tests, self.session.results.iter_test_results()):
             self.assertIs(test.__slash__, result.test_metadata)
 
     def test_simple_test_fqn(self):

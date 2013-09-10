@@ -31,7 +31,7 @@ def add_error(msg):
 
     :param msg: can be either an object or a string representing a message
     """
-    context.internal_globals.result.add_error(msg)
+    context.session.results.current.add_error(msg)
 
 def add_failure(msg):
     """
@@ -39,4 +39,4 @@ def add_failure(msg):
 
     :param msg: can be either an object or a string representing a message
     """
-    context.internal_globals.result.add_failure(msg)
+    context.session.results.current.add_failure(msg)

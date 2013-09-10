@@ -43,7 +43,7 @@ class AllSuccessfulTest(TestRunningTestBase):
         self.generator.assert_all_run()
 
     def test_iter_results_ordering(self):
-        results = list(self.session.result.iter_test_results())
+        results = list(self.session.results.iter_test_results())
         for index, (result, test) in enumerate(zip(results, self.runnables)):
             self.assertIs(result.test_metadata, test.__slash__, "Test #{0} mismatch".format(index))
 
@@ -85,7 +85,7 @@ class FailedItemsTest(TestRunningTestBase):
         true_predicates = set(true_predicates)
         assert _RESULT_PREDICATES >= true_predicates, "{0} is not a superset of {1}".format(_RESULT_PREDICATES, true_predicates)
         for test in tests:
-            result = self.session.get_result(test)
+            result = self.session.results.get_result(test)
             for predicate in _RESULT_PREDICATES:
                 predicate_result = predicate(result)
                 self.assertEquals(predicate_result,
@@ -105,11 +105,11 @@ class StopOnFailuresTest(TestRunningTestBase):
     def test_stopped_after_failure(self):
         for index, runnable in enumerate(self.runnables):
             if index <= self.num_successful:
-                result = self.session.get_result(runnable)
+                result = self.session.results.get_result(runnable)
                 self.assertTrue(result.is_finished())
             else:
                 with self.assertRaises(LookupError):
-                    self.session.get_result(runnable)
+                    self.session.results.get_result(runnable)
 
 ### make nosetests ignore stuff we don't want to run
 run_tests.__test__ = False

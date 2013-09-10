@@ -60,7 +60,7 @@ class Loader(object):
         except Exception: # pylint: disable=W0703
             if not context.session:
                 raise
-            context.session.result.global_result.add_error()
+            context.session.results.global_result.add_error()
 
     def iter_test_factory(self, factory):
         for test in factory.generate_tests():

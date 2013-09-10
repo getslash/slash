@@ -65,10 +65,10 @@ class Plugin(PluginInterface):
             "hostname": socket.getfqdn(),
             "timestamp": self._start_time.isoformat().rsplit(".", 1)[0],
             "time": "0",
-            "tests": str(context.session.result.get_num_results()),
-            "errors": str(context.session.result.get_num_errors()),
-            "failures": str(context.session.result.get_num_failures()),
-            "skipped": str(context.session.result.get_num_skipped()),
+            "tests": str(context.session.results.get_num_results()),
+            "errors": str(context.session.results.get_num_errors()),
+            "failures": str(context.session.results.get_num_failures()),
+            "skipped": str(context.session.results.get_num_skipped()),
         })
         for element in self._xunit_elements:
             e.append(element)

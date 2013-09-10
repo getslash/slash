@@ -44,8 +44,8 @@ class ImportErrorsTest(TestRepositoryTest):
         with Session() as s:
             tests = list(Loader().iter_path(self.root))
         self.assertTrue(tests)
-        self.assertFalse(s.result.global_result.is_success())
-        errors = s.result.global_result.get_errors()
+        self.assertFalse(s.results.global_result.is_success())
+        errors = s.results.global_result.get_errors()
         self._assert_file_failed_with(errors, "test_3.py", SyntaxError)
         self._assert_file_failed_with(errors, "test_4.py", ImportError)
 

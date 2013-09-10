@@ -1,6 +1,8 @@
 import itertools
 import functools
+from ..ctx import context
 from .._compat import itervalues
+from .._compat import OrderedDict
 from ..utils.error_object import Error
 
 class Result(object):
@@ -83,13 +85,20 @@ class GlobalResult(Result):
     pass
 
 
-class SessionResult(object):
+class SessionResults(object):
 
-    def __init__(self, session_results_dict):
-        super(SessionResult, self).__init__()
+    def __init__(self):
+        super(SessionResults, self).__init__()
         self.global_result = GlobalResult()
-        self._session_results_dict = session_results_dict
-        self._iterator = functools.partial(itervalues, session_results_dict)
+        self._results_dict = OrderedDict()
+        self._iterator = functools.partial(itervalues, self._results_dict)
+
+    @property
+    def current(self):
+        test_id = context.test_id
+        if test_id is None:
+            return self.global_result
+        return self._results_dict[test_id]
 
     def __iter__(self):
         return self._iterator()
@@ -100,7 +109,7 @@ class SessionResult(object):
                 for result in self._iterator())
 
     def get_num_results(self):
-        return len(self._session_results_dict)
+        return len(self._results_dict)
 
     def get_num_successful(self):
         return self._count(Result.is_success_finished, include_global=False)
@@ -128,3 +137,17 @@ class SessionResult(object):
 
     def iter_all_results(self):
         return itertools.chain(self.iter_test_results(), [self.global_result])
+
+    def create_result(self, test):
+        assert test.__slash__.id not in self._results_dict
+        returned = Result(test.__slash__)
+        self._results_dict[test.__slash__.id] = returned
+        return returned
+
+    def get_result(self, test):
+        if test.__slash__ is None:
+            raise LookupError("Could not find result for {0}".format(test))
+        return self._results_dict[test.__slash__.id]
+
+    def __getitem__(self, test):
+        return self.get_result(test)

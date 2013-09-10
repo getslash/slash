@@ -39,7 +39,7 @@ class CleanupsTest(TestCase):
         self.forge.replay()
         with Session() as session:
             slash.runner.run_tests(Loader().iter_test_factory(Test))
-        [result] = session.result.iter_test_results()
+        [result] = session.results.iter_test_results()
         [err1, err2, err3] = result.get_errors()
 
 class FirstException(Exception):

@@ -42,9 +42,9 @@ class InterruptionTest(TestCase):
         for index, test in enumerate(self.runnables):
             if index > self.interrupted_index:
                 with self.assertRaises(LookupError):
-                    self.session.get_result(test)
+                    self.session.results.get_result(test)
                 continue
-            result = self.session.get_result(test)
+            result = self.session.results.get_result(test)
             self.assertTrue(result.is_finished())
             if index < self.interrupted_index:
                 self.assertTrue(result.is_success())

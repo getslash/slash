@@ -39,7 +39,7 @@ def call_cleanups(critical_only=False):
         try:
             cleanup()
         except:
-            context.session.get_result(context.test).add_error()
+            context.session.results.get_result(context.test).add_error()
 
 def _get_cleanups():
     returned = getattr(context, "cleanups", None)

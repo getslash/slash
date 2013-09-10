@@ -34,7 +34,7 @@ def slash_run(args, report_stream=sys.stderr, rerun=False):
         finally:
             _save_rerun_state(app)
 
-        if app.session.result.is_success(allow_skips=True):
+        if app.session.results.is_success(allow_skips=True):
             return 0
         return -1
 
@@ -72,7 +72,7 @@ def _save_rerun_state(app):
         state = {"pqns": app.args.paths, "results": {}}
     saved_results = state["results"]
 
-    for result in app.session.result.iter_test_results():
+    for result in app.session.results.iter_test_results():
         saved_result = saved_results.get(result.test_metadata.fqn.fqn, None)
         if saved_result is None:
             saved_result = saved_results[result.test_metadata.fqn.fqn] = {"rerun_needed": False}
