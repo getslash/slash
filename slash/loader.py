@@ -47,10 +47,12 @@ class Loader(object):
                 if not self._is_file_wanted(file_path):
                     _logger.debug("{0} is not wanted. Skipping...", file_path)
                     continue
+                module = None
                 with self._handling_import_errors():
                     module = import_file(file_path)
-                for runnable in self._iter_runnable_tests_in_module(module):
-                    yield runnable
+                if module is not None:
+                    for runnable in self._iter_runnable_tests_in_module(module):
+                        yield runnable
 
     @contextmanager
     def _handling_import_errors(self):
