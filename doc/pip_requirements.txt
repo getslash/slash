@@ -1,0 +1,2 @@
+# These are needed to build the documentation
+releases

@@ -60,6 +60,7 @@
            features
            building_solution
 	   advanced_usage
+           changelog
            development
 
 
