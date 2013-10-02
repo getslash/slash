@@ -15,6 +15,7 @@ config = Config({
         "subpath" : "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),
         "session_subpath" : "session.log",
         "silence_loggers": [] // Doc("Logger names to silence"),
+        "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
     },
     "run" : {
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),

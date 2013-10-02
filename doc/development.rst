@@ -15,4 +15,5 @@ Contributors
 Special thanks go to these people for taking the time in improving Slash and providing feedback:
 
 * Alon Horev (@alonho)
+* Omer Gertel
 

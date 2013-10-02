@@ -16,6 +16,7 @@ class SessionLogging(object):
         super(SessionLogging, self).__init__()
         self.warnings_handler = WarnHandler(session.warnings)
         self.console_handler = ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
+        self._set_formatting(self.console_handler)
 
     def get_test_logging_context(self):
         return self._get_file_logging_context(config.root.log.subpath)
@@ -46,7 +47,13 @@ class SessionLogging(object):
             log_path = os.path.join(root_path, subpath.format(context=context))
             ensure_containing_directory(log_path)
             handler = logbook.FileHandler(log_path, bubble=False)
+            self._set_formatting(handler)
         return handler
+
+    def _set_formatting(self, handler):
+        fmt = config.root.log.format
+        if fmt is not None:
+            handler.format_string = fmt
 
     def _add_current_test(self, record):
         record.extra['source'] = context.test_id or context.session.id

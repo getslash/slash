@@ -11,6 +11,26 @@ _SESSION_END_MARK = "session-end-mark"
 
 _silenced_logger = logbook.Logger("silenced_logger")
 
+class LogFormattingTest(TestCase):
+
+    def setUp(self):
+        super(LogFormattingTest, self).setUp()
+        self.log_path = self.get_new_path()
+        self.override_config(
+            "log.root", self.log_path
+        )
+        self.override_config(
+            "log.format", "-- {record.message} --"
+        )
+        self.override_config("log.subpath", "debug.log")
+
+    def test(self):
+        self.session = run_tests_assert_success(SampleTest)
+        with open(os.path.join(self.log_path, "debug.log")) as logfile:
+            for line in logfile:
+                self.assertTrue(line.startswith("-- "))
+                self.assertTrue(line.endswith(" --\n"))
+
 class LoggingTest(TestCase):
     def test(self):
         self.log_path = self.get_new_path()

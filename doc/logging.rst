@@ -41,5 +41,10 @@ In certain cases you can silence specific loggers from the logging output. This 
 
   slash run -i -o "log.silence_loggers=['a','b']"
 
+Changing Formats
+----------------
 
+The :ref:`conf.log.format` config path controls the log line format used by slash::
+
+    $ slash run -o log.format="[{record.time:%Y%m%d}]- {record.message}" ...
 
