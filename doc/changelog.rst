@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`96` Add option to specify logging format
 * :feature:`19` Add ability to add non-exception errors and failures to test results
 * :release:`0.1.0 <3-9-2013>`
 * :feature:`45` Add option for specifying default tests to run
