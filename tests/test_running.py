@@ -1,6 +1,7 @@
 # pylint: disable-msg=W0201
 from .utils.test_generator import TestGenerator
 from .utils import TestCase
+import slash
 from slash.runner import run_tests
 from slash.exceptions import NoActiveSession
 from slash import Session
@@ -92,24 +93,43 @@ class FailedItemsTest(TestRunningTestBase):
                                   predicate in true_predicates,
                                   "Predicate {0} unexpectedly returned {1}".format(predicate, predicate_result))
 
-class StopOnFailuresTest(TestRunningTestBase):
-    def configure(self):
+class StopOnFailuresTest(TestCase):
+
+    def test_stop_on_error(self):
+        self._test_stop_on_failure(error_in="test")
+
+    def _test_stop_on_failure(self, error_in, num_tests=10):
         self.override_config("run.stop_on_error", True)
-    def prepare_runnables(self):
-        self.num_successful = 4
-        self.generator.make_test_raise_exception(self.runnables[self.num_successful])
-        # make sure that skips are not considered failures
-        self.generator.make_test_skip(self.runnables[1])
-    def should_be_complete(self):
-        return False
-    def test_stopped_after_failure(self):
-        for index, runnable in enumerate(self.runnables):
-            if index <= self.num_successful:
-                result = self.session.results.get_result(runnable)
+        assert error_in in ("before", "test", "after")
+        failing_index = 5
+        class SampleTest(slash.Test):
+
+            def before(self):
+                if error_in == "before" and x == failing_index:
+                    raise Exception("Fail")
+
+            def before(self):
+                if error_in == "before" and x == failing_index:
+                    raise Exception("Fail")
+
+            @slash.parameters.iterate(x=list(range(num_tests)))
+            def test(self_, x):
+                if error_in == "test" and x == failing_index:
+                    raise Exception("Fail")
+
+        tests = list(SampleTest.generate_tests())
+
+        with slash.Session() as session:
+            slash.runner.run_tests(tests)
+
+        for index, test in enumerate(tests):
+            if index <= failing_index:
+                result = session.results.get_result(test)
                 self.assertTrue(result.is_finished())
             else:
                 with self.assertRaises(LookupError):
-                    self.session.results.get_result(runnable)
+                    session.results.get_result(test)
+
 
 ### make nosetests ignore stuff we don't want to run
 run_tests.__test__ = False
