@@ -57,4 +57,5 @@ def _load_url(url):
     _load_source(response.content, url)
 
 def _load_source(source, filename):
-    exec(source, {"__file__" : filename}) # pylint: disable=W0122
+    code = compile(source, filename, 'exec')
+    exec(code, {"__file__" : filename}) # pylint: disable=W0122
