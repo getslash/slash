@@ -57,5 +57,5 @@ def _load_url(url):
     _load_source(response.content, url)
 
 def _load_source(source, filename):
-    code = compile(source, filename, 'exec')
+    code = compile(source, os.path.abspath(filename), 'exec')
     exec(code, {"__file__" : filename}) # pylint: disable=W0122
