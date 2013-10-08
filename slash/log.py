@@ -3,8 +3,8 @@ from .conf import config
 from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
 from contextlib import contextmanager
-import logbook # pylint: disable=F0401
-from logbook.more import ColorizedStderrHandler # pylint: disable=F0401
+import logbook  # pylint: disable=F0401
+from logbook.more import ColorizedStderrHandler  # pylint: disable=F0401
 from ._compat import ExitStack
 import os
 
@@ -51,6 +51,8 @@ class SessionLogging(object):
         return handler
 
     def _set_formatting(self, handler):
+        if config.root.log.localtime:
+            logbook.set_datetime_format("local")
         fmt = config.root.log.format
         if fmt is not None:
             handler.format_string = fmt
