@@ -1,3 +1,4 @@
+import argparse
 from ..app import get_application_context
 from ..conf import config
 from ..exceptions import SlashException
@@ -83,7 +84,7 @@ def _save_rerun_state(app):
 def _get_extra_cli_args():
     return [
         cli_utils.Argument(
-            "paths", metavar="TEST", nargs="*",
+            "paths", metavar="TEST", nargs=argparse.REMAINDER,
             help="Test name to run. This can be either a file or a test FQN. "
             "See documentation for details"),
         ]
