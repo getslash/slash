@@ -16,8 +16,7 @@ install_requires = [
     "logbook>=0.4.2",
     "requests>=1.1.0",
     "raven",
-    "pyforge",
-    "lxml",
+    # DO NOT ADD pyforge, lxml or any other package only required for testing
 ]
 
 if _PYTHON_VERSION < "2.7":
