@@ -3,6 +3,8 @@ from .utils import no_op
 from .utils import NullFile
 from .utils.test_generator import TestGenerator
 from slash.frontend import slash_run
+from slash import config
+from slash._compat import StringIO
 from slash import site
 import os
 
@@ -17,6 +19,18 @@ class MissingFilesTest(SlashRunTestBase):
     def test_slash_run_fails_fast_for_missing_files(self):
         result = slash_run.slash_run(["/non/existing/path"], report_stream=NullFile())
         self.assertNotEquals(result, 0, "slash run unexpectedly succeeded for a missing path")
+
+class ArgumentParsingTest(TestCase):
+
+    def setUp(self):
+        super(ArgumentParsingTest, self).setUp()
+        self.devnull = StringIO()
+
+    def test_interspersed_positional_arguments(self):
+        self.assertFalse(config.root.debug.enabled)
+        with slash_run._get_slash_app_context("-v test1.py --pdb test2.py".split(), self.devnull, False) as app:
+            self.assertTrue(config.root.debug.enabled)
+            self.assertEquals(app.args.remainder, ["test1.py", "test2.py"])
 
 class SlashRunTest(SlashRunTestBase):
 

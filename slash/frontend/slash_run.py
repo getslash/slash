@@ -1,22 +1,19 @@
-import argparse
+import functools
+import sys
+from contextlib import contextmanager
+
+import logbook
+
 from ..app import get_application_context
 from ..conf import config
 from ..exceptions import SlashException
 from ..runner import run_tests
-from ..utils import cli_utils
 from ..utils import rerunning_utils
-import functools
-import logbook
-import sys
 
 _logger = logbook.Logger(__name__)
 
-
 def slash_run(args, report_stream=sys.stderr, rerun=False):
-    with get_application_context(
-            argv=args, args=_get_extra_cli_args() if not rerun else [],
-            enable_interactive=True,
-            report_stream=report_stream) as app:
+    with _get_slash_app_context(args, report_stream, rerun) as app:
         if rerun:
             try:
                 app.prev_session_state = rerunning_utils.get_last_session_state()
@@ -39,13 +36,21 @@ def slash_run(args, report_stream=sys.stderr, rerun=False):
             return 0
         return -1
 
+@contextmanager
+def _get_slash_app_context(args, report_stream, rerun):
+    with get_application_context(
+            argv=args, allow_unknown_args=not rerun,
+            enable_interactive=True,
+            report_stream=report_stream) as app:
+        yield app
+
 slash_rerun = functools.partial(slash_run, rerun=True)
 
 def _get_test_iterator(app, args): # pylint: disable=unused-argument
     if app.prev_session_state:
         return _get_rerun_test_iterator(app)
 
-    paths = app.args.paths
+    paths = app.args.remainder
     if not paths:
         paths = config.root.run.default_sources
     if not paths and not app.args.interactive:
@@ -70,7 +75,7 @@ def _save_rerun_state(app):
     if app.prev_session_state is not None:
         state = app.prev_session_state
     else:
-        state = {"pqns": app.args.paths, "results": {}}
+        state = {"pqns": app.args.remainder, "results": {}}
     saved_results = state["results"]
 
     for result in app.session.results.iter_test_results():
@@ -80,11 +85,3 @@ def _save_rerun_state(app):
         saved_result["rerun_needed"] = result.is_error() or result.is_failure()
 
     rerunning_utils.save_session_state(state)
-
-def _get_extra_cli_args():
-    return [
-        cli_utils.Argument(
-            "paths", metavar="TEST", nargs=argparse.REMAINDER,
-            help="Test name to run. This can be either a file or a test FQN. "
-            "See documentation for details"),
-        ]
