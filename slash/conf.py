@@ -16,7 +16,7 @@ config = Config({
         "session_subpath" : "session.log",
         "silence_loggers": [] // Doc("Logger names to silence"),
         "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
-        "localtime": True // Doc("Use local time for logging. If False, will use UTC"),
+        "localtime": False // Doc("Use local time for logging. If False, will use UTC"),
     },
     "run" : {
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),

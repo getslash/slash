@@ -112,3 +112,18 @@ def _mark(text=None):
     if text is None:
         text = slash.context.test_id
     slash.logger.debug(text)
+
+class TestLocaltimeLogging(TestCase):
+    def setUp(self):
+        super(TestLocaltimeLogging, self).setUp()
+        self.assertFalse(slash.config.root.log.localtime)
+        self.path = self.get_new_path()
+        self.override_config(
+            "log.localtime", True)
+        self.override_config(
+            "log.root", self.path)
+
+    def test_local_time(self):
+        with slash.Session() as s:
+            slash.logger.info("Hello")
+        self.assertNotEquals(os.listdir(self.path), [])
