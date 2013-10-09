@@ -38,7 +38,7 @@ _GREEN = ColorString.get_formatter("green")
 _REPORT_COLUMNS = [
     ("Successful", "get_num_successful", _GREEN),
     ("Failures", "get_num_failures", _RED),
-    ("Errors", "get_num_errors", _YELLOW),
+    ("Errors", "get_num_errors", _RED),
     ("Skipped", "get_num_skipped", _YELLOW),
     ]
 
@@ -83,14 +83,16 @@ class SummaryReporter(object):
             for column_title, _, colorizer in _REPORT_COLUMNS:
                 column_width = len(column_title) + 2
 
-                count = colorizer(str(summary[column_title]))
+                count = summary[column_title]
                 if is_header:
-                    s = colorizer(column_title.ljust(column_width))
+                    s = column_title.ljust(column_width)
                 else:
-                    s = colorizer(str(count))
+                    s = str(count)
 
                 if count:
-                    column_width += len(count) - len(s)
+                    orig = s
+                    s = colorizer(s)
+                    column_width += len(s) - len(orig)
                 self._formatter.write(s.ljust(column_width))
             self._formatter.writeln()
 

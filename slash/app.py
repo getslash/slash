@@ -20,7 +20,7 @@ class Application(object):
         self.parser.error(*args, **kwargs)
 
 @contextmanager
-def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False):
+def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, allow_unknown_args=False):
     site.load()
     args = list(args)
     if enable_interactive:
@@ -28,7 +28,7 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
             cli_utils.Argument("-i", "--interactive", help="Enter an interactive shell",
                                action="store_true", default=False)
         )
-    with cli_utils.get_cli_environment_context(argv=argv, extra_args=args) as (parser, parsed_args):
+    with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, allow_unknown_args=allow_unknown_args) as (parser, parsed_args):
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
         with app.session:
             with report_context(app.report_stream):

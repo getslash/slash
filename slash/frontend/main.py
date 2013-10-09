@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument("-v", action="append_const", const=1, dest="verbosity", default=[],
                     help="Be more verbose. Can be specified multiple times to increase verbosity further")
 parser.add_argument("cmd")
-parser.add_argument("argv", nargs=argparse.REMAINDER)
+parser.add_argument("argv", nargs="*")
 
 def main(args):
     with _setup_logging_context(args):
