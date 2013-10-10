@@ -13,15 +13,21 @@ def _debugger(debug_function_str, exc_info_transform=None):
         func = getattr(module, function_name)
         if exc_info_transform is not None:
             exc_info = exc_info_transform(exc_info)
-        func(exc_info)
+        func(*exc_info)
     debugger.__name__ = debug_function_str
     return debugger
 
+def _only_tb(exc_info):
+    return (exc_info[2],)
+
+def _tb_type_value(exc_info):
+    return (exc_info[2], exc_info[0], exc_info[1])
+
 _KNOWN_DEBUGGERS = [
     # order is important here!
-    _debugger("pudb.post_mortem"),
-    _debugger("ipdb.post_mortem", operator.itemgetter(2)),
-    _debugger("pdb.post_mortem", operator.itemgetter(2)),
+    _debugger("pudb.post_mortem", _tb_type_value),
+    _debugger("ipdb.post_mortem", _only_tb),
+    _debugger("pdb.post_mortem", _only_tb),
     ]
 
 
