@@ -1,9 +1,11 @@
+import sys
 from .utils import TestCase
 from .utils import no_op
 from .utils import NullFile
 from .utils.test_generator import TestGenerator
 from slash.frontend import slash_run
 from slash import config
+from slash.frontend.main import main_entry_point
 from slash._compat import StringIO
 from slash import site
 import os
@@ -25,12 +27,29 @@ class ArgumentParsingTest(TestCase):
     def setUp(self):
         super(ArgumentParsingTest, self).setUp()
         self.devnull = StringIO()
+        self.forge.replace_with(sys, "stderr", self.devnull)
+
+    callback_success = False
+    def _test_iterator_stub(self, app, args):
+        self.assertTrue(config.root.debug.enabled)
+        self.assertEquals(app.args.remainder, ["test1.py", "test2.py"])
+        # this must be last to make sure the stub ran successfully
+        self.callback_success = True
+        return ()
 
     def test_interspersed_positional_arguments(self):
-        self.assertFalse(config.root.debug.enabled)
-        with slash_run._get_slash_app_context("-v test1.py --pdb test2.py".split(), self.devnull, False) as app:
-            self.assertTrue(config.root.debug.enabled)
-            self.assertEquals(app.args.remainder, ["test1.py", "test2.py"])
+
+        self.forge.replace_with(slash_run, "_get_test_iterator", self._test_iterator_stub)
+        self.forge.replace_with(sys, "argv", "/path/to/slash run -vv test1.py -x test2.py --pdb".split())
+        with self.assertRaises(SystemExit) as caught:
+            main_entry_point()
+        self.assertTrue(self.callback_success)
+        if isinstance(caught.exception, int):
+            # python 2.6
+            code = caught.exception
+        else:
+            code = caught.exception.code
+        self.assertEquals(code, 0)
 
 class SlashRunTest(SlashRunTestBase):
 

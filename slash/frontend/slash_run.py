@@ -12,7 +12,9 @@ from ..utils import rerunning_utils
 
 _logger = logbook.Logger(__name__)
 
-def slash_run(args, report_stream=sys.stderr, rerun=False):
+def slash_run(args, report_stream=None, rerun=False):
+    if report_stream is None:
+        report_stream = sys.stderr
     with _get_slash_app_context(args, report_stream, rerun) as app:
         if rerun:
             try:
