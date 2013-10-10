@@ -6,12 +6,12 @@ session_start = Callback(doc="Called right after session starts")
 session_end   = Callback(doc="Called right before the session ends, regardless of the reason for termination")
 
 test_interrupt = Callback(doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
-test_start   = Callback(doc="Called right after a test starts")
-test_end     = Callback(doc="Called right before a test ends, regardless of the reason for termination")
-test_success = Callback(doc="Called on test success")
-test_error   = Callback(doc="Called on test error")
-test_failure = Callback(doc="Called on test failure")
-test_skip    = Callback(doc="Called on test skip", arg_names=("reason",))
+test_start     = Callback(doc="Called right after a test starts")
+test_end       = Callback(doc="Called right before a test ends, regardless of the reason for termination")
+test_success   = Callback(doc="Called on test success")
+test_error     = Callback(doc="Called on test error")
+test_failure   = Callback(doc="Called on test failure")
+test_skip      = Callback(doc="Called on test skip", arg_names=("reason",))
 
 result_summary = Callback(doc="Called at the end of the execution, when printing results")
 
@@ -67,4 +67,3 @@ def get_hook_by_name(hook_name):
     Returns a hook (if exists) by its name, otherwise returns None
     """
     return _CUSTOM_HOOKS.get(hook_name, None)
-
