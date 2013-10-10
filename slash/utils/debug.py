@@ -1,4 +1,3 @@
-import operator
 import sys
 from ..conf import config
 from ..exceptions import SkipTest
@@ -13,7 +12,7 @@ def _debugger(debug_function_str, exc_info_transform=None):
         func = getattr(module, function_name)
         if exc_info_transform is not None:
             exc_info = exc_info_transform(exc_info)
-        func(*exc_info)
+        func(*exc_info) # pylint: disable=star-args
     debugger.__name__ = debug_function_str
     return debugger
 
