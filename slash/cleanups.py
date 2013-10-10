@@ -1,4 +1,5 @@
 from .ctx import context
+from .exception_handling import handling_exceptions
 import logbook
 
 _logger = logbook.Logger(__name__)
@@ -37,7 +38,8 @@ def call_cleanups(critical_only=False):
         if critical_only and not cleanup.critical:
             continue
         try:
-            cleanup()
+            with handling_exceptions():
+                cleanup()
         except:
             context.session.results.get_result(context.test).add_error()
 

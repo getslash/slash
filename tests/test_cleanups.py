@@ -1,6 +1,7 @@
 from .utils import TestCase
 import slash
 import slash.runner
+from slash import exception_handling
 from slash import Session
 from slash.loader import Loader
 
@@ -29,6 +30,11 @@ class CleanupsTest(TestCase):
             slash.runner.run_tests(Loader().iter_test_factory(Test))
 
     def test_error_cleanups(self):
+
+        exc_infos = []
+        self.forge.replace_with(exception_handling, "_EXCEPTION_HANDLERS", [exc_infos.append])
+        self.override_config("debug.enabled", True)
+
         class Test(slash.Test):
             def test(self_):
                 slash.add_cleanup(self.events.cleanup, 1)
@@ -40,7 +46,13 @@ class CleanupsTest(TestCase):
         with Session() as session:
             slash.runner.run_tests(Loader().iter_test_factory(Test))
         [result] = session.results.iter_test_results()
-        [err1, err2, err3] = result.get_errors()
+        [err1, err2, err3] = errors = result.get_errors()
+
+        self.assertEquals(len(errors), len(exc_infos))
+        self.assertEquals(
+            [e[0] for e in exc_infos],
+            [Exception, SecondException, FirstException],
+            )
 
 class FirstException(Exception):
     pass
