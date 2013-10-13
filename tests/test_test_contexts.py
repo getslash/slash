@@ -63,6 +63,18 @@ class MultipleContextsTest(EventRecordingTest):
 
         run_tests_assert_success(itertools.chain(Test1.generate_tests(), Test2.generate_tests()))
 
+        for event in [
+                "Context2.before_case(Test1.test_1)",
+                "Context2.after_case(Test1.test_1)",
+
+                "Context2.before_case(Test2.test_1)",
+                "Context2.after_case(Test2.test_1)",
+
+                "Context1.before_case(Test1.test_1)",
+                "Context1.after_case(Test1.test_1)",
+                 ]:
+            self.assertTrue(_recorder.events[event].happened)
+
 class ContextSkipTest(EventRecordingTest):
     def test_context_skip_skips_all_depending_test(self):
         @slash.with_context(SkippingContext)

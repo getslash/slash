@@ -57,8 +57,10 @@ def get_test_context_setup(current_test, next_test):
     for needed_context in needed_contexts:
         currently_active.push(needed_context)
     currently_active.trigger_before_case()
-    add_cleanup(currently_active.trigger_after_case)
+    # NB order is reversed in cleanups, so we need to make sure the `after_case` is triggered before the needed context
+    # is popped
     add_cleanup(currently_active.pop_all_except, next_needed_contexts)
+    add_cleanup(currently_active.trigger_after_case)
     yield
 
 def _get_needed_contexts(test):
