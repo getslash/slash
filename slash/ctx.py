@@ -14,13 +14,35 @@ class Context(object):
         self.g = GlobalStorage()
         self.internal_globals = GlobalStorage()
 
+    @property
+    def test_filename(self):
+        return self._get_fqn_field("abspath")
+
+    @property
+    def test_classname(self):
+        return self._get_fqn_module_address_field("factory_name")
+
+    @property
+    def test_methodname(self):
+        return self._get_fqn_module_address_field("method_name")
+
+    def _get_fqn_module_address_field(self, field_name):
+        current_test = self.test
+        if current_test is None:
+            return None
+        return getattr(current_test.__slash__.fqn.address_in_module, field_name)
+
+    def _get_fqn_field(self, field_name):
+        return getattr(getattr(self.test.__slash__, "fqn", None), field_name, None)
+
 class NullContext(object):
     def __setattr__(self, attr, value):
         raise AttributeError("Cannot set attribute {0!r} on null context".format(attr))
     @property
     def _always_none(self):
         pass
-    session = test = test_id = g = internal_globals = _always_none
+    session = test = test_id = g = internal_globals = \
+              test_filename = test_classname = test_methodname = _always_none
 
 _ctx = LocalStack()
 _ctx.push(NullContext())

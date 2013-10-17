@@ -20,9 +20,17 @@ class GlobalsTest(TestCase):
             self.assertIsNone(context.test)
             self.assertIsNone(context.test_id)
             parent_test = self
-            class Test(slash.Test):
-                def test(self):
+            class InnerTest(slash.Test):
+                def test_method(self):
                     parent_test.assertIs(context.test, self)
                     parent_test.assertEquals(context.test_id, self.__slash__.id)
-            slash.runner.run_tests(Test.generate_tests())
+                    parent_test.assertEquals(context.test_filename, _without_pyc(__file__))
+                    parent_test.assertEquals(context.test_classname, "InnerTest")
+                    parent_test.assertEquals(context.test_methodname, "test_method")
+            slash.runner.run_tests(InnerTest.generate_tests())
         self.assertTrue(self.session.results.is_success())
+
+def _without_pyc(path):
+    if path.endswith(".pyc"):
+        path = path[:-1]
+    return path
