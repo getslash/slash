@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :release:`0.2.0 <20-10-2013>`
+* :feature:`103` Add context.test_filename, context.test_classname, context.test_methodname
 * :feature:`96` Add option to specify logging format
 * :feature:`19` Add ability to add non-exception errors and failures to test results
 * :release:`0.1.0 <3-9-2013>`
