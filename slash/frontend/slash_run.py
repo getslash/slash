@@ -53,7 +53,7 @@ def _get_test_iterator(app, args): # pylint: disable=unused-argument
         return _get_rerun_test_iterator(app)
 
     paths = app.args.remainder
-    if not paths:
+    if not paths and not app.args.interactive:
         paths = config.root.run.default_sources
     if not paths and not app.args.interactive:
         app.error("No tests specified")
