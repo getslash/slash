@@ -5,6 +5,8 @@ from . import _compat
 session_start = Callback(doc="Called right after session starts")
 session_end   = Callback(doc="Called right before the session ends, regardless of the reason for termination")
 
+after_session_start = Callback(doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
+
 test_interrupt = Callback(doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
 test_start   = Callback(doc="Called right after a test starts")
 test_end     = Callback(doc="Called right before a test ends, regardless of the reason for termination")

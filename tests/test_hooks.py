@@ -41,3 +41,4 @@ class CustomHooksTest(TestCase):
     def test_cannot_install_default_hooks(self):
         with self.assertRaises(exceptions.HookAlreadyExists):
             hooks.add_custom_hook("test_start")
+

@@ -1,11 +1,13 @@
 import argparse
-from contextlib import contextmanager
 import os
-from .interface import PluginInterface
-from .._compat import iteritems, itervalues
-from .. import hooks
-from ..conf import config
+from contextlib import contextmanager
+
 from emport import import_file
+
+from .. import hooks
+from .._compat import iteritems, itervalues
+from ..conf import config
+from .interface import PluginInterface
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 

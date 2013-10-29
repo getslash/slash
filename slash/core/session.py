@@ -44,6 +44,7 @@ def _session_context(session):
     try:
         with session.logging.get_session_logging_context():
             hooks.session_start()
+            hooks.after_session_start()
             try:
                 yield
             finally:
