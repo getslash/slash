@@ -20,7 +20,6 @@ config = Config({
     },
     "run" : {
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),
-        "local_customization_file_path": "./.slashrc",
         "stop_on_error" : False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
         "user_customization_file_path": "~/.slash/slashrc",

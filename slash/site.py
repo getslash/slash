@@ -5,7 +5,6 @@ import requests
 
 from .conf import config
 
-
 def load(thing=None):
     """
     Loads site files (customization files) from various locations.
@@ -28,7 +27,7 @@ def _load_slashrc():
     _load_file_if_exists(os.path.expanduser(config.root.run.user_customization_file_path))
 
 def _load_local_slashrc():
-    _load_file_if_exists(os.path.expanduser(os.path.expanduser(config.root.run.local_customization_file_path)))
+    _load_file_if_exists(os.path.abspath("./.slashrc"))
 
 def _load_file_if_exists(path):
     if os.path.isfile(path):
