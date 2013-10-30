@@ -30,7 +30,6 @@ class SessionLogging(object):
             stack.enter_context(self._get_file_log_handler(filename_template))
             stack.enter_context(self.console_handler)
             stack.enter_context(self.warnings_handler)
-            stack.enter_context(self._process_test_record())
             stack.enter_context(self._get_silenced_logs_context())
             yield
 
@@ -56,12 +55,6 @@ class SessionLogging(object):
         fmt = config.root.log.format
         if fmt is not None:
             handler.format_string = fmt
-
-    def _add_current_test(self, record):
-        record.extra['source'] = context.test_id or context.session.id
-
-    def _process_test_record(self):
-        return logbook.Processor(self._add_current_test)
 
 class SilencedLoggersHandler(logbook.Handler):
     def __init__(self, silence_logger_names):
