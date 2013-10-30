@@ -1,6 +1,10 @@
 import os
+import sys
+
 import requests
+
 from .conf import config
+
 
 def load(thing=None):
     """
@@ -28,7 +32,12 @@ def _load_local_slashrc():
 
 def _load_file_if_exists(path):
     if os.path.isfile(path):
-        _load_filename(path)
+        old_sys_path = sys.path[:]
+        sys.path.insert(0, os.path.dirname(path))
+        try:
+            _load_filename(path)
+        finally:
+            sys.path[:] = old_sys_path
 
 def _load_environment():
     loaded_url_or_file = os.environ.get("SLASH_SETTINGS")
