@@ -21,7 +21,6 @@ class Application(object):
 
 @contextmanager
 def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, allow_unknown_args=False):
-    site.load()
     args = list(args)
     if enable_interactive:
         args.append(
@@ -29,6 +28,7 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
                                action="store_true", default=False)
         )
     with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, allow_unknown_args=allow_unknown_args) as (parser, parsed_args):
+        site.load()
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
         with app.session:
             with report_context(app.report_stream):
