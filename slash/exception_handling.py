@@ -1,7 +1,9 @@
 from contextlib import contextmanager
 from .utils.debug import debug_if_needed
 from . import hooks as trigger_hook
+from .ctx import context as slash_context
 from .conf import config
+from .exceptions import TestFailed, SkipTest
 import functools
 import logbook
 try:
@@ -12,12 +14,27 @@ import sys
 
 _logger = logbook.Logger(__name__)
 
+def update_current_result(exc_info):
+    if slash_context.session is None:
+        return
+    if slash_context.test is not None:
+        current_result = slash_context.session.results.get_result(slash_context.test)
+    else:
+        current_result = slash_context.session.results.global_result
+
+    exc_class = exc_info[0]
+    if issubclass(exc_class, TestFailed):
+        current_result.add_failure()
+    elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
+        current_result.add_error()
+
 def trigger_hooks_before_debugger(_):
     trigger_hook.exception_caught_before_debugger()
 def trigger_hooks_after_debugger(_):
     trigger_hook.exception_caught_after_debugger()
 
 _EXCEPTION_HANDLERS = [
+    update_current_result,
     trigger_hooks_before_debugger,
     debug_if_needed,
     trigger_hooks_after_debugger,
@@ -25,11 +42,13 @@ _EXCEPTION_HANDLERS = [
 
 @contextmanager
 def handling_exceptions(**kwargs):
+    swallow = kwargs.pop("swallow", False)
     try:
         yield
     except:
         handle_exception(sys.exc_info(), **kwargs)
-        raise
+        if not swallow:
+            raise
 
 def handle_exception(exc_info, context=None):
     """
@@ -44,9 +63,9 @@ def handle_exception(exc_info, context=None):
         msg += " (Context: {0})"
     _logger.debug(msg, context, exc_info=exc_info)
     if not is_exception_handled(exc_info[1]):
+        mark_exception_handled(exc_info[1])
         for handler in _EXCEPTION_HANDLERS:
             handler(exc_info)
-    mark_exception_handled(exc_info[1])
 
 def mark_exception_handled(e):
     mark_exception(e, "handled", True)

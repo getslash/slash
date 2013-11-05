@@ -119,14 +119,8 @@ def _update_result_context():
     except SkipTest as e:
         result.add_skip(e.reason)
         raise
-    except TestFailed:
-        result.add_failure()
-        raise
     except KeyboardInterrupt:
         result.mark_interrupted()
-        raise
-    except:
-        result.add_error()
         raise
     finally:
         result.mark_finished()

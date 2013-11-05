@@ -1,6 +1,7 @@
 from .utils import (
     TestCase,
     CustomException,
+    run_tests_in_session,
     )
 import itertools
 import slash
@@ -28,6 +29,7 @@ class TestTest(TestCase):
         for test in tests:
             test.run()
         self.assertEquals(events, ["before", "test_1", "after", "before", "test_2", "after"])
+
     def test_before_failures(self):
         "Check that exceptions during before() prevent after() from happening"
         events = []
@@ -42,6 +44,20 @@ class TestTest(TestCase):
         with self.assertRaises(CustomException):
             test.run()
         self.assertEquals(events, [])
+
+    def test_after_failures(self):
+        class Test(slash.Test):
+            def test(self):
+                assert False, "msg1"
+
+            def after(self):
+                assert False, "msg2"
+
+        session = run_tests_in_session(Test)
+        self.assertFalse(session.results.is_success())
+        [result] = session.results.iter_test_results()
+        self.assertEquals(len(result.get_errors()), 2)
+
     def test_after_gets_called(self):
         "If before() is successful, after() always gets called"
         events = []

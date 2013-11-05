@@ -56,13 +56,8 @@ class Loader(object):
 
     @contextmanager
     def _handling_import_errors(self):
-        try:
-            with handling_exceptions(context="during import"):
-                yield
-        except Exception: # pylint: disable=W0703
-            if not context.session:
-                raise
-            context.session.results.global_result.add_error()
+        with handling_exceptions(context="during import", swallow=(context.session is not None)):
+            yield
 
     def iter_test_factory(self, factory):
         for test in factory.generate_tests():

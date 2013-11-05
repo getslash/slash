@@ -32,8 +32,9 @@ class CleanupsTest(TestCase):
     def test_error_cleanups(self):
 
         exc_infos = []
-        self.forge.replace_with(exception_handling, "_EXCEPTION_HANDLERS", [exc_infos.append])
-        self.override_config("debug.enabled", True)
+        new_exc_handlers = list(exception_handling._EXCEPTION_HANDLERS)
+        new_exc_handlers.append(exc_infos.append)
+        self.forge.replace_with(exception_handling, "_EXCEPTION_HANDLERS", new_exc_handlers)
 
         class Test(slash.Test):
             def test(self_):

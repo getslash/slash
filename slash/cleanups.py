@@ -37,11 +37,8 @@ def call_cleanups(critical_only=False):
         cleanup = cleanups.pop()
         if critical_only and not cleanup.critical:
             continue
-        try:
-            with handling_exceptions():
-                cleanup()
-        except:
-            context.session.results.get_result(context.test).add_error()
+        with handling_exceptions(swallow=True):
+            cleanup()
 
 def _get_cleanups():
     returned = getattr(context, "cleanups", None)

@@ -31,6 +31,7 @@ _KNOWN_DEBUGGERS = [
 
 
 def debug_if_needed(exc_info=None):
+
     if not config.root.debug.enabled:
         return
     if exc_info is None:

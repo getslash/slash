@@ -6,6 +6,7 @@ from .utils.fqn import ModuleTestAddress
 from .parameters import iterate_kwargs_options
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
+from .exception_handling import handling_exceptions
 
 class Test(RunnableTest, RunnableTestFactory):
     """
@@ -59,9 +60,12 @@ class Test(RunnableTest, RunnableTestFactory):
         method = getattr(self, self._test_method_name)
         self.before(**self._before_kwargs)
         try:
-            method(**self._test_kwargs)
+            with handling_exceptions():
+                method(**self._test_kwargs)
         finally:
-            self.after(**self._after_kwargs)
+            with handling_exceptions():
+                self.after(**self._after_kwargs)
+
     def before(self):
         """
         Gets called before each separate case generated from this test class
