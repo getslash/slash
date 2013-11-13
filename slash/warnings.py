@@ -12,6 +12,9 @@ class SessionWarnings(object):
         "Iterates through stored warnings"
         return iter(self.records)
 
+    def __len__(self):
+        return len(self.records)
+
     def __nonzero__(self):
         return bool(self.records)
 
