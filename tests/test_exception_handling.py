@@ -39,10 +39,8 @@ class HandlingExceptionsContextTest(TestCase):
 class DebuggingTest(TestCase):
     def setUp(self):
         super(DebuggingTest, self).setUp()
-        self.orig_debuggers = debug._KNOWN_DEBUGGERS
-        self.addCleanup(setattr, debug, "_KNOWN_DEBUGGERS", self.orig_debuggers)
+        self.forge.replace_with(debug, "launch_debugger", self.dummy_debugger)
         self.debugger_called = False
-        debug._KNOWN_DEBUGGERS = [self.dummy_debugger]
     def dummy_debugger(self, *args, **kwargs):
         self.debugger_called = True
     def test_debugging_not_configured(self):

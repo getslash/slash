@@ -38,6 +38,10 @@ def debug_if_needed(exc_info=None):
         exc_info = sys.exc_info()
     if exc_info[0] is SkipTest and not config.root.debug.debug_skips:
         return
+
+    launch_debugger(exc_info)
+
+def launch_debugger(exc_info):
     for debug_func in _KNOWN_DEBUGGERS:
         try:
             debug_func(exc_info)
@@ -46,5 +50,4 @@ def debug_if_needed(exc_info=None):
         else:
             break
     else:
-        # should never happen
-        assert False, "No debug function available!"
+        raise NotImplementedError("No debug function available") # pragma: no cover

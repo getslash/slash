@@ -4,6 +4,7 @@ import sys
 
 from .._compat import reraise
 from ..conf import config
+from ..utils.debug import launch_debugger
 
 _declaration_index = itertools.count()
 _logger = logbook.Logger(__name__)
@@ -26,10 +27,14 @@ class Callback(object):
             try:
                 callback(**kwargs)
             except:
-                _logger.warn("Ignoring error occurred while calling {0}", callback, exc_info=sys.exc_info())
+                exc_info = sys.exc_info()
+                _logger.warn("Exception occurred while calling {0}", callback, exc_info=exc_info)
+                if config.root.debug.enabled and config.root.debug.debug_hooks:
+                    launch_debugger(exc_info)
                 if last_exc_info is None:
-                    last_exc_info = sys.exc_info()
+                    last_exc_info = exc_info
         if last_exc_info and not config.root.hooks.swallow_exceptions:
+            _logger.debug("Reraising first exception in callback")
             reraise(*last_exc_info) # pylint: disable=W0142
     def register(self, func, identifier=None):
         """
