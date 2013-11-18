@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.3.0 <18-11-2013>`
 * :feature:`113` Add option to debug hook exceptions (-o debug.debug_hooks=yes)
 * :release:`0.2.0 <20-10-2013>`
 * :feature:`103` Add context.test_filename, context.test_classname, context.test_methodname
