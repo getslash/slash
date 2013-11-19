@@ -22,6 +22,9 @@ class GlobalsTest(TestCase):
             parent_test = self
             class InnerTest(slash.Test):
                 def test_method(self):
+                    # slash.test is a proxy for the current test
+                    parent_test.assertIsNot(slash.test, self)
+                    parent_test.assertIs(slash.test.__slash__, self.__slash__)
                     parent_test.assertIs(context.test, self)
                     parent_test.assertEquals(context.test_id, self.__slash__.id)
                     parent_test.assertEquals(context.test_filename, _without_pyc(__file__))

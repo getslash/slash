@@ -1,12 +1,12 @@
 import functools
 
-from ._compat import iteritems
-from .utils import skip_test
-from .utils.fqn import ModuleTestAddress
-from .parameters import iterate_kwargs_options
-from .runnable_test import RunnableTest
-from .runnable_test_factory import RunnableTestFactory
-from .exception_handling import handling_exceptions
+from .._compat import iteritems
+from ..utils import skip_test
+from ..utils.fqn import ModuleTestAddress
+from ..parameters import iterate_kwargs_options
+from ..runnable_test import RunnableTest
+from ..runnable_test_factory import RunnableTestFactory
+from ..exception_handling import handling_exceptions
 
 class Test(RunnableTest, RunnableTestFactory):
     """

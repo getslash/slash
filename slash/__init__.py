@@ -3,7 +3,7 @@ from . import parameters
 from .cleanups import add_cleanup, add_critical_cleanup
 from .conf import config
 from .ctx import context
-from .ctx import g, session
+from .ctx import g, session, test
 from .runnable_test_factory import RunnableTestFactory
 from .runnable_test import RunnableTest
 from .core.session import Session
@@ -32,10 +32,10 @@ from .assertions import (
     assert_raises,
     assert_true,
     )
-from .test import Test
+from .core.test import Test
+from .core.test import abstract_test_class
 from .test_context import TestContext, with_context
 from .utils import skip_test, skipped, add_error, add_failure
-from .test import abstract_test_class
 from .app import get_application_context
 from .runner import run_tests
 import logbook
