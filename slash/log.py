@@ -17,6 +17,7 @@ class SessionLogging(object):
         self.warnings_handler = WarnHandler(session.warnings)
         self.console_handler = ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
         self._set_formatting(self.console_handler)
+        self.extra_handlers = []
 
     def get_test_logging_context(self):
         return self._get_file_logging_context(config.root.log.subpath)
@@ -31,6 +32,8 @@ class SessionLogging(object):
             stack.enter_context(self.console_handler)
             stack.enter_context(self.warnings_handler)
             stack.enter_context(self._get_silenced_logs_context())
+            for extra_handler in self.extra_handlers:
+                stack.enter_context(extra_handler)
             yield
 
     def _get_silenced_logs_context(self):

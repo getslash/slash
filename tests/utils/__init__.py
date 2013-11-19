@@ -66,12 +66,14 @@ class CustomException(Exception):
 def no_op(*args, **kwargs):
     pass
 
-def run_tests_in_session(test_class_path_or_iterator):
+def run_tests_in_session(test_class_path_or_iterator, session=None):
     if isinstance(test_class_path_or_iterator, str):
         test_class_path_or_iterator = slash.loader.Loader().iter_paths([test_class_path_or_iterator])
     if isinstance(test_class_path_or_iterator, type) and issubclass(test_class_path_or_iterator, RunnableTestFactory):
         test_class_path_or_iterator = test_class_path_or_iterator.generate_tests()
-    with slash.Session() as session:
+    if session is None:
+        session = slash.Session()
+    with session as session:
         slash.runner.run_tests(test_class_path_or_iterator)
     for result in session.results.iter_test_results():
         for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):

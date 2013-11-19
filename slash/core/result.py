@@ -19,6 +19,10 @@ class Result(object):
     def is_error(self):
         return bool(self._errors)
 
+    @property
+    def test_id(self):
+        return self.test_metadata.id
+
     def is_failure(self):
         return bool(self._failures)
 

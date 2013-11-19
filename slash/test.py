@@ -53,6 +53,7 @@ class Test(RunnableTest, RunnableTestFactory):
                                 cls.__slash_skipped_reason__
                             )
                         yield case
+
     def run(self): # pylint: disable=E0202
         """
         Not to be overriden

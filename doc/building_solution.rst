@@ -202,3 +202,20 @@ Let's say we would like to automatically report all test exceptions to a central
          )
 
 For further reading, refer to the `hooks documentation <hooks>` to examine more ways you can use to customize the test running process.
+
+Logging
+-------
+
+Slash uses ``session.logging`` (a :class:`.SessionLogging` object) to manage the logs emitted during a test session.
+
+To control which handlers get added to a test, you can append Logbook handlers to ``session.logging.extra_handlers``:
+
+.. code-block:: python
+
+ from slash import session
+ import logbook
+ 
+ session.logging.extra_handlers.append(logbook.SyslogHandler(...))
+
+.. autoclass:: slash.log.SessionLogging
+   :members:

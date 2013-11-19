@@ -1,5 +1,5 @@
 from .utils import TestCase
-from .utils import run_tests_assert_success
+from .utils import run_tests_assert_success, run_tests_in_session
 import logbook
 import functools
 import os
@@ -98,6 +98,23 @@ class LoggingTest(TestCase):
                 filename = os.path.join(path, filename)
                 with open(filename) as f:
                     assert _silenced_logger.name not in f.read(), "Silenced logs appear in log file {0}".format(filename)
+
+class ExtraLoggersTest(TestCase):
+
+    def setUp(self):
+        super(ExtraLoggersTest, self).setUp()
+        self.session = slash.Session()
+        self.handler = logbook.TestHandler()
+        self.session.logging.extra_handlers.append(self.handler)
+
+    def test(self):
+        run_tests_in_session(SampleTest, session=self.session)
+        for test_result in self.session.results.iter_test_results():
+            for record in self.handler.records:
+                if test_result.test_id in record.message:
+                    break
+            else:
+                self.fail("Test id {} does not appear in logger".format(test_result.test_id))
 
 class SampleTest(slash.Test):
     def test_1(self):
