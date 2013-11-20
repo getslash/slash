@@ -206,16 +206,13 @@ For further reading, refer to the `hooks documentation <hooks>` to examine more 
 Logging
 -------
 
-Slash uses ``session.logging`` (a :class:`.SessionLogging` object) to manage the logs emitted during a test session.
-
-To control which handlers get added to a test, you can append Logbook handlers to ``session.logging.extra_handlers``:
+Slash uses nested log handlers to capture logs from tests and sessions. You can inject extra handlers by using the :func:`.add_log_handler` function:
 
 .. code-block:: python
 
- from slash import session
+ import slash
  import logbook
  
- session.logging.extra_handlers.append(logbook.SyslogHandler(...))
+ slash.log.add_log_handler(logbook.SyslogHandler(...))
 
-.. autoclass:: slash.log.SessionLogging
-   :members:
+.. autofunc:: slash.log.add_log_handler

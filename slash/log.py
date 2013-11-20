@@ -17,7 +17,6 @@ class SessionLogging(object):
         self.warnings_handler = WarnHandler(session.warnings)
         self.console_handler = ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
         self._set_formatting(self.console_handler)
-        self.extra_handlers = []
 
     def get_test_logging_context(self):
         return self._get_file_logging_context(config.root.log.subpath)
@@ -32,7 +31,7 @@ class SessionLogging(object):
             stack.enter_context(self.console_handler)
             stack.enter_context(self.warnings_handler)
             stack.enter_context(self._get_silenced_logs_context())
-            for extra_handler in self.extra_handlers:
+            for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler)
             yield
 
@@ -65,3 +64,14 @@ class SilencedLoggersHandler(logbook.Handler):
         self._silenced_names = set(silence_logger_names)
     def should_handle(self, record):
         return record.channel in self._silenced_names
+
+def add_log_handler(handler):
+    """
+    Adds a log handler to be entered for sessions and for tests
+    """
+    _extra_handlers.append(handler)
+
+def remove_all_extra_handlers():
+    del _extra_handlers[:]
+
+_extra_handlers = []

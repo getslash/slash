@@ -105,7 +105,8 @@ class ExtraLoggersTest(TestCase):
         super(ExtraLoggersTest, self).setUp()
         self.session = slash.Session()
         self.handler = logbook.TestHandler()
-        self.session.logging.extra_handlers.append(self.handler)
+        self.addCleanup(slash.log.remove_all_extra_handlers)
+        slash.log.add_log_handler(self.handler)
 
     def test(self):
         run_tests_in_session(SampleTest, session=self.session)
