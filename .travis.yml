@@ -5,6 +5,6 @@ python:
   - "3.3"
   - "pypy"
 # command to run tests, e.g. python setup.py test
-script: python travis_build.py
+script: make travis-test
 after_success:
   coveralls
