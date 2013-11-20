@@ -20,3 +20,5 @@ env: .env/.up-to-date
 	.env/bin/pip install -e .
 	touch .env/.up-to-date
 
+release:
+	python scripts/make_release.py
