@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.3.1 <20-11-2013>`
 * :feature:`115` Add session.logging.extra_handlers to enable adding custom handlers to tests and the session itself
 * :release:`0.3.0 <18-11-2013>`
 * :feature:`113` Add option to debug hook exceptions (-o debug.debug_hooks=yes)
