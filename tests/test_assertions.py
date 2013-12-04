@@ -78,6 +78,16 @@ class AssertionsTest(TestCase):
         else:
             self.fail("should.raise_exception allowed success")
 
+    def test_raises_exception_multiple_classes(self):
+        possible_exception_types = (CustomException, OtherException)
+        for x in possible_exception_types:
+            with should.raise_exception(possible_exception_types):
+                raise x()
+
+        with self.assertRaises(TestFailed) as caught:
+            with should.raise_exception((CustomException,)) as caught:
+                pass
+
 ## boilerplate
 
 class OtherException(BaseException):

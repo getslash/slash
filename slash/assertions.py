@@ -100,7 +100,10 @@ def raise_exception(exception_class):
     except exception_class as e:
         caught.exception = e
     else:
-        raise TestFailed("{0} not raised".format(exception_class.__name__))
+        expected_classes = exception_class
+        if not isinstance(expected_classes, tuple):
+            expected_classes = (expected_classes,)
+        raise TestFailed("{0} not raised".format("/".join(e.__name__ for e in expected_classes)))
 
 def assert_raises(exception_class):
     return raise_exception(exception_class)

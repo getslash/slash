@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`120` Support multiple exception types in should.raise_exception
 * :release:`0.3.1 <20-11-2013>`
 * :feature:`115` Add session.logging.extra_handlers to enable adding custom handlers to tests and the session itself
 * :release:`0.3.0 <18-11-2013>`
