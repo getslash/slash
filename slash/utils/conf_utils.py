@@ -16,10 +16,6 @@ def _increase(value):
 def _decrease(value):
     return value - 1
 
-def _append(value):
-    raise NotImplementedError() # pragma: no cover
-
-
 class _Cmdline(object):
     def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False, append=None):
         super(_Cmdline, self).__init__()
