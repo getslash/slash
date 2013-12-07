@@ -16,8 +16,12 @@ def _increase(value):
 def _decrease(value):
     return value - 1
 
+def _append(value):
+    raise NotImplementedError() # pragma: no cover
+
+
 class _Cmdline(object):
-    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False):
+    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False, append=None):
         super(_Cmdline, self).__init__()
         dest = next(_dest_generator)
         self.callback_dest = dest + ":callbacks"
@@ -29,6 +33,7 @@ class _Cmdline(object):
         self.increase = increase
         self.decrease = decrease
         self.metavar = metavar
+        self.append = append
 
     def configure_parser(self, parser, path, node):
         """
@@ -42,6 +47,13 @@ class _Cmdline(object):
                                 default=None,
                                 required=self.required,
                                 help=description)
+        if self.append is not None:
+            parser.add_argument(self.append,
+                                dest=self.arg_dest,
+                                action="append",
+                                default=None,
+                                help=description)
+
         self._add_arg(parser, self.on, callback=_set_true,
                       description="Turn on " + description)
         self._add_arg(parser, self.off, callback=_set_false,
@@ -62,7 +74,10 @@ class _Cmdline(object):
         """
         arg_value = getattr(args, self.arg_dest, None)
         if arg_value is not None:
-            value = arg_value
+            if self.append:
+                value = list(value) + (arg_value or [])
+            else:
+                value = arg_value
         callbacks = getattr(args, self.callback_dest, None)
         if callbacks:
             for callback in callbacks:
