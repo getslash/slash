@@ -47,6 +47,7 @@ class _Cmdline(object):
             parser.add_argument(self.append,
                                 dest=self.arg_dest,
                                 action="append",
+                                metavar=self.metavar,
                                 default=None,
                                 help=description)
 
