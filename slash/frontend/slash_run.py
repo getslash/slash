@@ -75,7 +75,7 @@ def _extend_paths_from_suite_files(paths):
                 continue
             paths.append(line)
     return paths
-    
+
 def _get_rerun_test_iterator(app):
     saved_results = app.prev_session_state["results"]
 
