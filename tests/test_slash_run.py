@@ -1,4 +1,8 @@
+from __future__ import print_function
+
+import os
 import sys
+
 from .utils import TestCase
 from .utils import no_op
 from .utils import NullFile
@@ -8,13 +12,11 @@ from slash import config
 from slash.frontend.main import main_entry_point
 from slash._compat import StringIO
 from slash import site
-import os
 
 class SlashRunTestBase(TestCase):
     def setUp(self):
         super(SlashRunTestBase, self).setUp()
         self.override_config("run.session_state_path", os.path.join(self.get_new_path(), "session_data"))
-
 
 class MissingFilesTest(SlashRunTestBase):
 
@@ -84,6 +86,27 @@ class SlashRunTest(SlashRunTestBase):
         self.generator.make_test_skip(self.generator.get_expected_test_ids()[1])
         result = self._execute_slash_run([self.root_path])
         self.assertEquals(result, 0, "skips cause nonzero return value")
+
+    def test_slash_run_from_file(self):
+        filename1 = os.path.join(self.get_new_path(), "file1.txt")
+        filename2 = os.path.join(self.get_new_path(), "file2.txt")
+        with open(filename1, "w") as f:
+            print("# this is a comment", file=f)
+            print(os.path.join(self.root_path, "dir_1", "test_3.py"), file=f)
+
+        with open(filename2, "w") as f:
+            print("# this is a comment", file=f)
+            print(os.path.join(self.root_path, "dir_1", "dir_2", "test_2.py"), file=f)
+
+
+        result = self._execute_slash_run(["-f", filename1, "-f", filename2])
+        self.assertEquals(result, 0, "slash run failed")
+
+        tests_run = self.generator.get_test_ids_run()
+        self.assertEquals(len(tests_run), 3)
+
+        # forget rest of tests
+        self.generator.reset()
 
     def test_slash_rerun(self):
         failing_test_id = self.generator.get_expected_test_ids()[1]

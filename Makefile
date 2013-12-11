@@ -1,4 +1,4 @@
-default: quicktest
+default: test
 
 detox-test:
 	detox
@@ -6,7 +6,7 @@ detox-test:
 travis-test: env
 	.env/bin/python scripts/travis_test.py
 
-quicktest: env
+test: env
 	.env/bin/nosetests -w tests
 
 coverage-test: env

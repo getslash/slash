@@ -55,11 +55,27 @@ def _get_test_iterator(app, args): # pylint: disable=unused-argument
     paths = app.args.remainder
     if not paths and not app.args.interactive:
         paths = config.root.run.default_sources
+
+    paths = _extend_paths_from_suite_files(paths)
+
     if not paths and not app.args.interactive:
         app.error("No tests specified")
 
     return app.test_loader.iter_pqns(paths)
 
+def _extend_paths_from_suite_files(paths):
+    suite_files = config.root.run.suite_files
+    if not suite_files:
+        return paths
+    paths = list(paths)
+    for filename in suite_files:
+        for line in open(filename):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            paths.append(line)
+    return paths
+    
 def _get_rerun_test_iterator(app):
     saved_results = app.prev_session_state["results"]
 

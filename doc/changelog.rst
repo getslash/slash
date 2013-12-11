@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`116` Support '-f' to specify one or more files containing lists of files to run
 * :feature:`121` Support 'append' for CLI arguments deduced from config
 * :feature:`120` Support multiple exception types in should.raise_exception
 * :release:`0.3.1 <20-11-2013>`
