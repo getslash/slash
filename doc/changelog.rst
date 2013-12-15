@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release `0.4.0 <15-12-2013>`
 * :feature:`114` Support for fatal exception marks
 * :feature:`116` Support '-f' to specify one or more files containing lists of files to run
 * :feature:`121` Support 'append' for CLI arguments deduced from config
