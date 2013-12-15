@@ -29,7 +29,7 @@ def slash_run(args, report_stream=None, rerun=False):
         try:
             run_tests(iterator)
         except SlashException as e:
-            logbook.error(e)
+            logbook.error(str(e))
             return -1
         finally:
             _save_rerun_state(app)
