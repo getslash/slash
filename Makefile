@@ -18,7 +18,13 @@ env: .env/.up-to-date
 	virtualenv .env
 	.env/bin/python scripts/install_test_deps.py
 	.env/bin/pip install -e .
+	.env/bin/pip install Sphinx==1.1.3 releases
 	touch .env/.up-to-date
+
+doc: env
+	.env/bin/python setup.py build_sphinx
+
+.PHONY: doc
 
 release:
 	python scripts/make_release.py

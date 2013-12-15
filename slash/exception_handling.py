@@ -122,6 +122,19 @@ def noswallow(exception):
     mark_exception(exception, "swallow", False)
     return exception
 
+def mark_exception_fatal(exception):
+    """
+    Causes this exception to halt the execution of the entire run.
+
+    This is useful when detecting errors that need careful examination, thus preventing further tests from
+    altering the test subject's state
+    """
+    mark_exception(exception, "fatal", True)
+    return exception
+
+def is_exception_fatal(exception):
+    return bool(get_exception_mark(exception, "fatal", False))
+
 def disable_exception_swallowing(func_or_exception):
     """
     Marks an exception to prevent swallowing. Can also be used as a decorator around a function to mark all escaped

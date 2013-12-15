@@ -1,6 +1,7 @@
 import sys
 import traceback
 from .._compat import string_types
+from ..exception_handling import is_exception_fatal
 
 class Error(object):
 
@@ -24,6 +25,9 @@ class Error(object):
             ))
         else:
             self.exception_text = None
+
+    def is_fatal(self):
+        return self.exception is not None and is_exception_fatal(self.exception)
 
     def __repr__(self):
         return repr(self.exception)

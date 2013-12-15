@@ -75,6 +75,10 @@ class Result(object):
     def get_skips(self):
         return self._skips
 
+    def has_fatal_exception(self):
+        return any(e.is_fatal() for e in
+            itertools.chain(self._errors, self._failures))
+
     def __repr__(self):
         return "< Result ({0})>".format(
             ", ".join(

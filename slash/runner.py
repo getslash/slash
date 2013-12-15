@@ -29,6 +29,9 @@ def run_tests(iterable):
         with _get_run_context_stack(test, test_iterator):
             test.run()
         result = context.session.results[test]
+        if result.has_fatal_exception():
+            _logger.debug("Stopping on fatal exception")
+            break
         if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             break

@@ -49,7 +49,12 @@ The exception handling context relies on a convenience mechanism for marking exc
 Marks with Special Meanings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO
+.. autofunction:: slash.exception_handling.noswallow
+
+.. note:: for more on excption swallowing, see :ref:`below <exception_swallowing>`.
+
+.. autofunction:: slash.exception_handling.mark_exception_fatal
+
 
 .. _exception_swallowing:
 
@@ -60,7 +65,7 @@ Slash provides a convenience context for swallowing exceptions in various places
 
 Swallowed exceptions get reported to log as debug logs, and assuming the :ref:`conf.sentry.dsn` configuration path is set, also get reported to `sentry <http://getsentry.com>`_.
 
-You can force certain exceptions through by using the ``noswallow`` or ``disable_exception_swallowing`` functions:
+You can force certain exceptions through by using the :func:`.noswallow` or ``disable_exception_swallowing`` functions:
 
 .. code-block:: python
 

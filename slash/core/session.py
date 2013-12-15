@@ -8,6 +8,7 @@ from ..utils.id_space import IDSpace
 from ..warnings import SessionWarnings
 
 class Session(Activatable):
+
     def __init__(self):
         super(Session, self).__init__()
         self.id = "{0}_0".format(uuid.uuid1())
@@ -51,4 +52,3 @@ def _session_context(session):
                 hooks.session_end()
     finally:
         ctx.pop_context()
-

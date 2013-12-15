@@ -1,9 +1,10 @@
 # pylint: disable-msg=W0201
 from .utils.test_generator import TestGenerator
-from .utils import TestCase, CustomException
+from .utils import TestCase, CustomException, run_tests_in_session
 import slash
 from slash.runner import run_tests
 from slash.exceptions import NoActiveSession
+from slash.exception_handling import mark_exception_fatal
 from slash import Session
 from slash.core.result import Result
 from slash.ctx import context
@@ -92,6 +93,28 @@ class FailedItemsTest(TestRunningTestBase):
                 self.assertEquals(predicate_result,
                                   predicate in true_predicates,
                                   "Predicate {0} unexpectedly returned {1}".format(predicate, predicate_result))
+
+class FatalExceptionsTest(TestCase):
+
+    def test_stop_on_fatal_exceptions(self):
+
+        class SampleTest(slash.Test):
+
+            def test_1(self):
+                pass
+
+            def test_2(self):
+                raise mark_exception_fatal(CustomException())
+
+            def test_3(self):
+                pass
+
+        session = run_tests_in_session(SampleTest)
+
+        self.assertFalse(session.results.is_success())
+        results = list(session.results.iter_test_results())
+        self.assertEquals(len(results), 2)
+        self.assertIn("CustomException", results[-1].get_errors()[0].exception_text)
 
 class StopOnFailuresTest(TestCase):
 
