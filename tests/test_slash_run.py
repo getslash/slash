@@ -74,6 +74,7 @@ class SlashHelpTest(ArgumentParsingTest):
             self._fake_execute(["slash", "run", "-h"])
 
         self.assertTrue(self.stdout.getvalue().startswith("usage: slash run "))
+        self.assertIn("TEST [TEST ", self.stdout.getvalue())
 
     def test_slash_help(self):
 

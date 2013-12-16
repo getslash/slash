@@ -9,17 +9,17 @@ from .formatter import Formatter
 
 
 @contextmanager
-def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), allow_positional_args=False):
+def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), positionals_metavar=None):
     if argv is None:
         argv = sys.argv[1:]
-    parser = PluginAwareArgumentParser(prog=_deduce_program_name())
+    parser = SlashArgumentParser(prog=_deduce_program_name(), positionals_metavar=positionals_metavar)
     if extra_args:
         _populate_extra_args(parser, extra_args)
     argv = list(argv) # copy the arguments, as we'll be gradually removing known arguments
     with _get_active_plugins_context(argv):
         _configure_parser_by_active_plugins(parser)
         _configure_parser_by_config(parser, config)
-        if allow_positional_args:
+        if positionals_metavar is not None:
             parsed_args, positionals = parser.parse_known_args(argv)
         else:
             parsed_args = parser.parse_args(argv)
@@ -120,11 +120,18 @@ def _get_modified_configuration_from_args_context(parser, config, args):
         for path, prev_value in reversed(to_restore):
             config.assign_path(path, prev_value)
 
-class PluginAwareArgumentParser(argparse.ArgumentParser):
+class SlashArgumentParser(argparse.ArgumentParser):
+
+    def __init__(self, *args, **kwargs):
+        positionals_metavar = kwargs.pop("positionals_metavar", None)
+        super(SlashArgumentParser, self).__init__(*args, **kwargs)
+        self._positionals_metavar = positionals_metavar
 
     def format_help(self):
         returned = cStringIO()
-        returned.write(super(PluginAwareArgumentParser, self).format_help())
+        helpstring = super(SlashArgumentParser, self).format_help()
+        helpstring = self._tweak_usage_positional_metavars(helpstring)
+        returned.write(helpstring)
         f = Formatter(returned)
         for index, (plugin_name, plugin) in enumerate(self._iter_available_plugins()):
             if index == 0:
@@ -139,6 +146,21 @@ class PluginAwareArgumentParser(argparse.ArgumentParser):
                     f.write(description)
             f.writeln()
         return returned.getvalue()
+
+    def _tweak_usage_positional_metavars(self, usage):
+        """
+        Adds fake positionals metavar at the end of the usage line
+        """
+        if self._positionals_metavar is None:
+            return usage
+
+        returned = ""
+        added_metavars = False
+        for line in cStringIO(usage):
+            if not added_metavars and not line.strip():
+                returned = returned[:-1] + " [{0} [{0} ...]] \n".format(self._positionals_metavar)
+            returned += line
+        return returned
 
     def _iter_available_plugins(self):
         active_plugin_names = set(plugins.manager.get_active_plugins())

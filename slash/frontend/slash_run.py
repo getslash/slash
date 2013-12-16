@@ -41,7 +41,7 @@ def slash_run(args, report_stream=None, rerun=False):
 @contextmanager
 def _get_slash_app_context(args, report_stream, rerun):
     with get_application_context(
-            argv=args, allow_positional_args=not rerun,
+            argv=args, positionals_metavar=None if rerun else "TEST",
             enable_interactive=True,
             report_stream=report_stream) as app:
         yield app
