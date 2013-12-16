@@ -34,7 +34,7 @@ class ArgumentParsingTest(TestCase):
     callback_success = False
     def _test_iterator_stub(self, app, args):
         self.assertTrue(config.root.debug.enabled)
-        self.assertEquals(app.args.remainder, ["test1.py", "test2.py"])
+        self.assertEquals(app.args.positionals, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully
         self.callback_success = True
         return ()

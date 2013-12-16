@@ -20,7 +20,7 @@ class Application(object):
         self.parser.error(*args, **kwargs)
 
 @contextmanager
-def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, allow_unknown_args=False):
+def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, allow_positional_args=False):
     site.load()
     args = list(args)
     if enable_interactive:
@@ -28,12 +28,17 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
             cli_utils.Argument("-i", "--interactive", help="Enter an interactive shell",
                                action="store_true", default=False)
         )
-    with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, allow_unknown_args=allow_unknown_args) as (parser, parsed_args):
+    with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, allow_positional_args=allow_positional_args) as (parser, parsed_args):
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
         with app.session:
             with report_context(app.report_stream):
+                _check_unknown_switches(app.args.positionals)
                 if enable_interactive and parsed_args.interactive:
                     start_interactive_shell()
                 yield app
             trigger_hook.result_summary()
 
+def _check_unknown_switches(args):
+    unknown = [arg for arg in args if arg.startswith("-")]
+    if unknown:
+        app.error("Unknown flags: {0}".format(", ".join(unknown)))

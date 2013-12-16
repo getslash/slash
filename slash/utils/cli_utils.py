@@ -7,7 +7,7 @@ from .._compat import iteritems, itervalues, cStringIO
 import sys
 
 @contextmanager
-def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), allow_unknown_args=False):
+def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), allow_positional_args=False):
     if argv is None:
         argv = sys.argv[1:]
     parser = PluginAwareArgumentParser()
@@ -17,12 +17,12 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), al
     with _get_active_plugins_context(argv):
         _configure_parser_by_active_plugins(parser)
         _configure_parser_by_config(parser, config)
-        if allow_unknown_args:
-            parsed_args, remainder = parser.parse_known_args(argv)
+        if allow_positional_args:
+            parsed_args, positionals = parser.parse_known_args(argv)
         else:
             parsed_args = parser.parse_args(argv)
-            remainder = []
-        parsed_args.remainder = remainder
+            positionals = []
+        parsed_args.positionals = positionals
         _configure_plugins_from_args(parsed_args)
         with _get_modified_configuration_from_args_context(parser, config, parsed_args):
             yield parser, parsed_args

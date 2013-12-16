@@ -41,7 +41,7 @@ def slash_run(args, report_stream=None, rerun=False):
 @contextmanager
 def _get_slash_app_context(args, report_stream, rerun):
     with get_application_context(
-            argv=args, allow_unknown_args=not rerun,
+            argv=args, allow_positional_args=not rerun,
             enable_interactive=True,
             report_stream=report_stream) as app:
         yield app
@@ -52,7 +52,7 @@ def _get_test_iterator(app, args): # pylint: disable=unused-argument
     if app.prev_session_state:
         return _get_rerun_test_iterator(app)
 
-    paths = app.args.remainder
+    paths = app.args.positionals
     if not paths and not app.args.interactive:
         paths = config.root.run.default_sources
 
@@ -93,7 +93,7 @@ def _save_rerun_state(app):
     if app.prev_session_state is not None:
         state = app.prev_session_state
     else:
-        state = {"pqns": app.args.remainder, "results": {}}
+        state = {"pqns": app.args.positionals, "results": {}}
     saved_results = state["results"]
 
     for result in app.session.results.iter_test_results():
