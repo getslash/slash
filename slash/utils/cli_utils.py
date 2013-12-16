@@ -1,16 +1,18 @@
-from .. import conf
-from .. import plugins
-from .formatter import Formatter
 import argparse
-from contextlib import contextmanager
-from .._compat import iteritems, itervalues, cStringIO
+import os
 import sys
+from contextlib import contextmanager
+
+from .. import conf, plugins
+from .._compat import cStringIO, iteritems, itervalues
+from .formatter import Formatter
+
 
 @contextmanager
 def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), allow_positional_args=False):
     if argv is None:
         argv = sys.argv[1:]
-    parser = PluginAwareArgumentParser()
+    parser = PluginAwareArgumentParser(prog=_deduce_program_name())
     if extra_args:
         _populate_extra_args(parser, extra_args)
     argv = list(argv) # copy the arguments, as we'll be gradually removing known arguments
@@ -26,6 +28,12 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), al
         _configure_plugins_from_args(parsed_args)
         with _get_modified_configuration_from_args_context(parser, config, parsed_args):
             yield parser, parsed_args
+
+def _deduce_program_name():
+    returned = os.path.basename(sys.argv[0])
+    if len(sys.argv) > 1:
+        returned += " {0}".format(sys.argv[1])
+    return returned
 
 def _populate_extra_args(parser, extra_args):
     for argument in extra_args:
@@ -113,6 +121,7 @@ def _get_modified_configuration_from_args_context(parser, config, args):
             config.assign_path(path, prev_value)
 
 class PluginAwareArgumentParser(argparse.ArgumentParser):
+
     def format_help(self):
         returned = cStringIO()
         returned.write(super(PluginAwareArgumentParser, self).format_help())

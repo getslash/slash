@@ -32,13 +32,13 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
         with app.session:
             with report_context(app.report_stream):
-                _check_unknown_switches(app.args.positionals)
+                _check_unknown_switches(app)
                 if enable_interactive and parsed_args.interactive:
                     start_interactive_shell()
                 yield app
             trigger_hook.result_summary()
 
-def _check_unknown_switches(args):
-    unknown = [arg for arg in args if arg.startswith("-")]
+def _check_unknown_switches(app):
+    unknown = [arg for arg in app.args.positionals if arg.startswith("-")]
     if unknown:
         app.error("Unknown flags: {0}".format(", ".join(unknown)))

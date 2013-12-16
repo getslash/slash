@@ -9,18 +9,23 @@ _COMMANDS = {
     "rerun": "slash.frontend.slash_run:slash_rerun",
     }
 
-parser = argparse.ArgumentParser(
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    epilog="Available commands:\n\t{0}".format("\n\t".join(sorted(_COMMANDS))),
-    usage="%(prog)s command...",
-)
 
-parser.add_argument("-v", action="append_const", const=1, dest="verbosity", default=[],
-                    help="Be more verbose. Can be specified multiple times to increase verbosity further")
-parser.add_argument("cmd")
-parser.add_argument("argv", nargs=argparse.REMAINDER)
+def _get_parser():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Available commands:\n\t{0}".format("\n\t".join(sorted(_COMMANDS))),
+        usage="%(prog)s command...",
+    )
 
-def main(args):
+    parser.add_argument("-v", action="append_const", const=1, dest="verbosity", default=[],
+                        help="Be more verbose. Can be specified multiple times to increase verbosity further")
+    parser.add_argument("cmd")
+    parser.add_argument("argv", nargs=argparse.REMAINDER)
+    return parser
+
+def main():
+    parser = _get_parser()
+    args = parser.parse_args()
     with _setup_logging_context(args):
         module_name = _COMMANDS.get(args.cmd)
         if not module_name:
@@ -43,9 +48,7 @@ def _setup_logging_context(args):
 
 #### For use with entry_points/console_scripts
 def main_entry_point():
-    args = parser.parse_args()
-    sys.exit(main(args))
-
+    sys.exit(main())
 
 if __name__ == "__main__":
     main_entry_point()

@@ -28,8 +28,13 @@ class ArgumentParsingTest(TestCase):
 
     def setUp(self):
         super(ArgumentParsingTest, self).setUp()
-        self.devnull = StringIO()
-        self.forge.replace_with(sys, "stderr", self.devnull)
+        self.stderr = StringIO()
+        self.stdout = StringIO()
+        self.addCleanup(setattr, sys, "stderr", sys.stderr)
+        self.forge.replace_with(sys, "stderr", self.stderr)
+        self.addCleanup(setattr, sys, "stdout", sys.stdout)
+        self.forge.replace_with(sys, "stdout", self.stdout)
+
 
     callback_success = False
     def _test_iterator_stub(self, app, args):
@@ -52,6 +57,31 @@ class ArgumentParsingTest(TestCase):
         else:
             code = caught.exception.code
         self.assertEquals(code, 0)
+
+class SlashHelpTest(ArgumentParsingTest):
+
+    def _fake_execute(self, argv):
+        prev_argv = list(sys.argv)
+        sys.argv = argv[:]
+        try:
+            main_entry_point()
+        finally:
+            sys.argv = prev_argv
+
+    def test_slash_run_help(self):
+
+        with self.assertRaises(SystemExit):
+            self._fake_execute(["slash", "run", "-h"])
+
+        self.assertTrue(self.stdout.getvalue().startswith("usage: slash run "))
+
+    def test_slash_help(self):
+
+        with self.assertRaises(SystemExit):
+            self._fake_execute(["slash", "-h"])
+
+        self.assertTrue(self.stdout.getvalue().startswith("usage: slash command..."), self.stdout.getvalue())
+
 
 class SlashRunTest(SlashRunTestBase):
 
@@ -100,7 +130,7 @@ class SlashRunTest(SlashRunTestBase):
 
 
         result = self._execute_slash_run(["-f", filename1, "-f", filename2])
-        self.assertEquals(result, 0, "slash run failed")
+        self.assertEquals(result, 0, "usage: slash run failed")
 
         tests_run = self.generator.get_test_ids_run()
         self.assertEquals(len(tests_run), 3)
