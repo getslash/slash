@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release `0.4.2 <19-01-2014>`
 * :release `0.4.1 <19-01-2014>`
 * :release `0.4.0 <15-12-2013>`
 * :feature:`114` Support for fatal exception marks
