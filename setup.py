@@ -27,7 +27,7 @@ if _PYTHON_VERSION < "3.3":
     install_requires.append("contextlib2")
 
 setup(name="slash",
-      classifiers = [
+      classifiers=[
           "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3.3",
@@ -40,10 +40,9 @@ setup(name="slash",
       version=__version__, # pylint: disable=E0602
       packages=find_packages(exclude=["tests"]),
       install_requires=install_requires,
-      entry_points = dict(
-          console_scripts = [
+      entry_points=dict(
+          console_scripts=[
               "slash  = slash.frontend.main:main_entry_point",
               ]
           ),
-
       )

@@ -56,8 +56,8 @@ def _lookup_object(name):
 
 
 session = LocalProxy(functools.partial(_lookup_object, "session"))
-test    = LocalProxy(functools.partial(_lookup_object, "test"))
-test_id    = LocalProxy(functools.partial(_lookup_object, "test_id"))
+test = LocalProxy(functools.partial(_lookup_object, "test"))
+test_id = LocalProxy(functools.partial(_lookup_object, "test_id"))
 g = LocalProxy(functools.partial(_lookup_object, "g"))
 internal_globals = LocalProxy(functools.partial(_lookup_object, "internal_globals"))
 

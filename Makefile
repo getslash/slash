@@ -3,11 +3,8 @@ default: test
 detox-test:
 	detox
 
-travis-test: env
-	.env/bin/python scripts/travis_test.py
-
 test: env
-	.env/bin/nosetests -w tests
+	.env/bin/python scripts/test_and_pylint.py
 
 coverage-test: env
 	.env/bin/coverage run .env/bin/nosetests -w tests
@@ -19,6 +16,7 @@ env: .env/.up-to-date
 	.env/bin/python scripts/install_test_deps.py
 	.env/bin/pip install -e .
 	.env/bin/pip install Sphinx==1.1.3 releases
+	.env/bin/pip install pylint
 	touch .env/.up-to-date
 
 doc: env
@@ -26,5 +24,5 @@ doc: env
 
 .PHONY: doc
 
-release:
+release: test
 	python scripts/make_release.py

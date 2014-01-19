@@ -3,17 +3,17 @@ from .exceptions import HookAlreadyExists
 from . import _compat
 
 session_start = Callback(doc="Called right after session starts")
-session_end   = Callback(doc="Called right before the session ends, regardless of the reason for termination")
+session_end = Callback(doc="Called right before the session ends, regardless of the reason for termination")
 
 after_session_start = Callback(doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
 
 test_interrupt = Callback(doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
-test_start   = Callback(doc="Called right after a test starts")
-test_end     = Callback(doc="Called right before a test ends, regardless of the reason for termination")
+test_start = Callback(doc="Called right after a test starts")
+test_end = Callback(doc="Called right before a test ends, regardless of the reason for termination")
 test_success = Callback(doc="Called on test success")
-test_error   = Callback(doc="Called on test error")
+test_error = Callback(doc="Called on test error")
 test_failure = Callback(doc="Called on test failure")
-test_skip    = Callback(doc="Called on test skip", arg_names=("reason",))
+test_skip = Callback(doc="Called on test skip", arg_names=("reason",))
 
 result_summary = Callback(doc="Called at the end of the execution, when printing results")
 

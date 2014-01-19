@@ -95,7 +95,7 @@ class TestFQN(TestPQN):
         return str(self) == str(other)
 
     def __ne__(self, other):
-        return not (self == other)
+        return not self == other
 
 class ModuleTestAddress(object):
     """
@@ -147,7 +147,7 @@ class ModuleTestAddress(object):
                    ("factory_name", "method_name", "before_kwargs", "after_kwargs", "method_kwargs"))
 
     def __ne__(self, other):
-        return not (self == other)
+        return not self == other
 
     def __repr__(self):
         return self.to_string()
