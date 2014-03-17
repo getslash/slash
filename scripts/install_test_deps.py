@@ -12,7 +12,7 @@ if __name__ == '__main__':
     deps = [
         "coverage",
         "coveralls",
-        "nose",
+        "pytest",
         "pyforge",
         "lxml", # for XSD validations
     ]

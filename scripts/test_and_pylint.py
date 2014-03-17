@@ -16,4 +16,4 @@ if __name__ == '__main__':
     if not _PYPY:
         _cmd("pylint --rcfile=.pylintrc setup.py")
         _cmd("pylint --rcfile=.pylintrc slash")
-    _cmd("coverage run {0}/nosetests -w tests".format(_BIN_PATH))
+    _cmd("coverage run {0}/py.test tests".format(_BIN_PATH))

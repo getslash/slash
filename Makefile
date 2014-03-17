@@ -7,7 +7,7 @@ test: env
 	.env/bin/python scripts/test_and_pylint.py
 
 coverage-test: env
-	.env/bin/coverage run .env/bin/nosetests -w tests
+	.env/bin/coverage run .env/bin/py.test tests
 
 env: .env/.up-to-date
 
