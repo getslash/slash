@@ -6,6 +6,16 @@ from slash import Session
 from slash.loader import Loader
 
 class CleanupsTest(TestCase):
+
+    def setUp(self):
+        super(CleanupsTest, self).setUp()
+        self._successful_tests = []
+        self.addCleanup(slash.hooks.test_success.unregister_by_identifier, "monitor_test_success")
+        slash.hooks.test_success.register(self._register_test_success, "monitor_test_success")
+
+    def _register_test_success(self):
+        self._successful_tests.append(slash.context.test)
+
     def test_cleanups(self):
         class Test(slash.Test):
             def test1(self_):
@@ -29,7 +39,15 @@ class CleanupsTest(TestCase):
         with Session():
             slash.runner.run_tests(Loader().iter_test_factory(Test))
 
-    def test_error_cleanups(self):
+        assert len(self._successful_tests) == 2
+
+    def test_error_cleanups_and_fail_test(self):
+        self._test_error_cleanups(fail_test=True)
+
+    def test_error_cleanups_and_not_fail_test(self):
+        self._test_error_cleanups(fail_test=False)
+
+    def _test_error_cleanups(self, fail_test):
 
         exc_infos = []
         new_exc_handlers = list(exception_handling._EXCEPTION_HANDLERS)
@@ -40,20 +58,24 @@ class CleanupsTest(TestCase):
             def test(self_):
                 slash.add_cleanup(self.events.cleanup, 1)
                 slash.add_cleanup(self.events.cleanup, 2)
-                raise Exception("!!!")
+                if fail_test:
+                    raise Exception("!!!")
         self.events.cleanup(2).and_raise(SecondException())
         self.events.cleanup(1).and_raise(FirstException())
         self.forge.replay()
         with Session() as session:
             slash.runner.run_tests(Loader().iter_test_factory(Test))
         [result] = session.results.iter_test_results()
-        [err1, err2, err3] = errors = result.get_errors()
+        errors = result.get_errors()
+
+        assert len(errors) == 3 if fail_test else 2
 
         self.assertEquals(len(errors), len(exc_infos))
         self.assertEquals(
             [e[0] for e in exc_infos],
-            [Exception, SecondException, FirstException],
+            [Exception, SecondException, FirstException] if fail_test else [SecondException, FirstException],
             )
+        self.assertEquals(self._successful_tests, [])
 
 class FirstException(Exception):
     pass

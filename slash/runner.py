@@ -94,7 +94,10 @@ def _get_test_hooks_context():
     except:
         hooks.test_error()
     else:
-        hooks.test_success()
+        if context.session.results.get_result(context.test).is_success_finished():
+            hooks.test_success()
+        else:
+            hooks.test_error()
     finally:
         hooks.test_end()
 
