@@ -1,4 +1,5 @@
-from .utils.callback import Callback, requires
+from .utils.callback import Callback
+from .utils.callback import requires #pylint: disable=unused-import
 from .exceptions import HookAlreadyExists
 from . import _compat
 

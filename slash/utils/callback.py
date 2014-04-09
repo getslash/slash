@@ -28,7 +28,8 @@ class Callback(object):
             found_fulfilled_callback = False
             remaining = []
             for callback in uncalled:
-                if not hasattr(callback, 'are_requirements_met') or callback.are_requirements_met():
+                reqs = _get_hook_requirements(callback)
+                if reqs is None or reqs.all_met():
                     found_fulfilled_callback = True
                     exc_info = self._call_callback(callback, kwargs)
                     if last_exc_info is None:
@@ -44,7 +45,7 @@ class Callback(object):
     def _call_callback(self, callback, kwargs):
         exc_info = None
         try:
-            callback(**kwargs)
+            callback(**kwargs) #pylint: disable=star-args
         except:
             exc_info = sys.exc_info()
             _logger.warn("Exception occurred while calling {0}", callback, exc_info=exc_info)
@@ -74,21 +75,37 @@ class Callback(object):
         """
         return iter(self._callbacks)
 
+_HOOK_REQUIREMENTS_ATTR = "_hook_requirements"
+
+class HookRequirements(object):
+
+    def __init__(self):
+        super(HookRequirements, self).__init__()
+        self.requirements = []
+
+    def all_met(self):
+        return all(req() for req in self.requirements)
+
 def requires(callback):
     """
-    Allows creating a requirement on a hook callback. 
+    Allows creating a requirement on a hook callback.
     Hook callback order will prefer calling fulfilled callbacks first. Eventually, all callbacks will be called, even those unfulfilled.
-    This is useful to attempt ordering callbacks that depend on each other (for example, to resolve plugin activation dependencies) 
+    This is useful to attempt ordering callbacks that depend on each other (for example, to resolve plugin activation dependencies)
     """
     def wrapper(f):
-        if not hasattr(f, '__requirements'):
-            f.__requirements = []
-        f.__requirements.append(callback)
-        def are_requirements_met():
-            return all(requirement() for requirement in f.__requirements)
-        f.are_requirements_met = are_requirements_met
+        _ensure_hook_requirements(f).requirements.append(callback)
         return f
     return wrapper
+
+def _ensure_hook_requirements(func):
+    returned = _get_hook_requirements(func)
+    if returned is None:
+        returned = HookRequirements()
+        setattr(func, _HOOK_REQUIREMENTS_ATTR, returned)
+    return returned
+
+def _get_hook_requirements(func):
+    return getattr(func, _HOOK_REQUIREMENTS_ATTR, None)
 
 class RequirementsNotMet(Exception):
     pass
