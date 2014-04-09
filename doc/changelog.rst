@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`132` Support for providing hook requirements to help resolving callback order (useful on initialization)
 * :release `0.4.2 <19-01-2014>`
 * :release `0.4.1 <19-01-2014>`
 * :release `0.4.0 <15-12-2013>`
