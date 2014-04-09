@@ -1,4 +1,4 @@
-from .utils.callback import Callback
+from .utils.callback import Callback, requires
 from .exceptions import HookAlreadyExists
 from . import _compat
 

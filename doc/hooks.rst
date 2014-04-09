@@ -61,3 +61,23 @@ In some cases you want to add custom hooks to Slash. Let's assume, for example, 
 .. autofunction:: slash.hooks.add_custom_hook
 .. autofunction:: slash.hooks.ensure_custom_hook
 .. autofunction:: slash.hooks.remove_custom_hook
+
+
+Hooks Callback Order
+~~~~~~~~~~~~~~~~~~~~
+
+In some cases it is important to order the execution of callbacks. For example, when installing a plugin that depends on a second plugin, it might be required that session_start be called in the correct order. It is possible to add a requirement to a registered callback using the `requires` decorator. When the hook is called, slash will call satisfied callbacks first, until no satisfied callbacks are left. If a callback can't be satisfied, a RequiremenetsNotMet exception will be raised
+
+.. code-block:: python
+
+  import slash
+  
+  class MicrowavePlugin(slash.plugins.PluginInterface):
+    def session_start(self):
+      slash.g.microwave=Microwave()
+      
+  class LogPlugin(slash.plugins.PluginInterface):
+    @slash.hooks.requires(lambda: hasattr(slash.g,'microwave'))
+    def session_start(self):
+      print slash.g.microwave
+
