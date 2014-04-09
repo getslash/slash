@@ -1,6 +1,6 @@
 from .utils import TestCase
 from .utils import CustomException
-from slash.utils.callback import Callback
+from slash.utils.callback import Callback, requires, RequirementsNotMet
 
 class CallbackTestBase(TestCase):
     def setUp(self):
@@ -33,6 +33,30 @@ class CallbackTest(CallbackTestBase):
         handler(arg_value=self.arg)
         self.forge.replay()
         self.hook(arg_value=self.arg)
+
+class RequitesTest(CallbackTestBase):
+    def test__callback_order(self):
+        self.called_first = False
+        self.called_second = False
+        @self.hook.register
+        @requires(lambda:self.called_first)
+        def second():
+            self.assertTrue(self.called_first)
+            self.called_second = True
+        @self.hook.register
+        def first():
+            self.assertFalse(self.called_second)
+            self.called_first = True
+        self.hook()
+        self.assertTrue(self.called_first)
+        self.assertTrue(self.called_second)
+    def test__raises_exception(self):
+        @self.hook.register
+        @requires(lambda:False)
+        def second():
+            self.fail()
+        with self.assertRaises(RequirementsNotMet):
+            self.hook()
 
 class HookExceptionsTest(CallbackTestBase):
     def setUp(self):

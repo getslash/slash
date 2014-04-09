@@ -23,19 +23,34 @@ class Callback(object):
         return set(self._arg_names)
     def __call__(self, **kwargs):
         last_exc_info = None
-        for (_, callback) in self._callbacks:
-            try:
-                callback(**kwargs)
-            except:
-                exc_info = sys.exc_info()
-                _logger.warn("Exception occurred while calling {0}", callback, exc_info=exc_info)
-                if config.root.debug.enabled and config.root.debug.debug_hooks:
-                    launch_debugger(exc_info)
-                if last_exc_info is None:
-                    last_exc_info = exc_info
+        uncalled = [callback for (_, callback) in self._callbacks]
+        while len(uncalled) > 0:
+            found_fulfilled_callback = False
+            remaining = []
+            for callback in uncalled:
+                if not hasattr(callback, 'are_requirements_met') or callback.are_requirements_met():
+                    found_fulfilled_callback = True
+                    exc_info = self._call_callback(callback, kwargs)
+                    if last_exc_info is None:
+                        last_exc_info = exc_info
+                else:
+                    remaining.append(callback)
+            uncalled = remaining
+            if not found_fulfilled_callback:
+                raise RequirementsNotMet("Some callback requirements for {} could not be met".format(callback))
         if last_exc_info and not config.root.hooks.swallow_exceptions:
             _logger.debug("Reraising first exception in callback")
             reraise(*last_exc_info) # pylint: disable=W0142
+    def _call_callback(self, callback, kwargs):
+        exc_info = None
+        try:
+            callback(**kwargs) # pylint: disable=W0142
+        except:
+            exc_info = sys.exc_info()
+            _logger.warn("Exception occurred while calling {0}", callback, exc_info=exc_info)
+            if config.root.debug.enabled and config.root.debug.debug_hooks:
+                launch_debugger(exc_info)
+        return exc_info
     def register(self, func, identifier=None):
         """
         Registers a function to this callback.
@@ -58,3 +73,22 @@ class Callback(object):
         Yields tuples of (identifier, callback) for each registered callback
         """
         return iter(self._callbacks)
+
+def requires(callback):
+    """
+    Allows creating a requirement on a hook callback.
+    Hook callback order will prefer calling fulfilled callbacks first. Eventually, all callbacks will be called, even those unfulfilled.
+    This is useful to attempt ordering callbacks that depend on each other (for example, to resolve plugin activation dependencies)
+    """
+    def wrapper(f):
+        if not hasattr(f, '_requirements'):
+            f._requirements = []
+        f._requirements.append(callback)
+        def are_requirements_met():
+            return all(requirement() for requirement in f._requirements)
+        f.are_requirements_met = are_requirements_met
+        return f
+    return wrapper
+
+class RequirementsNotMet(Exception):
+    pass
