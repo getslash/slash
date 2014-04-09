@@ -1,4 +1,4 @@
-from .utils.callback import Callback, requires
+from .utils.callback import Callback, requires # pylint: disable=W0611
 from .exceptions import HookAlreadyExists
 from . import _compat
 

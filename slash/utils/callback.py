@@ -44,7 +44,7 @@ class Callback(object):
     def _call_callback(self, callback, kwargs):
         exc_info = None
         try:
-            callback(**kwargs)
+            callback(**kwargs) # pylint: disable=W0142
         except:
             exc_info = sys.exc_info()
             _logger.warn("Exception occurred while calling {0}", callback, exc_info=exc_info)
@@ -76,16 +76,16 @@ class Callback(object):
 
 def requires(callback):
     """
-    Allows creating a requirement on a hook callback. 
+    Allows creating a requirement on a hook callback.
     Hook callback order will prefer calling fulfilled callbacks first. Eventually, all callbacks will be called, even those unfulfilled.
-    This is useful to attempt ordering callbacks that depend on each other (for example, to resolve plugin activation dependencies) 
+    This is useful to attempt ordering callbacks that depend on each other (for example, to resolve plugin activation dependencies)
     """
     def wrapper(f):
-        if not hasattr(f, '__requirements'):
-            f.__requirements = []
-        f.__requirements.append(callback)
+        if not hasattr(f, '_requirements'):
+            f._requirements = []
+        f._requirements.append(callback)
         def are_requirements_met():
-            return all(requirement() for requirement in f.__requirements)
+            return all(requirement() for requirement in f._requirements)
         f.are_requirements_met = are_requirements_met
         return f
     return wrapper
