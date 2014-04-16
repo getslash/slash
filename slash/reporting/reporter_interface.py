@@ -1,0 +1,3 @@
+class ReporterInterface(object):
+
+    pass
