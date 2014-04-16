@@ -1,15 +1,18 @@
 import uuid
 from contextlib import contextmanager
+
 from .. import ctx, hooks, log
 from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
-from .result import SessionResults
+from ..reporting.null_reporter import NullReporter
 from ..utils.id_space import IDSpace
 from ..warnings import SessionWarnings
+from .result import SessionResults
+
 
 class Session(Activatable):
 
-    def __init__(self):
+    def __init__(self, reporter=None):
         super(Session, self).__init__()
         self.id = "{0}_0".format(uuid.uuid1())
         self.id_space = IDSpace(self.id)
@@ -19,6 +22,9 @@ class Session(Activatable):
         self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults()
+        if reporter is None:
+            reporter = NullReporter()
+        self.reporter = reporter
 
     def activate(self):
         assert self._context is None
@@ -36,6 +42,7 @@ class Session(Activatable):
 
     def is_complete(self):
         return self._complete
+
 
 @contextmanager
 def _session_context(session):

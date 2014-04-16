@@ -1,12 +1,14 @@
-from contextlib import contextmanager
 import sys
+from contextlib import contextmanager
+
 from . import hooks as trigger_hook
-from .loader import Loader
-from .core.session import Session
 from . import site
+from .core.session import Session
+from .loader import Loader
+from .reporting.console_reporter import ConsoleReporter
 from .utils import cli_utils
 from .utils.interactive import start_interactive_shell
-from .utils.reporter import report_context
+
 
 class Application(object):
     def __init__(self, parser, args, report_stream):
@@ -15,7 +17,7 @@ class Application(object):
         self.args = args
         self.report_stream = report_stream
         self.test_loader = Loader()
-        self.session = Session()
+        self.session = Session(reporter=ConsoleReporter(stream=report_stream))
     def error(self, *args, **kwargs):
         self.parser.error(*args, **kwargs)
 
@@ -31,11 +33,10 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
     with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, positionals_metavar=positionals_metavar) as (parser, parsed_args):
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
         with app.session:
-            with report_context(app.report_stream):
-                _check_unknown_switches(app)
-                if enable_interactive and parsed_args.interactive:
-                    start_interactive_shell()
-                yield app
+            _check_unknown_switches(app)
+            if enable_interactive and parsed_args.interactive:
+                start_interactive_shell()
+            yield app
             trigger_hook.result_summary()
 
 def _check_unknown_switches(app):
