@@ -31,11 +31,13 @@ class Session(Activatable):
         self._context = _session_context(self)
         with handling_exceptions():
             self._context.__enter__()
+        self.reporter.report_session_start(self)
 
     def deactivate(self):
         self.results.global_result.mark_finished()
         with handling_exceptions():
             self._context.__exit__(None, None, None)
+        self.reporter.report_session_end(self)
 
     def mark_complete(self):
         self._complete = True

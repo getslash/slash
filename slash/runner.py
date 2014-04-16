@@ -20,15 +20,25 @@ def run_tests(iterable):
     """
     Runs tests from an iterable using the current session
     """
+    #pylint: disable=maybe-no-member
     if context.session is None:
         raise NoActiveSession("A session is not currently active")
     test_iterator = PeekableIterator(iterable)
+    last_filename = None
     for test in test_iterator:
         ensure_test_metadata(test)
+        test_filename = test.__slash__.fqn.path
+        if last_filename != test_filename:
+            context.session.reporter.report_file_start(test_filename)
+            last_filename = test_filename
+        context.session.reporter.report_test_start(test)
         _logger.debug("Running {0}...", test)
         with _get_run_context_stack(test, test_iterator):
             test.run()
         result = context.session.results[test]
+        context.session.reporter.report_test_end(test, result)
+        if not test_iterator.has_next() or ensure_test_metadata(test_iterator.peek()).fqn.path != last_filename:
+            context.session.reporter.report_file_end(last_filename)
         if result.has_fatal_exception():
             _logger.debug("Stopping on fatal exception")
             break

@@ -16,6 +16,7 @@ install_requires = [
     "logbook>=0.4.2",
     "requests>=1.1.0",
     "raven",
+    "py>=1.4.20",
     # DO NOT ADD pyforge, lxml or any other package only required for testing
 ]
 

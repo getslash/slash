@@ -55,8 +55,12 @@ class TestCase(unittest.TestCase):
 class NullFile(object):
     def write(self, s):
         pass
+
     def isatty(self):
         return False
+
+    def flush(self):
+        pass
 
 class CustomException(Exception):
     @classmethod
