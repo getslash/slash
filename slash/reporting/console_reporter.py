@@ -1,3 +1,4 @@
+import itertools
 import sys
 
 import logbook
@@ -18,6 +19,10 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.sep("=", "Session starts", white=True, bold=True)
 
     def report_session_end(self, session):
+
+        self._report_failures(session)
+        self._report_errors(session)
+
         msg = "Session ended."
         kwargs = {"bold": True}
         if session.results.is_success():
@@ -28,6 +33,38 @@ class ConsoleReporter(ReporterInterface):
 
         msg += " Total duration: {0}".format(self._format_duration(session.duration))
         self._terminal.sep("=", msg, **kwargs)  # pylint: disable=star-args
+
+    def _report_failures(self, session):
+        self._report_error_objects("FAILURES", session.results.iter_all_failures(), "F")
+
+    def _report_errors(self, session):
+        self._report_error_objects("ERRORS", session.results.iter_all_errors(), "E")
+
+    def _report_error_objects(self, title, iterator, marker):
+        self._terminal.sep("=", title)
+        for result, errors in iterator:
+            for error in errors:
+                self._terminal.sep("_", str(result.test_metadata.fqn) if result.test_metadata else "**global**")
+                self._report_error(error, marker)
+
+    def _report_error(self, error, marker):
+        frame = None
+        for index, frame in enumerate(error.traceback.frames):
+            if index > 0:
+                self._terminal.sep("- ")
+            if frame.code_string:
+                code_lines = frame.code_string.splitlines()
+                for index, line in enumerate(code_lines):
+                    if index == len(code_lines) - 1:
+                        self._terminal.write(">", white=True, bold=True)
+                    else:
+                        self._terminal.write(" ")
+                    self._terminal.write(line, white=True, bold=True)
+                    self._terminal.write("\n")
+                self._terminal.write(marker, red=True, bold=True)
+                self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
+                self._terminal.write(error.message, red=True, bold=True)
+                self._terminal.write("\n")
 
     def report_file_start(self, filename):
         self._file_failed = False

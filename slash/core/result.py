@@ -113,6 +113,16 @@ class SessionResults(object):
         self._results_dict = OrderedDict()
         self._iterator = functools.partial(itervalues, self._results_dict)
 
+    def iter_all_failures(self):
+        for result in self.iter_all_results():
+            if result.get_failures():
+                yield result, result.get_failures()
+
+    def iter_all_errors(self):
+        for result in self.iter_all_results():
+            if result.get_errors():
+                yield result, result.get_errors()
+
     @property
     def current(self):
         test_id = context.test_id
