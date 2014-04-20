@@ -26,3 +26,6 @@ doc: env
 
 release: test
 	python scripts/make_release.py
+
+fixture-dir:
+	python scripts/build_test_dir.py $(dir)
