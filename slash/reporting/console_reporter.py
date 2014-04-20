@@ -48,12 +48,15 @@ class ConsoleReporter(ReporterInterface):
                 self._report_error(error, marker)
 
     def _report_error(self, error, marker):
-        frame = None
-        for index, frame in enumerate(error.traceback.frames):
+        line = ""
+        frames = [] if not error.traceback else error.traceback.frames
+        for index, frame in enumerate(frames):
             if index > 0:
                 self._terminal.sep("- ")
+            line = ""
             if frame.code_string:
                 code_lines = frame.code_string.splitlines()
+                line = ""
                 for index, line in enumerate(code_lines):
                     if index == len(code_lines) - 1:
                         self._terminal.write(">", white=True, bold=True)
@@ -61,10 +64,11 @@ class ConsoleReporter(ReporterInterface):
                         self._terminal.write(" ")
                     self._terminal.write(line, white=True, bold=True)
                     self._terminal.write("\n")
-                self._terminal.write(marker, red=True, bold=True)
-                self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
-                self._terminal.write(error.message, red=True, bold=True)
-                self._terminal.write("\n")
+            self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
+        self._terminal.write(marker, red=True, bold=True)
+        self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
+        self._terminal.write(error.message, red=True, bold=True)
+        self._terminal.write("\n")
 
     def report_file_start(self, filename):
         self._file_failed = False

@@ -8,7 +8,7 @@ from ..exception_handling import is_exception_fatal
 
 class Error(object):
 
-    traceack = exception_type = exception = arg = None
+    traceback = exception_type = exception = arg = None
 
     def __init__(self, msg=None, exc_info=None):
         super(Error, self).__init__()

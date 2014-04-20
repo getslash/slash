@@ -66,5 +66,5 @@ class DistilledFrame(object):
 def _safe_repr(value):
     try:
         return repr(value)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         return "[Unprintable {0!r} object]".format(type(value).__name__)
