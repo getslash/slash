@@ -1,9 +1,13 @@
-import itertools
 import functools
+import itertools
+
+import logbook
+
+from .._compat import itervalues, OrderedDict
 from ..ctx import context
-from .._compat import itervalues
-from .._compat import OrderedDict
-from ..utils.error_object import Error
+from .error import Error
+
+_logger = logbook.Logger(__name__)
 
 class Result(object):
 
@@ -54,14 +58,22 @@ class Result(object):
     def is_interrupted(self):
         return self._interrupted
 
-    def add_error(self, msg=None):
-        self._add_error(self._errors, msg)
+    def add_error(self, e=None):
+        self._add_error(self._errors, e)
 
-    def add_failure(self, msg=None):
-        self._add_error(self._failures, msg)
+    def add_failure(self, e=None):
+        self._add_error(self._failures, e)
 
-    def _add_error(self, error_list, msg):
-        error_list.append(Error(msg))
+    def _add_error(self, error_list, error=None):
+        try:
+            if error is None:
+                error = Error.capture_exception()
+            if not isinstance(error, Error):
+                error = Error(error)
+            error_list.append(error)
+        except Exception:
+            _logger.error("Failed to add error to result", exc_info=True)
+            raise
 
     def add_skip(self, reason):
         self._skips.append(reason)

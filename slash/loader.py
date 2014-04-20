@@ -54,7 +54,10 @@ class Loader(object):
                     continue
                 module = None
                 with self._handling_import_errors(file_path):
-                    module = import_file(file_path)
+                    try:
+                        module = import_file(file_path)
+                    except Exception as e:
+                        raise CannotLoadTests("Could not load {0!r} ({1})".format(file_path, e))
                 if module is not None:
                     for runnable in self._iter_runnable_tests_in_module(module):
                         yield runnable

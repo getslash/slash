@@ -38,6 +38,7 @@ def call_cleanups(critical_only=False):
         if critical_only and not cleanup.critical:
             continue
         with handling_exceptions(swallow=True):
+            _logger.debug("Calling cleanup: {0}", cleanup)
             cleanup()
 
 def _get_cleanups():

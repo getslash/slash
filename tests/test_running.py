@@ -114,7 +114,7 @@ class FatalExceptionsTest(TestCase):
         self.assertFalse(session.results.is_success())
         results = list(session.results.iter_test_results())
         self.assertEquals(len(results), 2)
-        self.assertIn("CustomException", results[-1].get_errors()[0].exception_text)
+        self.assertIn("CustomException", results[-1].get_errors()[0].message)
 
 class StopOnFailuresTest(TestCase):
 

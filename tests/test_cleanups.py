@@ -65,10 +65,11 @@ class CleanupsTest(TestCase):
         self.forge.replay()
         with Session() as session:
             slash.runner.run_tests(Loader().iter_test_factory(Test))
+        self.forge.verify()
         [result] = session.results.iter_test_results()
         errors = result.get_errors()
 
-        assert len(errors) == 3 if fail_test else 2
+        assert len(errors) == (3 if fail_test else 2)
 
         self.assertEquals(len(errors), len(exc_infos))
         self.assertEquals(

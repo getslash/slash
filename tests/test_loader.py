@@ -46,7 +46,7 @@ class ImportErrorsTest(TestRepositoryTest):
             f.write("import nonexistent_module_here")
 
     def test_import_errors_without_session(self):
-        with self.assertRaises((SyntaxError, ImportError)):
+        with self.assertRaises(CannotLoadTests):
             list(Loader().iter_path(self.root))
 
     def test_import_errors_with_session(self):
@@ -55,12 +55,12 @@ class ImportErrorsTest(TestRepositoryTest):
         self.assertTrue(tests)
         self.assertFalse(s.results.global_result.is_success())
         errors = s.results.global_result.get_errors()
-        self._assert_file_failed_with(errors, "test_3.py", SyntaxError)
-        self._assert_file_failed_with(errors, "test_4.py", ImportError)
+        self._assert_file_failed_with(errors, "test_3.py", "invalid syntax")
+        self._assert_file_failed_with(errors, "test_4.py", "No module named nonexistent")
 
-    def _assert_file_failed_with(self, errors, filename, error_type):
-        [err] = [e for e in errors if e.exception_type is error_type]
-        self.assertIn(filename, err.exception_text)
+    def _assert_file_failed_with(self, errors, filename, message):
+        [err] = [e for e in errors if message in e.message]
+        self.assertIn(filename, err.message)
 
 class PathLoadingTest(TestRepositoryTest):
     def test_iter_path(self):

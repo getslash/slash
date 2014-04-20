@@ -53,7 +53,7 @@ class FailuresAndErrorsTest(TestCase):
         [error1, error2, error3] = getter(result)
         self.assertEquals(error1.message, "msg1")
         self.assertEquals(error2.message, "msg2")
-        self.assertEquals(error3.message, None)
+        self.assertEquals(error3.message, repr(obj))
         self.assertIs(error3.arg, obj)
 
 class SampleObject(object):
