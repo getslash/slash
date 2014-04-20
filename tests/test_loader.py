@@ -1,3 +1,4 @@
+import pytest
 from .utils import TestCase
 from .utils.test_generator import TestGenerator
 from slash import Session
@@ -7,6 +8,14 @@ from slash.exceptions import CannotLoadTests
 from uuid import uuid1
 import sys
 import os
+
+def test_import_error_registers_as_session_error(active_slash_session, test_loader):
+    iterator = test_loader.iter_paths(["/non/existent/path"])
+    with pytest.raises(CannotLoadTests):
+        next(iterator)
+    errors = active_slash_session.results.global_result.get_errors()
+    assert len(errors) == 1
+    [error] = errors
 
 class TestRepositoryTest(TestCase):
     def setUp(self):

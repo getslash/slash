@@ -3,6 +3,7 @@ from .exception_handling import handling_exceptions
 from .runnable_test_factory import RunnableTestFactory
 from .ctx import context
 from .utils.fqn import TestPQN
+from .utils import add_error
 from contextlib import contextmanager
 from logbook import Logger # pylint: disable=F0401
 from emport import import_file
@@ -31,7 +32,9 @@ class Loader(object):
                 found = True
                 yield test
         if not found:
-            raise CannotLoadTests("Pattern {0!r} not matched any test".format(pqn))
+            msg = "Pattern {0!r} not matched any test".format(pqn)
+            add_error(msg)
+            raise CannotLoadTests(msg)
 
     def iter_path(self, path):
         return self.iter_paths([path])
@@ -40,7 +43,9 @@ class Loader(object):
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
-                raise CannotLoadTests("Path {0} could not be found".format(path))
+                msg = "Path {0} could not be found".format(path)
+                add_error(msg)
+                raise CannotLoadTests(msg)
         for path in paths:
             for file_path in _walk(path):
                 _logger.debug("Checking {0}", file_path)
