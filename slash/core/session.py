@@ -1,5 +1,7 @@
+import time
 import uuid
 from contextlib import contextmanager
+
 
 from .. import ctx, hooks, log
 from ..exception_handling import handling_exceptions
@@ -11,6 +13,8 @@ from .result import SessionResults
 
 
 class Session(Activatable):
+
+    duration = start_time = end_time = None
 
     def __init__(self, reporter=None):
         super(Session, self).__init__()
@@ -27,6 +31,7 @@ class Session(Activatable):
         self.reporter = reporter
 
     def activate(self):
+        self.start_time = time.time()
         assert self._context is None
         self._context = _session_context(self)
         with handling_exceptions():
@@ -37,6 +42,8 @@ class Session(Activatable):
         self.results.global_result.mark_finished()
         with handling_exceptions():
             self._context.__exit__(None, None, None)
+        self.end_time = time.time()
+        self.duration = self.end_time - self.start_time
         self.reporter.report_session_end(self)
 
     def mark_complete(self):

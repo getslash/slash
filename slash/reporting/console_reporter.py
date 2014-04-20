@@ -18,12 +18,16 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.sep("=", "Session starts", white=True, bold=True)
 
     def report_session_end(self, session):
+        msg = "Session ended."
         kwargs = {"bold": True}
         if session.results.is_success():
-            kwargs["green"] = True
+            kwargs.update(green=True)
         else:
-            kwargs["red"] = True
-        self._terminal.sep("=", "Session ended", **kwargs)
+            kwargs.update(red=True)
+            msg += " {0} failures, {1} errors.".format(session.results.get_num_failures(), session.results.get_num_errors())
+
+        msg += " Total duration: {0}".format(self._format_duration(session.duration))
+        self._terminal.sep("=", msg, **kwargs)  # pylint: disable=star-args
 
     def report_file_start(self, filename):
         self._file_failed = False
@@ -54,3 +58,10 @@ class ConsoleReporter(ReporterInterface):
     def report_test_failure(self, test, result):
         self._file_failed = True
         self._terminal.write("F")
+
+    def _format_duration(self, duration):
+        seconds = duration % 60
+        duration /= 60
+        minutes = duration % 60
+        hours = duration / 60
+        return "{0:02}:{1:02}:{2:02}".format(int(hours), int(minutes), int(seconds))
