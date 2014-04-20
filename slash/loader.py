@@ -53,16 +53,20 @@ class Loader(object):
                     _logger.debug("{0} is not wanted. Skipping...", file_path)
                     continue
                 module = None
-                with self._handling_import_errors():
+                with self._handling_import_errors(file_path):
                     module = import_file(file_path)
                 if module is not None:
                     for runnable in self._iter_runnable_tests_in_module(module):
                         yield runnable
 
     @contextmanager
-    def _handling_import_errors(self):
+    def _handling_import_errors(self, file_path):
         with handling_exceptions(context="during import", swallow=(context.session is not None)):
-            yield
+            try:
+                yield
+            except Exception as e:
+                _logger.error("Failed to import {0} ({1})", file_path, e)
+                raise
 
     def iter_test_factory(self, factory):
         for test in factory.generate_tests():
