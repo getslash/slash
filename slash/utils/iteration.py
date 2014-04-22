@@ -1,8 +1,13 @@
+import itertools
+
 _NOTHING = object()
 _END = object()
 
+
 class PeekableIterator(object):
+
     """An iterator wrapper which allows peeking into the next element"""
+
     def __init__(self, iterator):
         super(PeekableIterator, self).__init__()
         self._iterator = iter(iterator)
@@ -39,3 +44,31 @@ class PeekableIterator(object):
         except StopIteration:
             return False
         return True
+
+
+def iteration(iterable):
+    try:
+        last_counter0 = len(iterable) - 1
+    except (ValueError, TypeError):
+        last_counter0 = None
+
+    for index, element in enumerate(iterable):
+
+        yield Iteration(element, counter0=index, counter1=index + 1, first=(index == 0), last_counter0=last_counter0)
+
+
+class Iteration(object):
+
+    def __init__(self, element, counter0, counter1, first, last_counter0=None):
+        super(Iteration, self).__init__()
+        self.element = element
+        self.counter0 = counter0
+        self.counter1 = counter1
+        self.first = first
+        self.last_counter0 = last_counter0
+
+    @property
+    def last(self):
+        if self.last_counter0 is None:
+            raise NotImplementedError("Iterator does not support getting size")
+        return self.counter0 == self.last_counter0
