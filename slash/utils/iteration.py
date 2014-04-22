@@ -1,5 +1,3 @@
-import itertools
-
 _NOTHING = object()
 _END = object()
 
