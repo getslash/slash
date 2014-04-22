@@ -97,12 +97,12 @@ class ConsoleReporter(ReporterInterface):
         for frame_iteration, frame in iteration(frames):
             if not frame_iteration.first:
                 self._terminal.sep("- ")
-            line = ""
             self._write_frame_locals(frame)
-            self._write_frame_code(frame)
+            code_lines = self._write_frame_code(frame)
             if frame_iteration.last:
                 self._terminal.write(marker, red=True, bold=True)
-                self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
+                if code_lines:
+                    self._terminal.write("".join(itertools.takewhile(str.isspace, code_lines[-1])))
                 self._terminal.write(error.message, red=True, bold=True)
                 self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
@@ -132,6 +132,7 @@ class ConsoleReporter(ReporterInterface):
                     self._terminal.write(" ")
                 self._terminal.write(line, white=True, bold=True)
                 self._terminal.write("\n")
+            return code_lines
 
 
     @from_verbosity(VERBOSITIES.WARNING)
