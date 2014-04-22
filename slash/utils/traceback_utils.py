@@ -56,7 +56,7 @@ class DistilledFrame(object):
                     if global_name in used_globals and self._is_global_included(value))
 
     def _is_global_included(self, g):
-        if isinstance(g, (types.FunctionType, types.MethodType, type)):
+        if isinstance(g, (types.FunctionType, types.MethodType, types.ModuleType, type)):
             return False
         return True
 
