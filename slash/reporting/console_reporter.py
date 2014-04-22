@@ -4,6 +4,7 @@ import sys
 
 from py.io import TerminalWriter
 
+from .._compat import iteritems
 from ..log import VERBOSITIES
 from ..utils.iteration import iteration
 from ..utils.python import wraps
@@ -97,25 +98,41 @@ class ConsoleReporter(ReporterInterface):
             if not frame_iteration.first:
                 self._terminal.sep("- ")
             line = ""
-            if frame.code_string:
-                if self._level <= VERBOSITIES.WARNING:
-                    code_lines = frame.code_string.splitlines()
-                else:
-                    code_lines = [frame.code_line]
-                line = ""
-                for line_iteration, line in iteration(code_lines):
-                    if line_iteration.last:
-                        self._terminal.write(">", white=True, bold=True)
-                    else:
-                        self._terminal.write(" ")
-                    self._terminal.write(line, white=True, bold=True)
-                    self._terminal.write("\n")
+            self._write_frame_locals(frame)
+            self._write_frame_code(frame)
             if frame_iteration.last:
                 self._terminal.write(marker, red=True, bold=True)
                 self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
                 self._terminal.write(error.message, red=True, bold=True)
                 self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
+
+    @from_verbosity(VERBOSITIES.WARNING)
+    def _write_frame_locals(self, frame):
+        if not frame.locals and not frame.globals:
+            return
+        for index, (name, value) in enumerate(itertools.chain(iteritems(frame.locals), iteritems(frame.globals))):
+            if index > 0:
+                self._terminal.write(", ")
+            self._terminal.write("{0}: ".format(name), cyan=True, blink=True)
+            self._terminal.write(value["value"])
+        self._terminal.write("\n\n")
+
+    def _write_frame_code(self, frame):
+        if frame.code_string:
+            if self._level <= VERBOSITIES.WARNING:
+                code_lines = frame.code_string.splitlines()
+            else:
+                code_lines = [frame.code_line]
+            line = ""
+            for line_iteration, line in iteration(code_lines):
+                if line_iteration.last:
+                    self._terminal.write(">", white=True, bold=True)
+                else:
+                    self._terminal.write(" ")
+                self._terminal.write(line, white=True, bold=True)
+                self._terminal.write("\n")
+
 
     @from_verbosity(VERBOSITIES.WARNING)
     def report_file_start(self, filename):
