@@ -1,4 +1,4 @@
-# pylint: disable=import-error,no-name-in-module) so imports can be sorted correctly
+# pylint: disable=import-error,no-name-in-module
 import itertools
 import sys
 
@@ -15,7 +15,7 @@ def from_verbosity(level):
     def decorator(func):
         @wraps(func)
         def new_func(self, *args, **kwargs):
-            if self._level <= level:
+            if self._level <= level:  # pylint: disable=protected-access
                 return func(self, *args, **kwargs)
 
         return new_func
