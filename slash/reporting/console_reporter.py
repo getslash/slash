@@ -5,6 +5,7 @@ import logbook
 from py.io import TerminalWriter  # pylint: disable=import-error,no-name-in-module
 
 from .reporter_interface import ReporterInterface
+from ..utils.iteration import iteration
 
 
 class ConsoleReporter(ReporterInterface):
@@ -50,25 +51,26 @@ class ConsoleReporter(ReporterInterface):
     def _report_error(self, error, marker):
         line = ""
         frames = [] if not error.traceback else error.traceback.frames
-        for index, frame in enumerate(frames):
-            if index > 0:
+        for frame_iteration, frame in iteration(frames):
+            if not frame_iteration.first:
                 self._terminal.sep("- ")
             line = ""
             if frame.code_string:
                 code_lines = frame.code_string.splitlines()
                 line = ""
-                for index, line in enumerate(code_lines):
-                    if index == len(code_lines) - 1:
+                for line_iteration, line in iteration(code_lines):
+                    if line_iteration.last:
                         self._terminal.write(">", white=True, bold=True)
                     else:
                         self._terminal.write(" ")
                     self._terminal.write(line, white=True, bold=True)
                     self._terminal.write("\n")
+            if frame_iteration.last:
+                self._terminal.write(marker, red=True, bold=True)
+                self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
+                self._terminal.write(error.message, red=True, bold=True)
+                self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
-        self._terminal.write(marker, red=True, bold=True)
-        self._terminal.write("".join(itertools.takewhile(str.isspace, line)))
-        self._terminal.write(error.message, red=True, bold=True)
-        self._terminal.write("\n")
 
     def report_file_start(self, filename):
         self._file_failed = False
