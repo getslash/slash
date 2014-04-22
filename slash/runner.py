@@ -12,7 +12,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, SkipTest, TestFailed
 from .metadata import ensure_test_metadata
 from .test_context import get_test_context_setup
-from .utils.peekable_iterator import PeekableIterator
+from .utils.iteration import PeekableIterator
 
 _logger = logbook.Logger(__name__)
 
