@@ -67,6 +67,9 @@ class Iteration(object):
         self.first = first
         self.last_counter0 = last_counter0
 
+    def __iter__(self):
+        return iter((self, self.element))
+
     @property
     def last(self):
         if self.last_counter0 is None:

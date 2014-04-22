@@ -19,6 +19,12 @@ def test_iteration(objects):
         else:
             assert not i.last
 
+def test_iteration_unpacking(objects):
+    for index, (i, obj) in enumerate(iteration(objects)):
+        assert index == i.counter0
+        assert obj is i.element
+        assert obj is objects[i.counter0]
+
 def test_iteration_unsupported_sizing():
     for i in iteration(x for x in itertools.count()):
         assert i.first
