@@ -4,6 +4,7 @@ import pytest
 from slash.reporting.console_reporter import ConsoleReporter
 from slash.reporting.null_reporter import NullReporter
 from slash.reporting.reporter_interface import ReporterInterface
+from slash.utils.python import get_underlying_func
 
 
 @pytest.fixture(params=[NullReporter, ConsoleReporter])
@@ -24,6 +25,13 @@ def test_parameter_lists_conform_to_interface(reporter_class):
         if method_name.startswith("_"):
             continue
 
-        argpsec = inspect.getargspec(getattr(reporter_class, method_name))
-        expected = inspect.getargspec(getattr(ReporterInterface, method_name))
+        derived_method = _get_method(reporter_class, method_name)
+        base_method = _get_method(ReporterInterface, method_name)
+
+        argpsec = inspect.getargspec(derived_method)
+        expected = inspect.getargspec(base_method)
         assert argpsec == expected
+
+def _get_method(cls, method_name):
+    returned = getattr(cls, method_name)
+    return get_underlying_func(returned)

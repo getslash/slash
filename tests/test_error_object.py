@@ -15,6 +15,7 @@ def test_error_func_name(error):
     assert error.func_name == "func_3"
 
 def test_code_string(error):
+    assert error.cause.code_line == "    raise NotImplementedError()\n"
     assert error.cause.code_string == """def func_3():
 
     local_func_3 = global_func_3

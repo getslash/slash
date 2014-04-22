@@ -75,3 +75,12 @@ def remove_all_extra_handlers():
     del _extra_handlers[:]
 
 _extra_handlers = []
+
+class VERBOSITIES(object):
+
+    DEBUG = logbook.DEBUG
+    INFO = logbook.INFO
+    NOTICE = logbook.NOTICE
+    WARNING = logbook.WARNING
+    ERROR = logbook.ERROR
+    CRITICAL = logbook.CRITICAL

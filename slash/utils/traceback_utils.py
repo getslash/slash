@@ -44,6 +44,7 @@ class DistilledFrame(object):
         self.func_name = frame.f_code.co_name
         self.locals = self._capture_locals(frame)
         self.globals = self._capture_globals(frame)
+        self.code_line = linecache.getline(self.filename, self.lineno).rstrip()
         self.code_string = "".join(
             linecache.getline(self.filename, lineno)
             for lineno in range(frame.f_code.co_firstlineno, self.lineno + 1)) or None

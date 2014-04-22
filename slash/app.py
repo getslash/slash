@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from . import hooks as trigger_hook
 from . import site
 from .core.session import Session
+from .conf import config
 from .loader import Loader
 from .reporting.console_reporter import ConsoleReporter
 from .utils import cli_utils
@@ -17,7 +18,7 @@ class Application(object):
         self.args = args
         self.report_stream = report_stream
         self.test_loader = Loader()
-        self.session = Session(reporter=ConsoleReporter(stream=report_stream))
+        self.session = Session(reporter=ConsoleReporter(level=config.root.log.console_level, stream=report_stream))
     def error(self, *args, **kwargs):
         self.parser.error(*args, **kwargs)
 
