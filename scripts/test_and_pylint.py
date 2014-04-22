@@ -13,7 +13,7 @@ def _cmd(cmd):
     subprocess.check_call(cmd, shell=True)
 
 if __name__ == '__main__':
+    _cmd("coverage run {0}/py.test tests".format(_BIN_PATH))
     if not _PYPY:
         _cmd("pylint --rcfile=.pylintrc setup.py")
         _cmd("pylint --rcfile=.pylintrc slash")
-    _cmd("coverage run {0}/py.test tests".format(_BIN_PATH))
