@@ -18,9 +18,51 @@ def distill_traceback(tb):
 
     returned = DistilledTraceback()
     while tb is not None:
-        returned.frames.append(DistilledFrame(tb.tb_frame))
+        if _is_frame_and_below_muted(tb.tb_frame):
+            break
+        if not _is_frame_muted(tb.tb_frame):
+            returned.frames.append(DistilledFrame(tb.tb_frame))
         tb = tb.tb_next
     return returned
+
+
+def _is_frame_muted(frame):
+    try:
+        return _deduce_frame_function(frame) in _MUTED_LOCATIONS
+    finally:
+        del frame
+
+
+def _deduce_frame_function(frame):
+    try:
+        frame_module = _deduce_frame_module(frame)
+        if frame_module is None:
+            return None
+
+        frame_self = frame.f_locals.get("self", None)
+        if frame_self is None:
+            return (frame_module, frame.f_code.co_name)
+        return (frame_module, type(frame_self).__name__, frame.f_code.co_name)
+    finally:
+        del frame
+
+
+def _deduce_frame_module(frame):
+    return frame.f_globals.get("__name__")
+
+
+_MUTED_LOCATIONS = set([
+    ("slash.core.test", "Test", "run"),
+    ("slash.exception_handling", "handling_exceptions"),
+])
+
+
+def _is_frame_and_below_muted(frame):
+    return frame.f_globals.get("__name__") in _MUTE_BELOW_MODULES
+
+_MUTE_BELOW_MODULES = set([
+    "slash.assertions"
+])
 
 
 class DistilledTraceback(object):
@@ -63,6 +105,7 @@ class DistilledFrame(object):
     def _capture_locals(self, frame):
         return dict((local_name, {"value": _safe_repr(value)})
                     for local_name, value in frame.f_locals.items())
+
 
 def _safe_repr(value):
     try:
