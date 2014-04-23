@@ -114,7 +114,7 @@ class ConsoleReporter(ReporterInterface):
         for index, (name, value) in enumerate(itertools.chain(iteritems(frame.locals), iteritems(frame.globals))):
             if index > 0:
                 self._terminal.write(", ")
-            self._terminal.write("{0}: ".format(name), cyan=True, blink=True)
+            self._terminal.write("{0}: ".format(name), yellow=True, bold=True)
             self._terminal.write(value["value"])
         self._terminal.write("\n\n")
 
