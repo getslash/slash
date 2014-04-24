@@ -107,7 +107,7 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
 
-    @from_verbosity(VERBOSITIES.WARNING)
+    @from_verbosity(VERBOSITIES.NOTICE)
     def _write_frame_locals(self, frame):
         if not frame.locals and not frame.globals:
             return
@@ -120,7 +120,7 @@ class ConsoleReporter(ReporterInterface):
 
     def _write_frame_code(self, frame):
         if frame.code_string:
-            if self._level <= VERBOSITIES.WARNING:
+            if self._level <= VERBOSITIES.NOTICE:
                 code_lines = frame.code_string.splitlines()
             else:
                 code_lines = [frame.code_line]
