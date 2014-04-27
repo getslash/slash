@@ -22,7 +22,16 @@ class Loader(object):
         return self._collect(self._get_iterator(paths))
 
     def _collect(self, iterator):
-        return list(iterator)
+        returned = []
+        context.reporter.report_collection_start()
+        try:
+            for x in iterator:
+                returned.append(x)
+                context.reporter.report_test_collected(returned, x)
+        finally:
+            context.reporter.report_collection_end(returned)
+
+        return returned
 
     def _get_iterator(self, thing):
         if isinstance(thing, list):

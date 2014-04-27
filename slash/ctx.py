@@ -1,3 +1,5 @@
+from .reporting.null_reporter import NullReporter
+
 __all__ = ["context", "session", "test", "test_id", "g", "internal_globals"]
 
 
@@ -25,6 +27,12 @@ class Context(object):
     def test_methodname(self):
         return self._get_fqn_module_address_field("method_name")
 
+    @property
+    def reporter(self):
+        if self.session is None:
+            return NullReporter()
+        return self.session.reporter
+
     def _get_fqn_module_address_field(self, field_name):
         current_test = self.test
         if current_test is None:
@@ -47,6 +55,8 @@ class NullContext(object):
 
     session = test = test_id = g = internal_globals = \
         test_filename = test_classname = test_methodname = _always_none
+
+    reporter = NullReporter()
 
 
 class _ContextStack(object):
@@ -117,11 +127,11 @@ test = ContextAttributeProxy("test")
 test_id = ContextAttributeProxy("test_id")
 g = ContextAttributeProxy("g")
 internal_globals = ContextAttributeProxy("internal_globals")
+reporter = ContextAttributeProxy("reporter")
 
 
 def push_context():
     context.push(Context())
-
 
 def pop_context():
     context.pop()

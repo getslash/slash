@@ -29,6 +29,18 @@ class ConsoleReporter(ReporterInterface):
         self._stream = stream
         self._terminal = TerminalWriter(file=stream)
 
+    def report_collection_start(self):
+        self._report_num_collected([], stillworking=True)
+
+    def report_test_collected(self, tests, _):
+        self._report_num_collected(tests, stillworking=True)
+
+    def report_collection_end(self, tests):
+        self._report_num_collected(tests, stillworking=False)
+
+    def _report_num_collected(self, collected, stillworking):
+        self._terminal.write("\r{0} tests collected{1}".format(len(collected), "..." if stillworking else "   \n"), white=True, bold=True)
+
     def _is_verbose(self, level):
         return self._level <= level
 

@@ -12,6 +12,15 @@ class ReporterInterface(object):
     def report_file_end(self, filename):
         pass
 
+    def report_collection_start(self):
+        pass
+
+    def report_test_collected(self, all_tests, test):
+        pass
+
+    def report_collection_end(self, collected):
+        pass
+
     def report_test_start(self, test):
         pass
 
