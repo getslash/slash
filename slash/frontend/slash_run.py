@@ -25,9 +25,9 @@ def slash_run(args, report_stream=None, rerun=False):
         else:
             app.prev_session_state = None
 
-        iterator = _get_test_iterator(app, args)
         try:
-            run_tests(iterator)
+            collected = _collect_tests(app, args)
+            run_tests(collected)
         except SlashException as e:
             logbook.error(str(e))
             return -1
@@ -48,7 +48,7 @@ def _get_slash_app_context(args, report_stream, rerun):
 
 slash_rerun = functools.partial(slash_run, rerun=True)
 
-def _get_test_iterator(app, args): # pylint: disable=unused-argument
+def _collect_tests(app, args): # pylint: disable=unused-argument
     if app.prev_session_state:
         return _get_rerun_test_iterator(app)
 
@@ -61,7 +61,7 @@ def _get_test_iterator(app, args): # pylint: disable=unused-argument
     if not paths and not app.args.interactive:
         app.error("No tests specified")
 
-    return app.test_loader.iter_pqns(paths)
+    return app.test_loader.get_runnables(paths)
 
 def _extend_paths_from_suite_files(paths):
     suite_files = config.root.run.suite_files
@@ -79,7 +79,7 @@ def _extend_paths_from_suite_files(paths):
 def _get_rerun_test_iterator(app):
     saved_results = app.prev_session_state["results"]
 
-    for test in app.test_loader.iter_pqns(app.prev_session_state["pqns"]):
+    for test in app.test_loader.get_runnables(app.prev_session_state["pqns"]):
         _logger.debug("Rerun: examining {0}", test)
 
         saved_result = saved_results.get(test.__slash__.fqn.fqn, None)

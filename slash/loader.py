@@ -7,10 +7,9 @@ from .utils import add_error
 from contextlib import contextmanager
 from logbook import Logger # pylint: disable=F0401
 from emport import import_file
-from ._compat import iteritems # pylint: disable=F0401
+from ._compat import iteritems, string_types # pylint: disable=F0401
 import itertools
 import os
-import sys
 
 _logger = Logger(__name__)
 
@@ -19,15 +18,31 @@ class Loader(object):
     Provides iteration interfaces to load runnable tests from various places
     """
 
-    def iter_pqns(self, pqns):
-        return itertools.chain.from_iterable(
-            self.iter_fqn(pqn) if ":" in pqn else self.iter_path(pqn)
-            for pqn in pqns)
+    def get_runnables(self, paths):
+        return self._collect(self._get_iterator(paths))
 
-    def iter_fqn(self, pqn):
+    def _collect(self, iterator):
+        return list(iterator)
+
+    def _get_iterator(self, thing):
+        if isinstance(thing, list):
+            return itertools.chain.from_iterable(self._get_iterator(x) for x in thing)
+        if isinstance(thing, string_types):
+            return self._iter_test_address(thing)
+        if isinstance(thing, RunnableTestFactory) or (isinstance(thing, type) and issubclass(thing, RunnableTestFactory)):
+            return self._iter_test_factory(thing)
+
+        raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
+
+    def _iter_test_address(self, address):
+        if ":" in address:
+            return self._iter_fqn(address)
+        return self._iter_path(address)
+
+    def _iter_fqn(self, pqn):
         pqn = TestPQN.from_string(pqn)
         found = False
-        for test in self.iter_path(pqn.path):
+        for test in self._iter_path(pqn.path):
             if pqn.matches(test.__slash__.fqn):
                 found = True
                 yield test
@@ -36,10 +51,10 @@ class Loader(object):
             add_error(msg)
             raise CannotLoadTests(msg)
 
-    def iter_path(self, path):
-        return self.iter_paths([path])
+    def _iter_path(self, path):
+        return self._iter_paths([path])
 
-    def iter_paths(self, paths):
+    def _iter_paths(self, paths):
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
@@ -71,17 +86,9 @@ class Loader(object):
                 _logger.error("Failed to import {0} ({1})", file_path, e)
                 raise
 
-    def iter_test_factory(self, factory):
+    def _iter_test_factory(self, factory):
         for test in factory.generate_tests():
             yield test
-
-    def iter_package(self, package_name):
-        if package_name not in sys.modules:
-            __import__(package_name)
-        path = sys.modules[package_name].__file__
-        if os.path.basename(path) in ("__init__.py", "__init__.pyc"):
-            path = os.path.dirname(path)
-        return self.iter_path(path)
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")
@@ -92,7 +99,7 @@ class Loader(object):
                 continue
             if isinstance(factory, type) and issubclass(factory, RunnableTestFactory):
                 _logger.debug("Getting tests from {0}:{1}..", module, factory_name)
-                for test in self.iter_test_factory(factory):
+                for test in self._iter_test_factory(factory):
                     yield test
 
 def _walk(p):

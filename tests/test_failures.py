@@ -42,7 +42,7 @@ class FailuresAndErrorsTest(TestCase):
 
         with slash.Session() as session:
             if in_specific_test:
-                slash.run_tests(slash.loader.Loader().iter_test_factory(Test))
+                slash.run_tests(slash.loader.Loader().get_runnables(Test))
                 [result] = session.results.iter_test_results()
             else:
                 list(Test.generate_tests())[0].run()

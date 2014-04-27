@@ -37,16 +37,16 @@ class ArgumentParsingTest(TestCase):
 
 
     callback_success = False
-    def _test_iterator_stub(self, app, args):
+    def _collect_tests_stub(self, app, args):
         self.assertTrue(config.root.debug.enabled)
         self.assertEquals(app.args.positionals, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully
         self.callback_success = True
-        return ()
+        return []
 
     def test_interspersed_positional_arguments(self):
 
-        self.forge.replace_with(slash_run, "_get_test_iterator", self._test_iterator_stub)
+        self.forge.replace_with(slash_run, "_collect_tests", self._collect_tests_stub)
         self.forge.replace_with(sys, "argv", "/path/to/slash run -vv test1.py -x test2.py --pdb".split())
         with self.assertRaises(SystemExit) as caught:
             main_entry_point()

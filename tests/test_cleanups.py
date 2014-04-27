@@ -37,7 +37,7 @@ class CleanupsTest(TestCase):
 
         self.forge.replay()
         with Session():
-            slash.runner.run_tests(Loader().iter_test_factory(Test))
+            slash.runner.run_tests(Loader().get_runnables(Test))
 
         assert len(self._successful_tests) == 2
 
@@ -64,7 +64,7 @@ class CleanupsTest(TestCase):
         self.events.cleanup(1).and_raise(FirstException())
         self.forge.replay()
         with Session() as session:
-            slash.runner.run_tests(Loader().iter_test_factory(Test))
+            slash.runner.run_tests(Loader().get_runnables(Test))
         self.forge.verify()
         [result] = session.results.iter_test_results()
         errors = result.get_errors()
