@@ -13,6 +13,7 @@ if __name__ == '__main__':
         "coverage",
         "coveralls",
         "pytest",
+        "pytest-capturelog",
         "pyforge",
         "lxml", # for XSD validations
     ]

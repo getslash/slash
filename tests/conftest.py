@@ -1,6 +1,11 @@
 import pytest
 import slash
+import logbook.compat
 from slash.loader import Loader
+
+@pytest.fixture
+def setup_logging(request):
+    logbook.compat.LoggingHandler().push_application()
 
 @pytest.fixture
 def slash_session():

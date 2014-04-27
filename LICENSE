@@ -32,10 +32,6 @@ Bootstrap Theme for Sphinx
 --------------------------
 Licensed by Ryan Roemer (BSD-3). See https://github.com/ryan-roemer/sphinx-bootstrap-theme
 
-local.py
---------
-Licensed by the Werkzeug team (BSD-3). See https://github.com/mitsuhiko/werkzeug/blob/master/werkzeug/local.py
-
 ipdb
 ----
 ipdb is not a formal dependency of slash, and it can function without it. If it exists and is importable, it is used for debugging with the --pdb flag.
