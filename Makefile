@@ -28,4 +28,5 @@ release: test
 	python scripts/make_release.py
 
 fixture-dir:
+	rm -rf $(dir)
 	python scripts/build_test_dir.py $(dir)
