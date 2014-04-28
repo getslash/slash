@@ -15,7 +15,7 @@ def from_verbosity(level):
     def decorator(func):
         @wraps(func)
         def new_func(self, *args, **kwargs):
-            if self._level <= level:  # pylint: disable=protected-access
+            if self._verobsity_allows(level):  # pylint: disable=protected-access
                 return func(self, *args, **kwargs)
 
         return new_func
@@ -50,13 +50,13 @@ class ConsoleReporter(ReporterInterface):
 
     def report_session_end(self, session):
 
-        if self._level > VERBOSITIES.WARNING:
+        if not self._verobsity_allows(VERBOSITIES.WARNING):
             self._terminal.write("\n")  # for concise outputs we need to break the sequence of dots...
 
-        if self._level <= VERBOSITIES.ERROR:
+        if self._verobsity_allows(VERBOSITIES.ERROR):
             self._report_failures(session)
             self._report_errors(session)
-        elif self._level <= VERBOSITIES.CRITICAL:
+        elif self._verobsity_allows(VERBOSITIES.CRITICAL):
             self._report_failures_and_errors_concise(session)
 
         msg = "Session ended."
@@ -69,6 +69,9 @@ class ConsoleReporter(ReporterInterface):
 
         msg += " Total duration: {0}".format(self._format_duration(session.duration))
         self._terminal.sep("=", msg, **kwargs)  # pylint: disable=star-args
+
+    def _verobsity_allows(self, level):
+        return self._level <= level
 
     def _report_failures(self, session):
         self._report_error_objects("FAILURES", session.results.iter_all_failures(), "F")
@@ -132,7 +135,7 @@ class ConsoleReporter(ReporterInterface):
 
     def _write_frame_code(self, frame):
         if frame.code_string:
-            if self._level <= VERBOSITIES.NOTICE:
+            if self._verobsity_allows(VERBOSITIES.NOTICE):
                 code_lines = frame.code_string.splitlines()
             else:
                 code_lines = [frame.code_line]
