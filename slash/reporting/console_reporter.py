@@ -59,6 +59,9 @@ class ConsoleReporter(ReporterInterface):
         elif self._verobsity_allows(VERBOSITIES.CRITICAL):
             self._report_failures_and_errors_concise(session)
 
+        if self._verobsity_allows(VERBOSITIES.INFO):
+            self._report_all_skips(session)
+
         msg = "Session ended."
         kwargs = {"bold": True}
         if session.results.is_success():
@@ -121,6 +124,15 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write(error.message, red=True, bold=True)
                 self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
+
+    def _report_all_skips(self, session):
+        for item, result in iteration(result for result in session.results.iter_test_results() if result.is_skip()):
+            if item.first:
+                self._terminal.sep("=", "SKIPS")
+            self._terminal.write(result.test_metadata, yellow=True)
+            self._terminal.write("\t")
+            self._terminal.write(result.get_skips()[0])
+            self._terminal.write("\n")
 
     @from_verbosity(VERBOSITIES.NOTICE)
     def _write_frame_locals(self, frame):
