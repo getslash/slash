@@ -25,6 +25,7 @@ def run_tests(iterable):
         raise NoActiveSession("A session is not currently active")
     test_iterator = PeekableIterator(iterable)
     last_filename = None
+    complete = False
     for test in test_iterator:
         ensure_test_metadata(test)
         test_filename = test.__slash__.fqn.path
@@ -46,7 +47,18 @@ def run_tests(iterable):
             _logger.debug("Stopping (run.stop_on_error==True)")
             break
     else:
+        complete = True
+
+    _mark_remaining_skipped(test_iterator)
+    if complete:
         context.session.mark_complete()
+    elif last_filename is not None:
+        context.session.reporter.report_file_end(last_filename)
+
+def _mark_remaining_skipped(test_iterator):
+    for test in test_iterator:
+        with _get_test_context(test):
+            context.session.results.create_result(test).add_skip("Did not run")
 
 @contextmanager
 def _get_run_context_stack(test, test_iterator):

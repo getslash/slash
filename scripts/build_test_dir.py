@@ -16,7 +16,7 @@ class Application(object):
         self._args = args
 
     def generate_error_test(self):
-        return "raise NotImpletedError()"
+        return "unused = nonexisting_variable"
 
     def generate_failing_test(self):
         return "slash.should.equal(1, 2)"
@@ -39,11 +39,11 @@ class Application(object):
                     f.write(self._INDENT)
                     f.write("def test_{0}(self):\n".format(index))
                     f.write(self._INDENT * 2)
-                    f.write("self.test_{0}_step1()".format(index))
+                    f.write("self._test_{0}_step1()".format(index))
                     f.write("\n\n")
                     for step in range(1, 5):
                         f.write(self._INDENT)
-                        f.write("def test_{0}_step{1}(self):\n".format(index, step))
+                        f.write("def _test_{0}_step{1}(self):\n".format(index, step))
                         f.write(self._INDENT * 2)
                         f.write("func_step={0}\n".format(step))
                         f.write(self._INDENT * 2)
@@ -52,7 +52,7 @@ class Application(object):
                         if step == 4:
                             f.write(generator())
                         else:
-                            f.write("self.test_{0}_step{1}()\n".format(index, step+1))
+                            f.write("self._test_{0}_step{1}()\n".format(index, step+1))
                         f.write("\n\n")
 
 

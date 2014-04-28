@@ -113,8 +113,9 @@ class FatalExceptionsTest(TestCase):
 
         self.assertFalse(session.results.is_success())
         results = list(session.results.iter_test_results())
-        self.assertEquals(len(results), 2)
-        self.assertIn("CustomException", results[-1].get_errors()[0].message)
+        self.assertEquals(len(results), 3)
+        self.assertIn("CustomException", results[-2].get_errors()[0].message)
+        assert results[-1].is_skip()
 
 class StopOnFailuresTest(TestCase):
 
@@ -164,12 +165,11 @@ class StopOnFailuresTest(TestCase):
         self.assertTrue(self._debug_called)
 
         for index, test in enumerate(tests):
+            result = session.results.get_result(test)
             if index <= failing_index:
-                result = session.results.get_result(test)
                 self.assertTrue(result.is_finished())
             else:
-                with self.assertRaises(LookupError):
-                    session.results.get_result(test)
+                self.assertTrue(result.is_skip())
 
 ### make nosetests ignore stuff we don't want to run
 run_tests.__test__ = False
