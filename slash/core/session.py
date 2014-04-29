@@ -25,7 +25,7 @@ class Session(Activatable):
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result
-        self.results = SessionResults()
+        self.results = SessionResults(self)
         if reporter is None:
             reporter = NullReporter()
         self.reporter = reporter

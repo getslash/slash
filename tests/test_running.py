@@ -51,7 +51,7 @@ class AllSuccessfulTest(TestRunningTestBase):
 
 _RESULT_PREDICATES = set([
     getattr(Result, method_name)
-    for method_name in dir(Result) if method_name.startswith("is_")
+    for method_name in dir(Result) if method_name.startswith("is_") and method_name != "is_started"
     ])
 
 class FailedItemsTest(TestRunningTestBase):

@@ -1,5 +1,5 @@
 from .utils import TestCase
-from slash._compat import OrderedDict
+from slash import Session
 from slash.core.result import Result
 from slash.core.result import SessionResults
 
@@ -30,7 +30,7 @@ class SessionResultTest(TestCase):
 
         for result in self.results[:num_finished]:
             result.mark_finished()
-        self.result = SessionResults()
+        self.result = SessionResults(Session())
         for index, r in enumerate(self.results):
             self.result._results_dict[index] = r
 

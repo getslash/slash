@@ -17,8 +17,15 @@ class Result(object):
         self._errors = []
         self._failures = []
         self._skips = []
+        self._started = False
         self._finished = False
         self._interrupted = False
+
+    def is_started(self):
+        return self._started
+
+    def mark_started(self):
+        self._started = True
 
     def is_error(self):
         return bool(self._errors)
@@ -107,8 +114,9 @@ class GlobalResult(Result):
 
 class SessionResults(object):
 
-    def __init__(self):
+    def __init__(self, session):
         super(SessionResults, self).__init__()
+        self.session = session
         self.global_result = GlobalResult()
         self._results_dict = OrderedDict()
         self._iterator = functools.partial(itervalues, self._results_dict)
@@ -140,6 +148,9 @@ class SessionResults(object):
 
     def get_num_results(self):
         return len(self._results_dict)
+
+    def get_num_started(self):
+        return self._count(Result.is_started, include_global=False)
 
     def get_num_successful(self):
         return self._count(Result.is_success_finished, include_global=False)

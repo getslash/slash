@@ -6,8 +6,8 @@ import sys
 
 _COMMANDS = {
     "run": "slash.frontend.slash_run:slash_run",
-    "rerun": "slash.frontend.slash_run:slash_rerun",
-    }
+    "resume": "slash.frontend.slash_run:slash_resume",
+}
 
 
 def _get_parser():

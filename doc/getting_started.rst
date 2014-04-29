@@ -54,7 +54,7 @@ This also works with *test parameters* (see below):
 
     $ slash run "testfile.py:TestClass(setup_param=1)().method(x=2)"
 
-When you run a large number of tests and only some of them fail, you may want to retry running only the failed tests and the tests which haven't run already. Slash has a mode for that, called `slash rerun`::
+When you run a large number of tests and only some of them fail, you may want to retry running only the failed tests and the tests which haven't run already. Slash has a mode for that, called `slash resume`::
 
     $ slash run /path/to/tests
     ...E..
@@ -67,7 +67,7 @@ When you run a large number of tests and only some of them fail, you may want to
 
 Now you can fix test_failing_1.py::
 
-    $ slash rerun
+    $ slash resume
     .
     --------------------------------------------------------------------------------
     Successful  Failures  Errors  Skipped

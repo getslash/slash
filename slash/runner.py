@@ -16,13 +16,17 @@ from .utils.iteration import PeekableIterator
 
 _logger = logbook.Logger(__name__)
 
-def run_tests(iterable):
+def run_tests(iterable, stop_on_error=None):
     """
     Runs tests from an iterable using the current session
     """
     #pylint: disable=maybe-no-member
     if context.session is None:
         raise NoActiveSession("A session is not currently active")
+
+    if stop_on_error is None:
+        stop_on_error = config.root.run.stop_on_error
+
     test_iterator = PeekableIterator(iterable)
     last_filename = None
     complete = False
@@ -43,7 +47,7 @@ def run_tests(iterable):
         if result.has_fatal_exception():
             _logger.debug("Stopping on fatal exception")
             break
-        if not result.is_success() and not result.is_skip() and config.root.run.stop_on_error:
+        if not result.is_success() and not result.is_skip() and stop_on_error:
             _logger.debug("Stopping (run.stop_on_error==True)")
             break
     else:
@@ -138,6 +142,7 @@ def _set_current_test_context(test):
 @contextmanager
 def _update_result_context():
     result = context.session.results.create_result(context.test)
+    result.mark_started()
     try:
         try:
             yield result
