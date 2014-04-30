@@ -18,8 +18,11 @@ class Loader(object):
     Provides iteration interfaces to load runnable tests from various places
     """
 
-    def get_runnables(self, paths):
-        return self._collect(self._get_iterator(paths))
+    def get_runnables(self, paths, sort_key=None):
+        returned = self._collect(self._get_iterator(paths))
+        if sort_key is not None:
+            returned.sort(key=sort_key)
+        return returned
 
     def _collect(self, iterator):
         returned = []

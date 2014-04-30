@@ -44,7 +44,7 @@ class TestSuite(object):
         with slash.Session() as session:
             self.session_id = session.id
             slash.runner.run_tests(
-                slash.loader.Loader().get_runnables([self._path]), stop_on_error=stop_on_error)
+                slash.loader.Loader().get_runnables([self._path], sort_key=lambda test: test.__slash__.fqn.address_in_module.method_name), stop_on_error=stop_on_error)
         return self._verify_results(session, stop_on_error=stop_on_error)
 
     def _verify_results(self, session, stop_on_error):
