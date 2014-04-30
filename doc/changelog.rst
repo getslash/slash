@@ -30,8 +30,7 @@ Changelog
 * :feature:`-` Documentation additions and enhancements
 * :feature:`69` Move slash.session to slash.core.session. slash.session is now the session context proxy, as documented
 * :feature:`-` Add should.be_empty, should.not_be_empty
-* :feature:`75` Support matching by parameters in FQN
-* :feature:`75` Support running specific or partial tests via FQN
+* :feature:`75` Support matching by parameters in FQN, Support running specific or partial tests via FQN
 * :release:`0.0.2 <7-7-2013>`
 * :feature:`46`: Added plugin.activate() to provide plugins with the ability to control what happens upon activation
 * :feature:`40`: Added test context support - you can now decorate tests to provide externally implemented contexts for more flexible setups
