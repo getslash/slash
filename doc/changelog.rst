@@ -1,6 +1,9 @@
 Changelog
 =========
 
+* :feature:`129` Overhaul rerunning logic (now called 'resume')
+* :feature:`128` Slash now loads tests eagerly, failing earlier for bad imports etc. This might change in the future to be an opt-out behavior (change back to lazy loading)
+* :feature:`-` Overhaul the reporting mechanism, make output more similar to py.test's, including better error reporting.
 * :release `0.5.0 <09-04-2014>`
 * :feature:`132` Support for providing hook requirements to help resolving callback order (useful on initialization)
 * :release `0.4.2 <19-01-2014>`
