@@ -15,7 +15,7 @@ env: .env/.up-to-date
 	virtualenv .env
 	.env/bin/python scripts/install_test_deps.py
 	.env/bin/pip install -e .
-	.env/bin/pip install -r ./doc_requirements.txt
+	.env/bin/pip install -r ./doc/pip_requirements.txt
 	.env/bin/pip install pylint
 	touch .env/.up-to-date
 
