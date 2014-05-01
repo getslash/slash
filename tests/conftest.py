@@ -10,6 +10,16 @@ from slash.loader import Loader
 
 from .utils.suite import TestSuite
 
+@pytest.fixture(scope="function")
+def checkpoint():
+    return Checkpoint()
+
+class Checkpoint(object):
+
+    called = False
+
+    def __call__(self, *args, **kwargs):
+        self.called = True
 
 @pytest.fixture(autouse=True, scope="function")
 def fix_resume_path(request):
