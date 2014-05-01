@@ -46,4 +46,4 @@ setup(name="slash",
               "slash  = slash.frontend.main:main_entry_point",
               ]
           ),
-      )
+)
