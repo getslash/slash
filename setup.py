@@ -32,18 +32,18 @@ setup(name="slash",
           "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3.3",
-          ],
+      ],
       description="A Testing Framework",
       license="BSD",
       author="Rotem Yaari",
       author_email="vmalloc@gmail.com",
       url="http://vmalloc.github.io/slash",
-      version=__version__, # pylint: disable=E0602
+      version=__version__,  # pylint: disable=E0602
       packages=find_packages(exclude=["tests"]),
       install_requires=install_requires,
       entry_points=dict(
           console_scripts=[
               "slash  = slash.frontend.main:main_entry_point",
-              ]
-          ),
+          ]
+      ),
 )

@@ -19,7 +19,7 @@ class Error(object):
             msg = repr(msg)
         self.message = msg
         if exc_info is not None:
-            self.exception_type, self.exception, tb = exc_info
+            self.exception_type, self.exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.traceback = distill_traceback(tb)
 
     def is_fatal(self):
