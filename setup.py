@@ -13,6 +13,7 @@ install_requires = [
     "colorama",
     "confetti>=2.1.0",
     "emport==1.0.0",
+    "gossip>=0.6.0",
     "logbook>=0.4.2",
     "requests>=1.1.0",
     "raven",

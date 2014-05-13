@@ -1,11 +1,14 @@
-from .utils import TestCase
-from .utils import run_tests_assert_success, run_tests_in_session
-import logbook
 import functools
 import os
+
+import logbook
+
+import gossip
 import slash
 
-_IDENTIFIER = "logging-test"
+from .utils import run_tests_assert_success, run_tests_in_session, TestCase
+
+_TOKEN = "logging-test"
 _SESSION_START_MARK = "session-start-mark"
 _SESSION_END_MARK = "session-end-mark"
 
@@ -51,11 +54,11 @@ class LoggingTest(TestCase):
             [_silenced_logger.name]
         )
 
-        slash.hooks.session_start.register(functools.partial(_mark, _SESSION_START_MARK), identifier=_IDENTIFIER)
-        self.addCleanup(slash.hooks.session_start.unregister_by_identifier, _IDENTIFIER)
+        self.addCleanup(gossip.unregister_token, _TOKEN)
+        slash.hooks.session_start.register(functools.partial(_mark, _SESSION_START_MARK), token=_TOKEN)
 
-        slash.hooks.session_end.register(functools.partial(_mark, _SESSION_END_MARK), identifier=_IDENTIFIER)
-        self.addCleanup(slash.hooks.session_end.unregister_by_identifier, _IDENTIFIER)
+        slash.hooks.session_end.register(functools.partial(_mark, _SESSION_END_MARK), token=_TOKEN)
+        self.addCleanup(gossip.unregister_token, _TOKEN)
 
         self.session = run_tests_assert_success(SampleTest)
         self.test_ids = [result.test_metadata.id for result in self.session.results.iter_test_results()]

@@ -1,17 +1,19 @@
-from .utils import TestCase
+import gossip
 import slash
 import slash.runner
-from slash import exception_handling
-from slash import Session
+from slash import exception_handling, Session
 from slash.loader import Loader
+
+from .utils import TestCase
+
 
 class CleanupsTest(TestCase):
 
     def setUp(self):
         super(CleanupsTest, self).setUp()
         self._successful_tests = []
-        self.addCleanup(slash.hooks.test_success.unregister_by_identifier, "monitor_test_success")
-        slash.hooks.test_success.register(self._register_test_success, "monitor_test_success")
+        self.addCleanup(gossip.unregister_token, "monitor_test_success")
+        slash.hooks.test_success.register(self._register_test_success, token="monitor_test_success")
 
     def _register_test_success(self):
         self._successful_tests.append(slash.context.test)

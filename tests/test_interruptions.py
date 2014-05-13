@@ -1,10 +1,12 @@
 # pylint: disable-msg=W0201
-from .utils.test_generator import TestGenerator
+import gossip
 import slash
-from slash.runner import run_tests
 from slash import Session
-from slash.core.result import Result
+from slash.runner import run_tests
+
 from .utils import TestCase
+from .utils.test_generator import TestGenerator
+
 
 class InterruptionTest(TestCase):
     def setUp(self):
@@ -15,8 +17,8 @@ class InterruptionTest(TestCase):
         self.interrupted_index = 3
         self.interrupted = self.runnables[self.interrupted_index]
         self.generator.add_test_run_callback(self.interrupted, self._do_test_callback)
-        slash.hooks.test_interrupt.register(self._test_interrupt_hook, id(self))
-        self.addCleanup(slash.hooks.test_interrupt.unregister_by_identifier, id(self))
+        slash.hooks.test_interrupt.register(self._test_interrupt_hook, token=id(self))
+        self.addCleanup(gossip.unregister_token, id(self))
 
         with Session() as session:
             self.session = session

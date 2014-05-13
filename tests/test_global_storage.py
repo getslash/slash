@@ -1,9 +1,12 @@
-from .utils import TestCase
+import gossip
 import slash
+
+from .utils import TestCase
+
 
 class GlobalStorageTest(TestCase):
     hook_called = False
-    identifier = object()
+    token = object()
     def test_global_storage_exists_on_session_start(self):
         @slash.exception_handling.disable_exception_swallowing
         def _on_session_start():
@@ -11,10 +14,10 @@ class GlobalStorageTest(TestCase):
             slash.g.value = "value"
             self.assertEquals(slash.g.value, "value")
             self.hook_called = True
-        slash.hooks.session_start.register(_on_session_start, self.identifier)
+        slash.hooks.session_start.register(_on_session_start, token=self.token)
         self.addCleanup(
-            slash.hooks.session_start.unregister_by_identifier,
-            self.identifier
+            gossip.unregister_token,
+            self.token
         )
         with slash.Session():
             pass

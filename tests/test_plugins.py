@@ -10,9 +10,9 @@ class BuiltinPluginsTest(TestCase):
     def test_hooks_start_condition(self):
         "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
         for hook_name, hook in hooks.get_all_hooks():
-            for identifier, registered in hook.iter_registered():
+            for registration in hook.get_registrations():
                 self.assertTrue(
-                    identifier.startswith("slash."),
+                    registration.token.startswith("slash."),
                     "Callback {0}.{1} is not a builtin!".format(hook_name, identifier)
                 )
 

@@ -1,11 +1,10 @@
-import argparse
 import os
-from contextlib import contextmanager
 
+import gossip
 from emport import import_file
 
 from .. import hooks
-from .._compat import iteritems, itervalues
+from .._compat import itervalues
 from ..conf import config
 from .interface import PluginInterface
 
@@ -112,7 +111,7 @@ class PluginManager(object):
         plugin_name = plugin.get_name()
         plugin.activate()
         for hook, callback in self._get_plugin_registrations(plugin):
-            hook.register(callback, plugin_name)
+            hook.register(callback, token=plugin_name)
         self._active.add(plugin_name)
 
     def deactivate(self, plugin):
@@ -125,8 +124,7 @@ class PluginManager(object):
         plugin_name = plugin.get_name()
 
         if plugin_name in self._active:
-            for hook, _ in self._get_plugin_registrations(plugin):
-                hook.unregister_by_identifier(plugin_name)
+            gossip.get_group("slash").unregister_token(plugin_name)
             self._active.discard(plugin_name)
             plugin.deactivate()
 
@@ -148,8 +146,9 @@ class PluginManager(object):
                 continue
             if hook_name.startswith("_"):
                 continue
-            hook = getattr(hooks, hook_name, None)
-            if hook is None:
+            try:
+                hook = gossip.get_hook("slash.{0}".format(hook_name))
+            except LookupError:
                 unknown.append(hook_name)
                 continue
             assert hook is not None

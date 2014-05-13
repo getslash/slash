@@ -3,12 +3,22 @@ import tempfile
 
 import logbook.compat
 
+import gossip
 import pytest
 import slash
 from slash import resuming
 from slash.loader import Loader
 
 from .utils.suite import TestSuite
+
+
+@pytest.fixture(scope="function", autouse=True)
+def cleanup_hook_registrations(request):
+    @request.addfinalizer
+    def _cleanup():
+        for hook in gossip.get_group("slash").get_hooks():
+            hook.unregister_all()
+        assert not gossip.get_group("slash").get_subgroups()
 
 @pytest.fixture(scope="function")
 def checkpoint():

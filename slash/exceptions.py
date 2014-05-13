@@ -2,9 +2,6 @@
 class SlashException(Exception):
     pass
 
-class HookAlreadyExists(SlashException):
-    pass
-
 class NoActiveSession(SlashException):
     pass
 

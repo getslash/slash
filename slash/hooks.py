@@ -1,73 +1,82 @@
-from .utils.callback import Callback
-from .utils.callback import requires #pylint: disable=unused-import
-from .exceptions import HookAlreadyExists
+import gossip
+
 from . import _compat
 
-session_start = Callback(doc="Called right after session starts")
-session_end = Callback(doc="Called right before the session ends, regardless of the reason for termination")
+from .utils.deprecation import deprecated
 
-after_session_start = Callback(doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
 
-test_interrupt = Callback(doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
-test_start = Callback(doc="Called right after a test starts")
-test_end = Callback(doc="Called right before a test ends, regardless of the reason for termination")
-test_success = Callback(doc="Called on test success")
-test_error = Callback(doc="Called on test error")
-test_failure = Callback(doc="Called on test failure")
-test_skip = Callback(doc="Called on test skip", arg_names=("reason",))
+def _deprecated_to_gossip(func):
+    return deprecated(since="0.6.0", message="Use gossip instead")(func)
 
-result_summary = Callback(doc="Called at the end of the execution, when printing results")
+def _define(hook_name, **kwargs):
+    hook = gossip.define("slash.{0}".format(hook_name), **kwargs)
+    globals()[hook_name] = hook
+    return hook
 
-exception_caught_before_debugger = Callback(
-    doc="Called whenever an exception is caught, but a debugger hasn't been entered yet"
-)
-exception_caught_after_debugger = Callback(
-    doc="Called whenever an exception is caught, and a debugger has already been run"
-)
+_define('session_start', doc="Called right after session starts")
+_define('session_end', doc="Called right before the session ends, regardless of the reason for termination")
 
-_CUSTOM_HOOKS = {}
+_define('after_session_start', doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
 
+_define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
+_define('test_start', doc="Called right after a test starts")
+_define('test_end', doc="Called right before a test ends, regardless of the reason for termination")
+_define('test_success', doc="Called on test success")
+_define('test_error', doc="Called on test error")
+_define('test_failure', doc="Called on test failure")
+_define('test_skip', doc="Called on test skip", arg_names=("reason",))
+
+_define('result_summary', doc="Called at the end of the execution, when printing results")
+
+_define('exception_caught_before_debugger',
+        doc="Called whenever an exception is caught, but a debugger hasn't been entered yet")
+
+_define('exception_caught_after_debugger',
+        doc="Called whenever an exception is caught, and a debugger has already been run")
+
+gossip.get_group('slash').set_strict()
+
+@_deprecated_to_gossip
 def add_custom_hook(hook_name):
     """
     Adds an additional hook to the set of available hooks
     """
-    globs = globals()
-    if hook_name in _CUSTOM_HOOKS or hook_name in globs:
-        raise HookAlreadyExists("Hook named {0!r} already exists!".format(hook_name))
+    return _define(hook_name)
 
-    returned = _CUSTOM_HOOKS[hook_name] = globs[hook_name] = Callback()
-    return returned
-
+@_deprecated_to_gossip
 def ensure_custom_hook(hook_name):
     """
     Like :func:`.add_custom_hook`, only forgives if the hook already exists
     """
-    if hook_name in _CUSTOM_HOOKS:
-        return _CUSTOM_HOOKS[hook_name]
-    return add_custom_hook(hook_name)
+    try:
+        return gossip.get_hook("slash.{0}".format(hook_name))
+    except LookupError:
+        return _define(hook_name)
 
+@_deprecated_to_gossip
 def remove_custom_hook(hook_name):
     """
     Removes a hook from the set of available hooks
     """
-    _CUSTOM_HOOKS.pop(hook_name)
+    gossip.get_hook("slash.{0}".format(hook_name)).undefine()
     globals().pop(hook_name)
 
+@_deprecated_to_gossip
 def get_custom_hook_names():
     """
     Retrieves the names of all custom hooks currently installed
     """
-    return list(_CUSTOM_HOOKS)
+    raise NotImplementedError() # pragma: no cover
 
+@_deprecated_to_gossip
 def get_all_hooks():
-    for name, callback in _compat.iteritems(globals()):
-        if not isinstance(callback, Callback):
-            continue
-        yield name, callback
+    return [
+        (hook.name, hook)
+        for hook in gossip.get_group('slash').get_hooks()]
 
+@_deprecated_to_gossip
 def get_hook_by_name(hook_name):
     """
     Returns a hook (if exists) by its name, otherwise returns None
     """
-    return _CUSTOM_HOOKS.get(hook_name, None)
-
+    return gossip.get_hook('slash.{0}'.format(hook_name))
