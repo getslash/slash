@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`141` Add slash.utils.deprecated to mark internal facilities bound for removal
 * :feature:`129` Overhaul rerunning logic (now called 'resume')
 * :feature:`128` Slash now loads tests eagerly, failing earlier for bad imports etc. This might change in the future to be an opt-out behavior (change back to lazy loading)
 * :feature:`-` Overhaul the reporting mechanism, make output more similar to py.test's, including better error reporting.

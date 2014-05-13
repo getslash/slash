@@ -1,7 +1,7 @@
 import logbook
 
 import pytest
-from slash.utils import deprecated
+from slash.utils.deprecation import deprecated
 
 
 def test_deprecated_func_called(capture):
