@@ -77,6 +77,11 @@ def deprecated(func=None, message=None):
             _deprecation_locations.add(caller_location)
         return func(*args, **kwargs)
 
+    if new_func.__doc__:  # pylint: disable=no-member
+        new_func.__doc__ += "\n.. deprecated::\n"  # pylint: disable=no-member
+        if message:
+            new_func.__doc__ += "   {0}".format(message)  # pylint: disable=no-member
+
     return new_func
 
 def _get_caller_location(stack_climb=2):

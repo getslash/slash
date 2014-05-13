@@ -47,6 +47,23 @@ def test_deprecations_same_sources(capture):
     f()
     assert len(capture.records) == 1
 
+def test_deprecatd_docstring():
+
+    message = "Use something else instead"
+
+    @deprecated
+    def some_func():
+        """This is a function
+        """
+
+    @deprecated(message)
+    def other_func():
+        """This is another function
+        """
+
+    assert ".. deprecated::" in some_func.__doc__
+    assert ".. deprecated::\n   {0}".format(message) in other_func.__doc__
+
 
 @pytest.fixture
 def capture(request):
