@@ -16,7 +16,7 @@ def test_deprecation_message(capture):
 
 def test_deprecation_with_message(capture):
 
-    @deprecated("use something else instead")
+    @deprecated("use something else instead", since="1.0.0")
     def func(a, b):
         return a + b
 
@@ -51,18 +51,18 @@ def test_deprecatd_docstring():
 
     message = "Use something else instead"
 
-    @deprecated
+    @deprecated(since="1.0.0")
     def some_func():
         """This is a function
         """
 
-    @deprecated(message)
+    @deprecated(message, since="1.0.0")
     def other_func():
         """This is another function
         """
 
-    assert ".. deprecated::" in some_func.__doc__
-    assert ".. deprecated::\n   {0}".format(message) in other_func.__doc__
+    assert ".. deprecated:: 1.0.0" in some_func.__doc__
+    assert ".. deprecated:: 1.0.0\n   {0}".format(message) in other_func.__doc__
 
 
 @pytest.fixture
@@ -75,6 +75,6 @@ def capture(request):
         handler.pop_application()
     return handler
 
-@deprecated
+@deprecated(since="1.0.0")
 def deprecated_func(a, b):
     return a + b

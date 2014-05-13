@@ -3,6 +3,7 @@ import sys
 
 import logbook
 
+from ..__version__ import __version__
 from .._compat import string_types
 from ..ctx import context
 from ..exceptions import SkipTest
@@ -55,7 +56,7 @@ def add_failure(msg):
 _deprecation_logger = logbook.Logger("slash.deprecation")
 _deprecation_locations = set()
 
-def deprecated(func=None, message=None):
+def deprecated(func=None, message=None, since=None):
     """Marks the specified function as deprecated, and emits a warning when it's called
     """
     if isinstance(func, string_types):
@@ -64,7 +65,11 @@ def deprecated(func=None, message=None):
         func = None
 
     if func is None:
-        return functools.partial(deprecated, message=message)
+        return functools.partial(deprecated, message=message, since=since)
+
+    if not since:
+        raise ValueError("Must provide deprecation version via the 'since' parameter")
+
 
     @functools.wraps(func)
     def new_func(*args, **kwargs):
@@ -78,7 +83,7 @@ def deprecated(func=None, message=None):
         return func(*args, **kwargs)
 
     if new_func.__doc__:  # pylint: disable=no-member
-        new_func.__doc__ += "\n.. deprecated::\n"  # pylint: disable=no-member
+        new_func.__doc__ += "\n.. deprecated:: {0}\n".format(since)  # pylint: disable=no-member
         if message:
             new_func.__doc__ += "   {0}".format(message)  # pylint: disable=no-member
 
