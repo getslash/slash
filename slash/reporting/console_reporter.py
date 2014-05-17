@@ -83,8 +83,10 @@ class ConsoleReporter(ReporterInterface):
         self._report_error_objects("ERRORS", session.results.iter_all_errors(), "E")
 
     def _report_error_objects(self, title, iterator, marker):
-        self._terminal.sep("=", title)
-        for result, errors in iterator:
+        for index, (result, errors) in enumerate(iterator):
+            if index == 0:
+                self._terminal.sep("=", title)
+
             location = self._get_location(result)
             for error in errors:
                 self._terminal.sep("_", location)
