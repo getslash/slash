@@ -60,11 +60,11 @@ def _session_context(session):
     ctx.context.session = session
     try:
         with session.logging.get_session_logging_context():
-            hooks.session_start()
-            hooks.after_session_start()
+            hooks.session_start()  # pylint: disable=no-member
+            hooks.after_session_start()  # pylint: disable=no-member
             try:
                 yield
             finally:
-                hooks.session_end()
+                hooks.session_end()  # pylint: disable=no-member
     finally:
         ctx.pop_context()

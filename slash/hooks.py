@@ -1,7 +1,5 @@
 import gossip
 
-from . import _compat
-
 from .utils.deprecation import deprecated
 
 

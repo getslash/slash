@@ -38,7 +38,7 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
             if enable_interactive and parsed_args.interactive:
                 start_interactive_shell()
             yield app
-            trigger_hook.result_summary()
+            trigger_hook.result_summary()  # pylint: disable=no-member
 
 def _check_unknown_switches(app):
     unknown = [arg for arg in app.args.positionals if arg.startswith("-")]

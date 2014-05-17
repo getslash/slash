@@ -29,9 +29,9 @@ def update_current_result(exc_info):
         current_result.add_error()
 
 def trigger_hooks_before_debugger(_):
-    trigger_hook.exception_caught_before_debugger()
+    trigger_hook.exception_caught_before_debugger()  # pylint: disable=no-member
 def trigger_hooks_after_debugger(_):
-    trigger_hook.exception_caught_after_debugger()
+    trigger_hook.exception_caught_after_debugger()  # pylint: disable=no-member
 
 _EXCEPTION_HANDLERS = [
     update_current_result,

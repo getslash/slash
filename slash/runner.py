@@ -107,25 +107,25 @@ def _get_test_context(test):
 
 @contextmanager
 def _get_test_hooks_context():
-    hooks.test_start()
+    hooks.test_start()  # pylint: disable=no-member
     try:
         yield
     except SkipTest as skip_exception:
-        hooks.test_skip(reason=skip_exception.reason)
+        hooks.test_skip(reason=skip_exception.reason)  # pylint: disable=no-member
     except TestFailed:
-        hooks.test_failure()
+        hooks.test_failure()  # pylint: disable=no-member
     except KeyboardInterrupt:
-        hooks.test_interrupt()
+        hooks.test_interrupt()  # pylint: disable=no-member
         raise
     except:
-        hooks.test_error()
+        hooks.test_error()  # pylint: disable=no-member
     else:
         if context.session.results.get_result(context.test).is_success_finished():
-            hooks.test_success()
+            hooks.test_success()  # pylint: disable=no-member
         else:
-            hooks.test_error()
+            hooks.test_error()  # pylint: disable=no-member
     finally:
-        hooks.test_end()
+        hooks.test_end()  # pylint: disable=no-member
 
 @contextmanager
 def _set_current_test_context(test):
