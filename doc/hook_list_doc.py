@@ -1,7 +1,7 @@
 from docutils import nodes
 from docutils.parsers.rst import directives
 from slash import hooks
-from slash.utils.callback import Callback
+import gossip
 
 from sphinx.util.compat import Directive
 
@@ -12,16 +12,10 @@ class HookListDoc(Directive):
     def run(self):
         returned = []
         all_hooks = []
-        for hook_name in dir(hooks):
-            hook = getattr(hooks, hook_name)
-            if not isinstance(hook, Callback):
-                continue
-            all_hooks.append((hook_name, hook))
-        all_hooks.sort(key=lambda (_, hook) : hook.declaration_index)
-        for hook_name, hook in all_hooks:
-            section = nodes.section(ids=[hook_name])
+        for hook in sorted(gossip.get_group("slash").get_hooks(), key=lambda hook:hook.name):
+            section = nodes.section(ids=[hook.name])
             returned.append(section)
-            title = "slash.hooks.{0}".format(hook_name)
+            title = "slash.hooks.{0}".format(hook.name)
             args = hook.get_argument_names()
             if args:
                 title += "({0})".format(", ".join(args))
