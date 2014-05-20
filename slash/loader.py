@@ -1,15 +1,19 @@
-from .exceptions import CannotLoadTests
-from .exception_handling import handling_exceptions
-from .runnable_test_factory import RunnableTestFactory
-from .ctx import context
-from .utils.fqn import TestPQN
-from .utils import add_error
-from contextlib import contextmanager
-from logbook import Logger # pylint: disable=F0401
-from emport import import_file
-from ._compat import iteritems, string_types # pylint: disable=F0401
 import itertools
 import os
+from contextlib import contextmanager
+
+from emport import import_file
+from logbook import Logger
+
+import dessert
+
+from ._compat import iteritems, string_types
+from .ctx import context
+from .exception_handling import handling_exceptions
+from .exceptions import CannotLoadTests
+from .runnable_test_factory import RunnableTestFactory
+from .utils import add_error
+from .utils.fqn import TestPQN
 
 _logger = Logger(__name__)
 
@@ -82,7 +86,8 @@ class Loader(object):
                 module = None
                 with self._handling_import_errors(file_path):
                     try:
-                        module = import_file(file_path)
+                        with dessert.rewrite_assertions_context():
+                            module = import_file(file_path)
                     except Exception as e:
                         raise CannotLoadTests("Could not load {0!r} ({1})".format(file_path, e))
                 if module is not None:

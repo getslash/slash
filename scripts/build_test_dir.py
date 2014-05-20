@@ -19,7 +19,7 @@ class Application(object):
         return "unused = nonexisting_variable"
 
     def generate_failing_test(self):
-        return "slash.should.equal(1, 2)"
+        return "assert self.f(1) <= self.f(0)"
 
     def generate_skipping_test(self):
         return "slash.skip_test('skipped')"
@@ -32,6 +32,10 @@ class Application(object):
                 f.write("import slash\n")
                 f.write("\n")
                 f.write("class Test(slash.Test):\n")
+                f.write(self._INDENT)
+                f.write("def f(self, x):\n")
+                f.write(self._INDENT * 2)
+                f.write("return x\n")
 
                 generators = [self.generate_error_test, self.generate_skipping_test, self.generate_failing_test]
                 random.shuffle(generators)
