@@ -20,7 +20,7 @@ When running tests via ``slash run``, you can use the ``-o`` flag to override co
 Customization Files
 ~~~~~~~~~~~~~~~~~~~
 
-There are several locations in which you can store files that are to be executed by Slash when it runs. These files can contain code that overrides configuration values:
+There are several locations in which you can store files that are to be automatically executed by Slash when it runs. These files can contain code that overrides configuration values:
 
 **slashrc file**
   If the file ``~/.slash/slashrc`` (See :ref:`conf.run.user_customization_file_path`) exists, it is loaded and executed as a regular Python file by Slash on startup.
