@@ -107,6 +107,7 @@ html_theme_options = {
     'github_repo': 'slash',
     'github_button': True,
     'github_banner': True,
+    'travis_button': True,
 }
 html_sidebars = {
    '**': [
