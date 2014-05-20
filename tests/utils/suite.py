@@ -4,6 +4,7 @@ import shutil
 from tempfile import mkdtemp
 
 import slash
+from slash._compat import izip_longest
 
 _SUCCESS, _FAILURE, _ERROR, _SKIP = (1 << x for x in range(4))
 
@@ -51,7 +52,7 @@ class TestSuite(object):
         results = list(session.results.iter_test_results())
         results.sort(key=lambda result: result.test_metadata.fqn.address_in_module.method_name)
         should_be_run = True
-        for result, test in itertools.izip_longest(results, self.tests):
+        for result, test in izip_longest(results, self.tests):
             if should_be_run:
                 test.verify_result(result)
             else:
@@ -62,7 +63,7 @@ class TestSuite(object):
         return session.results
 
     def fail_in_middle(self):
-        index = len(self.tests) / 2
+        index = len(self.tests) // 2
         assert index != 0 and index != len(self.tests) - 1
         self.tests[index].fail()
         return index

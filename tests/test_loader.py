@@ -63,10 +63,14 @@ class ImportErrorsTest(TestRepositoryTest):
         errors = s.results.global_result.get_errors()
         self._assert_file_failed_with(errors, "test_3.py", "invalid syntax")
         self._assert_file_failed_with(
-            errors, "test_4.py", "No module named nonexistent")
+            errors, "test_4.py", ("No module named nonexistent", "No module named 'nonexistent"))
 
     def _assert_file_failed_with(self, errors, filename, message):
-        [err] = [e for e in errors if message in e.message]
+        if isinstance(message, str):
+            messages = [message]
+        else:
+            messages = message
+        [err] = [e for e in errors if any(m in e.message for m in messages)]
         self.assertIn(filename, err.message)
 
 

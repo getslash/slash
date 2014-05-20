@@ -33,6 +33,7 @@ if PY2:
     iteritems = lambda d: d.iteritems() # not dict.iteritems!!! we support ordered dicts as well
     itervalues = lambda d: d.itervalues()
     from itertools import izip as zip
+    from itertools import izip_longest
     xrange = _builtins.xrange
 else:
     from io import StringIO
@@ -40,6 +41,7 @@ else:
     xrange = range
     iteritems = lambda d: iter(d.items()) # not dict.items!!! See above
     itervalues = lambda d: iter(d.values())
+    from itertools import zip_longest as izip_longest
 
 _IDENTITY = lambda obj: obj
 
