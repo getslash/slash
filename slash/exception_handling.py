@@ -23,7 +23,7 @@ def update_current_result(exc_info):
         current_result = slash_context.session.results.global_result
 
     exc_class = exc_info[0]
-    if issubclass(exc_class, TestFailed):
+    if issubclass(exc_class, (AssertionError, TestFailed)):
         current_result.add_failure()
     elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
         current_result.add_error()

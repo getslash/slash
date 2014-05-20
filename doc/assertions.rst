@@ -5,8 +5,6 @@ Assertions
 
 *Slash* uses assertions to perform test logic. Unlike ``unittest``, assertions in Slash are global functions rather than methods.
 
-Another big difference from ``unittest`` is the fact that *failed assertions don't raise ``AssertionError``s* -- they raise :class:`TestFailed`, which derives from ``AssertionError``. Since the code you'll be testing might have ``assert`` statements embedded inside, it is important to differentiate real (test) assertions from in-code assertions. 
-
 There are several ways to perform assertions, and many assertion functions have aliases for greater readability in code, as described below.
 
 To quickly import all assertions into your module/namespace, you can just do this:

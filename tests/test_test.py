@@ -56,7 +56,7 @@ class TestTest(TestCase):
         session = run_tests_in_session(Test)
         self.assertFalse(session.results.is_success())
         [result] = session.results.iter_test_results()
-        self.assertEquals(len(result.get_errors()), 2)
+        self.assertEquals(len(result.get_failures()), 2)
 
     def test_after_gets_called(self):
         "If before() is successful, after() always gets called"
