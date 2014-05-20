@@ -105,6 +105,8 @@ html_theme_options = {
     'logo': 'slash-logo-small.jpg',
     'github_user': 'vmalloc',
     'github_repo': 'slash',
+    'github_button': True,
+    'github_banner': True,
 }
 html_sidebars = {
    '**': [
