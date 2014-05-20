@@ -37,17 +37,6 @@ To let slash load our customization on startup, we'll use a feature of ``setupto
 
 Now Slash will call our customize function when loading.
 
-Customizing from Other Sources
-------------------------------
-
-In addition to entry points, Slash looks for other locations to load code on startup. These can sometimes be used for customization as well.
-
-**slashrc file**
-  If the file ``~/.slash/slashrc`` (See :ref:`conf.run.user_customization_file_path`) exists, it is loaded and executed as a regular Python file by Slash on startup.
-
-**SLASH_SETTINGS**
-  If an environment variable named ``SLASH_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.
-
 
 Loading and Running Tests in Code
 ---------------------------------
