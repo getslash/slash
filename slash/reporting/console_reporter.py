@@ -122,10 +122,15 @@ class ConsoleReporter(ReporterInterface):
             if frame_iteration.last:
                 self._terminal.write(marker, red=True, bold=True)
                 if code_lines:
-                    self._terminal.write("".join(itertools.takewhile(str.isspace, code_lines[-1])))
-                self._terminal.write(error.message, red=True, bold=True)
+                    indent = "".join(itertools.takewhile(str.isspace, code_lines[-1]))
+                else:
+                    indent = ""
+                self._terminal.write(self._indent_with(error.message, indent), red=True, bold=True)
                 self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
+
+    def _indent_with(self, text, indent):
+        return "\n".join(indent + line for line in text.splitlines())
 
     def _report_all_skips(self, session):
         for item, result in iteration(result for result in session.results.iter_test_results() if result.is_skip()):
