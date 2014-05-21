@@ -2,6 +2,9 @@ Changelog
 =========
 
 * :release `0.6.0 <21-05-2014>`
+* :feature:`-` Added assertion introspection via AST rewrite, borrowed from `pytest <http://pytest.org>`_.
+* :feature:`141` Added ``slash.utils.deprecated`` decorator to mark deprecated APIs
+* :feature:`138` Move to `gossip <http://gossip.readthedocs.org>`_ as hook framework.
 * :feature:`141` Add slash.utils.deprecated to mark internal facilities bound for removal
 * :feature:`129` Overhaul rerunning logic (now called 'resume')
 * :feature:`128` Slash now loads tests eagerly, failing earlier for bad imports etc. This might change in the future to be an opt-out behavior (change back to lazy loading)
