@@ -50,7 +50,7 @@ def _write_changelog(version):
             already_wrote = False
             for line in changelog_file:
                 if line.startswith("* ") and not already_wrote:
-                    temp_file.write("* :release `{} <{}>`\n".format(
+                    temp_file.write("* :release:`{} <{}>`\n".format(
                         version,
                         time.strftime("%d-%m-%Y"),
                         ))

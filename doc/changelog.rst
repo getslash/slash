@@ -1,19 +1,18 @@
 Changelog
 =========
 
-* :release `0.6.0 <21-05-2014>`
+* :release:`0.6.0 <21-05-2014>`
 * :feature:`-` Added assertion introspection via AST rewrite, borrowed from `pytest <http://pytest.org>`_.
-* :feature:`141` Added ``slash.utils.deprecated`` decorator to mark deprecated APIs
 * :feature:`138` Move to `gossip <http://gossip.readthedocs.org>`_ as hook framework.
 * :feature:`141` Add slash.utils.deprecated to mark internal facilities bound for removal
 * :feature:`129` Overhaul rerunning logic (now called 'resume')
 * :feature:`128` Slash now loads tests eagerly, failing earlier for bad imports etc. This might change in the future to be an opt-out behavior (change back to lazy loading)
 * :feature:`-` Overhaul the reporting mechanism, make output more similar to py.test's, including better error reporting.
-* :release `0.5.0 <09-04-2014>`
+* :release:`0.5.0 <09-04-2014>`
 * :feature:`132` Support for providing hook requirements to help resolving callback order (useful on initialization)
-* :release `0.4.2 <19-01-2014>`
-* :release `0.4.1 <19-01-2014>`
-* :release `0.4.0 <15-12-2013>`
+* :release:`0.4.2 <19-01-2014>`
+* :release:`0.4.1 <19-01-2014>`
+* :release:`0.4.0 <15-12-2013>`
 * :feature:`114` Support for fatal exception marks
 * :feature:`116` Support '-f' to specify one or more files containing lists of files to run
 * :feature:`121` Support 'append' for CLI arguments deduced from config
