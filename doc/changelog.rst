@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`143` Use gossip's inernal handler exception hook to debug hook failures when ``--pdb`` is used
 * :release:`0.6.0 <21-05-2014>`
 * :feature:`-` Added assertion introspection via AST rewrite, borrowed from `pytest <http://pytest.org>`_.
 * :feature:`138` Move to `gossip <http://gossip.readthedocs.org>`_ as hook framework.
