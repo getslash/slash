@@ -1,6 +1,8 @@
 import gossip
 
+from .conf import config
 from .utils.deprecation import deprecated
+from .utils.debug import launch_debugger
 
 
 def _deprecated_to_gossip(func):
@@ -34,6 +36,11 @@ _define('exception_caught_after_debugger',
 
 gossip.get_group('slash').set_strict()
 
+@gossip.register('gossip.on_handler_exception')
+def handle_handler_exception(handler, exception):  # pylint: disable=unused-argument
+    if config.root.debug.enabled and config.root.debug.debug_hooks:
+        launch_debugger(exception)
+
 @_deprecated_to_gossip
 def add_custom_hook(hook_name):
     """
@@ -64,7 +71,7 @@ def get_custom_hook_names():
     """
     Retrieves the names of all custom hooks currently installed
     """
-    raise NotImplementedError() # pragma: no cover
+    raise NotImplementedError()  # pragma: no cover
 
 @_deprecated_to_gossip
 def get_all_hooks():
