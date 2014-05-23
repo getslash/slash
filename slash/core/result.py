@@ -121,6 +121,9 @@ class SessionResults(object):
         self._results_dict = OrderedDict()
         self._iterator = functools.partial(itervalues, self._results_dict)
 
+    def __len__(self):
+        return len(self._results_dict)
+
     def iter_all_failures(self):
         for result in self.iter_all_results():
             if result.get_failures():
