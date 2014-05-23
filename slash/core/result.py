@@ -14,6 +14,8 @@ class Result(object):
     def __init__(self, test_metadata=None):
         super(Result, self).__init__()
         self.test_metadata = test_metadata
+        #: dictionary to be use by tests and plugins to store result-related information for later analysis
+        self.data = {}
         self._errors = []
         self._failures = []
         self._skips = []

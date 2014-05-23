@@ -1,7 +1,26 @@
+import slash
+
 from .utils import TestCase
 from slash import Session
 from slash.core.result import Result
 from slash.core.result import SessionResults
+
+from .utils import run_tests_assert_success
+
+def test_result_data_is_unique():
+
+    class SampleTest(slash.Test):
+
+        def test_1(self):
+            pass
+
+        def test_2(self):
+            pass
+
+    session = run_tests_assert_success(SampleTest)
+    [result1, result2] = session.results
+    assert result1.data is not result2.data
+
 
 class SessionResultTest(TestCase):
     def setUp(self):
