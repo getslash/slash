@@ -6,9 +6,9 @@ Logging
 The Slash Logger
 --------------------
 
-Slash uses `Logbook <http://logbook.pocoo.org>`_ for logging. It has many advantages over Python's own ``logging`` package. It is strongly recommended that you use logbook for logging.
+Slash uses `Logbook <http://logbook.pocoo.org>`_ for logging. It has many advantages over Python's own ``logging`` package, and is much more flexible.
 
-Slash exposes a global logger intended for tests, and it is recommended to use it for simple logging tasks:
+Slash exposes a global logger intended for tests, which is recommended for use in simple logging tasks:
 
 .. code-block:: python
 
