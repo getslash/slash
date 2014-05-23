@@ -10,7 +10,11 @@ from slash import resuming
 from slash.loader import Loader
 
 from .utils.suite import TestSuite
+from .utils.cartesian import Cartesian
 
+@pytest.fixture
+def cartesian():
+    return Cartesian()
 
 @pytest.fixture(scope="function", autouse=True)
 def cleanup_hook_registrations(request):
