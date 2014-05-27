@@ -1,11 +1,14 @@
 import os
 
-import gossip
 from emport import import_file
+
+import gossip
+import gossip.hooks
 
 from .. import hooks
 from .._compat import itervalues
 from ..conf import config
+from ..utils.marks import mark, try_get_mark
 from .interface import PluginInterface
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
@@ -111,7 +114,7 @@ class PluginManager(object):
         plugin_name = plugin.get_name()
         plugin.activate()
         for hook, callback in self._get_plugin_registrations(plugin):
-            hook.register(callback, token=plugin_name)
+            hook.register(callback, token=self._get_token(plugin_name))
         self._active.add(plugin_name)
 
     def deactivate(self, plugin):
@@ -124,9 +127,12 @@ class PluginManager(object):
         plugin_name = plugin.get_name()
 
         if plugin_name in self._active:
-            gossip.get_group("slash").unregister_token(plugin_name)
+            gossip.get_global_group().unregister_token(self._get_token(plugin_name))
             self._active.discard(plugin_name)
             plugin.deactivate()
+
+    def _get_token(self, plugin_name):
+        return "slash.plugins.{0}".format(plugin_name)
 
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):
@@ -141,20 +147,38 @@ class PluginManager(object):
     def _get_plugin_registrations(self, plugin):
         returned = []
         unknown = []
-        for hook_name in dir(type(plugin)):
-            if hook_name in _SKIPPED_PLUGIN_METHOD_NAMES:
+        for method_name in dir(type(plugin)):
+            if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
                 continue
-            if hook_name.startswith("_"):
+            if method_name.startswith("_"):
                 continue
+            method = getattr(plugin, method_name)
+            hook_name = try_get_mark(method, "register_on")
+            if hook_name is None:
+                expect_exists = True
+                hook_name = "slash.{0}".format(method_name)
+            else:
+                expect_exists = False
             try:
-                hook = gossip.get_hook("slash.{0}".format(hook_name))
+                if expect_exists:
+                    hook = gossip.get_hook(hook_name)
+                else:
+                    hook = gossip.hooks.get_or_create_hook(hook_name)
+                    if not hook.is_defined() and hook.group.is_strict():
+                        raise LookupError()
             except LookupError:
                 unknown.append(hook_name)
                 continue
             assert hook is not None
-            returned.append((hook, getattr(plugin, hook_name)))
+            returned.append((hook, method))
         if unknown:
             raise IncompatiblePlugin("Unknown hooks: {0}".format(", ".join(unknown)))
         return returned
 
 manager = PluginManager()
+
+def registers_on(hook_name):
+    """Marks the decorated plugin method to register on a custom hook, rather than
+    the method name in the 'slash' group, which is the default behavior for plugins
+    """
+    return mark("register_on", hook_name)

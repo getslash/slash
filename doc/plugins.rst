@@ -8,11 +8,9 @@ Plugins are a comfortable way of extending Slash's behavior. They are objects in
 The Plugin Interface
 --------------------
 
-Plugins have several special methods that can be overriden, like :func:`.PluginInterface.get_name` or :func:`.PluginInterface.configure_arg_parser`. Except for these methods and the ones documented, each public method (i.e. a method not beginning with an underscore) must correspond to a :ref:`slash hook <hooks>` by name. 
+Plugins have several special methods that can be overriden, like :func:`get_name <slash.plugins.PluginInterface.get_name>` or :func:`configure_argument_parser <slash.plugins.PluginInterface.configure_argument_parser>`. Except for these methods and the ones documented, each public method (i.e. a method not beginning with an underscore) must correspond to a :ref:`slash hook <hooks>` by name. 
 
-The name of the plugin should be returned by :func:`.PluginInterface.get_name`. This name should be unique, and not shared by any other plugin.
-
-.. autoclass:: slash.plugins.interface.PluginInterface
+The name of the plugin should be returned by :func:`get_name <slash.plugins.PluginInterface.get_name>`. This name should be unique, and not shared by any other plugin.
 
 Plugin Discovery
 ----------------
@@ -43,6 +41,20 @@ Plugin Activation
 
 Plugins are activated via :func:`slash.plugins.manager.activate <.plugins.PluginManager.activate>`. During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
 
+.. note:: by default, all method names in a plugin are assumed to belong to the *slash* gossip group. This means that the method ``session_start`` will register on ``slash.session_start``. You can override this behavior by using :func:`slash.plugins.registers_on`:
+  
+  .. code-block:: python
+
+     from slash.plugins import registers_on
+     
+     class MyPlugin(PluginInterface):
+         @registers_on('some_hook')
+         def func(self):
+             ...
+
+.. seealso:: :ref:`hooks`
+
+
 Activating plugins from command-line is usually done with the ``--with-`` prefix. For example, to activate a plugin called ``test-plugin``, you can pass ``--with-test-plugin`` when running ``slash run``. 
 
 Also, since some plugins can be activated from other locations, you can also override and deactivate plugins using ``--without-X`` (e.g. ``--without-test-plugin``).
@@ -50,7 +62,7 @@ Also, since some plugins can be activated from other locations, you can also ove
 Plugin Command-Line Interaction
 -------------------------------
 
-In many cases you would like to receive options from the command line. Plugins can implement the :func:`.PluginInterface.configure_arg_parser` and the :func:`.PluginInterface.configure_parsed_args` functions:
+In many cases you would like to receive options from the command line. Plugins can implement the :func:`configure_argument_parser <slash.plugins.PluginInterface.configure_argument_parser>` and the :func:`configure_parsed_args <slash.plugins.PluginInterface.configure_parsed_args>` functions:
 
 .. code-block:: python
 
@@ -75,7 +87,3 @@ As more logic is added into plugins it becomes more likely for exceptions to occ
    * :ref:`exception swallowing <exception_swallowing>`
    * :ref:`hooks documentation <hooks>`
 
-The PluginInterface Class
--------------------------
-
-.. autoclass:: slash.plugins.PluginManager

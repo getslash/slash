@@ -26,6 +26,7 @@ Table Of Contents
    features
    building_solution
    advanced_usage
+   api
    changelog
    development
    

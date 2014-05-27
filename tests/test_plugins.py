@@ -1,9 +1,77 @@
-from .utils import TestCase, CustomException
-from slash import hooks
-from slash import plugins
-from slash.plugins import PluginInterface
-from slash.plugins import IncompatiblePlugin
 import os
+
+import gossip
+import pytest
+from slash import hooks, plugins
+from slash.plugins import IncompatiblePlugin, PluginInterface
+
+from .utils import CustomException, TestCase
+
+
+def test_custom_hook_registration():
+
+    hook_name = 'some_hook'
+    with pytest.raises(LookupError):
+        gossip.get_hook(hook_name)
+
+    class MyPlugin(PluginInterface):
+
+        def get_name(self):
+            return "plugin"
+
+        @plugins.registers_on(hook_name)
+        def unknown(self):
+            pass
+    p = MyPlugin()
+    plugins.manager.install(p, activate=True)
+    registrations = gossip.get_hook(hook_name).get_registrations()
+    assert 1 == len(registrations)
+    [r] = registrations
+    assert r.func.__func__ is MyPlugin.unknown.__func__
+
+    # make sure we deactivate properly as well
+    plugins.manager.deactivate(p)
+    assert not gossip.get_hook(hook_name).get_registrations()
+
+
+def test_register_invalid_hook():
+
+    initially_installed = list(plugins.manager.get_installed_plugins())
+
+    class MyPlugin(PluginInterface):
+
+        def get_name(self):
+            return "plugin"
+
+        def unknown(self):
+            pass
+
+    with pytest.raises(IncompatiblePlugin):
+        plugins.manager.install(MyPlugin(), activate=True)
+
+    assert list(plugins.manager.get_installed_plugins()) == initially_installed
+
+def test_register_custom_hooks_strict_group():
+
+    initially_installed = list(plugins.manager.get_installed_plugins())
+
+    hook_name = "some_group.some_hook"
+    gossip.get_or_create_group("some_group").set_strict()
+
+    class MyPlugin(PluginInterface):
+
+        def get_name(self):
+            return "plugin"
+
+        @plugins.registers_on(hook_name)
+        def unknown(self):
+            pass
+
+    with pytest.raises(IncompatiblePlugin):
+        plugins.manager.install(MyPlugin(), activate=True)
+
+    assert list(plugins.manager.get_installed_plugins()) == initially_installed
+
 
 class BuiltinPluginsTest(TestCase):
 
