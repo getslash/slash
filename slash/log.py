@@ -8,7 +8,7 @@ import logbook.more
 from ._compat import ExitStack
 import os
 
-_custom_colors = {("Generic", logbook.NOTICE): "red"}
+_custom_colors = {}
 
 def set_log_color(logger_name, level, color):
     """Sets the color displayed in the console, according to the logger name and level
