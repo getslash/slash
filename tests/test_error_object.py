@@ -1,5 +1,8 @@
 import os
 
+import emport
+
+import dessert
 import pytest
 from slash.core.error import Error
 
@@ -27,6 +30,10 @@ def test_frame_locals(error):
             "value": "'global_func_1'"
         }}
 
+def test_frame_locals_no_assertion_markers(assertion_error):
+    for var_name, var in assertion_error.cause.locals.items():
+        assert "@" not in var_name
+
 def test_frame_globals(error):
     assert error.traceback.frames[-3].globals == {
         "global_func_1": {
@@ -42,6 +49,8 @@ def error():
         func_1()
     except:
         return Error.capture_exception()
+    else:
+        assert False, "Did not fail"
 
 global_func_1 = "global_func_1"
 global_func_2 = "global_func_2"
@@ -61,3 +70,25 @@ def func_3():
 
     local_func_3 = global_func_3
     raise NotImplementedError()
+
+@pytest.fixture
+def assertion_error(tmpdir):
+    filename = tmpdir.join("file.py")
+    filename.write("""
+def f(x):
+    return x
+def g(x):
+    return x
+
+def func():
+    assert f(g(1)) == g(f(2))""")
+
+    with dessert.rewrite_assertions_context():
+        module = emport.import_file(str(filename))
+
+    try:
+        module.func()
+    except:
+        return Error.capture_exception()
+    else:
+        assert False, "Did not fail"

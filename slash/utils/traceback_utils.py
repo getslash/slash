@@ -104,8 +104,8 @@ class DistilledFrame(object):
 
     def _capture_locals(self, frame):
         return dict((local_name, {"value": _safe_repr(value)})
-                    for local_name, value in frame.f_locals.items())
-
+                    for local_name, value in frame.f_locals.items()
+                    if "@" not in local_name)
 
 def _safe_repr(value):
     try:
