@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`149` Make console logs interact nicely with the console reporter non-log output
 * :feature:`144` Add option to colorize console logs in custom colors
 * :release:`0.6.1 <27-05-2014>`
 * :feature:`142` Allow registering plugin methods on custom hooks

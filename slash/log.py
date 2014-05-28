@@ -23,6 +23,12 @@ class CustomColorizingHandler(logbook.more.ColorizedStderrHandler):
             returned = super(CustomColorizingHandler, self).get_color(record)
         return returned
 
+    def emit(self, record):
+        context.session.reporter.notify_before_console_output()
+        returned = super(CustomColorizingHandler, self).emit(record)
+        context.session.reporter.notify_after_console_output()
+        return returned
+
 class SessionLogging(object):
     """
     A context creator for logging within a session and its tests

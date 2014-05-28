@@ -21,13 +21,56 @@ def from_verbosity(level):
         return new_func
     return decorator
 
+class TerminalWriterWrapper(object):
+
+    def __init__(self, file):
+        super(TerminalWriterWrapper, self).__init__()
+        self._writer = TerminalWriter(file=file)
+        self._line = ""
+
+    def sep(self, *args, **kw):
+        self._line = ""
+        return self._writer.sep(*args, **kw)
+
+    def write(self, line, **kw):
+        self._writer.write(line, **kw)
+        if "\n" in line:
+            line = line.rsplit("\n", 1)[-1].rsplit("\r", 1)[-1]
+            self._line = line
+        else:
+            self._line += line
+
+    def line(self, *args, **kw):
+        self._writer.line(*args, **kw)
+        self._line = ""
+
+    def get_line_in_progress(self):
+        return self._line
+
+    def clear_line_in_progress(self):
+        if self._line and self._writer.hasmarkup:
+            self._writer.write("\r")
+            self._writer.write(" " * len(self._line))
+            self._writer.write("\r")
+
+    def restore_line_in_progress(self):
+        if self._writer.hasmarkup:
+            self._writer.write(self._line)
+
+
 class ConsoleReporter(ReporterInterface):
 
     def __init__(self, level, stream=sys.stderr):
         super(ConsoleReporter, self).__init__()
         self._level = level
         self._stream = stream
-        self._terminal = TerminalWriter(file=stream)
+        self._terminal = TerminalWriterWrapper(file=stream)
+
+    def notify_before_console_output(self):
+        self._terminal.clear_line_in_progress()
+
+    def notify_after_console_output(self):
+        self._terminal.restore_line_in_progress()
 
     def report_collection_start(self):
         self._report_num_collected([], stillworking=True)
