@@ -215,4 +215,3 @@ Slash uses nested log handlers to capture logs from tests and sessions. You can 
  
  slash.log.add_log_handler(logbook.SyslogHandler(...))
 
-.. autofunction:: slash.log.add_log_handler

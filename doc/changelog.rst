@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`144` Add option to colorize console logs in custom colors
 * :release:`0.6.1 <27-05-2014>`
 * :feature:`142` Allow registering plugin methods on custom hooks
 * :bug:`143` Use gossip's inernal handler exception hook to debug hook failures when ``--pdb`` is used

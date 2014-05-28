@@ -4,9 +4,24 @@ from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
 from contextlib import contextmanager
 import logbook  # pylint: disable=F0401
-from logbook.more import ColorizedStderrHandler  # pylint: disable=F0401
+import logbook.more
 from ._compat import ExitStack
 import os
+
+_custom_colors = {("Generic", logbook.NOTICE): "red"}
+
+def set_log_color(logger_name, level, color):
+    """Sets the color displayed in the console, according to the logger name and level
+    """
+    _custom_colors[logger_name, level] = color
+
+class CustomColorizingHandler(logbook.more.ColorizedStderrHandler):
+
+    def get_color(self, record):
+        returned = _custom_colors.get((record.channel, record.level))
+        if returned is None:
+            returned = super(CustomColorizingHandler, self).get_color(record)
+        return returned
 
 class SessionLogging(object):
     """
@@ -15,7 +30,7 @@ class SessionLogging(object):
     def __init__(self, session):
         super(SessionLogging, self).__init__()
         self.warnings_handler = WarnHandler(session.warnings)
-        self.console_handler = ColorizedStderrHandler(bubble=True, level=config.root.log.console_level)
+        self.console_handler = CustomColorizingHandler(bubble=True, level=config.root.log.console_level)
         self._set_formatting(self.console_handler)
 
     def get_test_logging_context(self):

@@ -23,6 +23,19 @@ Console Log
 
 By default logs above **WARNING** get emitted to the console. This can be changed via the :ref:`conf.log.console_level` config variable. You can also use **-v**/**-q** to increase/decrease console verbosity accordingly.
 
+Colors
+~~~~~~
+
+Console logs are colorized according to their level by default. This is done using Logbook's colorizing handler. In some cases you might want logs from specific sources to get colored differently. This is done using :func:`slash.log.set_log_color`:
+
+.. code-block:: python
+
+    >>> import slash.log
+    >>> import logbook
+    >>> slash.log.set_log_color('my_logger_name', logbook.NOTICE, 'red')
+
+.. note:: Available colors are taken from **logbook**. Options are "black", "darkred", "darkgreen", "brown", "darkblue", "purple", "teal", "lightgray", "darkgray", "red", "green", "yellow", "blue", "fuchsia", "turquoise", "white"
+
 Logging To Files
 ----------------
 

@@ -12,3 +12,9 @@ Plugins
 .. autoclass:: PluginManager
   :members:
 
+
+Logging
+-------
+
+.. automodule:: slash.log
+  :members:
