@@ -4,7 +4,7 @@ Changelog
 * :bug:`149` Make console logs interact nicely with the console reporter non-log output
 * :feature:`144` Add option to colorize console logs in custom colors
 * :release:`0.6.1 <27-05-2014>`
-* :feature:`142` Allow registering plugin methods on custom hooks
+* :bug:`142` Allow registering plugin methods on custom hooks
 * :bug:`143` Use gossip's inernal handler exception hook to debug hook failures when ``--pdb`` is used
 * :release:`0.6.0 <21-05-2014>`
 * :feature:`-` Added assertion introspection via AST rewrite, borrowed from `pytest <http://pytest.org>`_.
