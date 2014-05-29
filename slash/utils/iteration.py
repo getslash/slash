@@ -64,6 +64,7 @@ class Iteration(object):
         self.counter1 = counter1
         self.first = first
         self.last_counter0 = last_counter0
+        self.last_counter1 = self.total = None if self.last_counter0 is None else self.last_counter0 + 1
 
     def __iter__(self):
         return iter((self, self.element))

@@ -6,6 +6,7 @@ from slash.utils.iteration import iteration, PeekableIterator
 
 def test_iteration(objects):
     for index, i in enumerate(iteration(objects)):
+        assert i.last_counter0 + 1 == i.last_counter1 == i.total
         assert i.counter0 == index
         assert i.counter1 == index + 1
         if index == 0:
@@ -30,6 +31,8 @@ def test_iteration_unsupported_sizing():
         assert i.first
         with pytest.raises(NotImplementedError):
             i.last
+        assert i.last_counter0 is None
+        assert i.last_counter1 is None
         break
 
 def test_peekable_iterator(objects):

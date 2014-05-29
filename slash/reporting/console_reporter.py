@@ -33,6 +33,7 @@ class TerminalWriterWrapper(object):
         return self._writer.sep(*args, **kw)
 
     def write(self, line, **kw):
+        line = str(line)
         self._writer.write(line, **kw)
         if "\n" in line:
             line = line.rsplit("\n", 1)[-1].rsplit("\r", 1)[-1]
@@ -126,14 +127,24 @@ class ConsoleReporter(ReporterInterface):
         self._report_error_objects("ERRORS", session.results.iter_all_errors(), "E")
 
     def _report_error_objects(self, title, iterator, marker):
-        for index, (result, errors) in enumerate(iterator):
-            if index == 0:
+        iterator = list(iterator)
+        total_num_errors = sum(len(errors) for _, errors in iterator)
+        error_number = 0
+        for result_iteration, (result, errors) in iteration(iterator):
+            if result_iteration.first:
                 self._terminal.sep("=", title)
 
-            location = self._get_location(result)
-            for error in errors:
-                self._terminal.sep("_", location)
+            for error_iteration, error in iteration(errors):
+                error_number += 1
+                self._report_error_location(result, error_number, total_num_errors, marker)
                 self._report_error(error, marker)
+
+    def _report_error_location(self, result, object_index, total_num_errors, marker):
+        self._terminal.sep("_", self._get_location(result))
+        if self._verobsity_allows(VERBOSITIES.INFO) and result.test_metadata:
+            location = "{0}{1}/{2}  in test id {3}".format(
+                marker, object_index, total_num_errors, result.test_metadata.id)
+            self._terminal.sep("_", location)
 
     def _report_failures_and_errors_concise(self, session):
         for result in session.results.iter_all_results():
