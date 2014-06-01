@@ -4,9 +4,34 @@ import os
 import logbook
 
 import gossip
+import pytest
 import slash
 
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase
+
+
+def test_last_session_symlinks(logs_dir):
+    session = run_tests_assert_success(SampleTest)
+
+    files_dir = logs_dir.join("logs", "files")
+    links_dir = logs_dir.join("logs", "links")
+
+    test_log_file = files_dir.join(session.id, list(session.results.iter_test_results())[-1].test_metadata.id, "log")
+    assert test_log_file.check()
+    session_log_file = files_dir.join("session.log")
+    assert session_log_file.check()
+
+    assert links_dir.join("last-session").readlink() == session_log_file
+    assert links_dir.join("last-test").readlink() == test_log_file
+
+
+@pytest.fixture
+def logs_dir(request, config_override, tmpdir):
+    config_override("log.root", str(tmpdir.join("logs", "files")))
+    config_override("log.last_session_symlink", str(tmpdir.join("logs", "links", "last-session")))
+    config_override("log.last_test_symlink", str(tmpdir.join("logs", "links", "last-test")))
+    return tmpdir
+
 
 _TOKEN = "logging-test"
 _SESSION_START_MARK = "session-start-mark"

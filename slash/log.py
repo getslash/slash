@@ -8,6 +8,8 @@ import logbook.more
 from ._compat import ExitStack
 import os
 
+_logger = logbook.Logger(__name__)
+
 _custom_colors = {}
 
 def set_log_color(logger_name, level, color):
@@ -40,15 +42,17 @@ class SessionLogging(object):
         self._set_formatting(self.console_handler)
 
     def get_test_logging_context(self):
-        return self._get_file_logging_context(config.root.log.subpath)
+        return self._get_file_logging_context(
+            config.root.log.subpath, config.root.log.last_test_symlink)
 
     def get_session_logging_context(self):
-        return self._get_file_logging_context(config.root.log.session_subpath)
+        return self._get_file_logging_context(
+            config.root.log.session_subpath, config.root.log.last_session_symlink)
 
     @contextmanager
-    def _get_file_logging_context(self, filename_template):
+    def _get_file_logging_context(self, filename_template, symlink):
         with ExitStack() as stack:
-            stack.enter_context(self._get_file_log_handler(filename_template))
+            stack.enter_context(self._get_file_log_handler(filename_template, symlink))
             stack.enter_context(self.console_handler)
             stack.enter_context(self.warnings_handler)
             stack.enter_context(self._get_silenced_logs_context())
@@ -61,7 +65,7 @@ class SessionLogging(object):
             return ExitStack()
         return SilencedLoggersHandler(config.root.log.silence_loggers)
 
-    def _get_file_log_handler(self, subpath):
+    def _get_file_log_handler(self, subpath, symlink):
         root_path = config.root.log.root
         if root_path is None:
             handler = logbook.NullHandler(bubble=False)
@@ -69,8 +73,23 @@ class SessionLogging(object):
             log_path = os.path.join(root_path, subpath.format(context=context))
             ensure_containing_directory(log_path)
             handler = logbook.FileHandler(log_path, bubble=False)
+            self._try_create_symlink(log_path, symlink)
             self._set_formatting(handler)
         return handler
+
+    def _try_create_symlink(self, path, symlink):
+        if symlink is None:
+            return
+
+        try:
+            ensure_containing_directory(symlink)
+
+            if os.path.exists(symlink):
+                os.unlink(symlink)
+            os.symlink(path, symlink)
+
+        except Exception:  # pylint: disable=broad-except
+            _logger.debug("Failed to create symlink {0} --> {1}", path, symlink, exc_info=True)
 
     def _set_formatting(self, handler):
         if config.root.log.localtime:

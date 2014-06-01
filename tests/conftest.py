@@ -13,6 +13,17 @@ from .utils.suite import TestSuite
 from .utils.cartesian import Cartesian
 
 @pytest.fixture
+def config_override(request):
+
+    def _override(path, value):
+        prev_value = slash.config.get_config(path).get_value()
+        @request.addfinalizer
+        def restore():
+            slash.config.assign_path(path, prev_value)
+        slash.config.assign_path(path, value)
+    return _override
+
+@pytest.fixture
 def cartesian():
     return Cartesian()
 

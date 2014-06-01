@@ -23,6 +23,7 @@ Console Log
 
 By default logs above **WARNING** get emitted to the console. This can be changed via the :ref:`conf.log.console_level` config variable. You can also use **-v**/**-q** to increase/decrease console verbosity accordingly.
 
+
 Colors
 ~~~~~~
 
@@ -46,6 +47,16 @@ The :ref:`conf.log.root` config variable controls the root dir for logs. Under t
 The filenames created under the root are controlled with the :ref:`conf.log.subpath` config variable, which can be also a format string receiving the *context* variable from slash (e.g. ``sessions/{context.session.id}/{context.test.id}/logfile.log``).
 
 Another important config path is ``log.session_subpath``. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
+
+Last Log Symlinks
++++++++++++++++++
+
+Slash can be instructed to maintain a symlink to recent logs. This is useful to quickly find the last test executed and dive into its logs.
+
+ *  To make slash store a symlink to the last session log file, use :ref:`conf.log.last_session_symlink`
+ *  To make slash store a symlink to the last session log file, use :ref:`conf.log.last_test_symlink`
+
+The symlinks are updated at the beginning of each test run to point at the recent log directory.
 
 Silencing Logs
 --------------

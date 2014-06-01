@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`145` Add option to save symlinks to the last session log and last test log
 * :feature:`146` Add test id and error/failure enumeration in test details
 * :bug:`149` Make console logs interact nicely with the console reporter non-log output
 * :feature:`144` Add option to colorize console logs in custom colors
