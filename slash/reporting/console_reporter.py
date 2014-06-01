@@ -137,7 +137,7 @@ class ConsoleReporter(ReporterInterface):
             for error_iteration, error in iteration(errors):
                 error_number += 1
                 self._report_error_location(result, error_number, total_num_errors, marker)
-                self._report_error(error, marker)
+                self._report_error(result, error, marker)
 
     def _report_error_location(self, result, object_index, total_num_errors, marker):
         self._terminal.sep("_", self._get_location(result))
@@ -160,7 +160,7 @@ class ConsoleReporter(ReporterInterface):
     def _get_location(self, result):
         return str(result.test_metadata.fqn) if result.test_metadata else "**global**"
 
-    def _report_error(self, error, marker):
+    def _report_error(self, result, error, marker):
         line = ""
         if not error.traceback:
             frames = []
@@ -182,6 +182,11 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write(self._indent_with(error.message, indent), red=True, bold=True)
                 self._terminal.write("\n")
             self._terminal.write("{0}:{1}:\n".format(frame.filename, frame.lineno))
+
+        log_path = result.get_log_path()
+        if log_path is not None:
+            self._terminal.write("(Log file: {0})\n".format(log_path), black=True, bold=True)
+
 
     def _indent_with(self, text, indent):
         return "\n".join(indent + line for line in text.splitlines())

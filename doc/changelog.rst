@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`150` Add log links to results when reporting to console
 * :feature:`145` Add option to save symlinks to the last session log and last test log
 * :feature:`146` Add test id and error/failure enumeration in test details
 * :bug:`149` Make console logs interact nicely with the console reporter non-log output

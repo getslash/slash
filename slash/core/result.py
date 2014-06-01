@@ -22,6 +22,13 @@ class Result(object):
         self._started = False
         self._finished = False
         self._interrupted = False
+        self._log_path = None
+
+    def get_log_path(self):
+        return self._log_path
+
+    def set_log_path(self, path):
+        self._log_path = path
 
     def is_started(self):
         return self._started

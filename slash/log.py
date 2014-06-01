@@ -39,26 +39,33 @@ class SessionLogging(object):
         super(SessionLogging, self).__init__()
         self.warnings_handler = WarnHandler(session.warnings)
         self.console_handler = CustomColorizingHandler(bubble=True, level=config.root.log.console_level)
+        self.session_log_path = self.test_log_path = None
         self._set_formatting(self.console_handler)
 
+    @contextmanager
     def get_test_logging_context(self):
-        return self._get_file_logging_context(
-            config.root.log.subpath, config.root.log.last_test_symlink)
+        with self._get_file_logging_context(config.root.log.subpath, config.root.log.last_test_symlink) as path:
+            self.test_log_path = path
+            yield path
 
+    @contextmanager
     def get_session_logging_context(self):
-        return self._get_file_logging_context(
-            config.root.log.session_subpath, config.root.log.last_session_symlink)
+        with self._get_file_logging_context(
+            config.root.log.session_subpath, config.root.log.last_session_symlink) as path:
+            self.session_log_path = path
+            yield path
 
     @contextmanager
     def _get_file_logging_context(self, filename_template, symlink):
         with ExitStack() as stack:
-            stack.enter_context(self._get_file_log_handler(filename_template, symlink))
+            handler, path = self._get_file_log_handler(filename_template, symlink)
+            stack.enter_context(handler)
             stack.enter_context(self.console_handler)
             stack.enter_context(self.warnings_handler)
             stack.enter_context(self._get_silenced_logs_context())
             for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler)
-            yield
+            yield path
 
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:
@@ -68,6 +75,7 @@ class SessionLogging(object):
     def _get_file_log_handler(self, subpath, symlink):
         root_path = config.root.log.root
         if root_path is None:
+            log_path = None
             handler = logbook.NullHandler(bubble=False)
         else:
             log_path = os.path.join(root_path, subpath.format(context=context))
@@ -75,7 +83,7 @@ class SessionLogging(object):
             handler = logbook.FileHandler(log_path, bubble=False)
             self._try_create_symlink(log_path, symlink)
             self._set_formatting(handler)
-        return handler
+        return handler, log_path
 
     def _try_create_symlink(self, path, symlink):
         if symlink is None:

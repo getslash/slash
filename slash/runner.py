@@ -142,6 +142,7 @@ def _set_current_test_context(test):
 @contextmanager
 def _update_result_context():
     result = context.session.results.create_result(context.test)
+    result.set_log_path(context.session.logging.test_log_path)
     result.mark_started()
     try:
         try:
