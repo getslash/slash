@@ -49,7 +49,7 @@ The filenames created under the root are controlled with the :ref:`conf.log.subp
 Another important config path is ``log.session_subpath``. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
 
 Last Log Symlinks
-+++++++++++++++++
+-----------------
 
 Slash can be instructed to maintain a symlink to recent logs. This is useful to quickly find the last test executed and dive into its logs.
 

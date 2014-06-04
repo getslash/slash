@@ -32,9 +32,6 @@ config = Config({
         "dsn": None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "
                            "See http://getsentry.com for details"),
     },
-    "hooks": {
-        "swallow_exceptions": False // Doc("If set, exceptions inside hooks will not be re-raised"),
-    },
     "plugins": {
         "search_paths": [] // Doc("List of paths in which to search for plugin modules"),
     },
