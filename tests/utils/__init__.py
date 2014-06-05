@@ -1,18 +1,22 @@
-import logbook
-from logbook.compat import LoggingHandler
-import platform
 import itertools
-import forge
+import platform
 import shutil
 import tempfile
+
+import forge
+import logbook
+from logbook.compat import LoggingHandler
+
+import gossip
+import slash
+from slash import RunnableTestFactory
+from slash.conf import config
+
 if platform.python_version() < "2.7":
     import unittest2 as unittest
 else:
     import unittest
 
-import slash
-from slash.conf import config
-from slash import RunnableTestFactory
 
 _logger = logbook.Logger(__name__)
 
@@ -22,7 +26,7 @@ class TestCase(unittest.TestCase):
         self._handler = LoggingHandler()
         self._handler.push_application()
         self.addCleanup(self._handler.pop_application)
-        self.override_config("hooks.swallow_exceptions", False)
+        gossip.get_group('slash').set_exception_policy(gossip.RaiseImmediately())
         self.override_config("log.console_level", 10000) # silence console in tests
 
     def override_config(self, path, value):
