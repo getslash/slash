@@ -129,7 +129,8 @@ class ModuleTestAddress(object):
         if self.before_kwargs or self.after_kwargs:
             returned += "{0}{1}".format(
                 self._get_call_string(self.before_kwargs),
-                self._get_call_string(self.after_kwargs))
+                self._get_call_string(self.after_kwargs),
+            )
         if self.method_name is not None:
             returned += ".{0}".format(self.method_name)
             if self.method_kwargs:
@@ -137,6 +138,8 @@ class ModuleTestAddress(object):
         return returned
 
     def _get_call_string(self, call):
+        if not call:
+            return ""
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(call)))
 
     def __eq__(self, other):

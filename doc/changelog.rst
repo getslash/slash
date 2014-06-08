@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`137` Fixed parameter iteration across inheritence trees
 * :feature:`150` Add log links to results when reporting to console
 * :feature:`145` Add option to save symlinks to the last session log and last test log
 * :feature:`146` Add test id and error/failure enumeration in test details

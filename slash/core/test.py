@@ -3,7 +3,7 @@ import functools
 from .._compat import iteritems
 from ..utils import skip_test
 from ..utils.fqn import ModuleTestAddress
-from ..parameters import iterate_kwargs_options
+from ..parameters import iter_parameter_combinations, set_parameter_values_context, iter_inherited_method_parameter_combinations
 from ..runnable_test import RunnableTest
 from ..runnable_test_factory import RunnableTestFactory
 from ..exception_handling import handling_exceptions
@@ -15,9 +15,9 @@ class Test(RunnableTest, RunnableTestFactory):
     def __init__(self, test_method_name, before_kwargs=None, after_kwargs=None, test_kwargs=None):
         super(Test, self).__init__()
         self._test_method_name = test_method_name
-        self._before_kwargs = before_kwargs or {}
-        self._after_kwargs = after_kwargs or {}
-        self._test_kwargs = test_kwargs or {}
+        self._before_kwargs = before_kwargs
+        self._after_kwargs = after_kwargs
+        self._test_kwargs = test_kwargs
 
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
@@ -32,15 +32,13 @@ class Test(RunnableTest, RunnableTestFactory):
         if is_abstract_base_class(cls):
             return
 
-        before_kwarg_sets = list(iterate_kwargs_options(cls.before))
-        after_kwarg_sets = list(iterate_kwargs_options(cls.after))
         for test_method_name in dir(cls):
             if not test_method_name.startswith("test"):
                 continue
             test_method = getattr(cls, test_method_name)
-            for before_kwargs in before_kwarg_sets:
-                for test_kwargs in iterate_kwargs_options(test_method):
-                    for after_kwargs in after_kwarg_sets:
+            for before_kwargs in iter_inherited_method_parameter_combinations(cls, 'before'):
+                for test_kwargs in iter_parameter_combinations(test_method):
+                    for after_kwargs in iter_inherited_method_parameter_combinations(cls, 'after'):
                         case = cls(
                             test_method_name,
                             before_kwargs=before_kwargs,
@@ -59,13 +57,14 @@ class Test(RunnableTest, RunnableTestFactory):
         Not to be overriden
         """
         method = getattr(self, self._test_method_name)
-        self.before(**self._before_kwargs)
-        try:
-            with handling_exceptions():
-                method(**self._test_kwargs)
-        finally:
-            with handling_exceptions():
-                self.after(**self._after_kwargs)
+        with set_parameter_values_context([self._before_kwargs, self._after_kwargs, self._test_kwargs]):
+            self.before()
+            try:
+                with handling_exceptions():
+                    method()
+            finally:
+                with handling_exceptions():
+                    self.after()
 
     def before(self):
         """

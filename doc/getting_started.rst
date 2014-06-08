@@ -273,6 +273,23 @@ The above example will yield 3 test cases, one for each value of ``x``. It is al
 
 The above will yield 27 different runnable tests, one for each cartesian product of the ``before``, ``test`` and ``after`` possible parameter values.
 
+This also works across inheritence. Each base class can parametrize its `before` or `after` methods, multiplying the number of variations actually run accordingly. Calls to `super` are handled automatically in this case:
+
+.. code-block:: python
+
+    class BaseTest(Test):
+
+        @slash.parameters.iterate(base_parameter=[1, 2, 3])
+        def before(self, base_parameter):
+            # ....
+
+    class DerivedTest(BaseTest):
+        
+        @slash.parameters.iterate(derived_parameter=[4, 5, 6])
+        def before(self, derived_parameter):
+            super(DerivedTest, self).before() # note that base parameters aren't specified here
+            # .....
+
 
 Abstract Base Tests
 -------------------
