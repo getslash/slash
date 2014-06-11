@@ -2,7 +2,6 @@ import gossip
 
 from .conf import config
 from .utils.deprecation import deprecated
-from .utils.debug import launch_debugger
 
 
 def _deprecated_to_gossip(func):
@@ -39,7 +38,7 @@ _slash_group.set_strict()
 _slash_group.set_exception_policy(gossip.RaiseDefer())
 
 @gossip.register('gossip.on_handler_exception')
-def debugger(handler, exception, hook):
+def debugger(handler, exception, hook):  # pylint: disable=unused-argument
     from .exception_handling import handle_exception
 
     if hook.group is _slash_group and config.root.debug.debug_hook_handlers:
