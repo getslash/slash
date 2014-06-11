@@ -7,6 +7,8 @@ Slash leverages the `gossip library <http://gossip.readthedocs.org>`_ to impleme
 
 All built-in hooks are members of the ``slash`` gossip group. As a convenience, the hook objects are all kept as globals in the :mod:`slash.hooks` module.
 
+The ``slash`` gossip group is set to be both strict (See `http://gossip.readthedocs.org/en/latest/advanced.html#strict-registration`_) and has exception policy set to ``RaiseDefer`` (See `http://gossip.readthedocs.org/en/latest/error_handling.html`_).
+
 Registering Hooks
 -----------------
 

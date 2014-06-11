@@ -35,6 +35,7 @@ _define('exception_caught_after_debugger',
         doc="Called whenever an exception is caught, and a debugger has already been run")
 
 gossip.get_group('slash').set_strict()
+gossip.get_group('slash').set_exception_policy(gossip.RaiseDefer())
 
 @gossip.register('gossip.on_handler_exception')
 def handle_handler_exception(handler, exception):  # pylint: disable=unused-argument
