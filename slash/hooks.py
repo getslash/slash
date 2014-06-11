@@ -34,13 +34,16 @@ _define('exception_caught_before_debugger',
 _define('exception_caught_after_debugger',
         doc="Called whenever an exception is caught, and a debugger has already been run")
 
-gossip.get_group('slash').set_strict()
-gossip.get_group('slash').set_exception_policy(gossip.RaiseDefer())
+_slash_group = gossip.get_group('slash')
+_slash_group.set_strict()
+_slash_group.set_exception_policy(gossip.RaiseDefer())
 
 @gossip.register('gossip.on_handler_exception')
-def handle_handler_exception(handler, exception):  # pylint: disable=unused-argument
-    if config.root.debug.enabled and config.root.debug.debug_hooks:
-        launch_debugger(exception)
+def debugger(handler, exception, hook):
+    from .exception_handling import handle_exception
+
+    if hook.group is _slash_group and config.root.debug.debug_hook_handlers:
+        handle_exception(exception)
 
 @_deprecated_to_gossip
 def add_custom_hook(hook_name):

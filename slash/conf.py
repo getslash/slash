@@ -7,7 +7,7 @@ __all__ = ["config"]
 config = Config({
     "debug": {
         "debug_skips": False // Doc("Enter pdb also for SkipTest exceptions"),
-        "debug_hooks": False // Doc("Enter pdb also for every exception encountered in a hook/callback"),
+        "debug_hook_handlers": False // Doc("Enter pdb also for every exception encountered in a hook/callback. Only relevant when debugging is enabled"),
         "enabled": False // Doc("Enter pdb on failures and errors") // Cmdline(on="--pdb"),
     },
     "log": {

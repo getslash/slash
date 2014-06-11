@@ -7,7 +7,7 @@ Slash leverages the `gossip library <http://gossip.readthedocs.org>`_ to impleme
 
 All built-in hooks are members of the ``slash`` gossip group. As a convenience, the hook objects are all kept as globals in the :mod:`slash.hooks` module.
 
-The ``slash`` gossip group is set to be both strict (See `http://gossip.readthedocs.org/en/latest/advanced.html#strict-registration`_) and has exception policy set to ``RaiseDefer`` (See `http://gossip.readthedocs.org/en/latest/error_handling.html`_).
+The ``slash`` gossip group is set to be both strict (See `Gossip strict registrations <http://gossip.readthedocs.org/en/latest/advanced.html#strict-registration>`_) and has exception policy set to ``RaiseDefer`` (See `Gossip error handling <http://gossip.readthedocs.org/en/latest/error_handling.html>`_).
 
 Registering Hooks
 -----------------
@@ -35,7 +35,7 @@ Which is roughly equivalent to:
 Hook Errors
 -----------
 
-Errors encountered in hooks are subject to how gossip handles exceptions. See `the relevant documentation <http://gossip.readthedocs.org/en/latest/error_handling.html>`_ for more details.
+By default, exceptions propagate from hooks and on to the test, but first all hooks are attempted. In some cases though you may want to debug the exception close to its raising point. Setting :ref:`conf.debug.debug_hook_handlers` to ``True`` will cause the debugger to be triggered as soon as the hook dispatcher encounteres the exception. This is done via `gossip's error handling mechanism <http://gossip.readthedocs.org/en/latest/error_handling.html>`_.
 
 Hooks and Plugins
 -----------------

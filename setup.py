@@ -14,7 +14,7 @@ install_requires = [
     "confetti>=2.1.0",
     "dessert",
     "emport==1.0.0",
-    "gossip>=0.6.0",
+    "gossip>=0.7.0",
     "logbook>=0.4.2",
     "requests>=1.1.0",
     "raven",

@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Renamed ``debug_hooks`` to ``debug_hook_handlers``. Debugging hook handlers will only trigger for slash hooks.
 * :bug:`137` Fixed parameter iteration across inheritence trees
 * :feature:`150` Add log links to results when reporting to console
 * :feature:`145` Add option to save symlinks to the last session log and last test log
