@@ -14,7 +14,7 @@ config = Config({
         "console_level": logbook.WARNING // Doc("console log level (can be repeated). Higher log level means quieter output.") // Cmdline(decrease="-v", increase="-q"),
         "root": None // Doc("Root directory for logs") // Cmdline(arg="-l", metavar="DIR"),
         "subpath": "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),
-        "session_subpath": "session.log",
+        "session_subpath": "{context.session.id}/session.log",
         "last_session_symlink": None // Doc("If set, saves a symlink to the last session log file in each run"),
         "last_test_symlink": None // Doc("If set, saves a symlink to the last test log file in each run"),
         "silence_loggers": [] // Doc("Logger names to silence"),

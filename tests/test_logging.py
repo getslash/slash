@@ -18,7 +18,7 @@ def test_last_session_symlinks(logs_dir, session):
     test_log_file = files_dir.join(
         session.id, list(session.results.iter_test_results())[-1].test_metadata.id, "log")
     assert test_log_file.check()
-    session_log_file = files_dir.join("session.log")
+    session_log_file = files_dir.join(session.id, "session.log")
     assert session_log_file.check()
 
     assert links_dir.join("last-session").readlink() == session_log_file
