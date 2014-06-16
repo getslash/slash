@@ -4,7 +4,7 @@ import emport
 
 import dessert
 import pytest
-from slash.core.error import Error
+from slash.core.error import Error, DetailedTraceback
 
 
 def test_error_exception_str_repr(error):
@@ -40,6 +40,25 @@ def test_frame_globals(error):
             "value": "'global_func_1'"
         }}
 
+
+def test_capture_exception_twice_caches_object(error):
+    try:
+        try:
+            raise RuntimeError()
+        except RuntimeError:
+            err1 = Error.capture_exception()
+            raise
+    except RuntimeError:
+        err2 = Error.capture_exception()
+
+    assert err1 is err2
+
+
+def test_detailed_traceback(error):
+    detailed = DetailedTraceback(error)
+    assert detailed.cached_repr is None
+    detailed = str(detailed)
+    assert detailed
 
 ####
 

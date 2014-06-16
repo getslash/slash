@@ -13,6 +13,7 @@ from .exceptions import NoActiveSession, SkipTest, TestFailed
 from .metadata import ensure_test_metadata
 from .test_context import get_test_context_setup
 from .utils.iteration import PeekableIterator
+from .core.error import Error, DetailedTraceback
 
 _logger = logbook.Logger(__name__)
 
@@ -148,7 +149,7 @@ def _update_result_context():
         try:
             yield result
         except:
-            _logger.debug("Exception escaped test", exc_info=sys.exc_info())
+            _logger.debug("Exception escaped test:\n{0}", DetailedTraceback(Error.capture_exception()))
             raise
     except SkipTest as e:
         result.add_skip(e.reason)
