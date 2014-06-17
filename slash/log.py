@@ -17,17 +17,25 @@ def set_log_color(logger_name, level, color):
     """
     _custom_colors[logger_name, level] = color
 
-class CustomColorizingHandler(logbook.more.ColorizedStderrHandler):
+class ConsoleHandler(logbook.more.ColorizedStderrHandler):
+
+    MAX_LINE_LENGTH = 120
 
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
         if returned is None:
-            returned = super(CustomColorizingHandler, self).get_color(record)
+            returned = super(ConsoleHandler, self).get_color(record)
         return returned
+
+    def format(self, record):
+        result = super(ConsoleHandler, self).format(record)
+        if len(result) > self.MAX_LINE_LENGTH:
+            result = result[:-self.MAX_LINE_LENGTH] + "..."
+        return result
 
     def emit(self, record):
         context.session.reporter.notify_before_console_output()
-        returned = super(CustomColorizingHandler, self).emit(record)
+        returned = super(ConsoleHandler, self).emit(record)
         context.session.reporter.notify_after_console_output()
         return returned
 
@@ -38,7 +46,7 @@ class SessionLogging(object):
     def __init__(self, session):
         super(SessionLogging, self).__init__()
         self.warnings_handler = WarnHandler(session.warnings)
-        self.console_handler = CustomColorizingHandler(bubble=True, level=config.root.log.console_level)
+        self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level)
         self.session_log_path = self.test_log_path = None
         self._set_formatting(self.console_handler)
 
