@@ -1,19 +1,24 @@
+import pytest
 import slash
 
-from .utils import run_tests_assert_success, TestCase
+from .utils import run_tests_assert_success
 
+@pytest.mark.parametrize('reprify', [repr, str])
+def test_str_repr(warning, reprify):
+    assert 'this is a warning' in reprify(warning)
 
-class WarningsTest(TestCase):
+def test_location(warning):
+    assert warning.details['filename'] == __file__
 
-    def setUp(self):
-        super(WarningsTest, self).setUp()
+@pytest.fixture
+def warning():
+    class SampleTest(slash.Test):
+        def test(self):
+            slash.logger.warning("this is a warning")
 
-        class SampleTest(slash.Test):
-            def test(self):
-                slash.logger.warning("this is a warning")
+    session = run_tests_assert_success(SampleTest)
 
-        self.session = run_tests_assert_success(SampleTest)
+    assert len(session.warnings) == 1
 
-    def test_session_warnings(self):
-        self.assertEquals(len(self.session.warnings), 1)
-        [warning] = self.session.warnings
+    [warning] = session.warnings
+    return warning

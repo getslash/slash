@@ -1,4 +1,5 @@
 # pylint: disable=import-error,no-name-in-module
+import collections
 import itertools
 import sys
 
@@ -106,6 +107,9 @@ class ConsoleReporter(ReporterInterface):
         if self._verobsity_allows(VERBOSITIES.INFO):
             self._report_all_skips(session)
 
+        if self._verobsity_allows(VERBOSITIES.WARNING):
+            self._report_warning_summary(session)
+
         msg = "Session ended."
         kwargs = {"bold": True}
         if session.results.is_success():
@@ -116,6 +120,19 @@ class ConsoleReporter(ReporterInterface):
 
         msg += " Total duration: {0}".format(self._format_duration(session.duration))
         self._terminal.sep("=", msg, **kwargs)  # pylint: disable=star-args
+
+    def _report_warning_summary(self, session):
+        warnings_by_key = collections.defaultdict(list)
+        for warning in session.warnings:
+            warnings_by_key[warning.key].append(warning)
+        for i, (warning_key, warnings) in iteration(iteritems(warnings_by_key)):
+            if i.first:
+                self._terminal.sep("=", "Warnings ({0} total)".format(len(session.warnings)), yellow=True)
+            self._terminal.write(
+                " * {d[filename]}:{d[lineno]:03} -- ".format(d=warnings[0].details), yellow=True)
+            self._terminal.write(warnings[0].details['message'], yellow=True, bold=True)
+            self._terminal.write(
+                " (Repeated {0} times)\n".format(len(warnings)), yellow=True)
 
     def _verobsity_allows(self, level):
         return self._level <= level

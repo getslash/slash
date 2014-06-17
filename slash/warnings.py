@@ -1,4 +1,9 @@
+import collections
+
 import logbook
+
+from .ctx import context
+
 
 class SessionWarnings(object):
     """
@@ -38,4 +43,19 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
         return record.level == self.level
 
     def emit(self, record):
-        self.records.append(self.format(record))
+        self.records.append(Warning(record, self.format(record)))
+
+WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
+
+class Warning(object):
+
+    def __init__(self, record, message):
+        super(Warning, self).__init__()
+        self.details = record.to_dict()
+        self.details['session_id'] = context.session_id
+        self.details['test_id'] = context.test_id
+        self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
+        self._repr = message
+
+    def __repr__(self):
+        return self._repr

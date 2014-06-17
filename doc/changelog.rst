@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`153` Report warnings at the end of sessions
 * :feature:`152` Truncate long log lines in the console output
 * :feature:`148` Detailed tracebacks now emitted to log file
 * :feature:`-` Renamed ``debug_hooks`` to ``debug_hook_handlers``. Debugging hook handlers will only trigger for slash hooks.

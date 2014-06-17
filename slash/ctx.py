@@ -28,6 +28,13 @@ class Context(object):
         return self._get_fqn_module_address_field("method_name")
 
     @property
+    def session_id(self):
+        s = self.session
+        if s is None:
+            return None
+        return s.id
+
+    @property
     def reporter(self):
         if self.session is None:
             return NullReporter()
