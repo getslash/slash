@@ -30,8 +30,14 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
     def format(self, record):
         result = super(ConsoleHandler, self).format(record)
         if len(result) > self.MAX_LINE_LENGTH:
-            result = result[:-self.MAX_LINE_LENGTH] + "..."
+            result = "\n".join(
+                self._truncate(line) for line in result.splitlines())
         return result
+
+    def _truncate(self, line):
+        if len(line) > self.MAX_LINE_LENGTH:
+            line = line[:self.MAX_LINE_LENGTH - 3] + "..."
+        return line
 
     def emit(self, record):
         context.session.reporter.notify_before_console_output()
