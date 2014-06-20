@@ -4,17 +4,22 @@ import logbook
 
 _logger = logbook.Logger(__name__)
 
+
 class _Cleanup(object):
+
     def __init__(self, func, args, kwargs, critical=False):
         super(_Cleanup, self).__init__()
         self.func = func
         self.args = args
         self.kwargs = kwargs
         self.critical = critical
+
     def __call__(self):
-        return self.func(*self.args, **self.kwargs) # pylint: disable=W0142
+        return self.func(*self.args, **self.kwargs)  # pylint: disable=W0142
+
     def __str__(self):
         return "{0} ({1},{2})".format(self.func, self.args, self.kwargs)
+
 
 def add_cleanup(_func, *args, **kwargs):
     """
@@ -24,14 +29,17 @@ def add_cleanup(_func, *args, **kwargs):
     """
     _add_cleanup(_Cleanup(_func, args, kwargs))
 
+
 def add_critical_cleanup(_func, *args, **kwargs):
     """
     Same as :func:`.add_cleanup`, only the cleanup will be called even on interrupted tests
     """
     _add_cleanup(_Cleanup(_func, args, kwargs, critical=True))
 
+
 def _add_cleanup(cleanup):
     _get_cleanups().append(cleanup)
+
 
 def call_cleanups(critical_only=False):
     cleanups = _get_cleanups()
@@ -42,6 +50,7 @@ def call_cleanups(critical_only=False):
         with handling_exceptions(swallow=True):
             _logger.debug("Calling cleanup: {0}", cleanup)
             cleanup()
+
 
 def _get_cleanups():
     returned = getattr(context, "cleanups", None)
