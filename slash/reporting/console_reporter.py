@@ -110,13 +110,15 @@ class ConsoleReporter(ReporterInterface):
         if self._verobsity_allows(VERBOSITIES.WARNING):
             self._report_warning_summary(session)
 
-        msg = "Session ended."
         kwargs = {"bold": True}
+        msg = "Session ended."
         if session.results.is_success():
             kwargs.update(green=True)
         else:
             kwargs.update(red=True)
-            msg += " {0} failures, {1} errors.".format(session.results.get_num_failures(), session.results.get_num_errors())
+            msg += " {0} successful, {1} skipped, {2} failures, {2} errors.".format(
+                session.results.get_num_successful(), session.results.get_num_skipped(),
+                session.results.get_num_failures(), session.results.get_num_errors())
 
         msg += " Total duration: {0}".format(self._format_duration(session.duration))
         self._terminal.sep("=", msg, **kwargs)  # pylint: disable=star-args
