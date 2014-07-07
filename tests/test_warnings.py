@@ -18,7 +18,7 @@ def test_to_dict(warning):
 def warning():
     class SampleTest(slash.Test):
         def test(self):
-            slash.logger.warning("this is a warning")
+            slash.logger.warning("this is a warning. Param: {0}", 1)
 
     session = run_tests_assert_success(SampleTest)
 
