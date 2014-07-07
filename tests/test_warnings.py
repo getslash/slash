@@ -1,5 +1,3 @@
-import json
-
 import pytest
 import slash
 
@@ -15,9 +13,6 @@ def test_location(warning):
 
 def test_to_dict(warning):
     assert isinstance(warning.to_dict(), dict)
-
-def test_to_dict_is_json_encodable(warning):
-    _ = json.dumps(warning.to_dict())
 
 @pytest.fixture
 def warning():
