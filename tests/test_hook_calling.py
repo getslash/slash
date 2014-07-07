@@ -37,7 +37,8 @@ class HookCallingTest(TestCase):
         plugins.manager.install(self.plugin2, activate=True)
 
         with slash.Session() as s:
-            pass
+            with s.get_started_context():
+                pass
 
 
 def make_custom_plugin(name, test, hook_names=None):

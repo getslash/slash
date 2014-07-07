@@ -19,6 +19,7 @@ class GlobalStorageTest(TestCase):
             gossip.unregister_token,
             self.token
         )
-        with slash.Session():
-            pass
+        with slash.Session() as s:
+            with s.get_started_context():
+                pass
         self.assertTrue(self.hook_called)

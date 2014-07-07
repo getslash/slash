@@ -30,7 +30,8 @@ class GlobalsTest(TestCase):
                     parent_test.assertEquals(context.test_filename, _without_pyc(__file__))
                     parent_test.assertEquals(context.test_classname, "InnerTest")
                     parent_test.assertEquals(context.test_methodname, "test_method")
-            slash.runner.run_tests(InnerTest.generate_tests())
+            with self.session.get_started_context():
+                slash.runner.run_tests(InnerTest.generate_tests())
         self.assertTrue(self.session.results.is_success())
 
 def _without_pyc(path):

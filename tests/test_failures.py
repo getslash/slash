@@ -41,12 +41,13 @@ class FailuresAndErrorsTest(TestCase):
 
 
         with slash.Session() as session:
-            if in_specific_test:
-                slash.run_tests(slash.loader.Loader().get_runnables(Test))
-                [result] = session.results.iter_test_results()
-            else:
-                list(Test.generate_tests())[0].run()
-                result = session.results.global_result
+            with session.get_started_context():
+                if in_specific_test:
+                    slash.run_tests(slash.loader.Loader().get_runnables(Test))
+                    [result] = session.results.iter_test_results()
+                else:
+                    list(Test.generate_tests())[0].run()
+                    result = session.results.global_result
 
         self.assertFalse(result.is_success())
 

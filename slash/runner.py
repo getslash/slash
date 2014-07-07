@@ -22,8 +22,8 @@ def run_tests(iterable, stop_on_error=None):
     Runs tests from an iterable using the current session
     """
     #pylint: disable=maybe-no-member
-    if context.session is None:
-        raise NoActiveSession("A session is not currently active")
+    if context.session is None or not context.session.started:
+        raise NoActiveSession("A session is not currently started")
 
     if stop_on_error is None:
         stop_on_error = config.root.run.stop_on_error

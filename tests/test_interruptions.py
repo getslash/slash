@@ -21,9 +21,10 @@ class InterruptionTest(TestCase):
         self.addCleanup(gossip.unregister_token, id(self))
 
         with Session() as session:
-            self.session = session
-            with self.assertRaises(KeyboardInterrupt):
-                run_tests(self.runnables)
+            with session.get_started_context():
+                self.session = session
+                with self.assertRaises(KeyboardInterrupt):
+                    run_tests(self.runnables)
 
     def _do_test_callback(self, _):
         slash.add_cleanup(self._regular_cleanup)

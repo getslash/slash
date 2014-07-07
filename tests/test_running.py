@@ -26,7 +26,8 @@ class TestRunningTestBase(TestCase):
             self.session = session
             context.current_test_generator = self.generator
             self.prepare_runnables()
-            run_tests(self.runnables)
+            with session.get_started_context():
+                run_tests(self.runnables)
         self.assertEquals(
             self.session.is_complete(),
             self.should_be_complete(),
@@ -160,7 +161,8 @@ class StopOnFailuresTest(TestCase):
         tests = list(SampleTest.generate_tests())
 
         with slash.Session() as session:
-            slash.runner.run_tests(tests)
+            with session.get_started_context():
+                slash.runner.run_tests(tests)
 
         self.assertTrue(self._debug_called)
 

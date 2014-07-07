@@ -26,7 +26,8 @@ def slash_run(args, report_stream=None, resume=False):
                 collected = app.test_loader.get_runnables(to_resume)
             else:
                 collected = _collect_tests(app, args)
-            run_tests(collected)
+            with app.session.get_started_context():
+                run_tests(collected)
         except SlashException as e:
             logbook.error(str(e))
             return -1

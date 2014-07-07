@@ -89,7 +89,8 @@ class ContextSkipTest(EventRecordingTest):
                 pass
 
         with slash.Session() as session:
-            slash.runner.run_tests(itertools.chain(Test1.generate_tests(), Test2.generate_tests()))
+            with session.get_started_context():
+                slash.runner.run_tests(itertools.chain(Test1.generate_tests(), Test2.generate_tests()))
 
         [result1, result2] = session.results.iter_test_results()
         self.assertTrue(result1.is_skip())

@@ -23,8 +23,9 @@ class XUnitPluginTest(TestCase):
         config.root.plugins.xunit.filename = self.xunit_filename
 
         with slash.Session() as s:
-            slash.run_tests(self.runnables)
-            slash.hooks.result_summary()
+            with s.get_started_context():
+                slash.run_tests(self.runnables)
+                slash.hooks.result_summary()
 
     def test_xunit_file(self):
         self.assertTrue(os.path.exists(self.xunit_filename), "xunit file not created")
