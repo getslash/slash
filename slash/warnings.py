@@ -57,5 +57,8 @@ class Warning(object):
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
         self._repr = message
 
+    def to_dict(self):
+        return self.details.copy()
+
     def __repr__(self):
         return self._repr

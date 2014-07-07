@@ -1,7 +1,10 @@
+import json
+
 import pytest
 import slash
 
 from .utils import run_tests_assert_success
+
 
 @pytest.mark.parametrize('reprify', [repr, str])
 def test_str_repr(warning, reprify):
@@ -9,6 +12,12 @@ def test_str_repr(warning, reprify):
 
 def test_location(warning):
     assert warning.details['filename'] == __file__
+
+def test_to_dict(warning):
+    assert isinstance(warning.to_dict(), dict)
+
+def test_to_dict_is_json_encodable(warning):
+    _ = json.dumps(warning.to_dict())
 
 @pytest.fixture
 def warning():
