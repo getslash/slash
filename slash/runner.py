@@ -104,6 +104,7 @@ def _get_test_context(test):
 
     with _set_current_test_context(test):
         with context.session.logging.get_test_logging_context():
+            _logger.debug("Started test: {0}", test)
             yield
 
 @contextmanager
