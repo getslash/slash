@@ -103,6 +103,9 @@ class SessionLogging(object):
         if symlink is None:
             return
 
+        if not os.path.isabs(symlink):
+            symlink = os.path.join(config.root.log.root, symlink)
+
         try:
             ensure_containing_directory(symlink)
 

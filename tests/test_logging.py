@@ -39,13 +39,17 @@ def session():
 
 
 @pytest.fixture
-def logs_dir(request, config_override, tmpdir):
+def logs_dir(request, config_override, tmpdir, relative_symlinks):
     config_override("log.root", str(tmpdir.join("logs", "files")))
     config_override("log.last_session_symlink",
-                    str(tmpdir.join("logs", "links", "last-session")))
+                    str("../links/last-session" if relative_symlinks else tmpdir.join("logs", "links", "last-session")))
     config_override("log.last_test_symlink",
-                    str(tmpdir.join("logs", "links", "last-test")))
+                    str("../links/last-test" if relative_symlinks else tmpdir.join("logs", "links", "last-test")))
     return tmpdir
+
+@pytest.fixture(params=[True, False])
+def relative_symlinks(request):
+    return request.param
 
 
 _TOKEN = "logging-test"
