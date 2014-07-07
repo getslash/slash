@@ -92,16 +92,21 @@ class SessionLogging(object):
             log_path = None
             handler = logbook.NullHandler(bubble=False)
         else:
-            log_path = os.path.join(root_path, subpath.format(context=context))
+            log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=context)))
             ensure_containing_directory(log_path)
             handler = logbook.FileHandler(log_path, bubble=False)
             self._try_create_symlink(log_path, symlink)
             self._set_formatting(handler)
         return handler, log_path
 
+    def _normalize_path(self, p):
+        return os.path.expanduser(p)
+
     def _try_create_symlink(self, path, symlink):
         if symlink is None:
             return
+
+        symlink = self._normalize_path(symlink)
 
         if not os.path.isabs(symlink):
             symlink = os.path.join(config.root.log.root, symlink)
