@@ -33,8 +33,8 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
         )
     with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, positionals_metavar=positionals_metavar) as (parser, parsed_args):
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
+        _check_unknown_switches(app)
         with app.session:
-            _check_unknown_switches(app)
             if enable_interactive and parsed_args.interactive:
                 start_interactive_shell()
             yield app
