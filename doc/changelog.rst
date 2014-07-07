@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Log symlinks can now be relative paths (considrered relative to the logging root directory)
 * :feature:`160` Add option to serialize warnings to dicts
 * :release:`0.7.0 <07-07-2014>`
 * :feature:`153` Report warnings at the end of sessions
