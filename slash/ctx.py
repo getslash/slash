@@ -61,7 +61,7 @@ class NullContext(object):
         pass
 
     session = test = test_id = g = internal_globals = \
-        test_filename = test_classname = test_methodname = _always_none
+        test_filename = test_classname = test_methodname = result = _always_none
 
     reporter = NullReporter()
 
