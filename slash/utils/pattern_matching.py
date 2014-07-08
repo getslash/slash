@@ -41,7 +41,7 @@ class Exclude(object):
         return not self.matcher.matches(s)
 
 
-matcher = Word(alphanums + '._,-=()')
+matcher = Word(alphanums + '._,-=')
 matcher.setParseAction(Include)
 
 boolExpr = infixNotation(matcher, [
@@ -62,4 +62,6 @@ class Matcher(object):
         return repr(self._pattern)
 
     def matches(self, s):
+        if self._pattern in s:
+            return True
         return self._matcher.matches(s)
