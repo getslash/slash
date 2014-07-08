@@ -19,6 +19,7 @@ def test_matcher():
             ('not x', ['blap', 'yyy'], ['blapx', 'xy']),
             ('x and y', ['xy', 'yx', 'x kjfldkjfd y'], ['x', 'y', 'xx']),
             ('(x and some.string) and not z', ['xysome.string', 'some.stringyx'], ['z', 'xysome.stringz']),
+            ('exact(x=y)(y=z)', ['exact(x=y)(y=z)'], ['exlact(x=y)(y=z)']),
             ]:
 
         matcher = Matcher(pattern)
