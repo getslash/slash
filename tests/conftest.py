@@ -56,6 +56,11 @@ def fix_resume_path(request):
         shutil.rmtree(resuming._RESUME_DIR)
         resuming._RESUME_DIR = prev
 
+@pytest.fixture(scope='function')
+def populated_suite(suite):
+    suite.populate()
+    return suite
+
 @pytest.fixture(scope="function")
 def suite(request):
     returned = TestSuite()
