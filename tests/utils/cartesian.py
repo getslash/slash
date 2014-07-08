@@ -26,8 +26,8 @@ class Cartesian(object):
     def check(self, iterator):
         names = list(self.sets)
         sets = [self.sets[name] for name in names]
-        expected = sorted(dict((name, value) for name, value in zip(names, combination)) for combination in itertools.product(*sets), key=frozenset)
-        got = sorted(iterator, key=frozenset)
+        expected = sorted((dict((name, value) for name, value in zip(names, combination)) for combination in itertools.product(*sets)), key=lambda d: sorted(d.items()))
+        got = sorted(iterator, key=lambda d: sorted(d.items()))
         assert got == expected
 
 class SetMaker(object):

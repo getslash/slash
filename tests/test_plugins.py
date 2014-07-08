@@ -2,6 +2,7 @@ import os
 
 import gossip
 import pytest
+from slash._compat import PY2
 from slash import hooks, plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
@@ -27,7 +28,10 @@ def test_custom_hook_registration():
     registrations = gossip.get_hook(hook_name).get_registrations()
     assert 1 == len(registrations)
     [r] = registrations
-    assert r.func.__func__ is MyPlugin.unknown.__func__
+    if PY2:
+        assert r.func.__func__ is MyPlugin.unknown.__func__
+    else:
+        assert r.func.__func__ is MyPlugin.unknown
 
     # make sure we deactivate properly as well
     plugins.manager.deactivate(p)
