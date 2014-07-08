@@ -75,6 +75,17 @@ Now you can fix test_failing_1.py::
 
 .. seealso:: :ref:`configuring default test sources <default_test_source>`
 
+Running Tests by Patterns
+-------------------------
+
+With the ``-k`` flag, you can specify patterns according to which tests will be selected for running::
+
+  $ slash run /path/ -k substring   # only matches tests with 'substring' in their name
+
+This also supports more complex expressions, where every sub-expression stands for a pattern to be matched::
+
+  $ slash run /path/ -k 'substring1 and not substring2 or (substring3 and substring4)'
+
 Errors and Failures
 -------------------
 

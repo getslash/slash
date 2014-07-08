@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`163` Added ``-k`` for selecting tests by substrings
 * :feature:`162` Test loading and other setup operations now happen before ``session_start``, causing faster failing on simple errors
 * :feature:`-` Log symlinks can now be relative paths (considrered relative to the logging root directory)
 * :feature:`160` Add option to serialize warnings to dicts

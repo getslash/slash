@@ -25,6 +25,7 @@ config = Config({
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),
         "suite_files": [] // Doc("File(s) to be read for lists of tests to be run") // Cmdline(append="-f", metavar="FILENAME"),
         "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
+        "filter_string": None // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(arg='-k', metavar='FILTER'),
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
         "user_customization_file_path": "~/.slash/slashrc",
     },

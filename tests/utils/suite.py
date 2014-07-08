@@ -78,7 +78,7 @@ class TestSuite(object):
                     cls.commit(formatter)
 
     def fix_all(self):
-        for test in self.tests:
+        for test in self._all_tests:
             test.fix()
 
     def run(self, stop_on_error=None):
@@ -100,7 +100,7 @@ class TestSuite(object):
 
         should_skip = False
 
-        for test in self.tests:
+        for test in self._all_tests:
             result = results_by_test_uuid.get(test.uuid)
             if not test.selected:
                 assert result is None, 'Deselected test {0} unexpectedly run!'.format(

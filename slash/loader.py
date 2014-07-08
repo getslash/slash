@@ -7,6 +7,7 @@ from logbook import Logger
 
 import dessert
 
+from .conf import config
 from ._compat import iteritems, string_types
 from .ctx import context
 from .exception_handling import handling_exceptions
@@ -14,6 +15,7 @@ from .exceptions import CannotLoadTests
 from .runnable_test_factory import RunnableTestFactory
 from .utils import add_error
 from .utils.fqn import TestPQN
+from .utils.pattern_matching import Matcher
 
 _logger = Logger(__name__)
 
@@ -21,6 +23,13 @@ class Loader(object):
     """
     Provides iteration interfaces to load runnable tests from various places
     """
+
+    def __init__(self):
+        super(Loader, self).__init__()
+        if config.root.run.filter_string:
+            self._matcher = Matcher(config.root.run.filter_string)
+        else:
+            self._matcher = None
 
     def get_runnables(self, paths, sort_key=None):
         returned = self._collect(self._get_iterator(paths))
@@ -105,7 +114,14 @@ class Loader(object):
 
     def _iter_test_factory(self, factory):
         for test in factory.generate_tests():
+            if self._is_excluded(test):
+                continue
             yield test
+
+    def _is_excluded(self, test):
+        if self._matcher is None:
+            return False
+        return not self._matcher.matches(str(test))
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")

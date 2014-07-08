@@ -19,6 +19,7 @@ install_requires = [
     "requests>=1.1.0",
     "raven",
     "py>=1.4.20",
+    "pyparsing",
     # DO NOT ADD pyforge, lxml or any other package only required for testing
 ]
 
