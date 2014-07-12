@@ -17,6 +17,7 @@ config = Config({
         "session_subpath": "{context.session.id}/session.log",
         "last_session_symlink": None // Doc("If set, specifies a symlink path to the last session log file in each run"),
         "last_test_symlink": None // Doc("If set, specifies a symlink path to the last test log file in each run"),
+        "last_failed_symlink": None // Doc("If set, specifies a symlink path to the last failed test log file"),
         "silence_loggers": [] // Doc("Logger names to silence"),
         "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
         "localtime": False // Doc("Use local time for logging. If False, will use UTC"),

@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`159` Add optional 'last failed' symlink to point to last failed test log
 * :feature:`163` Added ``-k`` for selecting tests by substrings
 * :feature:`162` Test loading and other setup operations now happen before ``session_start``, causing faster failing on simple errors
 * :feature:`-` Log symlinks can now be relative paths (considrered relative to the logging root directory)

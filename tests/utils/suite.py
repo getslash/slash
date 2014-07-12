@@ -91,17 +91,17 @@ class TestSuite(object):
         return self._verify_results(session, stop_on_error=stop_on_error)
 
     def _verify_results(self, session, stop_on_error):
-        results_by_test_uuid = {}
+        returned = ResultWrapper(self, session)
         for result in session.results.iter_test_results():
             method_name = result.test_metadata.fqn.address_in_module.method_name
             assert method_name.startswith("test_")
             uuid = method_name[5:]
-            results_by_test_uuid[uuid] = result
+            returned.results_by_test_uuid[uuid] = result
 
         should_skip = False
 
         for test in self._all_tests:
-            result = results_by_test_uuid.get(test.uuid)
+            result = returned.results_by_test_uuid.get(test.uuid)
             if not test.selected:
                 assert result is None, 'Deselected test {0} unexpectedly run!'.format(
                     test)
@@ -115,7 +115,7 @@ class TestSuite(object):
 
             if result.is_error() or result.is_failure() and stop_on_error:
                 should_skip = True
-        return session.results
+        return returned
 
     def fail_in_middle(self):
         index = len(self) // 2
@@ -222,3 +222,16 @@ class PlannedTest(object):
 
     def _get_variables(self):
         return {}
+
+
+class ResultWrapper(object):
+
+    def __init__(self, suite, session):
+        super(ResultWrapper, self).__init__()
+        self.suite = suite
+        self.session = session
+
+        self.results_by_test_uuid = {}
+
+    def __getitem__(self, planned_test):
+        return self.results_by_test_uuid[planned_test.uuid]

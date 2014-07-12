@@ -63,7 +63,7 @@ def run_tests(iterable, stop_on_error=None):
 def _mark_remaining_skipped(test_iterator):
     for test in test_iterator:
         with _get_test_context(test):
-            context.session.results.create_result(test).add_skip("Did not run")
+            context.result.add_skip("Did not run")
 
 @contextmanager
 def _get_run_context_stack(test, test_iterator):
@@ -99,13 +99,18 @@ def _cleanup_context():
 @contextmanager
 def _get_test_context(test):
     ensure_test_metadata(test)
+
     assert test.__slash__.id is None
     test.__slash__.id = context.session.id_space.allocate()
-
     with _set_current_test_context(test):
-        with context.session.logging.get_test_logging_context():
-            _logger.debug("Started test: {0}", test)
-            yield
+        result = context.session.results.create_result(test)
+        context.result = result
+        try:
+            with context.session.logging.get_test_logging_context():
+                _logger.debug("Started test: {0}", test)
+                yield
+        finally:
+            context.result = None
 
 @contextmanager
 def _get_test_hooks_context():
@@ -143,9 +148,8 @@ def _set_current_test_context(test):
 
 @contextmanager
 def _update_result_context():
-    result = context.session.results.create_result(context.test)
-    context.result = result
-    result.set_log_path(context.session.logging.test_log_path)
+    result = context.result
+    assert result
     result.mark_started()
     try:
         try:
@@ -161,4 +165,3 @@ def _update_result_context():
         raise
     finally:
         result.mark_finished()
-        context.result = None

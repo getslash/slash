@@ -32,6 +32,17 @@ def test_result_log_links(logs_dir, session):
         assert result.get_log_path().startswith(str(logs_dir.join("logs", "files")))
 
 
+def test_last_failed(populated_suite, logs_dir):
+    populated_suite[-5].fail()
+    last_failed = populated_suite[-2]
+    last_failed.fail()
+    results = populated_suite.run()
+
+    fail_log = results[last_failed].get_log_path()
+    assert os.path.isfile(fail_log)
+    assert logs_dir.join('logs', 'links', 'last-failed').readlink() == fail_log
+
+
 @pytest.fixture
 def session():
     session = run_tests_assert_success(SampleTest)
@@ -45,6 +56,9 @@ def logs_dir(request, config_override, tmpdir, relative_symlinks):
                     str("../links/last-session" if relative_symlinks else tmpdir.join("logs", "links", "last-session")))
     config_override("log.last_test_symlink",
                     str("../links/last-test" if relative_symlinks else tmpdir.join("logs", "links", "last-test")))
+    config_override("log.last_failed_symlink",
+                    str("../links/last-failed" if relative_symlinks else tmpdir.join("logs", "links", "last-failed")))
+
     return tmpdir
 
 @pytest.fixture(params=[True, False])
