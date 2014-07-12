@@ -11,11 +11,11 @@ Changelog
 * :feature:`152` Truncate long log lines in the console output
 * :feature:`148` Detailed tracebacks now emitted to log file
 * :feature:`-` Renamed ``debug_hooks`` to ``debug_hook_handlers``. Debugging hook handlers will only trigger for slash hooks.
-* :bug:`137` Fixed parameter iteration across inheritence trees
+* :feature:`137` Fixed parameter iteration across inheritence trees
 * :feature:`150` Add log links to results when reporting to console
 * :feature:`145` Add option to save symlinks to the last session log and last test log
 * :feature:`146` Add test id and error/failure enumeration in test details
-* :bug:`149` Make console logs interact nicely with the console reporter non-log output
+* :feature:`149` Make console logs interact nicely with the console reporter non-log output
 * :feature:`144` Add option to colorize console logs in custom colors
 * :release:`0.6.1 <27-05-2014>`
 * :bug:`142` Allow registering plugin methods on custom hooks
