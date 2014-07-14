@@ -161,8 +161,8 @@ class ConsoleReporter(ReporterInterface):
     def _report_error_location(self, result, object_index, total_num_errors, marker):
         self._terminal.sep("_", self._get_location(result))
         if self._verobsity_allows(VERBOSITIES.INFO) and result.test_metadata:
-            location = "{3}:{0}{1}/{2}".format(
-                marker, object_index, total_num_errors, result.test_metadata.id)
+            location = "{0}:{1}{2}/{3}".format(
+                result.test_metadata.id, marker, object_index, total_num_errors)
             self._terminal.sep("_", location)
 
     def _report_failures_and_errors_concise(self, session):
