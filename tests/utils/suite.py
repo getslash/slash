@@ -113,7 +113,7 @@ class TestSuite(object):
             else:
                 test.verify_result(result)
 
-            if result.is_error() or result.is_failure() and stop_on_error:
+            if (result.is_error() or result.is_failure()) and stop_on_error:
                 should_skip = True
         return returned
 
