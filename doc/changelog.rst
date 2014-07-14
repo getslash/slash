@@ -6,6 +6,8 @@ Changelog
 * :feature:`162` Test loading and other setup operations now happen before ``session_start``, causing faster failing on simple errors
 * :feature:`-` Log symlinks can now be relative paths (considrered relative to the logging root directory)
 * :feature:`160` Add option to serialize warnings to dicts
+* :release:`0.7.1 <14-07-2014>`
+* :bug:`-` Fixed error summary reporting
 * :release:`0.7.0 <07-07-2014>`
 * :feature:`153` Report warnings at the end of sessions
 * :feature:`152` Truncate long log lines in the console output
