@@ -7,6 +7,21 @@ from slash.core.result import SessionResults
 
 from .utils import run_tests_assert_success
 
+def test_result_summary(populated_suite):
+
+    populated_suite[2].fail()
+    populated_suite[3].error()
+    populated_suite[4].error()
+    populated_suite[5].skip()
+
+    results = populated_suite.run().session.results
+
+    assert results.get_num_errors() == 2
+    assert results.get_num_failures() == 1
+    assert results.get_num_skipped() == 1
+    assert results.get_num_successful() == len(populated_suite) - 4
+
+
 def test_result_data_is_unique():
 
     class SampleTest(slash.Test):

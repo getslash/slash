@@ -185,6 +185,12 @@ class PlannedTest(object):
     def fail(self):
         self.result = _FAILURE
 
+    def error(self):
+        self.result = _ERROR
+
+    def skip(self):
+        self.result = _SKIP
+
     def fix(self):
         if self.result != _SKIP:
             self.result = _SUCCESS
@@ -207,6 +213,10 @@ class PlannedTest(object):
         elif self.result == _ERROR:
             assert result.is_error()
             assert not result.is_failure()
+        elif self.result == _SKIP:
+            assert not result.is_error()
+            assert not result.is_failure()
+            assert result.is_skip()
         else:
             raise NotImplementedError()  # pragma: no cover
 
@@ -217,6 +227,9 @@ class PlannedTest(object):
             yield "assert 1 == 2"
         elif self.result == _ERROR:
             yield "x = unknown"
+        elif self.result == _SKIP:
+            yield "from slash import skip_test"
+            yield "skip_test('reason')"
         else:
             raise NotImplementedError()  # pragma: no cover
 
