@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`-` Fixed error summary reporting
 * :release:`0.7.0 <07-07-2014>`
 * :feature:`153` Report warnings at the end of sessions
 * :feature:`152` Truncate long log lines in the console output
