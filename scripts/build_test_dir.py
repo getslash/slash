@@ -8,6 +8,7 @@ from tests.utils.suite import TestSuite
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument("dir")
+parser.add_argument("summary")
 
 class Application(object):
 
@@ -19,8 +20,20 @@ class Application(object):
     def main(self):
 
         s = TestSuite(self._args.dir)
-        for i in range(10):
-            s.add_test()
+        if not self._args.summary:
+            parser.error("No summary given")
+        for element in self._args.summary:
+            t = s.add_test()
+            if element == '.':
+                pass
+            elif element == 'F':
+                t.fail()
+            elif element == 'E':
+                t.error()
+            elif element == 'S':
+                t.skip()
+            else:
+                parser.error("Unknown marker: {0!r}".format(element))
 
         s.commit()
 
