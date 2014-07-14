@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.7.1 <14-07-2014>`
 * :bug:`-` Fixed error summary reporting
 * :release:`0.7.0 <07-07-2014>`
 * :feature:`153` Report warnings at the end of sessions
