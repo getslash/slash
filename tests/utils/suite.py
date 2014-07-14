@@ -23,13 +23,14 @@ _INDENT = " " * 4
 
 class TestSuite(object):
 
-
-    def __init__(self):
+    def __init__(self, path=None):
         super(TestSuite, self).__init__()
         self.id_gen = itertools.count()
         self.files = []
         self._all_tests = []
-        self._path = mkdtemp()
+        if path is None:
+            path = mkdtemp()
+        self._path = path
         self._committed = False
 
     def populate(self, num_tests=20):
@@ -68,7 +69,8 @@ class TestSuite(object):
         return self._all_tests[idx]
 
     def commit(self):
-        shutil.rmtree(self._path)
+        if os.path.exists(self._path):
+            shutil.rmtree(self._path)
         os.makedirs(self._path)
         for file in self.files:
             with open(os.path.join(self._path, 'test_{0:05}.py'.format(file.id)), 'w') as f:
