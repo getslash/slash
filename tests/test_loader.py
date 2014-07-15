@@ -6,6 +6,11 @@ from slash.exceptions import CannotLoadTests
 from slash.loader import Loader
 
 
+def test_loading_function(suite):
+    suite.add_test(regular_function=True)
+    suite.run()
+
+
 def test_iter_specific_factory(populated_suite):
     cls = populated_suite.classes[2]
     assert cls.tests
@@ -16,6 +21,7 @@ def test_iter_specific_factory(populated_suite):
     path = populated_suite.commit()
     pattern = '{0}:{1}'.format(os.path.join(path, cls.file.name), cls.name)
     populated_suite.run(pattern=pattern)
+
 
 def test_import_error_registers_as_session_error(active_slash_session, test_loader):
     with pytest.raises(CannotLoadTests):

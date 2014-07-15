@@ -37,4 +37,4 @@ def test_resume(populated_suite):
     resumed = get_tests_to_resume(result.session.id)
 
     assert len(resumed) + result.session.results.get_num_started() - 1 == len(populated_suite)
-    assert resumed[0].endswith(populated_suite[fail_index].method_name)
+    assert resumed[0].endswith(populated_suite[fail_index].function_name)
