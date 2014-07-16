@@ -33,7 +33,7 @@ def run_tests(iterable, stop_on_error=None):
     complete = False
     for test in test_iterator:
         ensure_test_metadata(test)
-        test_filename = test.__slash__.fqn.path
+        test_filename = test.__slash__.file_path
         if last_filename != test_filename:
             context.session.reporter.report_file_start(test_filename)
             last_filename = test_filename
@@ -43,7 +43,7 @@ def run_tests(iterable, stop_on_error=None):
             test.run()
         result = context.session.results[test]
         context.session.reporter.report_test_end(test, result)
-        if not test_iterator.has_next() or ensure_test_metadata(test_iterator.peek()).fqn.path != last_filename:
+        if not test_iterator.has_next() or ensure_test_metadata(test_iterator.peek()).file_path != last_filename:
             context.session.reporter.report_file_end(last_filename)
         if result.has_fatal_exception():
             _logger.debug("Stopping on fatal exception")

@@ -33,6 +33,10 @@ class TestSuite(object):
         self._path = path
         self._committed = False
 
+    @property
+    def path(self):
+        return self._path
+
     def populate(self, num_tests=20):
         for i in range(num_tests):
             self.add_test()
@@ -62,6 +66,10 @@ class TestSuite(object):
                 for test in cls.tests:
                     yield test
 
+    @property
+    def classes(self):
+        return [cls for file in self.files for cls in file.classes]
+
     def __len__(self):
         return len(self._all_tests)
 
@@ -89,15 +97,15 @@ class TestSuite(object):
             with session.get_started_context():
                 self.session_id = session.id
                 slash.runner.run_tests(
-                    slash.loader.Loader().get_runnables([self._path], sort_key=lambda test: test.__slash__.fqn.address_in_module.method_name), stop_on_error=stop_on_error)
+                    slash.loader.Loader().get_runnables([self._path], sort_key=lambda test: test.__slash__.address), stop_on_error=stop_on_error)
         return self._verify_results(session, stop_on_error=stop_on_error)
 
     def _verify_results(self, session, stop_on_error):
         returned = ResultWrapper(self, session)
         for result in session.results.iter_test_results():
-            method_name = result.test_metadata.fqn.address_in_module.method_name
-            assert method_name.startswith("test_")
-            uuid = method_name[5:]
+            method_name = result.test_metadata.address_in_factory
+            assert method_name.startswith(".test_")
+            uuid = method_name[6:]
             returned.results_by_test_uuid[uuid] = result
 
         should_skip = False
@@ -126,7 +134,8 @@ class TestSuite(object):
         return index
 
     def cleanup(self):
-        pass
+        if os.path.exists(self.path):
+            shutil.rmtree(self.path)
 
 
 class Class(object):
@@ -135,13 +144,20 @@ class Class(object):
         super(Class, self).__init__()
         self.id = id
         self.tests = []
+        self._decorators = []
+
+    def decorate(self, decorator):
+        assert not decorator.startswith('@')
+        self._decorators.insert(0, decorator)
 
     def can_add_test(self):
         return len(self.tests) < NUM_TESTS_PER_CLASS
 
     def commit(self, formatter):
         test_class_name = "Test{0:05}".format(self.id)
-        formatter.writeln("class {0}(Test):".format(test_class_name))
+        for decorator in self._decorators:
+            formatter.writeln('@{0}'.format(decorator))
+        formatter.writeln("class {0}(slash.Test):".format(test_class_name))
         with formatter.indented():
             for test in self.tests:
                 test.commit(formatter)
@@ -153,17 +169,24 @@ class File(object):
         super(File, self).__init__()
         self.id = id
         self.classes = []
+        self._injected_lines = []
+
+    def inject_line(self, line):
+        self._injected_lines.append(line)
 
     def can_add_class(self):
         return len(self.classes) < NUM_CLASSES_PER_FILE
 
     def commit(self, formatter):
-        formatter.writeln('from slash import Test')
+        formatter.writeln('import slash')
+
+        for line in self._injected_lines:
+            formatter.writeln(line)
 
 
 class PlannedTest(object):
 
-    result = _SUCCESS
+    _expected_result = _SUCCESS
 
     def __init__(self, id):
         super(PlannedTest, self).__init__()
@@ -172,8 +195,13 @@ class PlannedTest(object):
         self.method_name = "test_{0}".format(self.uuid)
         self.selected = True
 
+        self._injected_statements = []
+
     def __repr__(self):
-        return '<Planned test #{0.id}, selected={0.selected}, result={0.result}>'.format(self)
+        return '<Planned test #{0.id}, selected={0.selected}, expected result={0._expected_result}>'.format(self)
+
+    def inject_statement(self, stmt):
+        self._injected_statements.append(stmt)
 
     def rename(self, new_name):
         self.method_name = new_name
@@ -185,17 +213,30 @@ class PlannedTest(object):
         self.selected = False
 
     def fail(self):
-        self.result = _FAILURE
+        self.inject_statement('assert 1 == 2')
+        self.expect_failure()
+
+    def expect_failure(self):
+        self._expected_result = _FAILURE
 
     def error(self):
-        self.result = _ERROR
+        self.inject_statement('object.unknown_attribute()')
+        self.expect_error()
+
+    def expect_error(self):
+        self._expected_result = _ERROR
 
     def skip(self):
-        self.result = _SKIP
+        self.inject_statement('from slash import skip_test')
+        self.inject_statement('skip_test("reason")')
+        self.expect_skip()
+
+    def expect_skip(self):
+        self._expected_result = _SKIP
 
     def fix(self):
-        if self.result != _SKIP:
-            self.result = _SUCCESS
+        del self._injected_statements[:]
+        self._expected_result = _SUCCESS
 
     def commit(self, formatter):
         formatter.writeln("def {0}(self):".format(self.method_name))
@@ -207,15 +248,15 @@ class PlannedTest(object):
                 formatter.writeln(s)
 
     def verify_result(self, result):
-        if self.result == _SUCCESS:
+        if self._expected_result == _SUCCESS:
             assert result.is_success()
-        elif self.result == _FAILURE:
+        elif self._expected_result == _FAILURE:
             assert result.is_failure()
             assert not result.is_error()
-        elif self.result == _ERROR:
+        elif self._expected_result == _ERROR:
             assert result.is_error()
             assert not result.is_failure()
-        elif self.result == _SKIP:
+        elif self._expected_result == _SKIP:
             assert not result.is_error()
             assert not result.is_failure()
             assert result.is_skip()
@@ -223,17 +264,12 @@ class PlannedTest(object):
             raise NotImplementedError()  # pragma: no cover
 
     def _generate_test_statements(self):
-        if self.result == _SUCCESS:
-            yield "pass"
-        elif self.result == _FAILURE:
-            yield "assert 1 == 2"
-        elif self.result == _ERROR:
-            yield "x = unknown"
-        elif self.result == _SKIP:
-            yield "from slash import skip_test"
-            yield "skip_test('reason')"
-        else:
-            raise NotImplementedError()  # pragma: no cover
+        statements = self._injected_statements
+        if not statements:
+            statements = ['pass']
+
+        for statement in statements:
+            yield statement
 
     def _get_variables(self):
         return {}

@@ -158,7 +158,7 @@ class StopOnFailuresTest(TestCase):
                 if error_in == "test" and self.current_test_index == failing_index:
                     raise CustomException()
 
-        tests = list(SampleTest.generate_tests())
+        tests = list(SampleTest.generate_tests('', ''))
 
         with slash.Session() as session:
             with session.get_started_context():

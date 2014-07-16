@@ -14,7 +14,6 @@ from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
 from .runnable_test_factory import RunnableTestFactory
 from .utils import add_error
-from .utils.fqn import TestPQN
 from .utils.pattern_matching import Matcher
 
 _logger = Logger(__name__)
@@ -55,26 +54,12 @@ class Loader(object):
         if isinstance(thing, string_types):
             return self._iter_test_address(thing)
         if isinstance(thing, RunnableTestFactory) or (isinstance(thing, type) and issubclass(thing, RunnableTestFactory)):
-            return self._iter_test_factory(thing)
+            return self._iter_test_factory('', '', thing)
 
         raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
 
     def _iter_test_address(self, address):
-        if ":" in address:
-            return self._iter_fqn(address)
         return self._iter_path(address)
-
-    def _iter_fqn(self, pqn):
-        pqn = TestPQN.from_string(pqn)
-        found = False
-        for test in self._iter_path(pqn.path):
-            if pqn.matches(test.__slash__.fqn):
-                found = True
-                yield test
-        if not found:
-            msg = "Pattern {0!r} not matched any test".format(pqn)
-            add_error(msg)
-            raise CannotLoadTests(msg)
 
     def _iter_path(self, path):
         return self._iter_paths([path])
@@ -100,7 +85,7 @@ class Loader(object):
                     except Exception as e:
                         raise CannotLoadTests("Could not load {0!r} ({1})".format(file_path, e))
                 if module is not None:
-                    for runnable in self._iter_runnable_tests_in_module(module):
+                    for runnable in self._iter_runnable_tests_in_module(file_path, module):
                         yield runnable
 
     @contextmanager
@@ -112,8 +97,8 @@ class Loader(object):
                 _logger.error("Failed to import {0} ({1})", file_path, e)
                 raise
 
-    def _iter_test_factory(self, factory):
-        for test in factory.generate_tests():
+    def _iter_test_factory(self, file_path, factory_address, factory):
+        for test in factory.generate_tests(file_path, factory_address):
             if self._is_excluded(test):
                 continue
             yield test
@@ -126,13 +111,13 @@ class Loader(object):
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")
 
-    def _iter_runnable_tests_in_module(self, module):
+    def _iter_runnable_tests_in_module(self, file_path, module):
         for factory_name, factory in iteritems(vars(module)):
             if factory is RunnableTestFactory: # probably imported directly
                 continue
             if isinstance(factory, type) and issubclass(factory, RunnableTestFactory):
                 _logger.debug("Getting tests from {0}:{1}..", module, factory_name)
-                for test in self._iter_test_factory(factory):
+                for test in self._iter_test_factory(file_path, factory_name, factory):
                     yield test
 
 def _walk(p):

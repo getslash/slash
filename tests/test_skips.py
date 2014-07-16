@@ -47,25 +47,25 @@ def test_method_with_reason():
     _assert_skips(Test, "reason")
 
 
-def test_class_decorator():
-    @slash.skipped("reason")
-    class Test(slash.Test):
+def test_class_decorator(populated_suite):
 
-        def test_1(self):
-            pass
+    cls = populated_suite.classes[1]
 
-        def test_2(self):
-            pass
+    cls.decorate('slash.skipped("reason")')
 
-    [test_1, test_2] = Test.generate_tests()
+    for test in cls.tests:
+        test.expect_skip()
 
-    _assert_skips(test_1.run, "reason")
-    _assert_skips(test_2.run, "reason")
+    results = populated_suite.run()
+
+    for test in cls.tests:
+        result = results.results_by_test_uuid[test.uuid]
+        assert 'reason' in result.get_skips()
 
 
 def _assert_skips(thing, reason=None):
     if isinstance(thing, type) and issubclass(thing, slash.Test):
-        [thing] = thing.generate_tests()
+        [thing] = thing.generate_tests('', '')
         thing = thing.run
 
     with pytest.raises(slash.exceptions.SkipTest) as caught:

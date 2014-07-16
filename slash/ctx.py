@@ -17,15 +17,7 @@ class Context(object):
 
     @property
     def test_filename(self):
-        return self._get_fqn_field("abspath")
-
-    @property
-    def test_classname(self):
-        return self._get_fqn_module_address_field("factory_name")
-
-    @property
-    def test_methodname(self):
-        return self._get_fqn_module_address_field("method_name")
+        return self._get_test_address_field("file_path")
 
     @property
     def session_id(self):
@@ -40,11 +32,11 @@ class Context(object):
             return NullReporter()
         return self.session.reporter
 
-    def _get_fqn_module_address_field(self, field_name):
+    def _get_test_address_field(self, field_name):
         current_test = self.test
         if current_test is None:
             return None
-        return getattr(current_test.__slash__.fqn.address_in_module, field_name)
+        return getattr(current_test.__slash__, field_name)
 
     def _get_fqn_field(self, field_name):
         return getattr(getattr(self.test.__slash__, "fqn", None), field_name, None)

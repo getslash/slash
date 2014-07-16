@@ -1,61 +1,30 @@
-import slash
-from .utils import TestCase
+import pytest
 
-class FailuresAndErrorsTest(TestCase):
+@pytest.mark.parametrize('error_adder', ['add_error', 'add_failure'])
+@pytest.mark.parametrize('globally', [True, False])
+def test_adding_errors(error_adder, globally, suite):
 
-    def test_adding_errors_global(self):
-        self._test_adding_errors_failures_strings(
-            slash.add_error,
-            lambda result: result.get_errors(),
-            False,
-        )
+    if globally:
+        pytest.skip('n/i')
 
-    def test_adding_errors_in_test(self):
-        self._test_adding_errors_failures_strings(
-            slash.add_error,
-            lambda result: result.get_errors(),
-            True,
-        )
+    test = suite.add_test()
 
-    def test_adding_failures_global(self):
-        self._test_adding_errors_failures_strings(
-            slash.add_failure,
-            lambda result: result.get_failures(),
-            False,
-        )
+    for i in range(2):
+        test.inject_statement('slash.{0}("msg{1}")'.format(error_adder, i))
+    test.inject_statement('slash.{0}(object())'.format(error_adder))
 
-    def test_adding_failures_in_test(self):
-        self._test_adding_errors_failures_strings(
-            slash.add_failure,
-            lambda result: result.get_failures(),
-            True
-        )
+    if error_adder == 'add_error':
+        test.expect_error()
+    else:
+        test.expect_failure()
 
-    def _test_adding_errors_failures_strings(self, adder, getter, in_specific_test):
-        obj = SampleObject()
-        class Test(slash.Test):
-            def test(self):
-                adder("msg1")
-                adder("msg2")
-                adder(obj)
+    results = suite.run().session.results
 
+    [test_result] = results.iter_test_results()
 
-        with slash.Session() as session:
-            with session.get_started_context():
-                if in_specific_test:
-                    slash.run_tests(slash.loader.Loader().get_runnables(Test))
-                    [result] = session.results.iter_test_results()
-                else:
-                    list(Test.generate_tests())[0].run()
-                    result = session.results.global_result
+    objs = test_result.get_errors() if error_adder == 'add_error' else test_result.get_failures()
+    assert len(objs) == 3
 
-        self.assertFalse(result.is_success())
-
-        [error1, error2, error3] = getter(result)
-        self.assertEquals(error1.message, "msg1")
-        self.assertEquals(error2.message, "msg2")
-        self.assertEquals(error3.message, repr(obj))
-        self.assertIs(error3.arg, obj)
-
-class SampleObject(object):
-    pass
+    assert 'msg0' in objs[0].message
+    assert 'msg1' in objs[1].message
+    assert '<object object at 0x' in objs[2].message

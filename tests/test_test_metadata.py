@@ -19,18 +19,17 @@ class TestMetadataTest(TestCase):
         self.tests = slash.loader.Loader().get_runnables(self.filename)
         self.session = run_tests_assert_success(self.tests)
         self.results = list(self.session.results.iter_test_results())
-        self.results.sort(key = lambda result: str(result.test_metadata.fqn))
+        self.results.sort(key = lambda result: str(result.test_metadata))
 
     def test_tests_have_correct_metadata(self):
         for test, result in zip(self.tests, self.session.results.iter_test_results()):
             self.assertIs(test.__slash__, result.test_metadata)
 
     def test_simple_test_fqn(self):
-        simple_test_fqn = self.results[0].test_metadata.fqn
-        self.assertEquals(simple_test_fqn, "{0}:T001.test_method".format(self.filename))
+        self.assertEquals(self.results[0].test_metadata.address, "{0}:T001.test_method".format(self.filename))
 
     def test_parameterized_test_fqn(self):
-        parameterized = set(str(x.test_metadata.fqn) for x in self.results[1:])
+        parameterized = set(x.test_metadata.address for x in self.results[1:])
 
         self.assertEquals(parameterized, set(
             "{0}:T002(a={1})(c={2}).test_parameters(b={3})".format(self.filename, a, c, b)

@@ -18,7 +18,7 @@ def save_resume_state(session_result):
     with open(tmp_filename, "w") as f:
         json.dump({
             "tests": [
-                {"fqn": str(result.test_metadata.fqn), "needs_rerun":
+                {"address": str(result.test_metadata.address), "needs_rerun":
                  result.is_failure() or result.is_error() or not result.is_started()}
                 for result in session_result.iter_test_results()
             ],
@@ -58,7 +58,7 @@ def get_tests_to_resume(session_id):
         raise CannotResume(
             "Cannot resume session {0} ({1})".format(session_id, e))
 
-    return [test["fqn"] for test in state["tests"] if test["needs_rerun"]]
+    return [test["address"] for test in state["tests"] if test["needs_rerun"]]
 
 def _generate_resume_filename(session_id):
     return os.path.join(_RESUME_DIR, "{0:03}_{1}".format(next(_RESUME_COUNTER), session_id)) + ".json"

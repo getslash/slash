@@ -59,7 +59,7 @@ The parameter given above to :func:`.run_tests` is merely an iterator yielding r
  ...
  def _filter_tests(iterator):
      for test in iterator:
-          if "forbidden" in test.__slash__.fqn.path:
+          if "forbidden" in test.__slash__.file_path:
               continue
           yield test
 
