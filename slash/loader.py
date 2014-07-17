@@ -59,7 +59,17 @@ class Loader(object):
         raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
 
     def _iter_test_address(self, address):
-        return self._iter_path(address)
+        if ':' in address:
+            path, address_in_file = address.split(':', 1)
+        else:
+            path = address
+            address_in_file = None
+
+        for test in self._iter_path(path):
+            if address_in_file is not None:
+                if address_in_file not in (test.__slash__.factory_name, test.__slash__.address_in_file):
+                    continue
+            yield test
 
     def _iter_path(self, path):
         return self._iter_paths([path])

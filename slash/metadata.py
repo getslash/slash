@@ -8,10 +8,11 @@ class Metadata(object):
         self.test = test
         self.file_path = file_path
         self.factory_name = factory_name
+        self.address_in_file = self.factory_name
         self.address_in_factory = address_in_factory
-        self.address = '{0}:{1}'.format(file_path, factory_name)
         if address_in_factory is not None:
-            self.address += address_in_factory
+            self.address_in_file += address_in_factory
+        self.address = '{0}:{1}'.format(file_path, self.address_in_file)
 
     def __repr__(self):
         return '<{0}>'.format(self.address)
