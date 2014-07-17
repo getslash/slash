@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import logbook
 
 from . import hooks
+from . import log
 from ._compat import ExitStack
 from .cleanups import call_cleanups
 from .conf import config
@@ -15,7 +16,9 @@ from .test_context import get_test_context_setup
 from .utils.iteration import PeekableIterator
 from .core.error import Error, DetailedTraceback
 
+
 _logger = logbook.Logger(__name__)
+log.set_log_color(_logger.name, logbook.NOTICE, 'teal')
 
 def run_tests(iterable, stop_on_error=None):
     """
@@ -38,7 +41,7 @@ def run_tests(iterable, stop_on_error=None):
             context.session.reporter.report_file_start(test_filename)
             last_filename = test_filename
         context.session.reporter.report_test_start(test)
-        _logger.debug("Running {0}...", test)
+        _logger.notice("{0}", test.__slash__.address)
         with _get_run_context_stack(test, test_iterator):
             test.run()
         result = context.session.results[test]
