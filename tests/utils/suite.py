@@ -43,7 +43,10 @@ class TestSuite(object):
 
     def add_test(self):
         test = PlannedTest(next(self.id_gen))
-        self._get_class_for_adding_test().tests.append(test)
+        cls = self._get_class_for_adding_test()
+        assert test.cls is None
+        test.cls = cls
+        cls.tests.append(test)
         self._all_tests.append(test)
         return test
 
@@ -51,7 +54,9 @@ class TestSuite(object):
         if self.files and not self.files[-1].classes[-1].can_add_test():
             return self.files[-1].classes[-1]
         new_class = Class(next(self.id_gen))
-        self._get_file_for_adding_class().classes.append(new_class)
+        assert new_class.file is None
+        new_class.file = self._get_file_for_adding_class()
+        new_class.file.classes.append(new_class)
         return new_class
 
     def _get_file_for_adding_class(self):
@@ -81,23 +86,26 @@ class TestSuite(object):
             shutil.rmtree(self._path)
         os.makedirs(self._path)
         for file in self.files:
-            with open(os.path.join(self._path, 'test_{0:05}.py'.format(file.id)), 'w') as f:
+            with open(os.path.join(self._path, file.name), 'w') as f:
                 formatter = CodeFormatter(f)
                 file.commit(formatter)
                 for cls in file.classes:
                     cls.commit(formatter)
+        return self._path
 
     def fix_all(self):
         for test in self._all_tests:
             test.fix()
 
-    def run(self, stop_on_error=None):
+    def run(self, stop_on_error=None, pattern=None):
+        if pattern is None:
+            pattern = self._path
         self.commit()
         with slash.Session() as session:
             with session.get_started_context():
                 self.session_id = session.id
                 slash.runner.run_tests(
-                    slash.loader.Loader().get_runnables([self._path], sort_key=lambda test: test.__slash__.address), stop_on_error=stop_on_error)
+                    slash.loader.Loader().get_runnables([pattern], sort_key=lambda test: test.__slash__.address), stop_on_error=stop_on_error)
         return self._verify_results(session, stop_on_error=stop_on_error)
 
     def _verify_results(self, session, stop_on_error):
@@ -143,7 +151,9 @@ class Class(object):
     def __init__(self, id):
         super(Class, self).__init__()
         self.id = id
+        self.name = "Test{0:05}".format(self.id)
         self.tests = []
+        self.file = None
         self._decorators = []
 
     def decorate(self, decorator):
@@ -154,10 +164,9 @@ class Class(object):
         return len(self.tests) < NUM_TESTS_PER_CLASS
 
     def commit(self, formatter):
-        test_class_name = "Test{0:05}".format(self.id)
         for decorator in self._decorators:
             formatter.writeln('@{0}'.format(decorator))
-        formatter.writeln("class {0}(slash.Test):".format(test_class_name))
+        formatter.writeln("class {0}(slash.Test):".format(self.name))
         with formatter.indented():
             for test in self.tests:
                 test.commit(formatter)
@@ -168,6 +177,7 @@ class File(object):
     def __init__(self, id):
         super(File, self).__init__()
         self.id = id
+        self.name = 'test_{0:05}.py'.format(self.id)
         self.classes = []
         self._injected_lines = []
 
@@ -194,6 +204,7 @@ class PlannedTest(object):
         self.uuid = str(uuid1()).replace("-", "_")
         self.method_name = "test_{0}".format(self.uuid)
         self.selected = True
+        self.cls = None
 
         self._injected_statements = []
 

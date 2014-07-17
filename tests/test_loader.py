@@ -1,8 +1,21 @@
+import os
+
 import pytest
 from slash import Session
-from slash.loader import Loader
 from slash.exceptions import CannotLoadTests
+from slash.loader import Loader
 
+
+def test_iter_specific_factory(populated_suite):
+    cls = populated_suite.classes[2]
+    assert cls.tests
+    for test in populated_suite.tests:
+        if test.cls is not cls:
+            test.expect_deselect()
+
+    path = populated_suite.commit()
+    pattern = '{0}:{1}'.format(os.path.join(path, cls.file.name), cls.name)
+    populated_suite.run(pattern=pattern)
 
 def test_import_error_registers_as_session_error(active_slash_session, test_loader):
     with pytest.raises(CannotLoadTests):
