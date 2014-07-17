@@ -19,7 +19,9 @@ def set_log_color(logger_name, level, color):
 
 class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
-    MAX_LINE_LENGTH = 120
+    MAX_LINE_LENGTH = 160
+
+    default_format_string = '[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}'
 
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
