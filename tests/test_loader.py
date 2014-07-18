@@ -11,15 +11,19 @@ def test_loading_function(suite):
     suite.run()
 
 
-def test_iter_specific_factory(populated_suite):
-    cls = populated_suite.classes[2]
-    assert cls.tests
+def test_iter_specific_factory(populated_suite, suite_test):
     for test in populated_suite.tests:
-        if test.cls is not cls:
+        if test is not suite_test:
             test.expect_deselect()
 
     path = populated_suite.commit()
-    pattern = '{0}:{1}'.format(os.path.join(path, cls.file.name), cls.name)
+    if suite_test.cls:
+        assert suite_test.cls.tests
+        factory_name = suite_test.cls.name
+    else:
+        factory_name = suite_test.function_name
+
+    pattern = '{0}:{1}'.format(os.path.join(path, suite_test.file.name), factory_name)
     populated_suite.run(pattern=pattern)
 
 

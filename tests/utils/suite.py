@@ -51,6 +51,9 @@ class TestSuite(object):
         if not regular_function:
             assert test.cls is None
             test.cls = parent
+            test.file = parent.file
+        else:
+            test.file = parent
         parent.tests.append(test)
         self._test_ordinal_by_uuid[test.uuid] = len(self._all_tests)
         self._all_tests.append(test)
@@ -239,6 +242,7 @@ class PlannedTest(object):
         self.function_name = "test_{0}".format(self.uuid)
         self.selected = True
         self.cls = None
+        self.file = None
 
         self._injected_statements = []
 
