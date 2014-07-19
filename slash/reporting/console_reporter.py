@@ -177,7 +177,7 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write("\n")
 
     def _get_location(self, result):
-        return str(result.test_metadata.fqn) if result.test_metadata else "**global**"
+        return result.test_metadata.address if result.test_metadata else "**global**"
 
     def _report_error(self, result, error, marker):
         line = ""
