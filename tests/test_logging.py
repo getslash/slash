@@ -10,10 +10,7 @@ import slash
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase
 
 
-def test_last_session_symlinks(logs_dir, session):
-
-    files_dir = logs_dir.join("logs", "files")
-    links_dir = logs_dir.join("logs", "links")
+def test_last_session_symlinks(files_dir, links_dir, session):
 
     test_log_file = files_dir.join(
         session.id, list(session.results.iter_test_results())[-1].test_metadata.id, "log")
@@ -25,14 +22,14 @@ def test_last_session_symlinks(logs_dir, session):
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
-def test_result_log_links(logs_dir, session):
+def test_result_log_links(files_dir, session):
 
     for result in session.results.iter_test_results():
         assert result.get_log_path() is not None
-        assert result.get_log_path().startswith(str(logs_dir.join("logs", "files")))
+        assert result.get_log_path().startswith(str(files_dir))
 
 
-def test_last_failed(populated_suite, logs_dir):
+def test_last_failed(populated_suite, links_dir):
     populated_suite[-5].fail()
     last_failed = populated_suite[-2]
     last_failed.fail()
@@ -40,7 +37,7 @@ def test_last_failed(populated_suite, logs_dir):
 
     fail_log = results[last_failed].get_log_path()
     assert os.path.isfile(fail_log)
-    assert logs_dir.join('logs', 'links', 'last-failed').readlink() == fail_log
+    assert links_dir.join('last-failed').readlink() == fail_log
 
 
 @pytest.fixture
@@ -50,16 +47,28 @@ def session():
 
 
 @pytest.fixture
-def logs_dir(request, config_override, tmpdir, relative_symlinks):
-    config_override("log.root", str(tmpdir.join("logs", "files")))
-    config_override("log.last_session_symlink",
-                    str("../links/last-session" if relative_symlinks else tmpdir.join("logs", "links", "last-session")))
-    config_override("log.last_test_symlink",
-                    str("../links/last-test" if relative_symlinks else tmpdir.join("logs", "links", "last-test")))
-    config_override("log.last_failed_symlink",
-                    str("../links/last-failed" if relative_symlinks else tmpdir.join("logs", "links", "last-failed")))
+def files_dir(logs_dir):
+    return logs_dir.join("files")
 
-    return tmpdir
+
+@pytest.fixture
+def links_dir(logs_dir):
+    return logs_dir.join("links")
+
+
+@pytest.fixture
+def logs_dir(request, config_override, tmpdir, relative_symlinks):
+    returned = tmpdir.join('logs')
+    config_override("log.root", str(returned.join("files")))
+    config_override("log.last_session_symlink",
+                    str("../links/last-session" if relative_symlinks else returned.join("links", "last-session")))
+    config_override("log.last_test_symlink",
+                    str("../links/last-test" if relative_symlinks else returned.join("links", "last-test")))
+    config_override("log.last_failed_symlink",
+                    str("../links/last-failed" if relative_symlinks else returned.join("links", "last-failed")))
+
+    return returned
+
 
 @pytest.fixture(params=[True, False])
 def relative_symlinks(request):
