@@ -1,11 +1,7 @@
 import pytest
 
 @pytest.mark.parametrize('error_adder', ['add_error', 'add_failure'])
-@pytest.mark.parametrize('globally', [True, False])
-def test_adding_errors(error_adder, globally, suite):
-
-    if globally:
-        pytest.skip('n/i')
+def test_adding_errors(error_adder, suite):
 
     test = suite.add_test()
 
