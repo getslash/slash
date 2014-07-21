@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`167` Fixed erroneous behavior in which skipped tasks after using ``-x`` caused log symlinks to move
 * :feature:`159` Add optional 'last failed' symlink to point to last failed test log
 * :feature:`163` Added ``-k`` for selecting tests by substrings
 * :feature:`162` Test loading and other setup operations now happen before ``session_start``, causing faster failing on simple errors

@@ -65,7 +65,7 @@ def run_tests(iterable, stop_on_error=None):
 
 def _mark_remaining_skipped(test_iterator):
     for test in test_iterator:
-        with _get_test_context(test):
+        with _get_test_context(test, logging=False):
             context.result.add_skip("Did not run")
 
 @contextmanager
@@ -100,7 +100,7 @@ def _cleanup_context():
         del exc_info
 
 @contextmanager
-def _get_test_context(test):
+def _get_test_context(test, logging=True):
     ensure_test_metadata(test)
 
     assert test.__slash__.id is None
@@ -109,7 +109,7 @@ def _get_test_context(test):
         result = context.session.results.create_result(test)
         context.result = result
         try:
-            with context.session.logging.get_test_logging_context():
+            with (context.session.logging.get_test_logging_context() if logging else ExitStack()):
                 _logger.debug("Started test: {0}", test)
                 yield
         finally:

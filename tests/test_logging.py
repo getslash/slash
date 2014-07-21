@@ -22,6 +22,16 @@ def test_last_session_symlinks(files_dir, links_dir, session):
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
+def test_last_test_not_overriden_by_stop_on_error(links_dir, populated_suite):
+    failed_test = populated_suite[4]
+    failed_test.fail()
+    results = populated_suite.run(stop_on_error=True)
+
+    for link_name in ('last-test', 'last-failed'):
+        assert links_dir.join(link_name).readlink() == results[
+            failed_test].get_log_path()
+
+
 def test_result_log_links(files_dir, session):
 
     for result in session.results.iter_test_results():
@@ -73,6 +83,16 @@ def logs_dir(request, config_override, tmpdir, relative_symlinks):
 @pytest.fixture(params=[True, False])
 def relative_symlinks(request):
     return request.param
+
+
+@pytest.fixture
+def links_dir(logs_dir):
+    return logs_dir.join("links")
+
+
+@pytest.fixture
+def files_dir(logs_dir):
+    return logs_dir.join("files")
 
 
 _TOKEN = "logging-test"
