@@ -105,7 +105,7 @@ def _get_modified_configuration_from_args_context(parser, config, args):
             new_value = cmdline.update_value(old_value, args)
             if new_value != old_value:
                 to_restore.append((path, cfg.get_value()))
-                config.assign_path(path, new_value)
+                config.assign_path(path, new_value, deduce_type=True)
         for override in args.config_overrides:
             if "=" not in override:
                 parser.error("Invalid config override: {0}".format(override))

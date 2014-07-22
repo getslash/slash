@@ -23,6 +23,10 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
     default_format_string = '[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}'
 
+    def __init__(self, *args, **kwargs):
+        super(ConsoleHandler, self).__init__(*args, **kwargs)
+        self._truncate_lines = config.root.log.truncate_console_lines
+
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
         if returned is None:
@@ -31,7 +35,7 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
     def format(self, record):
         result = super(ConsoleHandler, self).format(record)
-        if len(result) > self.MAX_LINE_LENGTH:
+        if self._truncate_lines and len(result) > self.MAX_LINE_LENGTH:
             result = "\n".join(
                 self._truncate(line) for line in result.splitlines())
         return result
