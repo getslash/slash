@@ -47,7 +47,7 @@ def test_import_errors_with_session(unloadable_suite):
 
     assert tests
     [err] = s.results.global_result.get_errors()
-    assert 'No module named nonexistent' in err.message
+    assert 'No module named nonexistent' in err.message or "No module named 'nonexistent'" in err.message
 
 
 @pytest.fixture
