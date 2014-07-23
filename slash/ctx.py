@@ -38,9 +38,6 @@ class Context(object):
             return None
         return getattr(current_test.__slash__, field_name)
 
-    def _get_fqn_field(self, field_name):
-        return getattr(getattr(self.test.__slash__, "fqn", None), field_name, None)
-
 
 class NullContext(object):
 
