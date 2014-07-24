@@ -34,6 +34,7 @@ from .assertions import (
     )
 from .core.test import Test
 from .core.test import abstract_test_class
+from .core.fixtures import fixture, parametrize
 from .test_context import TestContext, with_context
 from .utils import skip_test, skipped, add_error, add_failure
 from .app import get_application_context
