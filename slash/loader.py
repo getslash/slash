@@ -1,6 +1,6 @@
 import itertools
 import os
-from types import FunctionType
+from types import FunctionType, GeneratorType
 from contextlib import contextmanager
 
 from emport import import_file
@@ -11,11 +11,12 @@ import dessert
 from .conf import config
 from ._compat import iteritems, string_types
 from .ctx import context
-from .function_test import FunctionTest
+from .core.runnable_test import RunnableTest
+from .core.test import Test, TestTestFactory
+from .core.function_test import FunctionTestFactory
 from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
-from .metadata import Metadata
-from .runnable_test_factory import RunnableTestFactory
+from .core.runnable_test_factory import RunnableTestFactory
 from .utils import add_error
 from .utils.pattern_matching import Matcher
 
@@ -52,14 +53,18 @@ class Loader(object):
         return returned
 
     def _get_iterator(self, thing):
-        if isinstance(thing, list):
+        if isinstance(thing, (list, GeneratorType, itertools.chain)):
             return itertools.chain.from_iterable(self._get_iterator(x) for x in thing)
         if isinstance(thing, string_types):
             return self._iter_test_address(thing)
-        if isinstance(thing, RunnableTestFactory) or (isinstance(thing, type) and issubclass(thing, RunnableTestFactory)):
-            return self._iter_test_factory('', '', thing)
+        if isinstance(thing, RunnableTest):
+            return [thing]
 
-        raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
+        factory = self._get_runnable_test_factory(thing)
+        if factory is None:
+            raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
+
+        return factory.generate_tests()
 
     def _iter_test_address(self, address):
         if ':' in address:
@@ -112,10 +117,6 @@ class Loader(object):
                 _logger.error("Failed to import {0} ({1})", file_path, e)
                 raise
 
-    def _iter_test_factory(self, file_path, factory_address, factory):
-        for test in factory.generate_tests(file_path, factory_address):
-            yield test
-
     def _is_excluded(self, test):
         if self._matcher is None:
             return False
@@ -128,15 +129,23 @@ class Loader(object):
         for thing_name, thing in iteritems(vars(module)):
             if thing is RunnableTestFactory: # probably imported directly
                 continue
-            if isinstance(thing, type) and issubclass(thing, RunnableTestFactory):
-                _logger.debug("Getting tests from {0}:{1}..", module, thing_name)
-                for test in self._iter_test_factory(file_path, thing_name, thing):
-                    yield test
 
-            if isinstance(thing, FunctionType) and thing_name.startswith('test_'):
-                test = FunctionTest(thing)
-                test.__slash__ = Metadata(thing, thing, file_path, thing_name)
+            factory = self._get_runnable_test_factory(thing, file_path, thing_name)
+            if factory is None:
+                continue
+
+            for test in factory.generate_tests():
+                assert test.__slash__ is not None
                 yield test
+
+    def _get_runnable_test_factory(self, thing, file_path='', name=''):
+        if isinstance(thing, type) and issubclass(thing, Test):
+            return TestTestFactory(thing, file_path, name)
+
+        if isinstance(thing, FunctionType) and name.startswith('test_'):
+            return FunctionTestFactory(func=thing, file_path=file_path, factory_name=name)
+
+        return None
 
 def _walk(p):
     if os.path.isfile(p):

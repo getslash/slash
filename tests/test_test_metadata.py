@@ -1,11 +1,9 @@
 from .utils import TestCase
 from .utils import run_tests_assert_success
-from .utils.test_generator import TestGenerator
 import itertools
 import os
-import shutil
 import slash
-import tempfile
+
 
 class TestMetadataTest(TestCase):
 

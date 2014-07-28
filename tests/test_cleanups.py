@@ -7,6 +7,15 @@ from slash.loader import Loader
 from .utils import TestCase
 
 
+def test_cleanups(populated_suite, suite_test):
+
+    suite_test.add_cleanup()
+
+    results = populated_suite.run()
+
+    assert results[suite_test].data['cleanups']
+
+
 class CleanupsTest(TestCase):
 
     def setUp(self):

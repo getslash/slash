@@ -1,13 +1,43 @@
 import functools
 
 from .._compat import iteritems
-from ..utils import skip_test
 from ..parameters import iter_parameter_combinations, set_parameter_values_context, iter_inherited_method_parameter_combinations
-from ..runnable_test import RunnableTest
-from ..runnable_test_factory import RunnableTestFactory
+from .runnable_test import RunnableTest
+from .runnable_test_factory import RunnableTestFactory
+from ..exceptions import SkipTest
 from ..exception_handling import handling_exceptions
 
-class Test(RunnableTest, RunnableTestFactory):
+
+class TestTestFactory(RunnableTestFactory):
+
+    def __init__(self, test, file_path, factory_name):
+        super(TestTestFactory, self).__init__(file_path, factory_name)
+        self.test = test
+
+    def _generate_tests(self):
+        if is_abstract_base_class(self.test):
+            return
+
+        for test_method_name in dir(self.test):
+            if not test_method_name.startswith("test"):
+                continue
+            test_method = getattr(self.test, test_method_name)
+            for before_kwargs in iter_inherited_method_parameter_combinations(self.test, 'before'):
+                for test_kwargs in iter_parameter_combinations(test_method):
+                    for after_kwargs in iter_inherited_method_parameter_combinations(self.test, 'after'):
+                        case = self.test(
+                            test_method_name,
+                            before_kwargs=before_kwargs,
+                            test_kwargs=test_kwargs,
+                            after_kwargs=after_kwargs
+                        )
+                        if self.test.__slash_skipped__:
+                            case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
+                        yield case._get_address_in_factory(), case  # pylint: disable=protected-access
+
+
+
+class Test(RunnableTest):
     """
     This is a base class for implementing unittest-style test classes.
     """
@@ -20,36 +50,13 @@ class Test(RunnableTest, RunnableTestFactory):
 
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
+    __slash_needed_contexts__ = None
+
 
     @classmethod
     def skip_all(cls, reason=None):
         cls.__slash_skipped__ = True
         cls.__slash_skipped_reason__ = reason
-
-    @classmethod
-    def _generate_tests(cls):
-        if is_abstract_base_class(cls):
-            return
-
-        for test_method_name in dir(cls):
-            if not test_method_name.startswith("test"):
-                continue
-            test_method = getattr(cls, test_method_name)
-            for before_kwargs in iter_inherited_method_parameter_combinations(cls, 'before'):
-                for test_kwargs in iter_parameter_combinations(test_method):
-                    for after_kwargs in iter_inherited_method_parameter_combinations(cls, 'after'):
-                        case = cls(
-                            test_method_name,
-                            before_kwargs=before_kwargs,
-                            test_kwargs=test_kwargs,
-                            after_kwargs=after_kwargs
-                        )
-                        if cls.__slash_skipped__:
-                            case.run = functools.partial(
-                                skip_test,
-                                cls.__slash_skipped_reason__
-                            )
-                        yield case._get_address_in_factory(), case  # pylint: disable=protected-access
 
     def _get_address_in_factory(self):
         returned = ''

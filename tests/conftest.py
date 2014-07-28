@@ -3,6 +3,7 @@ import tempfile
 
 import logbook.compat
 
+from forge import Forge
 import gossip
 import pytest
 import slash
@@ -11,6 +12,20 @@ from slash.loader import Loader
 
 from .utils.suite import TestSuite
 from .utils.cartesian import Cartesian
+
+
+@pytest.fixture
+def forge(request):
+
+    returned = Forge()
+
+    @request.addfinalizer
+    def cleanup():
+        returned.verify()
+        returned.restore_all_replacements()
+
+    return returned
+
 
 @pytest.fixture
 def config_override(request):

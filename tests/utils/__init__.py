@@ -9,7 +9,6 @@ from logbook.compat import LoggingHandler
 
 import gossip
 import slash
-from slash import RunnableTestFactory
 from slash.conf import config
 
 if platform.python_version() < "2.7":
@@ -77,8 +76,8 @@ def no_op(*args, **kwargs):
 def run_tests_in_session(test_class_path_or_iterator, session=None):
     if isinstance(test_class_path_or_iterator, str):
         test_class_path_or_iterator = slash.loader.Loader().iter_paths([test_class_path_or_iterator])
-    if isinstance(test_class_path_or_iterator, type) and issubclass(test_class_path_or_iterator, RunnableTestFactory):
-        test_class_path_or_iterator = test_class_path_or_iterator.generate_tests('', '')
+    else:
+        test_class_path_or_iterator = slash.loader.Loader().get_runnables(test_class_path_or_iterator)
     if session is None:
         session = slash.Session()
     with session:

@@ -1,41 +1,39 @@
-from .utils import TestCase
-from .utils.test_generator import TestGenerator
-from slash import config
 import os
+
+import pytest
 import slash
 from lxml import etree
 
 
-class XUnitPluginTest(TestCase):
-    def setUp(self):
-        super(XUnitPluginTest, self).setUp()
-        self.generator = TestGenerator()
-        [skipped, failed, errored, success] = self.runnables = [x.generate_test() for x in self.generator.generate_tests(4)]
-        self.temp_dir = self.get_new_path()
-        self.xunit_filename = os.path.join(self.temp_dir, "xunit.xml")
-        self.generator.make_test_skip(skipped)
-        self.generator.make_test_fail(failed)
-        self.generator.make_test_raise_exception(errored)
+def test_xunit_plugin(results, xunit_filename):
+    assert os.path.exists(xunit_filename), 'xunit file not created'
 
-        slash.plugins.manager.activate("xunit")
-        self.addCleanup(slash.plugins.manager.deactivate, "xunit")
+    schema_root = etree.XML(_XUNIT_XSD)
+    schema = etree.XMLSchema(schema_root)
 
-        config.root.plugins.xunit.filename = self.xunit_filename
+    parser = etree.XMLParser(schema=schema)
+    with open(xunit_filename) as f:
+        etree.parse(f, parser)
 
-        with slash.Session() as s:
-            with s.get_started_context():
-                slash.run_tests(self.runnables)
-                slash.hooks.result_summary()
 
-    def test_xunit_file(self):
-        self.assertTrue(os.path.exists(self.xunit_filename), "xunit file not created")
+@pytest.fixture
+def results(populated_suite, xunit_filename):
+    populated_suite.run()
 
-        schema_root = etree.XML(_XUNIT_XSD)
-        schema = etree.XMLSchema(schema_root)
+@pytest.fixture
+def xunit_filename(tmpdir, request, config_override):
+    xunit_filename = str(tmpdir.join('xunit.xml'))
+    slash.plugins.manager.activate('xunit')
 
-        parser = etree.XMLParser(schema = schema)
-        with open(self.xunit_filename) as f:
-            root = etree.parse(f, parser)
+    slash.config.root.plugins.xunit.filename = xunit_filename
+
+    @request.addfinalizer
+    def deactivate():
+        slash.plugins.manager.deactivate('xunit')
+        assert 'xunit' not in slash.config['plugins']
+
+    return xunit_filename
+
 
 # Taken from https://gist.github.com/jzelenkov/959290
 _XUNIT_XSD = """<?xml version="1.0"?>

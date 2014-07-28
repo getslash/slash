@@ -2,7 +2,6 @@ import functools
 
 from ..ctx import context
 from ..exceptions import SkipTest
-from ..runnable_test_factory import RunnableTestFactory
 
 
 def skip_test(*args):
@@ -17,9 +16,11 @@ def skipped(thing, reason=None):
     """
     A decorator for skipping methods and classes
     """
+    from ..core.test import Test
+
     if isinstance(thing, str):
         return functools.partial(skipped, reason=thing)
-    if isinstance(thing, type) and issubclass(thing, RunnableTestFactory):
+    if isinstance(thing, type) and issubclass(thing, Test):
         thing.skip_all(reason)
         return thing
 

@@ -6,8 +6,8 @@ def test_adding_errors(error_adder, suite):
     test = suite.add_test()
 
     for i in range(2):
-        test.inject_statement('slash.{0}("msg{1}")'.format(error_adder, i))
-    test.inject_statement('slash.{0}(object())'.format(error_adder))
+        test.inject_line('slash.{0}("msg{1}")'.format(error_adder, i))
+    test.inject_line('slash.{0}(object())'.format(error_adder))
 
     if error_adder == 'add_error':
         test.expect_error()

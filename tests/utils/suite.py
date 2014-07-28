@@ -13,6 +13,7 @@ _SUCCESS = 'success'
 _FAILURE = 'failure'
 _ERROR = 'error'
 _SKIP = 'skip'
+_INTERRUPT = 'interrupt'
 
 
 NUM_TESTS_PER_FILE = 5
@@ -116,15 +117,22 @@ class TestSuite(object):
         for test in self._all_tests:
             test.fix()
 
-    def run(self, stop_on_error=None, pattern=None):
+    def run(self, stop_on_error=None, pattern=None, expect_interruption=False):
         if pattern is None:
             pattern = self._path
         self.commit()
         with slash.Session() as session:
             with session.get_started_context():
                 self.session_id = session.id
-                slash.runner.run_tests(
-                    slash.loader.Loader().get_runnables([pattern], sort_key=self._get_test_ordinal), stop_on_error=stop_on_error)
+                try:
+                    slash.runner.run_tests(
+                        slash.loader.Loader().get_runnables([pattern], sort_key=self._get_test_ordinal), stop_on_error=stop_on_error)
+                except KeyboardInterrupt:
+                    if not expect_interruption:
+                        raise
+                else:
+                    assert not expect_interruption, 'Test run did not get interrupted'
+                slash.hooks.result_summary()
         return self._verify_results(session, stop_on_error=stop_on_error)
 
     def _get_test_ordinal(self, test):
@@ -143,6 +151,8 @@ class TestSuite(object):
         return uuid
 
     def _verify_results(self, session, stop_on_error):
+        if stop_on_error is None:
+            stop_on_error = slash.config.root.run.stop_on_error
         returned = ResultWrapper(self, session)
         for result in session.results.iter_test_results():
             uuid = self._get_test_metadata_uuid(result.test_metadata)
@@ -210,6 +220,7 @@ class File(object):
         super(File, self).__init__()
         self.id = id
         self.name = 'test_{0:05}.py'.format(self.id)
+        self.path = self.name
         self.classes = []
         self.tests = []
         self._injected_lines = []
@@ -243,15 +254,30 @@ class PlannedTest(object):
         self.selected = True
         self.cls = None
         self.file = None
+        self._cleanups = []
 
-        self._injected_statements = []
+        self._injected_lines = []
 
     def __repr__(self):
         return '<Planned test #{0.id}, selected={0.selected}, type={1}, expected result={0._expected_result}>'.format(
             self, 'function' if self.regular_function else 'method')
 
-    def inject_statement(self, stmt):
-        self._injected_statements.append(stmt)
+    def inject_line(self, stmt):
+        self._injected_lines.append(stmt)
+
+    def prepend_lines(self, lines):
+        self._injected_lines = list(lines) + self._injected_lines
+
+    def add_cleanup(self, critical=False):
+        cleanup_id = str(uuid1())
+        self._cleanups.append({'id': cleanup_id, 'critical': critical})
+        self.prepend_lines([
+            'def _cleanup():',
+            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(cleanup_id),
+            'slash.add_{0}cleanup(_cleanup)'.format('critical_' if critical else '')])
+
+    def prepend_line(self, line):
+        self.prepend_lines([line])
 
     def rename(self, new_name):
         self.function_name = new_name
@@ -263,29 +289,32 @@ class PlannedTest(object):
         self.selected = False
 
     def fail(self):
-        self.inject_statement('assert 1 == 2')
+        self.inject_line('assert 1 == 2')
         self.expect_failure()
 
     def expect_failure(self):
         self._expected_result = _FAILURE
 
+    def expect_interruption(self):
+        self._expected_result = _INTERRUPT
+
     def error(self):
-        self.inject_statement('object.unknown_attribute()')
+        self.inject_line('object.unknown_attribute()')
         self.expect_error()
 
     def expect_error(self):
         self._expected_result = _ERROR
 
     def skip(self):
-        self.inject_statement('from slash import skip_test')
-        self.inject_statement('skip_test("reason")')
+        self.inject_line('from slash import skip_test')
+        self.inject_line('skip_test("reason")')
         self.expect_skip()
 
     def expect_skip(self):
         self._expected_result = _SKIP
 
     def fix(self):
-        del self._injected_statements[:]
+        del self._injected_lines[:]
         self._expected_result = _SUCCESS
 
     def commit(self, formatter):
@@ -307,15 +336,29 @@ class PlannedTest(object):
         elif self._expected_result == _ERROR:
             assert result.is_error()
             assert not result.is_failure()
+            assert not result.is_success()
+            assert not result.is_skip()
         elif self._expected_result == _SKIP:
+            assert result.is_skip()
             assert not result.is_error()
             assert not result.is_failure()
-            assert result.is_skip()
+            assert not result.is_success()
+        elif self._expected_result == _INTERRUPT:
+            assert result.is_interrupted()
+            assert not result.is_error()
+            assert not result.is_failure()
+            assert not result.is_success()
         else:
             raise NotImplementedError()  # pragma: no cover
 
+        for cleanup in self._cleanups:
+            if self._expected_result == _INTERRUPT and not cleanup['critical']:
+                assert cleanup['id'] not in result.data.get('cleanups', [])
+            else:
+                assert cleanup['id'] in result.data.get('cleanups', [])
+
     def _generate_test_statements(self):
-        statements = self._injected_statements
+        statements = self._injected_lines
         if not statements:
             statements = ['pass']
 

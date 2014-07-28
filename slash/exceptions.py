@@ -1,6 +1,9 @@
 
 class SlashException(Exception):
-    pass
+
+    @classmethod
+    def throw(cls, *args, **kwargs):
+        raise cls(*args, **kwargs)
 
 
 class NoActiveSession(SlashException):
@@ -43,7 +46,7 @@ class TestFailed(AssertionError):
     pass
 
 
-class SkipTest(Exception):
+class SkipTest(SlashException):
 
     """
     This exception should be raised in order to interrupt the execution of the currently running test, marking

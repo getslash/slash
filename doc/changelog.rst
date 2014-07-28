@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :feature:`127` py.test style fixture support, major overhaul of tests and loading code.
+* :feature:`-` removed the test contexts facility introduced in earlier versions. The implementation was partial and had serious drawbacks, and is inferior to fixtures.
 * :bug:`167` Fixed erroneous behavior in which skipped tasks after using ``-x`` caused log symlinks to move
 * :feature:`159` Add optional 'last failed' symlink to point to last failed test log
 * :feature:`163` Added ``-k`` for selecting tests by substrings

@@ -11,8 +11,7 @@ from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, SkipTest, TestFailed
-from .metadata import ensure_test_metadata
-from .test_context import get_test_context_setup
+from .core.metadata import ensure_test_metadata
 from .utils.iteration import PeekableIterator
 from .core.error import Error, DetailedTraceback
 
@@ -77,7 +76,6 @@ def _get_run_context_stack(test, test_iterator):
         stack.enter_context(_update_result_context())
         stack.enter_context(_cleanup_context())
         stack.enter_context(handling_exceptions())
-        stack.enter_context(get_test_context_setup(test, test_iterator.peek_or_none()))
         yielded = True
         yield
     # if some of the context entries throw SkipTest, the yield result above will not be reached.
