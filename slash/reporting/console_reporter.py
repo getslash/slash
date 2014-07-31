@@ -91,7 +91,7 @@ class ConsoleReporter(ReporterInterface):
 
     @from_verbosity(VERBOSITIES.ERROR)
     def report_session_start(self, session):
-        self._terminal.sep("=", "Session starts".format(self._level), white=True, bold=True)
+        self._terminal.sep("=", "Session starts", white=True, bold=True)
 
     def report_session_end(self, session):
 

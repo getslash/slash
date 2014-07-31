@@ -109,7 +109,7 @@ class ContextAttributeProxy(object):
         return self._obj != other
 
     def __call__(self, *args, **kwargs):
-        return self._obj(*args, **kwargs)
+        return self._obj(*args, **kwargs)  # pylint: disable=not-callable
 
     def __repr__(self):
         return repr(self._obj)
