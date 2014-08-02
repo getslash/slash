@@ -93,21 +93,21 @@ class SlashHelpTest(ArgumentParsingTest):
             "usage: slash command..."), self.stdout.getvalue())
 
 
-def test_slash_run_directory_success(suite_path):
-    result = _execute_slash_run([suite_path])
+def test_slash_run_directory_success(suite_path, populated_suite):
+    result = _execute_slash_run([suite_path], populated_suite)
     assert result == 0, 'slash run did not return 0 on success'
 
 
-def test_slash_run_default_directory(config_override, suite_path):
+def test_slash_run_default_directory(config_override, suite_path, populated_suite):
     config_override("run.default_sources", [suite_path])
-    assert _execute_slash_run([]) == 0
+    assert _execute_slash_run([], populated_suite) == 0
 
 
 def test_slash_run_success_if_skips(populated_suite):
 
     populated_suite[1].skip()
     path = populated_suite.commit()
-    assert _execute_slash_run([path]) == 0
+    assert _execute_slash_run([path], populated_suite) == 0
 
 
 def test_slash_run_from_file(tmpdir, suite_path, populated_suite):
@@ -131,7 +131,7 @@ def test_slash_run_from_file(tmpdir, suite_path, populated_suite):
         print("# this is a comment", file=f)
         print(os.path.join(suite_path, file2.path), file=f)
 
-    result = _execute_slash_run(["-f", filename1, "-f", filename2])
+    result = _execute_slash_run(["-f", filename1, "-f", filename2], populated_suite)
     assert result == 0, 'usage: slash run failed'
 
 
@@ -139,7 +139,7 @@ def test_slash_run_from_file(tmpdir, suite_path, populated_suite):
 def test_slash_run_directory_failure(populated_suite, failure_type):
     getattr(populated_suite[1], failure_type)()
     path = populated_suite.commit()
-    assert _execute_slash_run([path]) != 0
+    assert _execute_slash_run([path], populated_suite) != 0
 
 
 def test_slash_run_specific_file(populated_suite, suite_path):
@@ -153,11 +153,13 @@ def test_slash_run_specific_file(populated_suite, suite_path):
     for t in deselected:
         t.expect_deselect()
 
-    _execute_slash_run([os.path.join(suite_path, file.path)])
+    _execute_slash_run([os.path.join(suite_path, file.path)], populated_suite)
 
 
-def _execute_slash_run(argv):
-    return slash_run.slash_run(argv, report_stream=NullFile())
+def _execute_slash_run(argv, suite_object):
+    exitcode = slash_run.slash_run(argv, report_stream=NullFile())
+    suite_object.verify_last_run()
+    return exitcode
 
 
 @pytest.fixture(autouse=True)

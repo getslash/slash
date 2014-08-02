@@ -15,6 +15,8 @@ _ERROR = 'error'
 _SKIP = 'skip'
 _INTERRUPT = 'interrupt'
 
+_SLASH_RESULTS_STORE_NAME = '__slash_suite_results__'
+
 
 NUM_TESTS_PER_FILE = 5
 NUM_TESTS_PER_CLASS = 2
@@ -133,7 +135,9 @@ class TestSuite(object):
                 else:
                     assert not expect_interruption, 'Test run did not get interrupted'
                 slash.hooks.result_summary()
-        return self._verify_results(session, stop_on_error=stop_on_error)
+        verified_session = self.verify_last_run(stop_on_error=stop_on_error)
+        assert session is verified_session.session
+        return verified_session
 
     def _get_test_ordinal(self, test):
         uuid = self._get_test_metadata_uuid(test.__slash__)
@@ -149,6 +153,14 @@ class TestSuite(object):
             assert method_name.startswith(".test_")
             uuid = method_name[6:]
         return uuid
+
+    def verify_last_run(self, stop_on_error=False):
+        import test
+        saved_results = getattr(test, _SLASH_RESULTS_STORE_NAME, set())
+        assert len(saved_results) == 1
+        results = saved_results.pop()
+        session = results.session
+        return self._verify_results(session, stop_on_error=stop_on_error)
 
     def _verify_results(self, session, stop_on_error):
         if stop_on_error is None:
@@ -237,6 +249,13 @@ class File(object):
     def commit(self, formatter):
         formatter.writeln('import slash')
 
+        formatter.writeln('def _save_session_results():')
+        formatter.writeln('    "utility function to help debug results when tests are run indirectly"')
+        formatter.writeln('    import test  # best candidate to store results in an accessible place')
+        formatter.writeln('    results = test.__dict__.setdefault("{0}", set())'.format(_SLASH_RESULTS_STORE_NAME))
+        formatter.writeln('    if slash.session.results not in results:')
+        formatter.writeln('        results.add(slash.session.results)')
+        formatter.writeln()
         for line in self._injected_lines:
             formatter.writeln(line)
 
@@ -320,6 +339,7 @@ class PlannedTest(object):
     def commit(self, formatter):
         formatter.writeln("def {0}({1}):".format(self.function_name, 'self' if not self.regular_function else ''))
         with formatter.indented():
+            formatter.writeln('_save_session_results()')
             for variable_name, variable_value in self._get_variables().items():
                 formatter.writeln(
                     "{0} = {1!r}".format(variable_name, variable_value))
