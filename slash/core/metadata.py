@@ -20,5 +20,5 @@ class Metadata(object):
 def ensure_test_metadata(test):
     returned = getattr(test, "__slash__", None)
     if returned is None:
-        returned = test.__slash__ = Metadata(None, test, '', '')
+        returned = test.__slash__ = Metadata(None, test, '')
     return returned

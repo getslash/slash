@@ -68,7 +68,7 @@ def _mark_remaining_skipped(test_iterator):
             context.result.add_skip("Did not run")
 
 @contextmanager
-def _get_run_context_stack(test, test_iterator):
+def _get_run_context_stack(test, test_iterator):  # pylint: disable=unused-argument
     yielded = False
     with ExitStack() as stack:
         stack.enter_context(_get_test_context(test))

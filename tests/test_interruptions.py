@@ -54,4 +54,4 @@ def interrupted_test(interrupted_suite, interrupted_index):
 
 @pytest.fixture
 def interrupted_index(populated_suite):
-    return len(populated_suite) / 2
+    return int(len(populated_suite) // 2)
