@@ -8,6 +8,45 @@ from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, Un
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
+def test_fixture_id_remains_even_when_context_popped(store):
+
+    @slash.fixture
+    def fixture0():
+        pass
+
+    store.push_namespace()
+    store.add_fixture(fixture0)
+    store.resolve()
+
+    fixture_obj = store.get_fixture_by_name('fixture0')
+    assert fixture_obj.fixture_func is fixture0
+    fixture_id = fixture_obj.info.id
+    assert store.get_fixture_by_id(fixture_id) is fixture_obj
+
+    store.pop_namespace()
+
+    with pytest.raises(LookupError):
+        store.get_fixture_by_name('fixture0')
+
+    assert store.get_fixture_by_id(fixture_id) is fixture_obj
+
+
+def test_variations_no_names(store):
+    assert list(store.iter_dicts([])) == [{}]
+
+
+def test_adding_fixture_twice_to_store(store):
+
+    @slash.fixture
+    def fixture0():
+        pass
+
+    store.add_fixture(fixture0)
+    fixtureobj = store.get_fixture_by_name('fixture0')
+    store.add_fixture(fixture0)
+    assert store.get_fixture_by_name('fixture0') is fixtureobj
+
+
 def test_fixture_parameters(store):
 
     @store.add_fixture
@@ -48,7 +87,8 @@ def test_fixture_scoping(store, cleanup_map, test_scoped_fixture, module_scoped_
     store.begin_scope('test')
     assert not cleanup_map
 
-    store.get_fixture_dict(['test_scoped_fixture', 'module_scoped_fixture', 'session_scoped_fixture'])
+    store.get_fixture_dict(
+        ['test_scoped_fixture', 'module_scoped_fixture', 'session_scoped_fixture'])
 
     store.end_scope('test')
     assert cleanup_map['test_scoped_fixture']
@@ -59,7 +99,6 @@ def test_fixture_scoping(store, cleanup_map, test_scoped_fixture, module_scoped_
     assert 'session_scoped_fixture' not in cleanup_map
     store.end_scope('session')
     assert cleanup_map['session_scoped_fixture']
-
 
 
 @pytest.mark.parametrize('scopes', [('module', 'test'), ('session', 'module'), ('session', 'test')])
@@ -147,14 +186,14 @@ def test_fixture_dependency(store):
 
 def test_nested_store_resolution_activation(store):
 
-    store.push_context()
+    store.push_namespace()
 
     @store.add_fixture
     @slash.fixture
     def fixture0():
         return '0'
 
-    store.push_context()
+    store.push_namespace()
 
     @store.add_fixture
     @slash.fixture
@@ -162,7 +201,7 @@ def test_nested_store_resolution_activation(store):
         assert fixture0 == '0'
         return '1'
 
-    store.push_context()
+    store.push_namespace()
 
     @store.add_fixture
     @slash.fixture
@@ -177,7 +216,7 @@ def test_nested_store_resolution_activation(store):
         'fixture2': '2'
     }
 
-    store.pop_context()
+    store.pop_namespace()
 
     with pytest.raises(LookupError):
         store.get_fixture_dict(['fixture2'])
@@ -275,15 +314,18 @@ def test_scoped_fixture(store, cleanup_map):
 
     return _get_scoped_fixture('test', store, cleanup_map)
 
+
 @pytest.fixture
 def module_scoped_fixture(store, cleanup_map):
 
     return _get_scoped_fixture('module', store, cleanup_map)
 
+
 @pytest.fixture
 def session_scoped_fixture(store, cleanup_map):
 
     return _get_scoped_fixture('session', store, cleanup_map)
+
 
 def _get_scoped_fixture(scope, store, cleanup_map):
     @store.add_fixture

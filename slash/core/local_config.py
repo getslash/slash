@@ -13,8 +13,11 @@ class LocalConfig(object):
     def push_path(self, path):
         self._configs.append(self._build_config(path))
 
+    def pop_path(self):
+        self._configs.pop(-1)
+
     def get_dict(self):
-        return self._configs[-1].copy()
+        return self._configs[-1]
 
     def _build_config(self, path):
         confstack = []

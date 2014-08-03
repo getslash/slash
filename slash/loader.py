@@ -11,11 +11,13 @@ import dessert
 from .conf import config
 from ._compat import iteritems, string_types
 from .ctx import context
+from .core.local_config import LocalConfig
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory
 from .core.function_test import FunctionTestFactory
 from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
+from .core.fixtures.fixture_store import FixtureStore
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils import add_error
 from .utils.pattern_matching import Matcher
@@ -33,6 +35,8 @@ class Loader(object):
             self._matcher = Matcher(config.root.run.filter_string)
         else:
             self._matcher = None
+        self._fixture_store = FixtureStore()
+        self._local_config = LocalConfig()
 
     def get_runnables(self, paths, sort_key=None):
         returned = self._collect(self._get_iterator(paths))
@@ -64,7 +68,7 @@ class Loader(object):
         if factory is None:
             raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
 
-        return factory.generate_tests()
+        return factory.generate_tests(fixture_store=self._fixture_store)
 
     def _iter_test_address(self, address):
         if ':' in address:
@@ -103,10 +107,26 @@ class Loader(object):
                     except Exception as e:
                         raise CannotLoadTests("Could not load {0!r} ({1})".format(file_path, e))
                 if module is not None:
-                    for runnable in self._iter_runnable_tests_in_module(file_path, module):
-                        if self._is_excluded(runnable):
-                            continue
-                        yield runnable
+                    with self._adding_local_fixtures(file_path, module):
+                        for runnable in self._iter_runnable_tests_in_module(file_path, module):
+                            if self._is_excluded(runnable):
+                                continue
+                            yield runnable
+
+    @contextmanager
+    def _adding_local_fixtures(self, file_path, module):
+        self._fixture_store.push_namespace()
+        try:
+            self._local_config.push_path(os.path.dirname(file_path))
+            try:
+                self._fixture_store.add_fixtures_from_dict(self._local_config.get_dict())
+                self._fixture_store.add_fixtures_from_dict(vars(module))
+                self._fixture_store.resolve()
+                yield
+            finally:
+                self._local_config.pop_path()
+        finally:
+            self._fixture_store.pop_namespace()
 
     @contextmanager
     def _handling_import_errors(self, file_path):
@@ -134,7 +154,7 @@ class Loader(object):
             if factory is None:
                 continue
 
-            for test in factory.generate_tests():
+            for test in factory.generate_tests(fixture_store=self._fixture_store):
                 assert test.__slash__ is not None
                 yield test
 

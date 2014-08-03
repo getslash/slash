@@ -107,6 +107,10 @@ class DistilledFrame(object):
                     for local_name, value in frame.f_locals.items()
                     if "@" not in local_name)
 
+    def __repr__(self):
+        return '{0.filename}, line {0.lineno}: {0.code_line}'.format(self)
+
+
 def _safe_repr(value):
     try:
         return repr(value)

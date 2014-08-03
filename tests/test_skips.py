@@ -59,7 +59,7 @@ def test_class_decorator(populated_suite):
     results = populated_suite.run()
 
     for test in cls.tests:
-        result = results.results_by_test_uuid[test.uuid]
+        result = results[test]
         assert 'reason' in result.get_skips()
 
 

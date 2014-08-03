@@ -4,6 +4,7 @@ import itertools
 
 from ..._compat import zip
 
+_id_gen = itertools.count(1000)
 
 def fixture(func=None, name=None, scope=None):
     if func is None:
@@ -33,16 +34,23 @@ def get_parametrization(func):
 
 class FixtureInfo(object):
 
-    def __init__(self, func, name=None, scope=None):
+    def __init__(self, func=None, name=None, scope=None):
         super(FixtureInfo, self).__init__()
+        self.id = next(_id_gen)
         if name is None:
-            name = func.__name__
+            if func is None:
+                name = '__unnamed_{0}'.format(self.id)
+            else:
+                name = func.__name__
         if scope is None:
             scope = 'test'
         self.name = name
         self.func = func
         self.scope = _SCOPES[scope]
-        self.required_args = inspect.getargspec(func).args
+        if self.func is not None:
+            self.required_args = inspect.getargspec(func).args
+        else:
+            self.required_args = []
 
 def get_scope_by_name(scope_name):
     return _SCOPES[scope_name]

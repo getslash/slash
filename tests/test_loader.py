@@ -12,7 +12,7 @@ def test_loading_function(suite):
 
 
 def test_iter_specific_factory(populated_suite, suite_test):
-    for test in populated_suite.tests:
+    for test in populated_suite:
         if test is not suite_test:
             test.expect_deselect()
 

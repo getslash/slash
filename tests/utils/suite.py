@@ -5,7 +5,7 @@ from tempfile import mkdtemp
 from uuid import uuid1
 
 import slash
-from slash._compat import izip_longest
+from slash._compat import itervalues
 
 from .code_formatter import CodeFormatter
 
@@ -23,6 +23,9 @@ NUM_TESTS_PER_CLASS = 2
 
 _INDENT = " " * 4
 
+def _uuid():
+    return str(uuid1())
+
 
 class TestSuite(object):
 
@@ -31,6 +34,7 @@ class TestSuite(object):
         self.id_gen = itertools.count()
         self.files = []
         self._all_tests = []
+        self._fixtures = []
         self._test_ordinal_by_uuid = {}
         if path is None:
             path = mkdtemp()
@@ -49,7 +53,7 @@ class TestSuite(object):
     def add_test(self, regular_function=None):
         if regular_function is None:
             regular_function = next(self._regular_function)
-        test = PlannedTest(next(self.id_gen), regular_function)
+        test = PlannedTest(self, regular_function)
         parent = self._get_test_container(regular_function)
         if not regular_function:
             assert test.cls is None
@@ -62,34 +66,29 @@ class TestSuite(object):
         self._all_tests.append(test)
         return test
 
+    def add_fixture(self):
+        returned = Fixture(self)
+        self._fixtures.append(returned)
+        return returned
+
     def _get_test_container(self, regular_function):
         if not regular_function:
             return self._get_class_for_adding_test()
 
         return self._get_file_for_adding_test()
 
-
     def _get_class_for_adding_test(self):
         file = self._get_file_for_adding_test()
         if not file.classes or not file.classes[-1].can_add_test():
-            cls = Class(next(self.id_gen))
+            cls = Class(self)
             cls.file = file
             file.classes.append(cls)
         return file.classes[-1]
 
     def _get_file_for_adding_test(self):
         if not self.files or not self.files[-1].can_add_test():
-            self.files.append(File(next(self.id_gen)))
+            self.files.append(File(self))
         return self.files[-1]
-
-    @property
-    def tests(self):
-        for file in self.files:
-            for test in file.tests:
-                yield test
-            for cls in file.classes:
-                for test in cls.tests:
-                    yield test
 
     @property
     def classes(self):
@@ -105,6 +104,17 @@ class TestSuite(object):
         if os.path.exists(self._path):
             shutil.rmtree(self._path)
         os.makedirs(self._path)
+
+        if self._fixtures:
+            with open(os.path.join(self._path, 'slashconf.py'), 'w') as f:
+                formatter = CodeFormatter(f)
+
+                formatter.writeln('import slash')
+
+                for fixture in self._fixtures:
+                    fixture.commit(formatter)
+                    formatter.writeln()
+
         for file in self.files:
             with open(os.path.join(self._path, file.name), 'w') as f:
                 formatter = CodeFormatter(f)
@@ -168,25 +178,41 @@ class TestSuite(object):
         returned = ResultWrapper(self, session)
         for result in session.results.iter_test_results():
             uuid = self._get_test_metadata_uuid(result.test_metadata)
-            returned.results_by_test_uuid[uuid] = result
+            returned.results_by_test_uuid.setdefault(uuid, []).append(result)
 
         execution_stopped = False
 
         for test in self._all_tests:
-            result = returned.results_by_test_uuid.get(test.uuid)
-            if not test.selected:
-                assert result is None, 'Deselected test {0} unexpectedly run!'.format(
-                    test)
-                continue
-            assert result is not None, 'Result for {0} not found'.format(test)
-            if execution_stopped:
-                assert not result.is_started()
-                assert result.is_skip()
-            else:
-                test.verify_result(result)
 
-            if (result.is_error() or result.is_failure()) and stop_on_error:
-                execution_stopped = True
+            results = returned.results_by_test_uuid.get(test.uuid)
+
+            if not test.selected:
+                assert results is None, 'Deselected test {0} unexpectedly run!'.format(test)
+                continue
+
+            assert results is not None, 'Result for {0} not found'.format(test)
+
+            results = list(results)
+
+            if execution_stopped:
+                assert all(not r.is_started() for r in results)
+                assert all(r.is_skip() for r in results)
+                continue
+
+            for expected_fixture_variation in test.iter_expected_fixture_variations():
+                for index, result in enumerate(results):
+                    if expected_fixture_variation == result.data.get('fixtures'):
+                        test.verify_result(result)
+                        if (result.is_error() or result.is_failure()) and stop_on_error:
+                            execution_stopped = True
+
+                        results.pop(index)
+                        break
+                else:
+                    assert False, 'Result for fixture variation {0} of {1} not found!'.format(expected_fixture_variation, test)
+
+            assert not results, 'Unknown results found for {0}: {1}'.format(test, results)
+
         return returned
 
     def fail_in_middle(self):
@@ -200,11 +226,18 @@ class TestSuite(object):
             shutil.rmtree(self.path)
 
 
-class Class(object):
+class SuiteObject(object):
 
-    def __init__(self, id):
-        super(Class, self).__init__()
-        self.id = id
+    def __init__(self, suite):
+        super(SuiteObject, self).__init__()
+        self.suite = suite
+        self.id = next(self.suite.id_gen)
+
+
+class Class(SuiteObject):
+
+    def __init__(self, suite):
+        super(Class, self).__init__(suite)
         self.name = "Test{0:05}".format(self.id)
         self.tests = []
         self.file = None
@@ -226,16 +259,21 @@ class Class(object):
                 test.commit(formatter)
 
 
-class File(object):
+class File(SuiteObject):
 
-    def __init__(self, id):
-        super(File, self).__init__()
-        self.id = id
+    def __init__(self, suite):
+        super(File, self).__init__(suite)
         self.name = 'test_{0:05}.py'.format(self.id)
         self.path = self.name
         self.classes = []
         self.tests = []
+        self._fixtures = []
         self._injected_lines = []
+
+    def add_fixture(self):
+        returned = Fixture(self.suite)
+        self._fixtures.append(returned)
+        return returned
 
     def inject_line(self, line):
         self._injected_lines.append(line)
@@ -250,24 +288,63 @@ class File(object):
         formatter.writeln('import slash')
 
         formatter.writeln('def _save_session_results():')
-        formatter.writeln('    "utility function to help debug results when tests are run indirectly"')
-        formatter.writeln('    import test  # best candidate to store results in an accessible place')
-        formatter.writeln('    results = test.__dict__.setdefault("{0}", set())'.format(_SLASH_RESULTS_STORE_NAME))
+        formatter.writeln(
+            '    "utility function to help debug results when tests are run indirectly"')
+        formatter.writeln(
+            '    import test  # best candidate to store results in an accessible place')
+        formatter.writeln('    results = test.__dict__.setdefault("{0}", set())'.format(
+            _SLASH_RESULTS_STORE_NAME))
         formatter.writeln('    if slash.session.results not in results:')
         formatter.writeln('        results.add(slash.session.results)')
         formatter.writeln()
         for line in self._injected_lines:
             formatter.writeln(line)
 
+        formatter.writeln()
 
-class PlannedTest(object):
+        for fixture in self._fixtures:
+            fixture.commit(formatter)
+            formatter.writeln()
+
+
+class Fixture(SuiteObject):
+
+    def __init__(self, suite):
+        super(Fixture, self).__init__(suite)
+        self.name = 'fixture_{0:05}'.format(self.id)
+        self.value = _uuid()
+        self.params = {}
+
+    def parametrize(self, num_params=3):
+        param_name = 'param_{0:05}'.format(len(self.params))
+        param_values = [_uuid() for i in range(num_params)]
+        self.params[param_name] = param_values
+        return list(self.get_parameter_combinations())
+
+    def get_parameter_combinations(self):
+        params = list(self.params.items())
+        names = [p[0] for p in params]
+        values = [p[1] for p in params]
+        for combination in itertools.product(*values):
+            yield dict(zip(names, combination))
+
+    def commit(self, formatter):
+        formatter.writeln('@slash.fixture')
+        for param_name, values in self.params.items():
+            formatter.writeln('@slash.parametrize({0!r}, {1!r})'.format(param_name, values))
+        formatter.writeln('def {0}({1}):'.format(self.name, ', '.join(self.params)))
+        with formatter.indented():
+            formatter.writeln('return {{ "value": {0!r}, "params": {{ {1} }} }}'.format(
+                self.value, ', '.join('{0!r}: {0}'.format(param_name) for param_name in self.params)))
+
+
+class PlannedTest(SuiteObject):
 
     _expected_result = _SUCCESS
 
-    def __init__(self, id, regular_function):
-        super(PlannedTest, self).__init__()
-        self.id = id
-        self.uuid = str(uuid1()).replace("-", "_")
+    def __init__(self, suite, regular_function):
+        super(PlannedTest, self).__init__(suite)
+        self.uuid = _uuid().replace("-", "_")
         self.regular_function = regular_function
         self.function_name = "test_{0}".format(self.uuid)
         self.selected = True
@@ -276,6 +353,23 @@ class PlannedTest(object):
         self._cleanups = []
 
         self._injected_lines = []
+        self._fixtures = []
+
+    def iter_expected_fixture_variations(self):
+        if not self._fixtures:
+            return [None]
+
+        return self._iter_expected_fixture_variations(self._fixtures)
+
+    def _iter_expected_fixture_variations(self, fixtures):
+        fixture_params = [self._get_all_fixture_param_dicts(f) for f in fixtures]
+        assert all(isinstance(x, list) for x in fixture_params), 'generators returned!'
+        for combination in itertools.product(*fixture_params):
+            yield dict((f.name, {'value': f.value, 'params': params}) for f, params in zip(fixtures, combination))
+
+    def _get_all_fixture_param_dicts(self, fixture):
+        return [dict(zip(fixture.params, combination))
+                for combination in itertools.product(*itervalues(fixture.params))]
 
     def __repr__(self):
         return '<Planned test #{0.id}, selected={0.selected}, type={1}, expected result={0._expected_result}>'.format(
@@ -288,15 +382,22 @@ class PlannedTest(object):
         self._injected_lines = list(lines) + self._injected_lines
 
     def add_cleanup(self, critical=False):
-        cleanup_id = str(uuid1())
+        cleanup_id = _uuid()
         self._cleanups.append({'id': cleanup_id, 'critical': critical})
         self.prepend_lines([
             'def _cleanup():',
-            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(cleanup_id),
+            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(
+                cleanup_id),
             'slash.add_{0}cleanup(_cleanup)'.format('critical_' if critical else '')])
 
     def prepend_line(self, line):
         self.prepend_lines([line])
+
+    def add_fixture(self, fixture=None):
+        if fixture is None:
+            fixture = self.file.add_fixture()
+        self._fixtures.append(fixture)
+        return fixture
 
     def rename(self, new_name):
         self.function_name = new_name
@@ -337,17 +438,32 @@ class PlannedTest(object):
         self._expected_result = _SUCCESS
 
     def commit(self, formatter):
-        formatter.writeln("def {0}({1}):".format(self.function_name, 'self' if not self.regular_function else ''))
+        formatter.writeln("def {0}({1}):".format(
+            self.function_name, self._get_args_string()))
         with formatter.indented():
             formatter.writeln('_save_session_results()')
             for variable_name, variable_value in self._get_variables().items():
                 formatter.writeln(
                     "{0} = {1!r}".format(variable_name, variable_value))
+            for fixture in self._fixtures:
+                formatter.writeln(
+                    'slash.context.result.data.setdefault("fixtures", {{}})[{0!r}] = {0}'.format(fixture.name))
             for s in self._generate_test_statements():
                 formatter.writeln(s)
         formatter.writeln()
 
+    def _get_args_string(self):
+        args = []
+        if self.cls is not None:
+            args.append('self')
+
+        for fixture in self._fixtures:
+            args.append(fixture.name)
+
+        return ', '.join(args)
+
     def verify_result(self, result):
+
         if self._expected_result == _SUCCESS:
             assert result.is_success()
         elif self._expected_result == _FAILURE:
@@ -399,4 +515,5 @@ class ResultWrapper(object):
         self.results_by_test_uuid = {}
 
     def __getitem__(self, planned_test):
-        return self.results_by_test_uuid[planned_test.uuid]
+        assert len(self.results_by_test_uuid[planned_test.uuid]) == 1, 'too many matching tests'
+        return self.results_by_test_uuid[planned_test.uuid][0]

@@ -8,16 +8,16 @@ class RunnableTestFactory(object):
         self.file_path = file_path
         self.factory_name = factory_name
 
-    def generate_tests(self):
+    def generate_tests(self, fixture_store):
         """
         Generates :class:`.RunnableTest` instances to run
 
         Do not override this method directly. Use :func:`.RunnableTestFactory._generate_tests` instead.
         """
-        for address_in_factory, test in self._generate_tests():
+        for address_in_factory, test in self._generate_tests(fixture_store):
             assert test.__slash__ is None
             test.__slash__ = Metadata(self, test, address_in_factory)
             yield test
 
-    def _generate_tests(self):
+    def _generate_tests(self, fixture_store):
         raise NotImplementedError()  # pragma: no cover
