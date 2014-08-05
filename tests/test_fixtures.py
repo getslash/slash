@@ -1,4 +1,8 @@
+import operator
+
 import pytest
+
+from slash._compat import itervalues, reduce
 
 
 def test_fixtures(populated_suite, suite_test, defined_fixture):
@@ -9,26 +13,40 @@ def test_fixtures(populated_suite, suite_test, defined_fixture):
 
 
 def test_fixture_parameters(populated_suite, suite_test, defined_fixture):
-    params = defined_fixture.parametrize()
+    defined_fixture.parametrize()
     suite_test.add_fixture(defined_fixture)
 
     results = populated_suite.run()
-    len(results.results_by_test_uuid[suite_test.uuid]) == len(params)
+    len(results.results_by_test_uuid[suite_test.uuid]) == reduce(operator.mul, itervalues(defined_fixture.params))
 
 
-def test_dependent_fixtures():
-    pytest.skip('!')
-
-    fixture = populated_suite.add_fixture()
-    fixture.parametrize()
-    defined_fixture.add_fixture(fixture)
-    defined_fixture.parametrize()
+def test_fixture_dependency_chain(populated_suite, suite_test):
+    fixture1 = populated_suite.add_fixture()
+    fixture1.parametrize()
+    fixture2 = populated_suite.add_fixture()
+    fixture2.parametrize()
+    fixture2.add_fixture(fixture1)
+    suite_test.add_fixture(fixture2)
 
     populated_suite.run()
 
 
-def test_dependent_fixtures_parameters():
-    pytest.skip('!')
+def test_fixture_dependency_both_directly_and_indirectly(populated_suite, suite_test):
+
+    fixture1 = populated_suite.add_fixture()
+    num_params1 = 2
+    fixture1.parametrize(num_params=num_params1)
+
+    fixture2 = populated_suite.add_fixture()
+    num_params2 = 3
+    fixture2.parametrize(num_params=num_params2)
+    fixture2.add_fixture(fixture1)
+
+    suite_test.add_fixture(fixture1)
+    suite_test.add_fixture(fixture2)
+
+    results = populated_suite.run()
+    assert len(results.results_by_test_uuid[suite_test.uuid]) == num_params1 * num_params2
 
 
 @pytest.fixture(params=["slashconf", "module"])

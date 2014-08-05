@@ -1,3 +1,4 @@
+import copy
 import itertools
 import os
 import shutil
@@ -314,28 +315,27 @@ class Fixture(SuiteObject):
         self.name = 'fixture_{0:05}'.format(self.id)
         self.value = _uuid()
         self.params = {}
+        self.fixtures = []
 
     def parametrize(self, num_params=3):
         param_name = 'param_{0:05}'.format(len(self.params))
         param_values = [_uuid() for i in range(num_params)]
         self.params[param_name] = param_values
-        return list(self.get_parameter_combinations())
 
-    def get_parameter_combinations(self):
-        params = list(self.params.items())
-        names = [p[0] for p in params]
-        values = [p[1] for p in params]
-        for combination in itertools.product(*values):
-            yield dict(zip(names, combination))
+    def add_fixture(self, fixture):
+        self.fixtures.append(fixture)
 
     def commit(self, formatter):
+        dependent_names = list(self.params)
+        dependent_names.extend(f.name for f in self.fixtures)
+
         formatter.writeln('@slash.fixture')
         for param_name, values in self.params.items():
             formatter.writeln('@slash.parametrize({0!r}, {1!r})'.format(param_name, values))
-        formatter.writeln('def {0}({1}):'.format(self.name, ', '.join(self.params)))
+        formatter.writeln('def {0}({1}):'.format(self.name, ', '.join(dependent_names)))
         with formatter.indented():
             formatter.writeln('return {{ "value": {0!r}, "params": {{ {1} }} }}'.format(
-                self.value, ', '.join('{0!r}: {0}'.format(param_name) for param_name in self.params)))
+                self.value, ', '.join('{0!r}: {0}'.format(name) for name in dependent_names)))
 
 
 class PlannedTest(SuiteObject):
@@ -356,20 +356,42 @@ class PlannedTest(SuiteObject):
         self._fixtures = []
 
     def iter_expected_fixture_variations(self):
-        if not self._fixtures:
-            return [None]
 
-        return self._iter_expected_fixture_variations(self._fixtures)
+        all_dependent_fixtures = list(self._get_all_dependent_fixtures())
+        if not all_dependent_fixtures:
+            yield None
+            return
 
-    def _iter_expected_fixture_variations(self, fixtures):
-        fixture_params = [self._get_all_fixture_param_dicts(f) for f in fixtures]
-        assert all(isinstance(x, list) for x in fixture_params), 'generators returned!'
-        for combination in itertools.product(*fixture_params):
-            yield dict((f.name, {'value': f.value, 'params': params}) for f, params in zip(fixtures, combination))
+        value_spaces = []
+        for f in all_dependent_fixtures:
+            if not f.params:
+                possible_params = [{}]
+            else:
+                possible_params = [dict(zip(f.params, combination)) for combination in itertools.product(*itervalues(f.params))]
+            value_spaces.append([{'value': f.value, 'params': params} for params in possible_params])
 
-    def _get_all_fixture_param_dicts(self, fixture):
-        return [dict(zip(fixture.params, combination))
-                for combination in itertools.product(*itervalues(fixture.params))]
+        for combination in itertools.product(*value_spaces):
+            fixture_dict = dict(zip(all_dependent_fixtures, combination))
+            yield dict((fixture.name, self._build_fixture_variation(fixture, fixture_dict)) for fixture in self._fixtures)
+
+    def _build_fixture_variation(self, fixture, fixture_dict):
+        returned = {}
+        returned['value'] = fixture_dict[fixture]['value']
+        returned['params'] = fixture_dict[fixture]['params'].copy()
+        for f in fixture.fixtures:
+            returned['params'][f.name] = fixture_dict[f]
+
+        return returned
+
+    def _get_all_dependent_fixtures(self):
+        returned = set()
+        stack = []
+        stack.extend(self._fixtures)
+        while stack:
+            f = stack.pop(-1)
+            stack.extend(f.fixtures)
+            returned.add(f)
+        return returned
 
     def __repr__(self):
         return '<Planned test #{0.id}, selected={0.selected}, type={1}, expected result={0._expected_result}>'.format(
@@ -448,8 +470,8 @@ class PlannedTest(SuiteObject):
             for fixture in self._fixtures:
                 formatter.writeln(
                     'slash.context.result.data.setdefault("fixtures", {{}})[{0!r}] = {0}'.format(fixture.name))
-            for s in self._generate_test_statements():
-                formatter.writeln(s)
+            for returned in self._generate_test_statements():
+                formatter.writeln(returned)
         formatter.writeln()
 
     def _get_args_string(self):

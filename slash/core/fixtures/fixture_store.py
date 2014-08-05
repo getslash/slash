@@ -1,7 +1,7 @@
 import itertools
 from sentinels import NOTHING
 
-from ..._compat import iteritems
+from ..._compat import iteritems, itervalues
 from ...exceptions import (CyclicFixtureDependency, UnresolvedFixtureStore)
 from .fixture import Fixture
 from .utils import get_scope_by_name
@@ -109,17 +109,15 @@ class FixtureStore(object):
             yield dict(zip(fixture_ids, combination))
 
     def _get_all_dependent_fixtures_from_names(self, names):
-        returned = []
-        for name in names:
-            returned.extend(
-                self._get_all_dependent_fixtures(self.get_fixture_by_name(name)))
-        return returned
+        returned = set()
+        stack = [self.get_fixture_by_name(name) for name in names]
 
-    def _get_all_dependent_fixtures(self, fixture):
-        yield fixture
-        for _, fixture_id in iteritems(fixture.fixture_kwargs):
-            for x in self._get_all_dependent_fixtures(self.get_fixture_by_id(fixture_id)):
-                yield x
+        while stack:
+            needed = stack.pop(-1)
+            returned.add(needed)
+            for needed_id in itervalues(needed.fixture_kwargs):
+                stack.append(self.get_fixture_by_id(needed_id))
+        return returned
 
     def _fill_fixture_value(self, name, fixture, values):
 
