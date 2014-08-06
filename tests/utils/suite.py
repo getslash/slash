@@ -24,6 +24,7 @@ NUM_TESTS_PER_CLASS = 2
 
 _INDENT = " " * 4
 
+
 def _uuid():
     return str(uuid1())
 
@@ -188,7 +189,8 @@ class TestSuite(object):
             results = returned.results_by_test_uuid.get(test.uuid)
 
             if not test.selected:
-                assert results is None, 'Deselected test {0} unexpectedly run!'.format(test)
+                assert results is None, 'Deselected test {0} unexpectedly run!'.format(
+                    test)
                 continue
 
             assert results is not None, 'Result for {0} not found'.format(test)
@@ -200,9 +202,11 @@ class TestSuite(object):
                 assert all(r.is_skip() for r in results)
                 continue
 
-            for expected_fixture_variation in test.iter_expected_fixture_variations():
+            for param_variation, fixture_variation in itertools.product(
+                    test.iter_parametrization_variations(),
+                    test.iter_expected_fixture_variations()):
                 for index, result in enumerate(results):
-                    if expected_fixture_variation == result.data.get('fixtures'):
+                    if param_variation == result.data.get('params') and fixture_variation == result.data.get('fixtures'):
                         test.verify_result(result)
                         if (result.is_error() or result.is_failure()) and stop_on_error:
                             execution_stopped = True
@@ -210,9 +214,11 @@ class TestSuite(object):
                         results.pop(index)
                         break
                 else:
-                    assert False, 'Result for fixture variation {0} of {1} not found!'.format(expected_fixture_variation, test)
+                    assert False, 'Result for params={0}, fixtures={1} of {2} not found!'.format(
+                        param_variation, fixture_variation, test)
 
-            assert not results, 'Unknown results found for {0}: {1}'.format(test, results)
+            assert not results, 'Unknown results found for {0}: {1}'.format(
+                test, results)
 
         return returned
 
@@ -308,19 +314,37 @@ class File(SuiteObject):
             formatter.writeln()
 
 
-class Fixture(SuiteObject):
+class Parametrizable(object):
 
-    def __init__(self, suite):
-        super(Fixture, self).__init__(suite)
-        self.name = 'fixture_{0:05}'.format(self.id)
-        self.value = _uuid()
+    def __init__(self):
+        super(Parametrizable, self).__init__()
         self.params = {}
-        self.fixtures = []
 
     def parametrize(self, num_params=3):
         param_name = 'param_{0:05}'.format(len(self.params))
         param_values = [_uuid() for i in range(num_params)]
         self.params[param_name] = param_values
+
+    def iter_parametrization_variations(self):
+        if not self.params:
+            yield None
+            return
+        for combination in itertools.product(*itervalues(self.params)):
+            yield dict(zip(self.params, combination))
+
+    def add_parametrize_decorators(self, formatter):
+        for param_name, values in self.params.items():
+            formatter.writeln(
+                '@slash.parametrize({0!r}, {1!r})'.format(param_name, values))
+
+
+class Fixture(SuiteObject, Parametrizable):
+
+    def __init__(self, suite):
+        super(Fixture, self).__init__(suite)
+        self.name = 'fixture_{0:05}'.format(self.id)
+        self.value = _uuid()
+        self.fixtures = []
 
     def add_fixture(self, fixture):
         self.fixtures.append(fixture)
@@ -330,15 +354,15 @@ class Fixture(SuiteObject):
         dependent_names.extend(f.name for f in self.fixtures)
 
         formatter.writeln('@slash.fixture')
-        for param_name, values in self.params.items():
-            formatter.writeln('@slash.parametrize({0!r}, {1!r})'.format(param_name, values))
-        formatter.writeln('def {0}({1}):'.format(self.name, ', '.join(dependent_names)))
+        self.add_parametrize_decorators(formatter)
+        formatter.writeln(
+            'def {0}({1}):'.format(self.name, ', '.join(dependent_names)))
         with formatter.indented():
             formatter.writeln('return {{ "value": {0!r}, "params": {{ {1} }} }}'.format(
                 self.value, ', '.join('{0!r}: {0}'.format(name) for name in dependent_names)))
 
 
-class PlannedTest(SuiteObject):
+class PlannedTest(SuiteObject, Parametrizable):
 
     _expected_result = _SUCCESS
 
@@ -367,8 +391,10 @@ class PlannedTest(SuiteObject):
             if not f.params:
                 possible_params = [{}]
             else:
-                possible_params = [dict(zip(f.params, combination)) for combination in itertools.product(*itervalues(f.params))]
-            value_spaces.append([{'value': f.value, 'params': params} for params in possible_params])
+                possible_params = [dict(zip(f.params, combination))
+                                   for combination in itertools.product(*itervalues(f.params))]
+            value_spaces.append([{'value': f.value, 'params': params}
+                                for params in possible_params])
 
         for combination in itertools.product(*value_spaces):
             fixture_dict = dict(zip(all_dependent_fixtures, combination))
@@ -460,6 +486,7 @@ class PlannedTest(SuiteObject):
         self._expected_result = _SUCCESS
 
     def commit(self, formatter):
+        self.add_parametrize_decorators(formatter)
         formatter.writeln("def {0}({1}):".format(
             self.function_name, self._get_args_string()))
         with formatter.indented():
@@ -470,6 +497,9 @@ class PlannedTest(SuiteObject):
             for fixture in self._fixtures:
                 formatter.writeln(
                     'slash.context.result.data.setdefault("fixtures", {{}})[{0!r}] = {0}'.format(fixture.name))
+            for param_name in self.params:
+                formatter.writeln(
+                    'slash.context.result.data.setdefault("params", {{}})[{0!r}] = {0}'.format(param_name))
             for returned in self._generate_test_statements():
                 formatter.writeln(returned)
         formatter.writeln()
@@ -481,6 +511,8 @@ class PlannedTest(SuiteObject):
 
         for fixture in self._fixtures:
             args.append(fixture.name)
+
+        args.extend(self.params)
 
         return ', '.join(args)
 
@@ -517,7 +549,7 @@ class PlannedTest(SuiteObject):
 
     def _generate_test_statements(self):
         statements = self._injected_lines
-        if not statements:
+        if not statements and not self._fixtures and not self.params:
             statements = ['pass']
 
         for statement in statements:
@@ -537,5 +569,6 @@ class ResultWrapper(object):
         self.results_by_test_uuid = {}
 
     def __getitem__(self, planned_test):
-        assert len(self.results_by_test_uuid[planned_test.uuid]) == 1, 'too many matching tests'
+        assert len(self.results_by_test_uuid[planned_test.uuid]
+                   ) == 1, 'too many matching tests'
         return self.results_by_test_uuid[planned_test.uuid][0]

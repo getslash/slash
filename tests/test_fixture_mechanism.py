@@ -5,6 +5,7 @@ from uuid import uuid1
 import pytest
 import slash
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
+from slash.core.fixtures.parameters import bound_parametrizations_context
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
@@ -32,7 +33,7 @@ def test_fixture_id_remains_even_when_context_popped(store):
 
 
 def test_variations_no_names(store):
-    assert list(store.iter_dicts([])) == [{}]
+    assert list(store.iter_parameterization_variations([])) == [{}]
 
 
 def test_adding_fixture_twice_to_store(store):
@@ -74,9 +75,16 @@ def test_fixture_parameters(store):
 
     store.resolve()
 
-    variations = list(store.iter_dicts(['value']))
-    assert set(v['value']
-               for v in variations) == set(itertools.product([1, 2, 3], [4, 5, 6]))
+    variations = list(_get_all_values(store, 'value'))
+    assert set(variations) == set(itertools.product([1, 2, 3], [4, 5, 6]))
+
+def _get_all_values(store, fixture_name):
+    returned = []
+    for variation in store.iter_parameterization_variations([fixture_name]):
+        with bound_parametrizations_context(variation):
+            returned.append(store.get_fixture_dict([fixture_name])[fixture_name])
+    return returned
+
 
 
 def test_fixture_scoping(store, cleanup_map, test_scoped_fixture, module_scoped_fixture, session_scoped_fixture):

@@ -11,6 +11,15 @@ from slash._compat import iteritems, itervalues
 def test_iter_fixture_variations_no_variation(planned_test):
     assert list(planned_test.iter_expected_fixture_variations()) == [None]
 
+def test_iter_params_no_params(planned_test):
+    assert list(planned_test.iter_parametrization_variations()) == [None]
+
+def test_iter_params(planned_test):
+    planned_test.parametrize(num_params=2)
+    assert len(list(planned_test.iter_parametrization_variations())) == 2
+    planned_test.parametrize(num_params=3)
+    assert len(list(planned_test.iter_parametrization_variations())) == 6
+
 
 def test_iter_fixture_variations_shallow(suite, planned_test):
     """ Test iteration with no fixture parametrization"""

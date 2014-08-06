@@ -1,48 +1,28 @@
 import itertools
 
-from ..._compat import iteritems
 from ...exceptions import UnknownFixtures, InvalidFixtureScope
 
 from .namespace import Namespace
-from .utils import get_scope_by_name, FixtureInfo, get_parametrization
+from .parameters import get_parametrization_fixtures
+from .utils import get_scope_by_name, FixtureInfo
+from .fixture_base import FixtureBase
 
 
 _fixture_id = itertools.count()
 
 
-class FixtureBase(object):
-
-    info = None
-    fixture_kwargs = None
-
-    def __init__(self):
-        super(FixtureBase, self).__init__()
-
-    def get_value(self, kwargs):
-        raise NotImplementedError()  # pragma: no cover
-
-    def get_variations(self):
-        return None
-
-    def resolve(self, store):
-        if self.fixture_kwargs is None:
-            self.fixture_kwargs = self._resolve(store)
-
-    def _resolve(self, store):
-        raise NotImplementedError() # pragma: no cover
-
 
 class Fixture(FixtureBase):
 
-    fixture_kwargs = None
-
     def __init__(self, store, fixture_func):
         super(Fixture, self).__init__()
-        self.store = store
         self.fixture_func = fixture_func
         self.info = self.fixture_func.__slash_fixture__
         self.scope = self.info.scope
         self.namespace = Namespace(store, store.get_current_namespace())
+
+    def __repr__(self):
+        return '<Function Fixture around {0}>'.format(self.fixture_func)
 
     def get_value(self, kwargs):
         return self.fixture_func(**kwargs)  # pylint: disable=star-args
@@ -50,12 +30,17 @@ class Fixture(FixtureBase):
     def _resolve(self, store):
         if self.fixture_kwargs is not None:
             return
-        kwargs = {}
 
-        for parameter_name, values in iteritems(get_parametrization(self.fixture_func)):
-            p = Parametrization(store, parameter_name, values)
-            store.register_fixture_id(p)
-            self.namespace.add_name(parameter_name, p.info.id)
+        assert self.parametrization_ids is None
+        self.parametrization_ids = []
+
+        kwargs = {}
+        parametrized = set()
+
+        for parametrization_fixture in get_parametrization_fixtures(self.fixture_func):
+            store.register_fixture_id(parametrization_fixture)
+            parametrized.add(parametrization_fixture.name)
+            self.parametrization_ids.append(parametrization_fixture.info.id)
 
         if 'this' in self.info.required_args:
             meta_fixture = ThisFixture(store, self)
@@ -63,6 +48,8 @@ class Fixture(FixtureBase):
             self.namespace.add_name('this', meta_fixture.info.id)
 
         for name in self.info.required_args:
+            if name in parametrized:
+                continue
             try:
                 needed_fixture = self.namespace.get_fixture_by_name(name)
 
@@ -97,22 +84,5 @@ class ThisFixture(FixtureBase):
         assert not kwargs
         return self
 
-
-class Parametrization(FixtureBase):
-
-    def __init__(self, store, name, values):
-        super(Parametrization, self).__init__()
-        self.store = store
-        self.name = name
-        self.info = FixtureInfo(name=name)
-        self.scope = get_scope_by_name('test')
-        self.values = list(values)
-
-    def get_value(self, kwargs):
-        raise NotImplementedError()  # pragma: no cover
-
-    def get_variations(self):
-        return self.values
-
-    def _resolve(self, store):
-        return {}
+    def __repr__(self):
+        return '<This Fixture>'

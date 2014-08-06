@@ -1,8 +1,8 @@
 import functools
-import inspect
 import itertools
 
 from ..._compat import zip
+from ...utils.python import getargspec
 
 _id_gen = itertools.count(1000)
 
@@ -14,22 +14,6 @@ def fixture(func=None, name=None, scope=None):
         func.__slash_fixture__ = FixtureInfo(func, name=name, scope=scope)
 
     return func
-
-_PARAMETRIZE_NAME = '__slash_parametrize__'
-
-
-def parametrize(parameter_name, values):
-    def decorator(func):
-        params = getattr(func, _PARAMETRIZE_NAME, None)
-        if params is None:
-            params = func.__slash_parametrize__ = {}
-        params.setdefault(parameter_name, []).extend(values)
-        return func
-    return decorator
-
-
-def get_parametrization(func):
-    return getattr(func, _PARAMETRIZE_NAME, {})
 
 
 class FixtureInfo(object):
@@ -48,7 +32,7 @@ class FixtureInfo(object):
         self.func = func
         self.scope = _SCOPES[scope]
         if self.func is not None:
-            self.required_args = inspect.getargspec(func).args
+            self.required_args = getargspec(func).args
         else:
             self.required_args = []
 

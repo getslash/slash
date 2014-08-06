@@ -1,5 +1,4 @@
 from .__version__ import __version__
-from . import parameters
 from .cleanups import add_cleanup, add_critical_cleanup
 from .conf import config
 from .ctx import context
@@ -32,7 +31,7 @@ from .assertions import (
     )
 from .core.test import Test
 from .core.test import abstract_test_class
-from .core.fixtures import fixture, parametrize
+from .core.fixtures import fixture, parametrize, parameters
 from .utils import skip_test, skipped, add_error, add_failure
 from .app import get_application_context
 from .runner import run_tests

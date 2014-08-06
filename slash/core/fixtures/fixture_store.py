@@ -3,9 +3,11 @@ from sentinels import NOTHING
 
 from ..._compat import iteritems, itervalues
 from ...exceptions import (CyclicFixtureDependency, UnresolvedFixtureStore)
+from ...utils.python import getargspec
 from .fixture import Fixture
 from .utils import get_scope_by_name
 from .namespace import Namespace
+from .parameters import get_parametrization_fixtures, Parametrization
 
 
 class FixtureStore(object):
@@ -69,7 +71,7 @@ class FixtureStore(object):
     def get_fixture_by_id(self, fixture_id):
         return self._fixtures_by_id[fixture_id]
 
-    def get_fixture_dict(self, required_names, variation=None, namespace=None):
+    def get_fixture_dict(self, required_names, namespace=None):
 
         if namespace is None:
             namespace = self.get_current_namespace()
@@ -77,46 +79,57 @@ class FixtureStore(object):
         returned = {}
         values = {}
 
-        if variation is not None:
-            values.update(variation)
-
         for required_name in required_names:
             fixture = namespace.get_fixture_by_name(required_name)
             self._fill_fixture_value(required_name, fixture, values)
             returned[required_name] = values[fixture.info.id]
         return returned
 
-    def iter_dicts(self, required_names):
-        for variation in self.iter_variations(required_names):
-            yield self.get_fixture_dict(required_names, variation)
+    def iter_parameterization_variations(self, names=(), fixtures=(), fixture_ids=(), funcs=(), methods=()):
+        needed_fixtures = []
+        for name in names:
+            needed_fixtures.append(self.get_fixture_by_name(name))
+        needed_fixtures.extend(fixtures)
+        for fixture_id in fixture_ids:
+            needed_fixtures.append(self.get_fixture_by_id(fixture_id))
 
-    def iter_variations(self, names):
-        fixtures = self._get_all_dependent_fixtures_from_names(names)
-        fixture_ids = []
-        pivots = []
-        for fixture in fixtures:
-            variations = fixture.get_variations()
-            if not variations:
-                continue
-            fixture_ids.append(fixture.info.id)
-            pivots.append(variations)
+        for is_method, func in itertools.chain(itertools.izip(itertools.repeat(False), funcs),
+                                               itertools.izip(itertools.repeat(True), methods)):
+            for fixture in get_parametrization_fixtures(func):
+                assert fixture.info.id not in self._fixtures_by_id or self._fixtures_by_id[fixture.info.id] is fixture
+                self._fixtures_by_id[fixture.info.id] = fixture
+                needed_fixtures.append(fixture)
+            needed_fixtures.extend(self._get_needed_fixture_from_func(func, is_method=is_method))
 
-        if not pivots:
+        param_ids = self._get_all_dependent_parametrization_ids_from_names(needed_fixtures)
+        if not param_ids:
             yield {}
             return
+        for combination in itertools.product(*(self._fixtures_by_id[id].values for id in param_ids)):
+            yield dict(zip(param_ids, combination))
 
-        for combination in itertools.product(*pivots):  # pylint: disable=star-args
-            yield dict(zip(fixture_ids, combination))
+    def _get_needed_fixture_from_func(self, func, is_method):
+        parametrization = set(p.name for p in get_parametrization_fixtures(func))
+        args = getargspec(func).args
+        if is_method:
+            args = args[1:]
+        for name in args:
+            if name not in parametrization:
+                yield self.get_fixture_by_name(name)
 
-    def _get_all_dependent_fixtures_from_names(self, names):
+    def _get_all_dependent_parametrization_ids_from_names(self, fixtures):
         returned = set()
-        stack = [self.get_fixture_by_name(name) for name in names]
+        assert isinstance(fixtures, list)
 
-        while stack:
-            needed = stack.pop(-1)
-            returned.add(needed)
-            for needed_id in itervalues(needed.fixture_kwargs):
-                stack.append(self.get_fixture_by_id(needed_id))
+        while fixtures:
+            f = fixtures.pop(-1)
+            if isinstance(f, Parametrization):
+                returned.add(f.info.id)
+            if f.parametrization_ids is not None:
+                returned.update(f.parametrization_ids)
+            if f.fixture_kwargs:
+                for needed_fixture_id in itervalues(f.fixture_kwargs):
+                    fixtures.append(self.get_fixture_by_id(needed_fixture_id))
         return returned
 
     def _fill_fixture_value(self, name, fixture, values):

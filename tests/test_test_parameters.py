@@ -1,6 +1,17 @@
+import pytest
 import slash
 
 from .utils import run_tests_assert_success
+
+
+def test_test_parametrization(suite, test_factory):
+    num_params1 = 3
+    num_params2 = 5
+    test = test_factory(suite)
+    test.parametrize(num_params=num_params1)
+    test.parametrize(num_params=num_params2)
+    results = suite.run()
+    assert len(results.results_by_test_uuid[test.uuid]) == num_params1 * num_params2
 
 
 def test_before_after_parameters(cartesian):

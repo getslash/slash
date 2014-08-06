@@ -8,8 +8,12 @@ from tests.utils.suite import TestSuite
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument('--fixtures', dest='use_fixtures', action='store_true', default=False)
+parser.add_argument('--parameters', dest='use_parameters', action='store_true', default=False)
 parser.add_argument("dir")
 parser.add_argument("summary")
+
+_FIXTURE_FREQ = 3
+_PARAM_FREQ = 4
 
 class Application(object):
 
@@ -25,12 +29,15 @@ class Application(object):
             parser.error("No summary given")
         for index, element in enumerate(self._args.summary):
             t = s.add_test()
-            if self._args.use_fixtures and index % 3 == 0:
+            if self._args.use_fixtures and index % _FIXTURE_FREQ == 0:
                 if index % 2 == 0:
                     f = t.add_fixture(t.file.add_fixture())
                 else:
                     f = t.add_fixture(s.add_fixture())
                 f.parametrize()
+
+            if self._args.use_parameters and index % _PARAM_FREQ == 0:
+                t.parametrize()
 
             if element == '.':
                 pass

@@ -32,15 +32,18 @@ def config_override(request):
 
     def _override(path, value):
         prev_value = slash.config.get_config(path).get_value()
+
         @request.addfinalizer
         def restore():
             slash.config.assign_path(path, prev_value)
         slash.config.assign_path(path, value)
     return _override
 
+
 @pytest.fixture
 def cartesian():
     return Cartesian()
+
 
 @pytest.fixture(scope="function", autouse=True)
 def cleanup_hook_registrations(request):
@@ -50,9 +53,11 @@ def cleanup_hook_registrations(request):
             hook.unregister_all()
         assert not gossip.get_group("slash").get_subgroups()
 
+
 @pytest.fixture(scope="function")
 def checkpoint():
     return Checkpoint()
+
 
 class Checkpoint(object):
 
@@ -60,6 +65,7 @@ class Checkpoint(object):
 
     def __call__(self, *args, **kwargs):
         self.called = True
+
 
 @pytest.fixture(autouse=True, scope="function")
 def fix_resume_path(request):
@@ -71,14 +77,31 @@ def fix_resume_path(request):
         shutil.rmtree(resuming._RESUME_DIR)
         resuming._RESUME_DIR = prev
 
-@pytest.fixture(params=[True, False])
-def suite_test(request, populated_suite):
-    return populated_suite.add_test(regular_function=request.param)
+
+@pytest.fixture
+def suite_test(populated_suite, test_factory):
+    return test_factory(populated_suite)
+
+
+def _create_regular_test_function(suite):
+    return suite.add_test(regular_function=True)
+
+
+def _create_test_method(suite):
+    return suite.add_test(regular_function=False)
+
+
+@pytest.fixture(params=[_create_regular_test_function,
+                        _create_test_method])
+def test_factory(request):
+    return request.param
+
 
 @pytest.fixture(scope='function')
 def populated_suite(suite):
     suite.populate()
     return suite
+
 
 @pytest.fixture(scope="function")
 def suite(request):
@@ -86,17 +109,21 @@ def suite(request):
     request.addfinalizer(returned.cleanup)
     return returned
 
+
 @pytest.fixture
 def setup_logging(request):
     logbook.compat.LoggingHandler().push_application()
+
 
 @pytest.fixture
 def slash_session():
     return slash.Session()
 
+
 @pytest.fixture
 def test_loader():
     return Loader()
+
 
 @pytest.fixture
 def active_slash_session(request):

@@ -1,5 +1,6 @@
 import functools
 import itertools
+from numbers import Number
 
 import logbook
 
@@ -133,6 +134,13 @@ class SessionResults(object):
     def __len__(self):
         return len(self._results_dict)
 
+    def __repr__(self):
+        return '<Results: {0} successful, {1} errors, {2} failures, {3} skips>'.format(
+            self.get_num_successful(),
+            self.get_num_errors(),
+            self.get_num_failures(),
+            self.get_num_skipped())
+
     def iter_all_failures(self):
         for result in self.iter_all_results():
             if result.get_failures():
@@ -203,4 +211,6 @@ class SessionResults(object):
         return self._results_dict[test.__slash__.id]
 
     def __getitem__(self, test):
+        if isinstance(test, Number):
+            return self._results_dict.values()[test]
         return self.get_result(test)

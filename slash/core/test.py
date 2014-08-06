@@ -1,12 +1,11 @@
 import functools
-import inspect
+import itertools
 
-from .._compat import iteritems
+from .._compat import iteritems, itervalues
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest
-from ..parameters import (iter_inherited_method_parameter_combinations,
-                          iter_parameter_combinations,
-                          set_parameter_values_context)
+from ..utils.python import getargspec
+from .fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
 
@@ -24,42 +23,56 @@ class TestTestFactory(RunnableTestFactory):
         for test_method_name in dir(self.test):
             if not test_method_name.startswith("test"):
                 continue
-            test_method = getattr(self.test, test_method_name)
-            needed_fixtures = inspect.getargspec(test_method).args[1:]
-            for before_kwargs in iter_inherited_method_parameter_combinations(self.test, 'before'):
-                for test_kwargs in iter_parameter_combinations(test_method):
-                    for after_kwargs in iter_inherited_method_parameter_combinations(self.test, 'after'):
-                        for fixture_variation in fixture_store.iter_variations(needed_fixtures):
-                            case = self.test(
-                                test_method_name,
-                                before_kwargs=before_kwargs,
-                                test_kwargs=test_kwargs,
-                                after_kwargs=after_kwargs,
-                                needed_fixtures=needed_fixtures,
-                                fixture_store=fixture_store,
-                                fixture_namespace=fixture_store.get_current_namespace(),
-                                fixture_variation=fixture_variation,
-                            )
-                            if self.test.__slash_skipped__:
-                                case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
-                            yield case._get_address_in_factory(), case  # pylint: disable=protected-access
 
+            test_method = getattr(self.test, test_method_name)
+            needed_fixtures = self._get_needed_fixtures(test_method)
+
+            for param_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
+                case = self.test(
+                    test_method_name,
+                    needed_fixtures=needed_fixtures,
+                    fixture_store=fixture_store,
+                    fixture_namespace=fixture_store.get_current_namespace(),
+                    param_variation=param_variation,
+                )
+                if self.test.__slash_skipped__:
+                    case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
+                yield case._get_address_in_factory(), case  # pylint: disable=protected-access
+
+    def _get_needed_fixtures(self, method):
+        parametrized = set(p.name for p in get_parametrization_fixtures(method))
+        return [name for name in getargspec(method).args[1:] if name not in parametrized]
+
+    def _iter_parametrization_variations(self, test_method_name, fixture_store):
+        return fixture_store.iter_parameterization_variations(methods=itertools.chain(
+            self._get_all_before_methods(),
+            [getattr(self.test, test_method_name)],
+            self._get_all_after_methods()))
+
+    def _get_all_before_methods(self):
+        return self._iter_inherited_methods('before')
+
+    def _get_all_after_methods(self):
+        return self._iter_inherited_methods('after')
+
+    def _iter_inherited_methods(self, name):
+
+        for cls in self.test.__mro__:
+            if hasattr(cls, name):
+                yield getattr(cls, name)
 
 
 class Test(RunnableTest):
     """
     This is a base class for implementing unittest-style test classes.
     """
-    def __init__(self, test_method_name, fixture_store, fixture_namespace, fixture_variation, needed_fixtures, before_kwargs=None, after_kwargs=None, test_kwargs=None):
+    def __init__(self, test_method_name, fixture_store, fixture_namespace, param_variation, needed_fixtures):
         super(Test, self).__init__()
         self._test_method_name = test_method_name
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
-        self._fixture_variation = fixture_variation
+        self._param_variation = param_variation
         self._needed_fixtures = needed_fixtures
-        self._before_kwargs = before_kwargs
-        self._after_kwargs = after_kwargs
-        self._test_kwargs = test_kwargs
 
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
@@ -73,15 +86,8 @@ class Test(RunnableTest):
 
     def _get_address_in_factory(self):
         returned = ''
-        if self._before_kwargs or self._after_kwargs:
-            returned += "{0}{1}".format(
-                self._get_call_string(self._before_kwargs),
-                self._get_call_string(self._after_kwargs),
-            )
         if self._test_method_name is not None:
             returned += ".{0}".format(self._test_method_name)
-            if self._test_kwargs:
-                returned += self._get_call_string(self._test_kwargs)
         return returned
 
     def _get_call_string(self, kwargs):
@@ -89,19 +95,18 @@ class Test(RunnableTest):
             return ""
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
 
-    def run(self): # pylint: disable=E0202
+    def run(self):  # pylint: disable=E0202
         """_
         Not to be overriden
         """
         method = getattr(self, self._test_method_name)
-        with set_parameter_values_context([self._before_kwargs, self._after_kwargs, self._test_kwargs]):
+        with bound_parametrizations_context(self._param_variation):
             self.before()
             try:
                 with handling_exceptions():
                     fixture_kwargs = self._fixture_store.get_fixture_dict(
                         self._needed_fixtures,
-                        namespace=self._fixture_namespace,
-                        variation=self._fixture_variation)
+                        namespace=self._fixture_namespace)
                     method(**fixture_kwargs)  # pylint: disable=star-args
             finally:
                 with handling_exceptions():
