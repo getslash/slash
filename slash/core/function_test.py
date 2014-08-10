@@ -30,6 +30,5 @@ class FunctionTestFactory(RunnableTestFactory):
 
     def _generate_tests(self, fixture_store):
         namespace = fixture_store.get_current_namespace()
-        names = getargspec(self.func).args
         for variation in fixture_store.iter_parameterization_variations(funcs=[self.func]):
             yield None, FunctionTest(self.func, fixture_store, namespace, variation)

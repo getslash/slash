@@ -49,7 +49,7 @@ _current_bindings = None
 
 @contextmanager
 def bound_parametrizations_context(parameter_ids_to_values):
-    global _current_bindings
+    global _current_bindings  # pylint: disable=global-statement
     assert _current_bindings is None
     _current_bindings = parameter_ids_to_values
     try:

@@ -4,7 +4,7 @@ from ...exceptions import UnknownFixtures, InvalidFixtureScope
 
 from .namespace import Namespace
 from .parameters import get_parametrization_fixtures
-from .utils import get_scope_by_name, FixtureInfo
+from .utils import FixtureInfo
 from .fixture_base import FixtureBase
 
 

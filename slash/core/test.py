@@ -1,7 +1,7 @@
 import functools
 import itertools
 
-from .._compat import iteritems, itervalues
+from .._compat import iteritems
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest
 from ..utils.python import getargspec
