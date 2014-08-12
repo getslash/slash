@@ -6,6 +6,7 @@ class Metadata(object):
         self.id = None
         self.test = test
         self.file_path = factory.file_path
+        self.module_name = factory.module_name
         self.factory_name = factory.factory_name
         self.address_in_file = self.factory_name
         self.address_in_factory = address_in_factory

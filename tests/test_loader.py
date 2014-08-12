@@ -35,12 +35,6 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
     [error] = errors
 
 
-def test_import_errors_without_session(unloadable_suite):
-
-    with pytest.raises(CannotLoadTests):
-        Loader().get_runnables([unloadable_suite.path])
-
-
 def test_import_errors_with_session(unloadable_suite):
     with Session() as s:
         tests = Loader().get_runnables(unloadable_suite.path)

@@ -10,6 +10,7 @@ from ..reporting.null_reporter import NullReporter
 from ..utils.id_space import IDSpace
 from ..warnings import SessionWarnings
 from .result import SessionResults
+from .fixtures.fixture_store import FixtureStore
 
 
 class Session(Activatable):
@@ -23,6 +24,7 @@ class Session(Activatable):
         self._started = False
         self._complete = False
         self._active_context = None
+        self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self)
         #: an aggregate result summing all test results and the global result

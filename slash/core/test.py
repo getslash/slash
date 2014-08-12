@@ -12,8 +12,8 @@ from .runnable_test_factory import RunnableTestFactory
 
 class TestTestFactory(RunnableTestFactory):
 
-    def __init__(self, test, file_path, factory_name):
-        super(TestTestFactory, self).__init__(file_path, factory_name)
+    def __init__(self, test, file_path, factory_name, module_name):
+        super(TestTestFactory, self).__init__(file_path=file_path, factory_name=factory_name, module_name=module_name)
         self.test = test
 
     def _generate_tests(self, fixture_store):

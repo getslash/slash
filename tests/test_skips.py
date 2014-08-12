@@ -64,9 +64,10 @@ def test_class_decorator(populated_suite):
 
 
 def _assert_skips(thing, reason=None):
-    if isinstance(thing, type) and issubclass(thing, slash.Test):
-        [thing] = slash.loader.Loader().get_runnables(thing)
-        thing = thing.run
+    with slash.Session():
+        if isinstance(thing, type) and issubclass(thing, slash.Test):
+            [thing] = slash.loader.Loader().get_runnables(thing)
+            thing = thing.run
 
     with pytest.raises(slash.exceptions.SkipTest) as caught:
         thing()

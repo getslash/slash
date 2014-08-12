@@ -18,6 +18,7 @@ class FixtureStore(object):
         self._unresolved_fixture_ids = set()
         self._fixtures_by_fixture_info = {}
         self._fixtures_by_id = {}
+        self._values_by_id = {}
         self._cleanups_by_scope = {}
 
     def push_namespace(self):
@@ -38,6 +39,9 @@ class FixtureStore(object):
     def end_scope(self, scope):
         scope = get_scope_by_name(scope)
         cleanups = self._cleanups_by_scope.get(scope, [])
+        for fixture_id, fixture in iteritems(self._fixtures_by_id):
+            if fixture.scope <= scope:
+                self._values_by_id.pop(fixture_id, None)
         while cleanups:
             cleanups.pop(-1)()
 
@@ -77,12 +81,11 @@ class FixtureStore(object):
             namespace = self.get_current_namespace()
 
         returned = {}
-        values = {}
 
         for required_name in required_names:
             fixture = namespace.get_fixture_by_name(required_name)
-            self._fill_fixture_value(required_name, fixture, values)
-            returned[required_name] = values[fixture.info.id]
+            self._fill_fixture_value(required_name, fixture)
+            returned[required_name] = self._values_by_id[fixture.info.id]
         return returned
 
     def iter_parameterization_variations(self, names=(), fixtures=(), fixture_ids=(), funcs=(), methods=()):
@@ -132,9 +135,9 @@ class FixtureStore(object):
                     fixtures.append(self.get_fixture_by_id(needed_fixture_id))
         return returned
 
-    def _fill_fixture_value(self, name, fixture, values):
+    def _fill_fixture_value(self, name, fixture):
 
-        fixture_value = values.get(fixture.info.id, NOTHING)
+        fixture_value = self._values_by_id.get(fixture.info.id, NOTHING)
         if fixture_value is _BUSY:
             raise CyclicFixtureDependency(
                 'Fixture {0!r} is a part of a dependency cycle!'.format(name))
@@ -142,7 +145,7 @@ class FixtureStore(object):
         if fixture_value is not NOTHING:
             return
 
-        values[fixture.info.id] = _BUSY
+        self._values_by_id[fixture.info.id] = _BUSY
 
         kwargs = {}
 
@@ -151,10 +154,10 @@ class FixtureStore(object):
 
         for required_name, fixture_id in iteritems(fixture.fixture_kwargs):
             self._fill_fixture_value(
-                required_name, self.get_fixture_by_id(fixture_id), values)
-            kwargs[required_name] = values[fixture_id]
+                required_name, self.get_fixture_by_id(fixture_id))
+            kwargs[required_name] = self._values_by_id[fixture_id]
 
-        values[fixture.info.id] = fixture.get_value(kwargs)
+        self._values_by_id[fixture.info.id] = fixture.get_value(kwargs)
 
     def resolve(self):
         while self._unresolved_fixture_ids:

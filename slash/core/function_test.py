@@ -24,8 +24,8 @@ class FunctionTest(RunnableTest):
 
 class FunctionTestFactory(RunnableTestFactory):
 
-    def __init__(self, file_path, factory_name, func):
-        super(FunctionTestFactory, self).__init__(file_path, factory_name)
+    def __init__(self, file_path, factory_name, module_name, func):
+        super(FunctionTestFactory, self).__init__(file_path=file_path, factory_name=factory_name)
         self.func = func
 
     def _generate_tests(self, fixture_store):

@@ -78,35 +78,16 @@ def test_fixture_parameters(store):
     variations = list(_get_all_values(store, 'value'))
     assert set(variations) == set(itertools.product([1, 2, 3], [4, 5, 6]))
 
+
 def _get_all_values(store, fixture_name):
     returned = []
     for variation in store.iter_parameterization_variations([fixture_name]):
+        store.begin_scope('test')
         with bound_parametrizations_context(variation):
-            returned.append(store.get_fixture_dict([fixture_name])[fixture_name])
+            returned.append(
+                store.get_fixture_dict([fixture_name])[fixture_name])
+        store.end_scope('test')
     return returned
-
-
-
-def test_fixture_scoping(store, cleanup_map, test_scoped_fixture, module_scoped_fixture, session_scoped_fixture):
-
-    store.resolve()
-
-    store.begin_scope('module')
-    store.begin_scope('test')
-    assert not cleanup_map
-
-    store.get_fixture_dict(
-        ['test_scoped_fixture', 'module_scoped_fixture', 'session_scoped_fixture'])
-
-    store.end_scope('test')
-    assert cleanup_map['test_scoped_fixture']
-    assert 'module_scoped_fixture' not in cleanup_map
-    assert 'session_scoped_fixture' not in cleanup_map
-    store.end_scope('module')
-    assert cleanup_map['module_scoped_fixture']
-    assert 'session_scoped_fixture' not in cleanup_map
-    store.end_scope('session')
-    assert cleanup_map['session_scoped_fixture']
 
 
 @pytest.mark.parametrize('scopes', [('module', 'test'), ('session', 'module'), ('session', 'test')])

@@ -12,6 +12,7 @@ from .ctx import context
 from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, SkipTest, TestFailed
 from .core.metadata import ensure_test_metadata
+from .core.fixtures.fixture_scope_manager import FixtureScopeManager
 from .utils.iteration import PeekableIterator
 from .core.error import Error, DetailedTraceback
 
@@ -33,6 +34,7 @@ def run_tests(iterable, stop_on_error=None):
     test_iterator = PeekableIterator(iterable)
     last_filename = None
     complete = False
+    fixture_scope_manager = FixtureScopeManager(context.session.fixture_store)
     for test in test_iterator:
         ensure_test_metadata(test)
         test_filename = test.__slash__.file_path
@@ -41,7 +43,7 @@ def run_tests(iterable, stop_on_error=None):
             last_filename = test_filename
         context.session.reporter.report_test_start(test)
         _logger.notice("{0}", test.__slash__.address)
-        with _get_run_context_stack(test, test_iterator):
+        with _get_run_context_stack(test, test_iterator, fixture_scope_manager):
             test.run()
         result = context.session.results[test]
         context.session.reporter.report_test_end(test, result)
@@ -68,13 +70,14 @@ def _mark_remaining_skipped(test_iterator):
             context.result.add_skip("Did not run")
 
 @contextmanager
-def _get_run_context_stack(test, test_iterator):  # pylint: disable=unused-argument
+def _get_run_context_stack(test, test_iterator, fixture_scope_manager):
     yielded = False
     with ExitStack() as stack:
         stack.enter_context(_get_test_context(test))
         stack.enter_context(_get_test_hooks_context())
         stack.enter_context(_update_result_context())
         stack.enter_context(_cleanup_context())
+        stack.enter_context(_get_test_fixture_context(test, test_iterator, fixture_scope_manager))
         stack.enter_context(handling_exceptions())
         yielded = True
         yield
@@ -96,6 +99,14 @@ def _cleanup_context():
     finally:
         call_cleanups(critical_only=exc_info is not None and exc_info[0] is KeyboardInterrupt)
         del exc_info
+
+@contextmanager
+def _get_test_fixture_context(test, test_iterator, fixture_scope_manager):
+    fixture_scope_manager.begin_test(test)
+    try:
+        yield
+    finally:
+        fixture_scope_manager.end_test(test, next_test=test_iterator.peek())
 
 @contextmanager
 def _get_test_context(test, logging=True):

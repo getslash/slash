@@ -17,7 +17,6 @@ from .core.test import Test, TestTestFactory
 from .core.function_test import FunctionTestFactory
 from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
-from .core.fixtures.fixture_store import FixtureStore
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils import add_error
 from .utils.pattern_matching import Matcher
@@ -35,10 +34,10 @@ class Loader(object):
             self._matcher = Matcher(config.root.run.filter_string)
         else:
             self._matcher = None
-        self._fixture_store = FixtureStore()
         self._local_config = LocalConfig()
 
     def get_runnables(self, paths, sort_key=None):
+        assert context.session is not None
         returned = self._collect(self._get_iterator(paths))
         if sort_key is not None:
             returned.sort(key=sort_key)
@@ -68,7 +67,7 @@ class Loader(object):
         if factory is None:
             raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
 
-        return factory.generate_tests(fixture_store=self._fixture_store)
+        return factory.generate_tests(fixture_store=context.session.fixture_store)
 
     def _iter_test_address(self, address):
         if ':' in address:
@@ -115,18 +114,18 @@ class Loader(object):
 
     @contextmanager
     def _adding_local_fixtures(self, file_path, module):
-        self._fixture_store.push_namespace()
+        context.session.fixture_store.push_namespace()
         try:
             self._local_config.push_path(os.path.dirname(file_path))
             try:
-                self._fixture_store.add_fixtures_from_dict(self._local_config.get_dict())
-                self._fixture_store.add_fixtures_from_dict(vars(module))
-                self._fixture_store.resolve()
+                context.session.fixture_store.add_fixtures_from_dict(self._local_config.get_dict())
+                context.session.fixture_store.add_fixtures_from_dict(vars(module))
+                context.session.fixture_store.resolve()
                 yield
             finally:
                 self._local_config.pop_path()
         finally:
-            self._fixture_store.pop_namespace()
+            context.session.fixture_store.pop_namespace()
 
     @contextmanager
     def _handling_import_errors(self, file_path):
@@ -150,20 +149,23 @@ class Loader(object):
             if thing is RunnableTestFactory: # probably imported directly
                 continue
 
-            factory = self._get_runnable_test_factory(thing, file_path, thing_name)
+            factory = self._get_runnable_test_factory(thing, module_name=module.__name__, file_path=file_path, name=thing_name)
             if factory is None:
                 continue
 
-            for test in factory.generate_tests(fixture_store=self._fixture_store):
+            for test in factory.generate_tests(fixture_store=context.session.fixture_store):
                 assert test.__slash__ is not None
                 yield test
 
-    def _get_runnable_test_factory(self, thing, file_path='', name=''):
+    def _get_runnable_test_factory(self, thing, module_name='', file_path='', name=''):
         if isinstance(thing, type) and issubclass(thing, Test):
-            return TestTestFactory(thing, file_path, name)
+            return TestTestFactory(thing, module_name=module_name, file_path=file_path, factory_name=name)
 
-        if isinstance(thing, FunctionType) and name.startswith('test_'):
-            return FunctionTestFactory(func=thing, file_path=file_path, factory_name=name)
+        if isinstance(thing, FunctionType):
+            if not name:
+                name = thing.__name__
+            if name.startswith('test_'):
+                return FunctionTestFactory(func=thing, module_name=module_name, file_path=file_path, factory_name=name)
 
         return None
 

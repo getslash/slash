@@ -15,8 +15,9 @@ class TestMetadataTest(TestCase):
         with open(self.filename, "w") as f:
             f.write(_TEST_FILE_TEMPLATE)
 
-        self.tests = slash.loader.Loader().get_runnables(self.filename)
-        self.session = run_tests_assert_success(self.tests)
+        with slash.Session() as s:
+            self.tests = slash.loader.Loader().get_runnables(self.filename)
+            self.session = run_tests_assert_success(self.tests, session=s)
         self.results = list(self.session.results.iter_test_results())
         self.results.sort(key = lambda result: str(result.test_metadata))
 

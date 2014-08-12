@@ -3,9 +3,10 @@ from .metadata import Metadata
 
 class RunnableTestFactory(object):
 
-    def __init__(self, file_path='', factory_name=''):
+    def __init__(self, file_path='', module_name='', factory_name=''):
         super(RunnableTestFactory, self).__init__()
         self.file_path = file_path
+        self.module_name = module_name
         self.factory_name = factory_name
 
     def generate_tests(self, fixture_store):

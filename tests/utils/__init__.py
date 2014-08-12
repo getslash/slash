@@ -10,6 +10,7 @@ from logbook.compat import LoggingHandler
 import gossip
 import slash
 from slash.conf import config
+from slash._compat import ExitStack
 
 if platform.python_version() < "2.7":
     import unittest2 as unittest
@@ -74,13 +75,16 @@ def no_op(*args, **kwargs):
     pass
 
 def run_tests_in_session(test_class_path_or_iterator, session=None):
-    if isinstance(test_class_path_or_iterator, str):
-        test_class_path_or_iterator = slash.loader.Loader().iter_paths([test_class_path_or_iterator])
-    else:
-        test_class_path_or_iterator = slash.loader.Loader().get_runnables(test_class_path_or_iterator)
-    if session is None:
-        session = slash.Session()
-    with session:
+    with ExitStack() as stack:
+        if session is None:
+            session = slash.Session()
+            stack.enter_context(session)
+        
+
+        if isinstance(test_class_path_or_iterator, str):
+            test_class_path_or_iterator = slash.loader.Loader().iter_paths([test_class_path_or_iterator])
+        else:
+            test_class_path_or_iterator = slash.loader.Loader().get_runnables(test_class_path_or_iterator)
         with session.get_started_context():
             slash.runner.run_tests(test_class_path_or_iterator)
     for result in session.results.iter_test_results():
@@ -89,8 +93,8 @@ def run_tests_in_session(test_class_path_or_iterator, session=None):
     return session
 run_tests_in_session.__test__ = False
 
-def run_tests_assert_success(test_class_path_or_iterator):
-    session = run_tests_in_session(test_class_path_or_iterator)
+def run_tests_assert_success(test_class_path_or_iterator, session=None):
+    session = run_tests_in_session(test_class_path_or_iterator, session=session)
     assert session.results.is_success(), "Run did not succeed"
     return session
 

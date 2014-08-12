@@ -209,7 +209,8 @@ class ExtraLoggersTest(TestCase):
         slash.log.add_log_handler(self.handler)
 
     def test(self):
-        run_tests_in_session(SampleTest, session=self.session)
+        with self.session:
+            run_tests_in_session(SampleTest, session=self.session)
         for test_result in self.session.results.iter_test_results():
             for record in self.handler.records:
                 if test_result.test_id in record.message:
