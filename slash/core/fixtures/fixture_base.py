@@ -11,7 +11,7 @@ class FixtureBase(object):
         raise NotImplementedError()  # pragma: no cover
 
     def get_variations(self):
-        return None
+        return None  # pragma: no cover
 
     def resolve(self, store):
         if self.fixture_kwargs is None:

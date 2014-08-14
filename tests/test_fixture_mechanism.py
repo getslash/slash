@@ -93,7 +93,7 @@ def test_fixture_parameters(store):
 
 def _get_all_values(store, fixture_name):
     returned = []
-    for variation in store.iter_parameterization_variations([fixture_name]):
+    for variation in store.iter_parameterization_variations(names=[fixture_name]):
         store.begin_scope('test')
         with bound_parametrizations_context(variation):
             returned.append(

@@ -96,7 +96,7 @@ class Parametrization(FixtureBase):
         raise NotImplementedError()  # pragma: no cover
 
     def get_variations(self):
-        return self.values
+        raise NotImplementedError() # pragma: no cover
 
     def _resolve(self, store):
         return {}

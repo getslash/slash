@@ -28,17 +28,8 @@ class Namespace(object):
             return self._store.get_fixture_by_id(fixture_id)
         raise LookupError('Fixture {0} not found!'.format(name))
 
-    def add_name(self, name, fixture_or_id):
-        if not isinstance(fixture_or_id, Number):
-            fixture_or_id = fixture_or_id.id
+    def add_name(self, name, fixture_id):
+        assert isinstance(fixture_id, Number)
         assert name not in self._fixture_names or self._fixture_names[
-            name] == fixture_or_id
-        self._fixture_names[name] = fixture_or_id
-
-    def __contains__(self, name):
-        try:
-            self.get_fixture_by_name(name)
-        except LookupError:
-            return False
-        else:
-            return True
+            name] == fixture_id
+        self._fixture_names[name] = fixture_id

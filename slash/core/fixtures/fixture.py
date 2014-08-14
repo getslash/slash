@@ -28,8 +28,7 @@ class Fixture(FixtureBase):
         return self.fixture_func(**kwargs)  # pylint: disable=star-args
 
     def _resolve(self, store):
-        if self.fixture_kwargs is not None:
-            return
+        assert self.fixture_kwargs is None
 
         assert self.parametrization_ids is None
         self.parametrization_ids = []
