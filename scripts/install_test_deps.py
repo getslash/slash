@@ -14,6 +14,7 @@ if __name__ == '__main__':
         "coveralls",
         "pytest",
         "pytest-capturelog",
+        "pytest-cov",
         "pyforge",
         "lxml", # for XSD validations
     ]

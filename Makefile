@@ -6,9 +6,6 @@ detox-test:
 test: env
 	.env/bin/python scripts/test_and_pylint.py
 
-coverage-test: env
-	.env/bin/coverage run .env/bin/py.test tests
-
 env: .env/.up-to-date
 
 .env/.up-to-date: setup.py Makefile
@@ -16,7 +13,6 @@ env: .env/.up-to-date
 	.env/bin/python scripts/install_test_deps.py
 	.env/bin/pip install -e .
 	.env/bin/pip install -r ./doc/pip_requirements.txt
-	.env/bin/pip install pylint
 	touch .env/.up-to-date
 
 doc: env
