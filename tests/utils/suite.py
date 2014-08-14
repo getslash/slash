@@ -345,6 +345,16 @@ class Fixture(SuiteObject, Parametrizable):
         self.name = 'fixture_{0:05}'.format(self.id)
         self.value = _uuid()
         self.fixtures = []
+        self._cleanups = []
+
+    def add_cleanup(self):
+        self._cleanups.append(_uuid())
+
+    def verify_cleanups(self, result):
+        if not self._cleanups:
+            assert 'fixture_cleanups' not in result.data
+        else:
+            assert result.data['fixture_cleanups'] == self._cleanups[::-1]
 
     def add_fixture(self, fixture):
         self.fixtures.append(fixture)
@@ -353,11 +363,21 @@ class Fixture(SuiteObject, Parametrizable):
         dependent_names = list(self.params)
         dependent_names.extend(f.name for f in self.fixtures)
 
+        arg_names = list(dependent_names)
+        if self._cleanups:
+            arg_names.insert(0, 'this')
+
         formatter.writeln('@slash.fixture')
         self.add_parametrize_decorators(formatter)
         formatter.writeln(
-            'def {0}({1}):'.format(self.name, ', '.join(dependent_names)))
+            'def {0}({1}):'.format(self.name, ', '.join(arg_names)))
         with formatter.indented():
+            for cleanup_uuid in self._cleanups:
+                formatter.writeln('_test_result = slash.context.result')
+                formatter.writeln('@this.add_cleanup')
+                formatter.writeln('def cleanup():')
+                with formatter.indented():
+                    formatter.writeln('_test_result.data.setdefault("fixture_cleanups", []).append({0!r})'.format(cleanup_uuid))
             formatter.writeln('return {{ "value": {0!r}, "params": {{ {1} }} }}'.format(
                 self.value, ', '.join('{0!r}: {0}'.format(name) for name in dependent_names)))
 
@@ -517,6 +537,9 @@ class PlannedTest(SuiteObject, Parametrizable):
         return ', '.join(args)
 
     def verify_result(self, result):
+
+        for fixture in self._fixtures:
+            fixture.verify_cleanups(result)
 
         if self._expected_result == _SUCCESS:
             assert result.is_success()

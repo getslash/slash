@@ -2,6 +2,7 @@ import itertools
 
 from ...exceptions import UnknownFixtures, InvalidFixtureScope
 
+from ...ctx import context
 from .namespace import Namespace
 from .parameters import get_parametrization_fixtures
 from .utils import FixtureInfo
@@ -67,6 +68,7 @@ class ThisFixture(FixtureBase):
 
     def __init__(self, store, fixture):
         super(ThisFixture, self).__init__()
+        assert context.session is None or store is context.session.fixture_store
         self.store = store
         self.info = FixtureInfo()
         self.fixture = fixture

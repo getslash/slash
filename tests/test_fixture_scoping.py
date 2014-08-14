@@ -134,6 +134,7 @@ class FixtureTree(object):
                     assert fixture_name in self._cleanups_made
                     self._cleanups_made.remove(fixture_name)
                     self._values.pop(fixture_name)
+        assert not self._cleanups_made, 'Unknown cleanups called'
 
     def _populate_fixtures(self):
         assert not self._fixtures

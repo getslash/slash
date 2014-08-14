@@ -12,12 +12,29 @@ def test_fixtures(populated_suite, suite_test, defined_fixture):
     assert len(results[suite_test].data['fixtures']) == 1
 
 
+def test_fixture_cleanup(populated_suite, suite_test):
+    fixture = populated_suite.add_fixture()
+    for i in range(3):
+        fixture.add_cleanup()
+    suite_test.add_fixture(fixture)
+    populated_suite.run()
+
+
+def test_fixture_cleanup_at_end_of_suite(populated_suite):
+    fixture = populated_suite.add_fixture()
+    populated_suite[-1].add_fixture(fixture)
+    fixture.add_cleanup()
+
+    populated_suite.run()
+
+
 def test_fixture_parameters(populated_suite, suite_test, defined_fixture):
     defined_fixture.parametrize()
     suite_test.add_fixture(defined_fixture)
 
     results = populated_suite.run()
-    len(results.results_by_test_uuid[suite_test.uuid]) == reduce(operator.mul, itervalues(defined_fixture.params))
+    len(results.results_by_test_uuid[suite_test.uuid]) == reduce(
+        operator.mul, itervalues(defined_fixture.params))
 
 
 def test_fixture_dependency_chain(populated_suite, suite_test):
@@ -46,7 +63,8 @@ def test_fixture_dependency_both_directly_and_indirectly(populated_suite, suite_
     suite_test.add_fixture(fixture2)
 
     results = populated_suite.run()
-    assert len(results.results_by_test_uuid[suite_test.uuid]) == num_params1 * num_params2
+    assert len(results.results_by_test_uuid[
+               suite_test.uuid]) == num_params1 * num_params2
 
 
 @pytest.fixture(params=["slashconf", "module"])

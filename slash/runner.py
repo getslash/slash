@@ -106,7 +106,7 @@ def _get_test_fixture_context(test, test_iterator, fixture_scope_manager):
     try:
         yield
     finally:
-        fixture_scope_manager.end_test(test, next_test=test_iterator.peek())
+        fixture_scope_manager.end_test(test, next_test=test_iterator.peek_or_none())
 
 @contextmanager
 def _get_test_context(test, logging=True):

@@ -31,6 +31,7 @@ class FixtureStore(object):
         return self._namespaces[-1]
 
     def add_cleanup(self, scope, cleanup):
+        assert isinstance(scope, int)
         self._cleanups_by_scope.setdefault(scope, []).append(cleanup)
 
     def begin_scope(self, scope):
