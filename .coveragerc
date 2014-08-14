@@ -4,6 +4,8 @@ source = slash
 [report]
 omit = 
     slash/_compat.py
+    slash/utils/interactive.py
+    slash/plugins/builtin/notifications.py
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma

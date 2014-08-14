@@ -48,6 +48,18 @@ def test_adding_fixture_twice_to_store(store):
     assert store.get_fixture_by_name('fixture0') is fixtureobj
 
 
+def test_fixture_store_namespace_repr(store):
+
+    @store.add_fixture
+    @slash.fixture
+    def fixture0():
+        pass
+
+    ns = store.get_current_namespace()
+    assert str(ns) == repr(ns)
+    assert repr(ns) == 'Fixtures: fixture0'
+
+
 def test_fixture_parameters(store):
 
     @store.add_fixture

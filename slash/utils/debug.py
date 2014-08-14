@@ -2,7 +2,7 @@ import sys
 from ..conf import config
 from ..exceptions import SkipTest
 
-def _debugger(debug_function_str, exc_info_transform=None):
+def _debugger(debug_function_str, exc_info_transform=None):  # pragma: no cover
     module_name, function_name = debug_function_str.rsplit(".", 1)
     def debugger(exc_info):
         try:
@@ -16,10 +16,10 @@ def _debugger(debug_function_str, exc_info_transform=None):
     debugger.__name__ = debug_function_str
     return debugger
 
-def _only_tb(exc_info):
+def _only_tb(exc_info):  # pragma: no cover
     return (exc_info[2],)
 
-def _tb_type_value(exc_info):
+def _tb_type_value(exc_info):  # pragma: no cover
     return (exc_info[2], exc_info[0], exc_info[1])
 
 _KNOWN_DEBUGGERS = [
@@ -45,9 +45,9 @@ def launch_debugger(exc_info):
     for debug_func in _KNOWN_DEBUGGERS:
         try:
             debug_func(exc_info)
-        except NotImplementedError:
+        except NotImplementedError:   # pragma: no cover
             continue
         else:
             break
     else:
-        raise NotImplementedError("No debug function available") # pragma: no cover
+        raise NotImplementedError("No debug function available")  # pragma: no cover
