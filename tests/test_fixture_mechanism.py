@@ -9,6 +9,29 @@ from slash.core.fixtures.parameters import bound_parametrizations_context
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
+def test_fixture_initialization_order_is_preserved(store):
+
+    _fixture = lambda f: store.add_fixture(slash.fixture(f))
+    generation = itertools.count(1)
+
+    @_fixture
+    def fixture1():
+        return next(generation)
+
+    @_fixture
+    def fixture2():
+        return next(generation)
+
+    @_fixture
+    def fixture3():
+        return next(generation)
+
+    store.resolve()
+    d = store.get_fixture_dict(['fixture1', 'fixture2', 'fixture3'])
+    for i in [1, 2, 3]:
+        assert d['fixture{0}'.format(i)] == i
+
+
 def test_fixture_id_remains_even_when_context_popped(store):
 
     @slash.fixture
