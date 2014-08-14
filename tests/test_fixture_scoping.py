@@ -1,13 +1,14 @@
 import collections
 import itertools
+import random
 from contextlib import contextmanager
 from uuid import uuid1
 
 import pytest
 import slash
-from slash._compat import StringIO, iteritems
+from slash._compat import iteritems, StringIO
 from slash.core.fixtures.fixture_store import FixtureStore
-from slash.core.fixtures.utils import get_scope_name_by_scope, get_scope_by_name
+from slash.core.fixtures.utils import get_scope_by_name, get_scope_name_by_scope
 
 from .utils.code_formatter import CodeFormatter
 
@@ -28,9 +29,21 @@ _FLAT_STRUCTURE = Structure(
     scopes={},
 )
 
+_FLAT_STRUCTURE_WITH_UNRELATED = Structure(
+    required=[1, 2, 3],
+    graph={1: [], 2: [], 3: [], 4: []},
+    scopes={},
+)
+
 _DEPENDENT_STRUCTURE = Structure(
     required=[1, 2, 3],
     graph={1: [3], 2: [1], 3: []},
+    scopes={},
+)
+
+_DEPENDENT_STRUCTURE_WITH_UNRELATED = Structure(
+    required=[1, 2, 3],
+    graph={1: [3], 2: [1], 3: [], 4: [2], 5: [1]},
     scopes={},
 )
 
@@ -49,7 +62,9 @@ _DEPENDENT_MIXED_SCOPES = Structure(
 
 @pytest.fixture(params=[
     _FLAT_STRUCTURE,
+    _FLAT_STRUCTURE_WITH_UNRELATED,
     _DEPENDENT_STRUCTURE,
+    _DEPENDENT_STRUCTURE_WITH_UNRELATED,
     _MODULE_SCOPED,
     _DEPENDENT_MIXED_SCOPES,
 ])
@@ -89,6 +104,8 @@ class FixtureTree(object):
             expected_value = self._values[required_name]
             assert values[required_name] == expected_value
 
+        assert not (set(self._fixtures) - set(self._required_names)).intersection(self._values), 'Non-necessary fixtures unexpectedly initialized!'
+
     def check_value(self, name, value):
         assert self._values[name] == value
 
@@ -118,12 +135,15 @@ class FixtureTree(object):
     def _populate_fixtures(self):
         assert not self._fixtures
 
-        key_to_fixture_name = dict((key, next(self._fixture_namegen)) for key in self._structure.graph)
+        graph = self._structure.graph
+
+        key_to_fixture_name = dict((key, next(self._fixture_namegen)) for key in graph)
 
         stack = list(self._structure.graph)
+
         while stack:
             fixture_key = stack.pop()
-            dependent_keys = self._structure.graph[fixture_key]
+            dependent_keys = graph[fixture_key]
             unresolved = [k for k in dependent_keys if key_to_fixture_name[k] not in self._fixtures]
             if unresolved:
                 stack.append(fixture_key)

@@ -13,6 +13,12 @@ from slash.loader import Loader
 from .utils.suite import TestSuite
 from .utils.cartesian import Cartesian
 
+import random
+
+@pytest.fixture(scope='session', autouse=True)
+def random_seed():
+    random.seed(0xdeadface)
+
 
 @pytest.fixture
 def forge(request):
