@@ -28,16 +28,30 @@ _FLAT_STRUCTURE = Structure(
     scopes={},
 )
 
+_DEPENDENT_STRUCTURE = Structure(
+    required=[1, 2, 3],
+    graph={1: [3], 2: [1], 3: []},
+    scopes={},
+)
+
+
 _MODULE_SCOPED = Structure(
     required=[1, 2, 3],
     graph={1: [], 2: [], 3: []},
     scopes={1: 'module', 2: 'module'},
 )
 
+_DEPENDENT_MIXED_SCOPES = Structure(
+    required=[1, 2, 3],
+    graph={1: [2], 2:[3], 3: []},
+    scopes={3: 'session', 2: 'module'},
+)
 
 @pytest.fixture(params=[
     _FLAT_STRUCTURE,
+    _DEPENDENT_STRUCTURE,
     _MODULE_SCOPED,
+    _DEPENDENT_MIXED_SCOPES,
 ])
 def structure(request):
     return request.param
@@ -74,6 +88,9 @@ class FixtureTree(object):
             assert values[required_name] is not None
             expected_value = self._values[required_name]
             assert values[required_name] == expected_value
+
+    def check_value(self, name, value):
+        assert self._values[name] == value
 
     def make_value(self, name):
         assert name not in self._values, 'Fixture generated more than once! (scope={0})'.format(get_scope_name_by_scope(self._fixtures[name].__slash_fixture__.scope))
