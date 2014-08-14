@@ -36,19 +36,23 @@ def test_before_after_parameters(cartesian):
     cartesian.check(result.data for result in session.results)
 
 
-def test_before_parameters_inheritence(cartesian):
+@pytest.mark.parametrize('with_override', [True, False])
+def test_before_parameters_inheritence(cartesian, with_override):
 
     class BaseTest(slash.Test):
 
         @slash.parameters.iterate(a=cartesian.before_1_a.make_set())
         def before(self, a):
-            _set("before_1", a)
+            _set("before_1_a", a)
 
     class DerivedTest(BaseTest):
 
         @slash.parameters.iterate(a=cartesian.before_2_a.make_set(), b=cartesian.before_2_b.make_set())
         def before(self, a, b):
-            super(DerivedTest, self).before()
+            if with_override:
+                super(DerivedTest, self).before(a=a)
+            else:
+                super(DerivedTest, self).before()
             _set("before_2_a", a)
             _set("before_2_b", b)
 
@@ -57,6 +61,9 @@ def test_before_parameters_inheritence(cartesian):
 
     session = run_tests_assert_success(DerivedTest)
     assert len(session.results) == len(cartesian)
+    if with_override:
+        cartesian.assign_all(source_name='before_2_a', target_name='before_1_a')
+    cartesian.check(result.data for result in session.results)
 
 
 def _set(param, value):
