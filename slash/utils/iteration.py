@@ -1,3 +1,7 @@
+import itertools
+
+from .._compat import itervalues
+
 _NOTHING = object()
 _END = object()
 
@@ -74,3 +78,11 @@ class Iteration(object):
         if self.last_counter0 is None:
             raise NotImplementedError("Iterator does not support getting size")
         return self.counter0 == self.last_counter0
+
+
+def iter_cartesian_dicts(d):
+    """Given a dictionary of the form {name: values}, yields dictionaries corresponding to the cartesian
+    product of the values, assigned to their respective names"""
+    keys = list(d)  # save keys order to prevent dictionary order changes
+    for combination in itertools.product(*itervalues(d)):
+        yield dict(zip(keys, combination))
