@@ -1,13 +1,12 @@
-import itertools
 from sentinels import NOTHING
 
 from ..._compat import iteritems, itervalues
-from ...exceptions import (CyclicFixtureDependency, UnresolvedFixtureStore)
-from ...utils.python import getargspec
+from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from .fixture import Fixture
-from .utils import get_scope_by_name
 from .namespace import Namespace
-from .parameters import get_parametrization_fixtures, Parametrization
+from .parameters import Parametrization
+from .utils import get_scope_by_name
+from .variation import VariationFactory
 
 
 class FixtureStore(object):
@@ -20,6 +19,7 @@ class FixtureStore(object):
         self._fixtures_by_id = {}
         self._values_by_id = {}
         self._cleanups_by_scope = {}
+        self._all_needed_parametrization_ids_by_fixture_id = {}
 
     def push_namespace(self):
         self._namespaces.append(Namespace(self, parent=self._namespaces[-1]))
@@ -34,6 +34,32 @@ class FixtureStore(object):
         assert isinstance(scope, int)
         self._cleanups_by_scope.setdefault(scope, []).append(cleanup)
 
+    def get_all_needed_parametrization_ids(self, fixtureobj):
+        if self._unresolved_fixture_ids:
+            raise UnresolvedFixtureStore()
+        if isinstance(fixtureobj, Parametrization):
+            return frozenset([fixtureobj.info.id])
+        returned = self._all_needed_parametrization_ids_by_fixture_id.get(fixtureobj.info.id)
+        if returned is None:
+            returned = self._compute_all_needed_parametrization_ids(fixtureobj)
+            self._all_needed_parametrization_ids_by_fixture_id[fixtureobj.info.id] = returned
+        return returned
+
+    def _compute_all_needed_parametrization_ids(self, fixtureobj):
+        stack = [fixtureobj.info.id]
+        returned = set()
+        while stack:
+            fixture_id = stack.pop()
+            if fixture_id in self._all_needed_parametrization_ids_by_fixture_id:
+                returned.update(self._all_needed_parametrization_ids_by_fixture_id[fixture_id])
+                continue
+            fixture = self._fixtures_by_id[fixture_id]
+            if fixture.parametrization_ids:
+                returned.update(fixture.parametrization_ids)
+            if fixture.fixture_kwargs:
+                stack.extend(itervalues(fixture.fixture_kwargs))
+        return frozenset(returned)
+
     def begin_scope(self, scope):
         scope = get_scope_by_name(scope)
 
@@ -45,6 +71,10 @@ class FixtureStore(object):
                 self._values_by_id.pop(fixture_id, None)
         while cleanups:
             cleanups.pop(-1)()
+
+    def ensure_known_parametrization(self, parametrization):
+        if parametrization.info.id not in self._fixtures_by_id:
+            self._fixtures_by_id[parametrization.info.id] = parametrization
 
     def add_fixtures_from_dict(self, d):
         for name, thing in iteritems(d):
@@ -89,52 +119,19 @@ class FixtureStore(object):
             returned[required_name] = self._values_by_id[fixture.info.id]
         return returned
 
-    def iter_parameterization_variations(self, names=(), fixtures=(), fixture_ids=(), funcs=(), methods=()):
-        needed_fixtures = []
-        for name in names:
-            needed_fixtures.append(self.get_fixture_by_name(name))
-        needed_fixtures.extend(fixtures)
+    def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
+
+        variation_factory = VariationFactory(self)
         for fixture_id in fixture_ids:
-            needed_fixtures.append(self.get_fixture_by_id(fixture_id))
+            variation_factory.add_needed_fixture_id(fixture_id)
 
-        for is_method, func in itertools.chain(itertools.izip(itertools.repeat(False), funcs),
-                                               itertools.izip(itertools.repeat(True), methods)):
-            for fixture in get_parametrization_fixtures(func):
-                assert fixture.info.id not in self._fixtures_by_id or self._fixtures_by_id[fixture.info.id] is fixture
-                self._fixtures_by_id[fixture.info.id] = fixture
-                needed_fixtures.append(fixture)
-            needed_fixtures.extend(self._get_needed_fixture_from_func(func, is_method=is_method))
+        for func in funcs:
+            variation_factory.add_needed_fixtures_from_function(func)
 
-        param_ids = self._get_all_dependent_parametrization_ids_from_names(needed_fixtures)
-        if not param_ids:
-            yield {}
-            return
-        for combination in itertools.product(*(self._fixtures_by_id[id].values for id in param_ids)):
-            yield dict(zip(param_ids, combination))
+        for method in methods:
+            variation_factory.add_needed_fixtures_from_method(method)
 
-    def _get_needed_fixture_from_func(self, func, is_method):
-        parametrization = set(p.name for p in get_parametrization_fixtures(func))
-        args = getargspec(func).args
-        if is_method:
-            args = args[1:]
-        for name in args:
-            if name not in parametrization:
-                yield self.get_fixture_by_name(name)
-
-    def _get_all_dependent_parametrization_ids_from_names(self, fixtures):
-        returned = set()
-        assert isinstance(fixtures, list)
-
-        while fixtures:
-            f = fixtures.pop(-1)
-            if isinstance(f, Parametrization):
-                returned.add(f.info.id)
-            if f.parametrization_ids is not None:
-                returned.update(f.parametrization_ids)
-            if f.fixture_kwargs:
-                for needed_fixture_id in itervalues(f.fixture_kwargs):
-                    fixtures.append(self.get_fixture_by_id(needed_fixture_id))
-        return returned
+        return variation_factory.iter_variations()
 
     def _fill_fixture_value(self, name, fixture):
 

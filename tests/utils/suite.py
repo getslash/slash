@@ -164,6 +164,8 @@ class TestSuite(object):
             method_name = test_metadata.address_in_factory
             assert method_name.startswith(".test_")
             uuid = method_name[6:]
+        if '(' in uuid:
+            uuid = uuid[:uuid.index('(')]
         return uuid
 
     def verify_last_run(self, stop_on_error=False):

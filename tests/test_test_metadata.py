@@ -29,7 +29,6 @@ class TestMetadataTest(TestCase):
         self.assertEquals(self.results[0].test_metadata.address, "{0}:T001.test_method".format(self.filename))
 
     def test_parameterized_test_address(self):
-        pytest.skip('!')
         parameterized = set(x.test_metadata.address for x in self.results[1:])
 
         self.assertEquals(parameterized, set(

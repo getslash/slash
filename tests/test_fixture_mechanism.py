@@ -5,7 +5,7 @@ from uuid import uuid1
 import pytest
 import slash
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
-from slash.core.fixtures.parameters import bound_parametrizations_context
+from slash.core.fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
@@ -56,7 +56,7 @@ def test_fixture_id_remains_even_when_context_popped(store):
 
 
 def test_variations_no_names(store):
-    assert list(store.iter_parameterization_variations([])) == [{}]
+    assert list(store.iter_parametrization_variations([])) == [{}]
 
 
 def test_adding_fixture_twice_to_store(store):
@@ -114,9 +114,28 @@ def test_fixture_parameters(store):
     assert set(variations) == set(itertools.product([1, 2, 3], [4, 5, 6]))
 
 
+def test_variation_equality(store):
+
+    @store.add_fixture
+    @slash.fixture
+    @slash.parametrize('a', [1, 2, 3])
+    def fixture(a):
+        pass
+
+    store.resolve()
+
+    prev_variation = None
+    for variation in store.iter_parametrization_variations(fixture_ids=[store.get_fixture_by_name('fixture').info.id]):
+        assert variation == variation
+        assert not (variation != variation)
+        assert variation != prev_variation
+        assert not (variation == prev_variation)
+        prev_variation = variation
+
+
 def _get_all_values(store, fixture_name):
     returned = []
-    for variation in store.iter_parameterization_variations(names=[fixture_name]):
+    for variation in store.iter_parametrization_variations(fixture_ids=[store.get_fixture_by_name(fixture_name).info.id]):
         store.begin_scope('test')
         with bound_parametrizations_context(variation):
             returned.append(
@@ -184,6 +203,82 @@ def test_fixture_store_resolve_missing_fixtures(store):
 
     with pytest.raises(UnknownFixtures):
         store.resolve()
+
+
+def test_get_all_needed_parametrization_ids(store):
+
+    @store.add_fixture
+    @slash.fixture
+    @slash.parametrize('param', [1, 2, 3])
+    def fixture1(param):
+        pass
+
+    @store.add_fixture
+    @slash.fixture
+    def fixture2(fixture1):
+        pass
+
+    @store.add_fixture
+    @slash.fixture
+    @slash.parametrize('param', [4, 5, 6])
+    def fixture3(fixture2, param):
+        pass
+
+    fixtureobj = store.get_fixture_by_id(fixture3.__slash_fixture__.id)
+
+    with pytest.raises(UnresolvedFixtureStore):
+        store.get_all_needed_parametrization_ids(fixtureobj)
+
+    store.resolve()
+
+    assert len(set(store.get_all_needed_parametrization_ids(fixtureobj))) == 2
+
+
+def test_get_all_needed_parametrization_ids_of_parametrization(store):
+
+    @store.add_fixture
+    @slash.fixture
+    @slash.parametrize('param', [1, 2, 3])
+    def fixture1(param):
+        pass
+
+    fixtureobj = store.get_fixture_by_id(fixture1.__slash_fixture__.id)
+    [param_fixtureobj] = get_parametrization_fixtures(fixture1)
+
+    with pytest.raises(UnresolvedFixtureStore):
+        store.get_all_needed_parametrization_ids(fixtureobj)
+
+    store.resolve()
+
+    needed = set(store.get_all_needed_parametrization_ids(param_fixtureobj))
+    assert len(needed) == 1
+    assert needed == set([param_fixtureobj.info.id])
+
+
+
+def test_fixture_store_iter_parametrization_variations_missing_fixtures(store):
+
+    def test_func(needed_fixture):
+        pass
+
+    with pytest.raises(LookupError):
+        list(store.iter_parametrization_variations(funcs=[test_func]))
+
+
+def test_fixture_store_iter_parametrization_variations_unresolved(store):
+
+    @store.add_fixture
+    @slash.fixture
+    @slash.parametrize('x', [1, 2, 3])
+    def needed_fixture(x):
+        pass
+
+    def test_func(needed_fixture):
+        pass
+
+    with pytest.raises(UnresolvedFixtureStore):
+        list(store.iter_parametrization_variations(funcs=[test_func]))
+
 
 
 def test_fixture_dependency(store):

@@ -17,12 +17,13 @@ def parametrize(parameter_name, values):
 
             @wraps(func, preserve=['__slash_fixture__'])
             def new_func(*args, **kwargs):
+                # for better debugging. _current_variation gets set to None on context exit
+                variation = _current_variation
                 for fixture in params.get_parametrization_fixtures():
                     if fixture.name not in kwargs:
-                        assert _current_bindings is not None, 'Not called in parametrization context'
-                        if fixture.info.id in _current_bindings:
-                            kwargs[fixture.name] = _current_bindings[
-                                fixture.info.id]
+                        assert variation is not None, 'Not called in parametrization context'
+                        if variation.has_value_for_fixture_id(fixture.info.id):
+                            kwargs[fixture.name] = variation.get_fixture_value(fixture.info.id)
                 return func(*args, **kwargs)
             setattr(new_func, _PARAM_INFO_ATTR_NAME, params)
             returned = new_func
@@ -44,18 +45,18 @@ def iterate(**kwargs):
     return decorator
 
 
-_current_bindings = None
+_current_variation = None
 
 
 @contextmanager
-def bound_parametrizations_context(parameter_ids_to_values):
-    global _current_bindings  # pylint: disable=global-statement
-    assert _current_bindings is None
-    _current_bindings = parameter_ids_to_values
+def bound_parametrizations_context(variation):
+    global _current_variation  # pylint: disable=global-statement
+    assert _current_variation is None
+    _current_variation = variation
     try:
         yield
     finally:
-        _current_bindings = None
+        _current_variation = None
 
 
 def get_parametrization_fixtures(func):

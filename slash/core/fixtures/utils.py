@@ -1,7 +1,7 @@
 import functools
 import itertools
 
-from ..._compat import zip, iteritems
+from ..._compat import izip, iteritems
 from ...utils.python import getargspec
 
 _id_gen = itertools.count(1000)
@@ -43,6 +43,6 @@ def get_scope_name_by_scope(scope_id):
     return _SCOPES_BY_ID[scope_id]
 
 _SCOPES = dict(
-    zip(('test', 'module', 'session'), itertools.count()))
+    izip(('test', 'module', 'session'), itertools.count()))
 
 _SCOPES_BY_ID = dict((id, name) for (name, id) in iteritems(_SCOPES))

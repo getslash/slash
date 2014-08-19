@@ -27,13 +27,13 @@ class TestTestFactory(RunnableTestFactory):
             test_method = getattr(self.test, test_method_name)
             needed_fixtures = self._get_needed_fixtures(test_method)
 
-            for param_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
+            for fixture_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
                 case = self.test(
                     test_method_name,
                     needed_fixtures=needed_fixtures,
                     fixture_store=fixture_store,
                     fixture_namespace=fixture_store.get_current_namespace(),
-                    param_variation=param_variation,
+                    fixture_variation=fixture_variation,
                 )
                 if self.test.__slash_skipped__:
                     case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
@@ -44,10 +44,11 @@ class TestTestFactory(RunnableTestFactory):
         return [name for name in getargspec(method).args[1:] if name not in parametrized]
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
-        return fixture_store.iter_parameterization_variations(methods=itertools.chain(
-            self._get_all_before_methods(),
+        return fixture_store.iter_parametrization_variations(methods=itertools.chain(
+            itertools.izip(itertools.repeat('before'), self._get_all_before_methods()),
+            itertools.izip(itertools.repeat('after'), self._get_all_after_methods()),
             [getattr(self.test, test_method_name)],
-            self._get_all_after_methods()))
+        ))
 
     def _get_all_before_methods(self):
         return self._iter_inherited_methods('before')
@@ -66,12 +67,12 @@ class Test(RunnableTest):
     """
     This is a base class for implementing unittest-style test classes.
     """
-    def __init__(self, test_method_name, fixture_store, fixture_namespace, param_variation, needed_fixtures):
+    def __init__(self, test_method_name, fixture_store, fixture_namespace, fixture_variation, needed_fixtures):
         super(Test, self).__init__()
         self._test_method_name = test_method_name
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
-        self._param_variation = param_variation
+        self._fixture_variation = fixture_variation
         self._needed_fixtures = needed_fixtures
 
     __slash_skipped__ = False
@@ -88,6 +89,8 @@ class Test(RunnableTest):
         returned = ''
         if self._test_method_name is not None:
             returned += ".{0}".format(self._test_method_name)
+        if self._fixture_variation:
+            returned += '({0})'.format(self._fixture_variation.representation)
         return returned
 
     def _get_call_string(self, kwargs):
@@ -100,7 +103,7 @@ class Test(RunnableTest):
         Not to be overriden
         """
         method = getattr(self, self._test_method_name)
-        with bound_parametrizations_context(self._param_variation):
+        with bound_parametrizations_context(self._fixture_variation):
             self.before()
             try:
                 with handling_exceptions():
