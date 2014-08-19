@@ -31,4 +31,5 @@ class FunctionTestFactory(RunnableTestFactory):
     def _generate_tests(self, fixture_store):
         namespace = fixture_store.get_current_namespace()
         for variation in fixture_store.iter_parametrization_variations(funcs=[self.func]):
-            yield None, FunctionTest(self.func, fixture_store, namespace, variation)
+            address = '({0})'.format(variation.representation) if variation else None
+            yield address, FunctionTest(self.func, fixture_store, namespace, variation)

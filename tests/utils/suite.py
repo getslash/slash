@@ -156,14 +156,16 @@ class TestSuite(object):
         return self._test_ordinal_by_uuid[uuid]
 
     def _get_test_metadata_uuid(self, test_metadata):
-        if test_metadata.address_in_factory is None:
-            function_name = test_metadata.factory_name
-            assert function_name.startswith("test_")
-            uuid = function_name[5:]
-        else:
+        if test_metadata.address_in_factory is not None and '.' in test_metadata.address_in_factory:
+            # this is a method
             method_name = test_metadata.address_in_factory
             assert method_name.startswith(".test_")
             uuid = method_name[6:]
+        else:
+            function_name = test_metadata.factory_name
+            assert function_name.startswith("test_")
+            uuid = function_name[5:]
+
         if '(' in uuid:
             uuid = uuid[:uuid.index('(')]
         return uuid
