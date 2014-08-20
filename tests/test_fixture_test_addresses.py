@@ -2,7 +2,7 @@ import itertools
 
 import pytest
 import slash
-from slash._compat import ExitStack
+from slash._compat import ExitStack, xrange
 
 from .utils import run_tests_assert_success
 from .utils.code_formatter import CodeFormatter

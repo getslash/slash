@@ -6,7 +6,7 @@ import pytest
 import slash
 from slash._compat import StringIO
 from slash.utils.iteration import iter_cartesian_dicts
-from utils.code_formatter import CodeFormatter
+from .utils.code_formatter import CodeFormatter
 
 
 def test_representation_parameters(fixture_store, parametrized_func, params, param_names):

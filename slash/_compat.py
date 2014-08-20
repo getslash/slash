@@ -41,7 +41,7 @@ else:
     from io import StringIO
     izip = _builtins.zip
     imap = _builtins.map
-    reduce = _builtins.reduce
+    from functools import reduce
     xrange = range
     iteritems = lambda d: iter(d.items()) # not dict.items!!! See above
     itervalues = lambda d: iter(d.values())

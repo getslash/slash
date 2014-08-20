@@ -57,15 +57,20 @@ def test_iter_fixture_variations_parametrized(suite, planned_test):
 
         param_dicts_ordered_by_fixture.append(fixture_param_dicts)
 
-    expected = sorted(
-        dict((f.name, {'value': f.value, 'params': param_dict})
-             for f, param_dict in zip(fixtures, dict_combination))
-        for dict_combination in itertools.product(*param_dicts_ordered_by_fixture))
 
-    got = sorted(planned_test.iter_expected_fixture_variations())
+    expected = [dict((f.name, {'value': f.value, 'params': param_dict})
+                     for f, param_dict in zip(fixtures, dict_combination))
+                for dict_combination in itertools.product(*param_dicts_ordered_by_fixture)]
+
+    got = list(planned_test.iter_expected_fixture_variations())
 
     assert len(expected) == len(got)
-    assert expected == got
+
+    # we can't use sets here, and sorting the two lists is a nightmare in Python 3 since they contain dicts
+    for expected_dict in expected:
+        got.remove(expected_dict)
+    assert not got
+
 
 @pytest.mark.parametrize('regular_function', [True, False])
 def test_iter_fixture_variations_dependent_fixtures(suite, regular_function):

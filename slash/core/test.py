@@ -1,7 +1,7 @@
 import functools
 import itertools
 
-from .._compat import iteritems
+from .._compat import iteritems, izip
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest
 from ..utils.python import getargspec
@@ -45,8 +45,8 @@ class TestTestFactory(RunnableTestFactory):
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(
-            itertools.izip(itertools.repeat('before'), self._get_all_before_methods()),
-            itertools.izip(itertools.repeat('after'), self._get_all_after_methods()),
+            izip(itertools.repeat('before'), self._get_all_before_methods()),
+            izip(itertools.repeat('after'), self._get_all_after_methods()),
             [getattr(self.test, test_method_name)],
         ))
 

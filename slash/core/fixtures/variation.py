@@ -2,7 +2,7 @@ import collections
 import itertools
 from numbers import Number
 
-from ..._compat import iteritems, OrderedDict, string_types, imap, izip
+from ..._compat import iteritems, OrderedDict, string_types, imap, izip, reduce, xrange
 from ...utils.python import getargspec
 from .parameters import Parametrization, get_parametrization_fixtures
 
