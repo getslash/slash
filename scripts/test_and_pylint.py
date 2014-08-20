@@ -13,7 +13,10 @@ def _cmd(cmd):
     subprocess.check_call(cmd, shell=True)
 
 if __name__ == '__main__':
-    _cmd("py.test tests --cov=slash --cov-report=html")
-    if not _PYPY:
-        _cmd("pylint --rcfile=.pylintrc setup.py")
-        _cmd("pylint --rcfile=.pylintrc slash")
+    try:
+        _cmd("py.test tests --cov=slash --cov-report=html")
+        if not _PYPY:
+            _cmd("pylint --rcfile=.pylintrc setup.py")
+            _cmd("pylint --rcfile=.pylintrc slash")
+    except subprocess.CalledProcessError as e:
+        sys.exit(e.returncode)
