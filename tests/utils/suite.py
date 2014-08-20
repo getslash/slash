@@ -68,10 +68,13 @@ class TestSuite(object):
         self._all_tests.append(test)
         return test
 
-    def add_fixture(self):
-        returned = Fixture(self)
+    def add_fixture(self, **kw):
+        returned = Fixture(self, **kw)
         self._fixtures.append(returned)
         return returned
+
+    def iter_fixtures(self):
+        return iter(self._fixtures)
 
     def _get_test_container(self, regular_function):
         if not regular_function:
@@ -281,8 +284,11 @@ class File(SuiteObject):
         self._fixtures = []
         self._injected_lines = []
 
-    def add_fixture(self):
-        returned = Fixture(self.suite)
+    def iter_fixtures(self):
+        return iter(self._fixtures)
+
+    def add_fixture(self, **kw):
+        returned = Fixture(self.suite, **kw)
         self._fixtures.append(returned)
         return returned
 
@@ -344,9 +350,11 @@ class Parametrizable(object):
 
 class Fixture(SuiteObject, Parametrizable):
 
-    def __init__(self, suite):
+    def __init__(self, suite, autouse=False):
         super(Fixture, self).__init__(suite)
+        self.uuid = _uuid()
         self.name = 'fixture_{0:05}'.format(self.id)
+        self.autouse = autouse
         self.value = _uuid()
         self.fixtures = []
         self._cleanups = []
@@ -371,13 +379,18 @@ class Fixture(SuiteObject, Parametrizable):
         if self._cleanups:
             arg_names.insert(0, 'this')
 
-        formatter.writeln('@slash.fixture')
+        formatter.write('@slash.fixture')
+        if self.autouse:
+            formatter.writeln('(autouse=True)')
+        else:
+            formatter.writeln()
         self.add_parametrize_decorators(formatter)
         formatter.writeln(
             'def {0}({1}):'.format(self.name, ', '.join(arg_names)))
         with formatter.indented():
+            formatter.writeln('_test_result = slash.context.result')
+            formatter.writeln('_test_result.data.setdefault("started_fixtures", []).append({0!r})'.format(self.uuid))
             for cleanup_uuid in self._cleanups:
-                formatter.writeln('_test_result = slash.context.result')
                 formatter.writeln('@this.add_cleanup')
                 formatter.writeln('def cleanup():')
                 with formatter.indented():
@@ -544,6 +557,10 @@ class PlannedTest(SuiteObject, Parametrizable):
 
         for fixture in self._fixtures:
             fixture.verify_cleanups(result)
+
+        for fixture in itertools.chain(self._fixtures, self.file.iter_fixtures(), self.suite.iter_fixtures()):
+            if fixture.autouse:
+                assert fixture.uuid in result.data['started_fixtures']
 
         if self._expected_result == _SUCCESS:
             assert result.is_success()

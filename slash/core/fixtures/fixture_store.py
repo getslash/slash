@@ -45,6 +45,17 @@ class FixtureStore(object):
             self._all_needed_parametrization_ids_by_fixture_id[fixtureobj.info.id] = returned
         return returned
 
+    def iter_autouse_fixtures_in_namespace(self, namespace=None):
+        if namespace is None:
+            namespace = self.get_current_namespace()
+        for fixture in namespace.iter_fixtures():
+            if fixture.info.autouse:
+                yield fixture
+
+    def activate_autouse_fixtures_in_namespace(self, namespace):
+        for fixture in self.iter_autouse_fixtures_in_namespace(namespace):
+            _ = self.get_fixture_value(fixture)
+
     def _compute_all_needed_parametrization_ids(self, fixtureobj):
         stack = [fixtureobj.info.id]
         returned = set()
@@ -115,9 +126,15 @@ class FixtureStore(object):
 
         for required_name in required_names:
             fixture = namespace.get_fixture_by_name(required_name)
-            self._fill_fixture_value(required_name, fixture)
-            returned[required_name] = self._values_by_id[fixture.info.id]
+            returned[required_name] = self.get_fixture_value(fixture, name=required_name)
         return returned
+
+    def get_fixture_value(self, fixture, name=None):
+        if name is None:
+            name = fixture.info.name
+
+        self._fill_fixture_value(name, fixture)
+        return self._values_by_id[fixture.info.id]
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
 

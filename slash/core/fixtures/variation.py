@@ -17,7 +17,7 @@ class VariationFactory(object):
     def __init__(self, fixture_store):
         super(VariationFactory, self).__init__()
         self._store = fixture_store
-        self._needed_fixtures = []
+        self._needed_fixtures = list(fixture_store.iter_autouse_fixtures_in_namespace())
         self._named_fixture_ids = OrderedDict()
         self._known_value_strings = collections.defaultdict(dict)
 

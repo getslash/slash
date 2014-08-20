@@ -18,6 +18,7 @@ class FunctionTest(RunnableTest):
 
     def run(self):
         with bound_parametrizations_context(self._variation):
+            self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             kwargs = self._fixture_store.get_fixture_dict(self._func_args, namespace=self._fixture_namespace)
             self._func(**kwargs)  # pylint: disable=star-args
 

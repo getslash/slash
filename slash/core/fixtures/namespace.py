@@ -1,6 +1,8 @@
 from sentinels import NOTHING
 from numbers import Number
 
+from ..._compat import itervalues
+
 
 class Namespace(object):
 
@@ -9,6 +11,12 @@ class Namespace(object):
         self._store = store
         self._parent = parent
         self._fixture_names = {}
+
+    def iter_fixtures(self):
+        while self is not None:
+            for fixture_id in itervalues(self._fixture_names):
+                yield self._store.get_fixture_by_id(fixture_id)
+            self = self._parent
 
     def __repr__(self):
         return 'Fixtures: {0}'.format(', '.join(self._iter_fixture_names()) or '**None**')

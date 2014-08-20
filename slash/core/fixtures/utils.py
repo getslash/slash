@@ -6,19 +6,19 @@ from ...utils.python import getargspec
 
 _id_gen = itertools.count(1000)
 
-def fixture(func=None, name=None, scope=None):
+def fixture(func=None, name=None, scope=None, autouse=False):
     if func is None:
-        return functools.partial(fixture, name=name, scope=scope)
+        return functools.partial(fixture, name=name, scope=scope, autouse=autouse)
 
     if not hasattr(func, '__slash_fixture__'):
-        func.__slash_fixture__ = FixtureInfo(func, name=name, scope=scope)
+        func.__slash_fixture__ = FixtureInfo(func, name=name, scope=scope, autouse=autouse)
 
     return func
 
 
 class FixtureInfo(object):
 
-    def __init__(self, func=None, name=None, scope=None):
+    def __init__(self, func=None, name=None, scope=None, autouse=False):
         super(FixtureInfo, self).__init__()
         self.id = next(_id_gen)
         if name is None:
@@ -30,6 +30,7 @@ class FixtureInfo(object):
             scope = 'test'
         self.name = name
         self.func = func
+        self.autouse = autouse
         self.scope = _SCOPES[scope]
         if self.func is not None:
             self.required_args = getargspec(func).args

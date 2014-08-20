@@ -104,6 +104,7 @@ class Test(RunnableTest):
         """
         method = getattr(self, self._test_method_name)
         with bound_parametrizations_context(self._fixture_variation):
+            self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             self.before()
             try:
                 with handling_exceptions():
