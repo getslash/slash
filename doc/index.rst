@@ -17,6 +17,7 @@ Table Of Contents
    
    getting_started
    assertions
+   fixtures
    configuration
    logging
    hooks

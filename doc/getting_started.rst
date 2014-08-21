@@ -4,19 +4,37 @@ Getting Started with Slash
 Writing Tests
 -------------
 
-Slash provides a main convenience class for deriving your tests from - :class:`slash.Test`.
+Slash supports two main types of tests -- tests written as class methods and tests written as functions.
 
-Subclasses of :class:`slash.Test` are run by slash in a manner quite similar to the ``unittest.TestCase`` class. Classes can contain multiple methods, each will be run as a separate "case".
+Tests as Functions
+------------------
 
-Slash only runs methods beginning with ``test`` as cases. A minimalistic test implementation, therefore, can be written as follows:
+The simplest form of tests are tests written as functions:
 
+.. code-block:: python
+
+  # test_1.py
+  def test_addition():
+      assert 1 + 1 == 2
+
+Each test in the file beginning with the **test_** prefix is loaded and executed as a single test case.
+
+Although at first glance test functions seem inferior to their method counterparts, they are actually pretty powerful, as we'll see in the section about :ref:`fixtures`.
+
+Tests as Methods
+----------------
+
+Method tests slightly resemble *unittest* style tests. Your files can contain *test classes*, each of which contains methods to be executed as individual tests. 
+
+Each test class should derive from the :class:`slash.Test` class in order to be properly loaded and executed:
 .. code-block:: python
 
  from slash import Test
  
  class SomeCoolTest(Test):
+
      def test(self):
-         pass # <-- test logic goes here
+         assert 1 + 1 == 2
 
 Before and after each case, very much like ``unittest``'s ``setUp`` and ``tearDown``, :func:`slash.Test.before` and :func:`slash.Test.after` are run respectively. This is very useful when including multiple test cases in a single class:
 
