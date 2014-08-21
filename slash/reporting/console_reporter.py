@@ -155,11 +155,11 @@ class ConsoleReporter(ReporterInterface):
 
             for error_iteration, error in iteration(errors):
                 error_number += 1
-                self._report_error_location(result, error_number, total_num_errors, marker)
+                self._report_error_location(result, error_number, total_num_errors, marker, error)
                 self._report_error(result, error, marker)
 
-    def _report_error_location(self, result, object_index, total_num_errors, marker):
-        self._terminal.sep("_", self._get_location(result))
+    def _report_error_location(self, result, object_index, total_num_errors, marker, error):
+        self._terminal.sep("_", '{0}: {1}'.format(error.time, self._get_location(result)))
         if self._verobsity_allows(VERBOSITIES.INFO) and result.test_metadata:
             location = "{0}:{1}{2}/{3}".format(
                 result.test_metadata.id, marker, object_index, total_num_errors)
