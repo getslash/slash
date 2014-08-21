@@ -1,3 +1,4 @@
+import datetime
 import sys
 import traceback
 
@@ -13,6 +14,7 @@ class Error(object):
 
     def __init__(self, msg=None, exc_info=None):
         super(Error, self).__init__()
+        self.time = datetime.datetime.utcnow()
         if msg is None and exc_info is not None:
             msg = traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()
         if not isinstance(msg, string_types):

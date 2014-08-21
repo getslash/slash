@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`171` Add error times to console reports
 * :release:`0.7.1 <14-07-2014>`
 * :bug:`-` Fixed error summary reporting
 * :release:`0.7.0 <07-07-2014>`
