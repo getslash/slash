@@ -1,3 +1,4 @@
+
 Getting Started with Slash
 ==========================
 
@@ -272,31 +273,30 @@ Test Parameters
 
 .. _parameters:
 
-Slash's :class:`.Test` supports adding parameters to your tests via the ``slash.parameters`` module.
+Slash tests can be easily parametrized, iterating parameter values and creating separate cases for each value/
 
-Use the :func:`slash.parameters.iterate` decorator to multiply a test function for different parameter values:
+Use the :func:`slash.parametrize` decorator to multiply a test function for different parameter values:
+
+.. code-block:: python
+
+   @slash.parametrize('x', [1, 2, 3])
+   def test_something(x):
+       # use x here
+
+The above example will yield 3 test cases, one for each value of ``x``. Slash also supports parametrizing the ``before`` and ``after`` methods of test classes, thus multiplying each case by several possible setups:
 
 .. code-block:: python
 
     class SomeTest(Test):
-        @slash.parameters.iterate(x=[1, 2, 3])
-	def test(self, x):
-            # use x here
-
-The above example will yield 3 test cases, one for each value of ``x``. It is also useful to provide parameters to the ``before`` and ``after`` methods, thus multiplying each case by several possible setups:
-
-.. code-block:: python
-
-    class SomeTest(Test):
-        @slash.parameters.iterate(x=[1, 2, 3])
+        @slash.parametrize('x', [1, 2, 3])
 	def before(self, x):
             # ...
 
-        @slash.parameters.iterate(y=[4, 5, 6])
+        @slash.parametrize('y', [4, 5, 6])
 	def test(self, y):
             # ...
 
-        @slash.parameters.iterate(z=[7, 8, 9])
+        @slash.parametrize('z', [7, 8, 9])
 	def after(self, z):
             # ...
 
@@ -308,13 +308,13 @@ This also works across inheritence. Each base class can parametrize its `before`
 
     class BaseTest(Test):
 
-        @slash.parameters.iterate(base_parameter=[1, 2, 3])
+        @slash.parametrize('base_parameter', [1, 2, 3])
         def before(self, base_parameter):
             # ....
 
     class DerivedTest(BaseTest):
         
-        @slash.parameters.iterate(derived_parameter=[4, 5, 6])
+        @slash.parametrize('derived_parameter', [4, 5, 6])
         def before(self, derived_parameter):
             super(DerivedTest, self).before() # note that base parameters aren't specified here
             # .....
@@ -323,7 +323,7 @@ This also works across inheritence. Each base class can parametrize its `before`
 Abstract Base Tests
 -------------------
 
-Sometimes you want tests that won't be executed on their own, but rather function as bases to derived tests:
+When writing test classes, sometimes you want tests that won't be executed on their own, but rather function as bases to derived tests:
 
 .. code-block:: python
 
