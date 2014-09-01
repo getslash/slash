@@ -8,7 +8,6 @@ from .conf import config
 from .loader import Loader
 from .reporting.console_reporter import ConsoleReporter
 from .utils import cli_utils
-from .utils.interactive import start_interactive_shell
 
 
 class Application(object):
@@ -35,8 +34,6 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
         app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
         _check_unknown_switches(app)
         with app.session:
-            if enable_interactive and parsed_args.interactive:
-                start_interactive_shell()
             yield app
             trigger_hook.result_summary()  # pylint: disable=no-member
 
