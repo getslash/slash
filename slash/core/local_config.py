@@ -48,7 +48,7 @@ class LocalConfig(object):
 
         while True:
             yield path
-            if path == os.path.sep:
+            if path == os.path.abspath(os.path.sep):
                 break
             new_path = os.path.dirname(path)
             assert new_path != path
