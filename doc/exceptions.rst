@@ -25,7 +25,7 @@ This context can be safely nested -- once an exception is handled, it is appropr
 
 .. code-block:: python
 
-    from slash import handling_exceptions
+    from slash.exception_handling import handling_exceptions
 
     def some_function():
         with handling_exceptions():
