@@ -11,6 +11,7 @@ from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, SkipTest, TestFailed
+from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.fixtures.fixture_scope_manager import FixtureScopeManager
 from .utils.iteration import PeekableIterator
@@ -152,6 +153,12 @@ def _set_current_test_context(test):
     prev_test_id = context.test_id
     context.test = test
     context.test_id = test.__slash__.id
+    if isinstance(test, FunctionTest):
+        context.test_classname = None
+        context.test_methodname = test.__slash__.factory_name
+    else:
+        context.test_classname = test.__slash__.factory_name
+        context.test_methodname = test.__slash__.address_in_factory
     try:
         yield
     finally:
