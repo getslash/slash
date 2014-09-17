@@ -159,7 +159,7 @@ class ConsoleReporter(ReporterInterface):
                 self._report_error(result, error, marker)
 
     def _report_error_location(self, result, object_index, total_num_errors, marker, error):
-        self._terminal.sep("_", '{0}: {1}'.format(error.time, self._get_location(result)))
+        self._terminal.sep("_", '{0:YYYY-MM-DD HH:mm:ss ZZ}: {1}'.format(error.time.to('local'), self._get_location(result)))
         if self._verobsity_allows(VERBOSITIES.INFO) and result.test_metadata:
             location = "{0}:{1}{2}/{3}".format(
                 result.test_metadata.id, marker, object_index, total_num_errors)
