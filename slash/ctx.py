@@ -114,6 +114,11 @@ class ContextAttributeProxy(object):
     def __repr__(self):
         return repr(self._obj)
 
+    def __dir__(self):
+        return dir(self._obj)
+
+    __members__ = __dir__
+
     def __str__(self):
         return str(self._obj)
 
