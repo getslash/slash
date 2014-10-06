@@ -63,7 +63,11 @@ def _collect_tests(app, args):  # pylint: disable=unused-argument
     if not paths and not app.args.interactive:
         app.error("No tests specified")
 
-    return app.test_loader.get_runnables(paths)
+    collected = app.test_loader.get_runnables(paths)
+    if len(collected) == 0 and not app.args.interactive:
+        app.error("No tests specified")
+
+    return collected
 
 def _extend_paths_from_suite_files(paths):
     suite_files = config.root.run.suite_files
