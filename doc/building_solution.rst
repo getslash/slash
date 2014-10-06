@@ -131,7 +131,7 @@ Slash supports initialization files (or *rc* files) in two main locations. The f
  import slash
  from mocrotech_testing.slash_plugin import MicrotechTestingPlugin
 
- slash.plugins.manager.install(MicrotechTestingPlugin)
+ slash.plugins.manager.install(MicrotechTestingPlugin())
 
 We will be adding more customization code to this file in the following paragraphs to make it even more useful.
 
