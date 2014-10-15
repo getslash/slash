@@ -74,6 +74,11 @@ class ConsoleReporter(ReporterInterface):
     def notify_after_console_output(self):
         self._terminal.restore_line_in_progress()
 
+    def report_before_debugger(self, exc_info):
+        self.notify_before_console_output()
+        self._terminal.write('Exception caught in debugger: {0} {1}\n'.format(exc_info[0], exc_info[1]), red=True)
+        self.notify_after_console_output()
+
     def report_collection_start(self):
         self._report_num_collected([], stillworking=True)
 
