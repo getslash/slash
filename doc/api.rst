@@ -1,15 +1,68 @@
 API Documentation
 =================
 
+Testing Utilities
+-----------------
+
+.. autoclass:: slash.Test
+  :members:
+
+.. autofunction:: slash.parametrize
+
+.. autofunction:: slash.core.fixtures.parameters.toggle
+
+.. autofunction:: slash.abstract_test_class
+
+
+Assertions
+----------
+
+.. autofunction:: slash.assert_raises
+
+Cleanups
+--------
+
+.. autofunction:: slash.add_cleanup
+
+.. autofunction:: slash.add_critical_cleanup
+
+Skips
+-----
+
+.. autoclass:: slash.exceptions.SkipTest
+
+.. autofunction:: slash.skipped
+
+.. autofunction:: slash.skip_test
+
+Warnings
+--------
+
+
+.. autoclass:: slash.warnings.SessionWarnings
+  :members:
+  :special-members: 
+
+
+Hooks
+-----
+
+.. automodule:: slash.hooks
+  :members:
+
+
 Plugins
 -------
 
-.. automodule:: slash.plugins
 
-.. autoclass:: PluginInterface
+.. autofunction:: slash.plugins.active
+
+.. autofunction:: slash.plugins.registers_on
+
+.. autoclass:: slash.plugins.PluginInterface
   :members:
 
-.. autoclass:: PluginManager
+.. autoclass:: slash.plugins.PluginManager
   :members:
 
 
@@ -18,3 +71,28 @@ Logging
 
 .. automodule:: slash.log
   :members:
+
+Exceptions
+----------
+
+.. autofunction:: slash.exception_handling.handling_exceptions
+
+.. autofunction:: slash.exception_handling.is_exception_marked
+.. autofunction:: slash.exception_handling.mark_exception
+.. autofunction:: slash.exception_handling.get_exception_mark
+
+
+.. autofunction:: slash.exception_handling.noswallow
+.. autofunction:: slash.exception_handling.mark_exception_fatal
+.. autofunction:: slash.exception_handling.get_exception_swallowing_context
+
+
+
+Internals
+---------
+
+.. automodule:: slash.core.session
+  :members:
+
+.. automodule:: slash.runner
+   :members:

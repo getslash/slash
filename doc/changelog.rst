@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`179` Documentation overhaul
 * :feature:`183` Add slash.parameters.toggle as a shortcut for iterating ``[True, False]``
 * :release:`0.8.0 <12-10-2014>`
 * :feature:`127` py.test style fixture support, major overhaul of tests and loading code.

@@ -14,6 +14,8 @@ from .fixtures.fixture_store import FixtureStore
 
 
 class Session(Activatable):
+    """ Represents a slash session
+    """
 
     duration = start_time = end_time = None
 

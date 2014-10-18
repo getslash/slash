@@ -99,8 +99,8 @@ class Test(RunnableTest):
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
 
     def run(self):  # pylint: disable=E0202
-        """_
-        Not to be overriden
+        """
+        .. warning:: Not to be overriden
         """
         method = getattr(self, self._test_method_name)
         with bound_parametrizations_context(self._fixture_variation):
@@ -123,7 +123,7 @@ class Test(RunnableTest):
         pass
     def after(self):
         """
-        Gets called after each separate case from this test class executed, assuming :meth:`before` was successful.
+        Gets called after each separate case from this test class executed, assuming :meth:`.before` was successful.
         """
         pass
 

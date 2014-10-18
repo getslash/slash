@@ -51,7 +51,7 @@ Sometimes you would like to run a sequence of tests that you control in fine det
      with slash.Session():
           slash.run_tests(slash.loader.Loader().iter_paths(["/my_path", ...]))
 
-The parameter given above to :func:`.run_tests` is merely an iterator yielding runnable tests. You can interfere or skip specific tests quite easily:
+The parameter given above to :func:`slash.runner.run_tests` is merely an iterator yielding runnable tests. You can interfere or skip specific tests quite easily:
 
 .. code-block:: python
 
@@ -68,4 +68,19 @@ The parameter given above to :func:`.run_tests` is merely an iterator yielding r
 
 .. seealso:: :ref:`Test Metadata <test_metadata>`
 
-.. seealso:: :ref:`building_solution`
+.. seealso:: :ref:`customizing`
+
+Specifying Default Test Source for ``slash run``
+------------------------------------------------
+
+.. _default_test_source:
+
+
+If you use ``slash run`` for running your tests, it is often useful to specify a default for the test path to run. This is useful if you want to provide a sane default running environment for your users via a ``.slashrc`` file. This can be done with the :ref:`conf.run.default_sources` configuration option:
+
+.. code-block:: python
+
+    # ...
+    slash.config.root.run.default_sources = ["/my/default/path/to/tests"]
+
+

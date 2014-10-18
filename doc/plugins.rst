@@ -27,11 +27,11 @@ First, the paths in ``plugins.search_paths`` are searched for python files. For 
 Plugin Installation
 -------------------
 
-To install a plugin, use the :func:`slash.plugins.manager.install <.plugins.PluginManager.install>` function, and pass it the plugin class that is being installed. Note that installed plugins are not active by default, and need to be explicitly activated (see below).
+To install a plugin, use the :func:`slash.plugins.manager.install <slash.plugins.PluginManager.install>` function, and pass it the plugin class that is being installed. Note that installed plugins are not active by default, and need to be explicitly activated (see below).
 
 Only plugins that are :class:`.PluginInterface` derivative instances are accepted.
 
-To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <.plugins.PluginManager.uninstall>`. 
+To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <slash.plugins.PluginManager.uninstall>`. 
 
 .. note:: uninstalling plugins also deactivates them.
 
@@ -39,7 +39,7 @@ To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <.p
 Plugin Activation
 -----------------
 
-Plugins are activated via :func:`slash.plugins.manager.activate <.plugins.PluginManager.activate>`. During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
+Plugins are activated via :func:`slash.plugins.manager.activate <slash.plugins.PluginManager.activate>`. During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
 
 .. note:: by default, all method names in a plugin are assumed to belong to the *slash* gossip group. This means that the method ``session_start`` will register on ``slash.session_start``. You can override this behavior by using :func:`slash.plugins.registers_on`:
   
@@ -62,7 +62,7 @@ Also, since some plugins can be activated from other locations, you can also ove
 Plugin Command-Line Interaction
 -------------------------------
 
-In many cases you would like to receive options from the command line. Plugins can implement the :func:`configure_argument_parser <slash.plugins.PluginInterface.configure_argument_parser>` and the :func:`configure_parsed_args <slash.plugins.PluginInterface.configure_parsed_args>` functions:
+In many cases you would like to receive options from the command line. Plugins can implement the :func:`configure_argument_parser <slash.plugins.PluginInterface.configure_argument_parser>` and the :func:`configure_parsed_args <slash.plugins.PluginInterface.configure_from_parsed_args>` functions:
 
 .. code-block:: python
 
@@ -75,7 +75,7 @@ In many cases you would like to receive options from the command line. Plugins c
 Plugin Examples
 ---------------
 
-An example of a functioning plugin can be found in the :ref:`Building Solutions <building_solution>` section.
+An example of a functioning plugin can be found in the :ref:`customizing` section.
 
 Errors in Plugins
 -----------------

@@ -63,7 +63,7 @@ class PluginManager(object):
     def install(self, plugin, activate=False):
         """
         Installs a plugin object to the plugin mechanism. ``plugin`` must be an object deriving from
-        :class:`slash.plugins.interface.PluginInterface`.
+        :class:`slash.plugins.PluginInterface`.
         """
         if not isinstance(plugin, PluginInterface):
             raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))

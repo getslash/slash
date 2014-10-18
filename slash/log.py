@@ -59,7 +59,10 @@ class SessionLogging(object):
         super(SessionLogging, self).__init__()
         self.warnings_handler = WarnHandler(session.warnings)
         self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level)
-        self.session_log_path = self.test_log_path = None
+        #: contains the path for the session logs
+        self.session_log_path = None
+        #: contains the path for the current test logs
+        self.test_log_path = None
         self._set_formatting(self.console_handler)
 
     @contextmanager

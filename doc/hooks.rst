@@ -35,6 +35,11 @@ Which is roughly equivalent to:
 Hook Errors
 -----------
 
+.. index::
+   pair: hooks; errors in
+   pair: hooks; exceptions in
+   pair: debugging; hooks
+
 By default, exceptions propagate from hooks and on to the test, but first all hooks are attempted. In some cases though you may want to debug the exception close to its raising point. Setting :ref:`conf.debug.debug_hook_handlers` to ``True`` will cause the debugger to be triggered as soon as the hook dispatcher encounteres the exception. This is done via `gossip's error handling mechanism <http://gossip.readthedocs.org/en/latest/error_handling.html>`_.
 
 Hooks and Plugins

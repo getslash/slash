@@ -3,29 +3,10 @@
 Logging
 =======
 
-The Slash Logger
---------------------
+As mentioned in :ref:`the introductory section <writing_tests>`, logging in Slash is done by Logbook. The path to which logs are written is controlled with the ``-l`` flag and console verbosity is controlled with ``-v``/``-q``. Below are some more advanced topics which may be relevant for extending Slash's behavior.
 
-Slash uses `Logbook <http://logbook.pocoo.org>`_ for logging. It has many advantages over Python's own ``logging`` package, and is much more flexible.
-
-Slash exposes a global logger intended for tests, which is recommended for use in simple logging tasks:
-
-.. code-block:: python
-
- import slash
-
- class SomeTest(slash.Test):
-     def test_1(self):
-         slash.logger.debug("Hello!")
-
-Console Log
------------
-
-By default logs above **WARNING** get emitted to the console. This can be changed via the :ref:`conf.log.console_level` config variable. You can also use **-v**/**-q** to increase/decrease console verbosity accordingly.
-
-
-Colors
-~~~~~~
+Controlling Console Colors
+--------------------------
 
 Console logs are colorized according to their level by default. This is done using Logbook's colorizing handler. In some cases you might want logs from specific sources to get colored differently. This is done using :func:`slash.log.set_log_color`:
 
@@ -37,16 +18,15 @@ Console logs are colorized according to their level by default. This is done usi
 
 .. note:: Available colors are taken from **logbook**. Options are "black", "darkred", "darkgreen", "brown", "darkblue", "purple", "teal", "lightgray", "darkgray", "red", "green", "yellow", "blue", "fuchsia", "turquoise", "white"
 
-Logging To Files
-----------------
-
-By default logs are not saved anywhere. This is easily changed.
-
-The :ref:`conf.log.root` config variable controls the root dir for logs. Under that path log files for various tests will be created. This variable is also controlled with the ``-l`` command-line argument.
+Controlling the Log Subdir Template
+-----------------------------------
 
 The filenames created under the root are controlled with the :ref:`conf.log.subpath` config variable, which can be also a format string receiving the *context* variable from slash (e.g. ``sessions/{context.session.id}/{context.test.id}/logfile.log``).
 
-Another important config path is ``log.session_subpath``. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
+The Session Log
+~~~~~~~~~~~~~~~
+
+Another important config path is :ref:`conf.log.session_subpath`. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
 
 Last Log Symlinks
 -----------------
@@ -75,4 +55,3 @@ Changing Formats
 The :ref:`conf.log.format` config path controls the log line format used by slash::
 
     $ slash run -o log.format="[{record.time:%Y%m%d}]- {record.message}" ...
-

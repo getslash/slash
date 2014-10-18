@@ -1,5 +1,11 @@
+.. _exceptions:
+
 Exceptions and Debugging
 ========================
+
+.. index::
+   single: exceptions
+   single: debugging
 
 Exceptions are an important part of the testing workflow. They happen all the time -- whether they indicate a test lifetime event or an actual error condition. Exceptions need to be debugged, handled, responded to, and sometimes with delicate logic of what to do when.
 
@@ -12,14 +18,18 @@ Note that the hooks named ``exception_caught_after_debugger``, and ``exception_c
 Handling KeyboardInterrupt
 --------------------------
 
+.. index::
+   single: KeyboardInterrupt
+   single: interrupting
+
 Usually when a user hits Ctrl+C this means he wants to terminate the running program as quickly as possible without corruption or undefined state. Slash treats KeyboardInterrupt a bit differently than other exceptions, and tries to quit as quickly as possible when they are encountered.
 
-.. note:: ``KeyboardInterrupt`` also causes regular cleanups to be skipped. You can set critical cleanups to be carried out on both cases, as described in the :ref:`relevant section <cleanup>`.
+.. note:: ``KeyboardInterrupt`` also causes regular cleanups to be skipped. You can set critical cleanups to be carried out on both cases, as described in the :ref:`relevant section <cleanups>`.
 
 Exception Handling Context
 --------------------------
 
-Slash contains a special context, :func:`slash.handling_exceptions`. The purpose of this context is to give your infrastructure a chance to handle an erroneous case as close as possible to its occurrence. 
+Slash contains a special context, :func:`slash.exception_handling.handling_exceptions`. The purpose of this context is to give your infrastructure a chance to handle an erroneous case as close as possible to its occurrence. 
 
 This context can be safely nested -- once an exception is handled, it is appropriately marked, so the outer contexts will skip handling it:
 
@@ -34,26 +44,21 @@ This context can be safely nested -- once an exception is handled, it is appropr
     with handling_exceptions():
         some_function()
 
-.. autofunction:: slash.exception_handling.handling_exceptions
-
 Exception Marks
 ---------------
 
 The exception handling context relies on a convenience mechanism for marking exceptions. 
 
-.. autofunction:: slash.exception_handling.is_exception_marked
-.. autofunction:: slash.exception_handling.mark_exception
-.. autofunction:: slash.exception_handling.get_exception_mark
 
 
 Marks with Special Meanings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: slash.exception_handling.noswallow
+* :func:`.noswallow`
+* :func:`.mark_exception_fatal`
 
 .. note:: for more on excption swallowing, see :ref:`below <exception_swallowing>`.
 
-.. autofunction:: slash.exception_handling.mark_exception_fatal
 
 
 .. _exception_swallowing:
@@ -86,5 +91,4 @@ You can force certain exceptions through by using the :func:`.noswallow` or ``di
    def func3():
       raise Exception("CRITICAL!")
 
-.. autofunction:: slash.exception_handling.get_exception_swallowing_context
 
