@@ -44,6 +44,9 @@ def iterate(**kwargs):
         return func
     return decorator
 
+def toggle(param_name):
+    return parametrize(param_name, (True, False))
+
 
 _current_variation = None
 
@@ -82,7 +85,6 @@ class ParameterizationInfo(object):
 
     def get_parametrization_fixtures(self):
         return list(itervalues(self._fixtures))
-
 
 class Parametrization(FixtureBase):
 

@@ -11,7 +11,19 @@ def test_test_parametrization(suite, test_factory):
     test.parametrize(num_params=num_params1)
     test.parametrize(num_params=num_params2)
     results = suite.run()
-    assert len(results.results_by_test_uuid[test.uuid]) == num_params1 * num_params2
+    assert len(
+        results.results_by_test_uuid[test.uuid]) == num_params1 * num_params2
+
+
+def test_parameters_toggle(suite, test_factory):
+
+    @slash.parameters.toggle('param')
+    def test_example(param):
+        _set('param', param)
+
+    session = run_tests_assert_success(test_example)
+
+    assert [False, True] == sorted(result.data['param'] for result in session.results)
 
 
 def test_before_after_parameters(cartesian):
@@ -62,7 +74,8 @@ def test_before_parameters_inheritence(cartesian, with_override):
     session = run_tests_assert_success(DerivedTest)
     assert len(session.results) == len(cartesian)
     if with_override:
-        cartesian.assign_all(source_name='before_2_a', target_name='before_1_a')
+        cartesian.assign_all(
+            source_name='before_2_a', target_name='before_1_a')
     cartesian.check(result.data for result in session.results)
 
 
