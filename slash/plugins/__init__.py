@@ -182,3 +182,12 @@ def registers_on(hook_name):
     the method name in the 'slash' group, which is the default behavior for plugins
     """
     return mark("register_on", hook_name)
+
+def active(plugin_class):
+    """Decorator for automatically installing and activating a plugin upon definition
+    """
+    plugin = plugin_class()
+    manager.install(plugin)
+    manager.activate(plugin)
+
+    return plugin_class

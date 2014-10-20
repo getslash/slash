@@ -2,11 +2,31 @@ import os
 
 import gossip
 import pytest
+import slash
 from slash._compat import PY2
 from slash import hooks, plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
 from .utils import CustomException, TestCase
+
+
+def test_active_decorator(request):
+
+    request.addfinalizer(plugins.manager.install_builtin_plugins)
+    request.addfinalizer(plugins.manager.uninstall_all)
+    
+    plugins.manager.uninstall_all()
+
+    @slash.plugins.active
+    class SamplePlugin(PluginInterface):
+
+        def get_name(self):
+            return 'sample'
+
+    assert isinstance(SamplePlugin, type)
+    assert issubclass(SamplePlugin, PluginInterface)
+    [active] = plugins.manager.get_active_plugins().values()
+    assert isinstance(active, SamplePlugin)
 
 
 def test_custom_hook_registration():
