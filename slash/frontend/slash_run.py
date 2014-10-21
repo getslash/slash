@@ -55,10 +55,12 @@ slash_resume = functools.partial(slash_run, resume=True)
 
 def _collect_tests(app, args):  # pylint: disable=unused-argument
     paths = app.args.positionals
+
+    paths = _extend_paths_from_suite_files(paths)
+
     if not paths and not app.args.interactive:
         paths = config.root.run.default_sources
 
-    paths = _extend_paths_from_suite_files(paths)
 
     if not paths and not app.args.interactive:
         app.error("No tests specified")
