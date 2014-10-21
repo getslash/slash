@@ -362,11 +362,15 @@ class Fixture(SuiteObject, Parametrizable):
     def add_cleanup(self):
         self._cleanups.append(_uuid())
 
-    def verify_cleanups(self, result):
-        if not self._cleanups:
-            assert 'fixture_cleanups' not in result.data
+
+    def verify_callbacks(self, result):
+        self._verify_markers(result, 'fixture_cleanups', self._cleanups[::-1])
+
+    def _verify_markers(self, result, markers_key, expected):
+        if not expected:
+            assert markers_key not in result.data
         else:
-            assert result.data['fixture_cleanups'] == self._cleanups[::-1]
+            assert result.data[markers_key] == expected
 
     def add_fixture(self, fixture):
         self.fixtures.append(fixture)
@@ -379,24 +383,33 @@ class Fixture(SuiteObject, Parametrizable):
         if self._cleanups:
             arg_names.insert(0, 'this')
 
-        formatter.write('@slash.fixture')
-        if self.autouse:
-            formatter.writeln('(autouse=True)')
-        else:
-            formatter.writeln()
+        formatter.writeln('@slash.fixture{0}'.format(self._get_fixture_args_string()))
         self.add_parametrize_decorators(formatter)
         formatter.writeln(
             'def {0}({1}):'.format(self.name, ', '.join(arg_names)))
         with formatter.indented():
             formatter.writeln('_test_result = slash.context.result')
             formatter.writeln('_test_result.data.setdefault("started_fixtures", []).append({0!r})'.format(self.uuid))
-            for cleanup_uuid in self._cleanups:
-                formatter.writeln('@this.add_cleanup')
-                formatter.writeln('def cleanup():')
-                with formatter.indented():
-                    formatter.writeln('_test_result.data.setdefault("fixture_cleanups", []).append({0!r})'.format(cleanup_uuid))
+
+            self._add_this_markers(formatter, 'add_cleanup', self._cleanups, 'fixture_cleanups')
+
             formatter.writeln('return {{ "value": {0!r}, "params": {{ {1} }} }}'.format(
                 self.value, ', '.join('{0!r}: {0}'.format(name) for name in dependent_names)))
+
+    def _get_fixture_args_string(self):
+        args = []
+        if self.autouse:
+            args.append('autouse=True')
+        return '' if not args else '({0})'.format(', '.join(args))
+
+    def _add_this_markers(self, formatter, callback_name, markers, result_data_key):
+        for index, marker in enumerate(markers):
+            formatter.write('@this.')
+            formatter.writeln(callback_name)
+            formatter.write('def callback{0}():'.format(index))
+            with formatter.indented():
+                formatter.writeln('_test_result.data.setdefault({0!r}, []).append({1!r})'.format(result_data_key, marker))
+
 
 
 class PlannedTest(SuiteObject, Parametrizable):
@@ -556,7 +569,7 @@ class PlannedTest(SuiteObject, Parametrizable):
     def verify_result(self, result):
 
         for fixture in self._fixtures:
-            fixture.verify_cleanups(result)
+            fixture.verify_callbacks(result)
 
         for fixture in itertools.chain(self._fixtures, self.file.iter_fixtures(), self.suite.iter_fixtures()):
             if fixture.autouse:
