@@ -1,6 +1,6 @@
-import copy
 import itertools
 import os
+import sys
 import shutil
 from tempfile import mkdtemp
 from uuid import uuid1
@@ -138,6 +138,7 @@ class TestSuite(object):
         if pattern is None:
             pattern = self._path
         self.commit()
+        assert not _active_fixture_uuids
         with slash.Session() as session:
             with session.get_started_context():
                 self.session_id = session.id
@@ -152,6 +153,7 @@ class TestSuite(object):
                 slash.hooks.result_summary()
         verified_session = self.verify_last_run(stop_on_error=stop_on_error)
         assert session is verified_session.session
+        assert not _active_fixture_uuids
         return verified_session
 
     def _get_test_ordinal(self, test):
@@ -288,7 +290,7 @@ class File(SuiteObject):
         return iter(self._fixtures)
 
     def add_fixture(self, **kw):
-        returned = Fixture(self.suite, **kw)
+        returned = Fixture(self.suite, file=self, **kw)
         self._fixtures.append(returned)
         return returned
 
@@ -350,11 +352,13 @@ class Parametrizable(object):
 
 class Fixture(SuiteObject, Parametrizable):
 
-    def __init__(self, suite, autouse=False):
+    def __init__(self, suite, autouse=False, scope=None, file=None):
         super(Fixture, self).__init__(suite)
+        self.file = file
         self.uuid = _uuid()
         self.name = 'fixture_{0:05}'.format(self.id)
         self.autouse = autouse
+        self.scope=scope
         self.value = _uuid()
         self.fixtures = []
         self._cleanups = []
@@ -380,8 +384,7 @@ class Fixture(SuiteObject, Parametrizable):
         dependent_names.extend(f.name for f in self.fixtures)
 
         arg_names = list(dependent_names)
-        if self._cleanups:
-            arg_names.insert(0, 'this')
+        arg_names.insert(0, 'this')
 
         formatter.writeln('@slash.fixture{0}'.format(self._get_fixture_args_string()))
         self.add_parametrize_decorators(formatter)
@@ -389,24 +392,36 @@ class Fixture(SuiteObject, Parametrizable):
             'def {0}({1}):'.format(self.name, ', '.join(arg_names)))
         with formatter.indented():
             formatter.writeln('_test_result = slash.context.result')
-            formatter.writeln('_test_result.data.setdefault("started_fixtures", []).append({0!r})'.format(self.uuid))
+
+            fixture_info_dict_code = '{{ "value": {0!r}, "params": {{ {1} }} }}'.format(
+                self.value, ', '.join('{0!r}: {0}'.format(name) for name in dependent_names))
+
+            formatter.writeln('from {0} import _active_fixture_uuids'.format(__name__))
+            formatter.writeln('assert {0!r} not in _active_fixture_uuids'.format(self.uuid))
+            formatter.writeln('_active_fixture_uuids[{0!r}] = {1}'.format(self.uuid, fixture_info_dict_code))
+
+            formatter.writeln('@this.add_cleanup')
+            formatter.writeln('def _cleanup():')
+            with formatter.indented():
+                formatter.writeln('_active_fixture_uuids.pop({0!r})'.format(self.uuid))
 
             self._add_this_markers(formatter, 'add_cleanup', self._cleanups, 'fixture_cleanups')
 
-            formatter.writeln('return {{ "value": {0!r}, "params": {{ {1} }} }}'.format(
-                self.value, ', '.join('{0!r}: {0}'.format(name) for name in dependent_names)))
+            formatter.writeln('return {0}'.format(fixture_info_dict_code))
 
     def _get_fixture_args_string(self):
         args = []
         if self.autouse:
             args.append('autouse=True')
+        if self.scope is not None:
+            args.append('scope={0!r}'.format(self.scope))
         return '' if not args else '({0})'.format(', '.join(args))
 
     def _add_this_markers(self, formatter, callback_name, markers, result_data_key):
         for index, marker in enumerate(markers):
             formatter.write('@this.')
             formatter.writeln(callback_name)
-            formatter.write('def callback{0}():'.format(index))
+            formatter.writeln('def callback{0}():'.format(index))
             with formatter.indented():
                 formatter.writeln('_test_result.data.setdefault({0!r}, []).append({1!r})'.format(result_data_key, marker))
 
@@ -550,6 +565,9 @@ class PlannedTest(SuiteObject, Parametrizable):
             for param_name in self.params:
                 formatter.writeln(
                     'slash.context.result.data.setdefault("params", {{}})[{0!r}] = {0}'.format(param_name))
+            assert sys.modules[__name__]._active_fixture_uuids is _active_fixture_uuids
+            formatter.writeln('from {0} import _active_fixture_uuids'.format(__name__))
+            formatter.writeln('slash.context.result.data["active_fixture_uuid_snapshot"] = frozenset(_active_fixture_uuids)')
             for returned in self._generate_test_statements():
                 formatter.writeln(returned)
         formatter.writeln()
@@ -572,8 +590,8 @@ class PlannedTest(SuiteObject, Parametrizable):
             fixture.verify_callbacks(result)
 
         for fixture in itertools.chain(self._fixtures, self.file.iter_fixtures(), self.suite.iter_fixtures()):
-            if fixture.autouse:
-                assert fixture.uuid in result.data['started_fixtures']
+            if self._should_fixture_be_active(fixture):
+                assert fixture.uuid in result.data['active_fixture_uuid_snapshot']
 
         if self._expected_result == _SUCCESS:
             assert result.is_success()
@@ -604,6 +622,15 @@ class PlannedTest(SuiteObject, Parametrizable):
             else:
                 assert cleanup['id'] in result.data.get('cleanups', [])
 
+    def _should_fixture_be_active(self, fixture):
+        if fixture in self._fixtures:
+            return True
+
+        if not fixture.autouse:
+            return False
+
+        return fixture.file is self.file
+
     def _generate_test_statements(self):
         statements = self._injected_lines
         if not statements and not self._fixtures and not self.params:
@@ -629,3 +656,6 @@ class ResultWrapper(object):
         assert len(self.results_by_test_uuid[planned_test.uuid]
                    ) == 1, 'too many matching tests'
         return self.results_by_test_uuid[planned_test.uuid][0]
+
+
+_active_fixture_uuids = {}

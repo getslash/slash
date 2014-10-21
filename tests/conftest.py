@@ -85,8 +85,17 @@ def fix_resume_path(request):
 
 
 @pytest.fixture
-def suite_test(populated_suite, test_factory):
-    return test_factory(populated_suite)
+def suite_test(populated_suite, test_factory, is_last_test):
+    returned = test_factory(populated_suite)
+    if not is_last_test:
+        _ = test_factory(populated_suite)
+
+    return returned
+
+
+@pytest.fixture(params=[True, False])
+def is_last_test(request):
+    return request.param
 
 
 def _create_regular_test_function(suite):

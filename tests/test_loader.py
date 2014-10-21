@@ -13,7 +13,10 @@ def test_loading_function(suite):
 
 def test_iter_specific_factory(populated_suite, suite_test):
     for test in populated_suite:
-        if test is not suite_test:
+        if suite_test.cls is None and test is not suite_test:
+            # we are selecting a specific function, and that's not it:
+            test.expect_deselect()
+        elif suite_test.cls is not None and test.cls is not suite_test.cls:
             test.expect_deselect()
 
     path = populated_suite.commit()
