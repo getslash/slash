@@ -1,6 +1,12 @@
+from __future__ import print_function
+
 import sys
+import traceback
+
 from ..conf import config
 from ..exceptions import SkipTest
+from ..ctx import context
+
 
 def _debugger(debug_function_str, exc_info_transform=None):  # pragma: no cover
     module_name, function_name = debug_function_str.rsplit(".", 1)
@@ -10,11 +16,19 @@ def _debugger(debug_function_str, exc_info_transform=None):  # pragma: no cover
         except ImportError:
             raise NotImplementedError() # pragma: no cover
         func = getattr(module, function_name)
+        orig_exc_info = exc_info
         if exc_info_transform is not None:
             exc_info = exc_info_transform(exc_info)
+        _notify_going_into_debugger(orig_exc_info)
         func(*exc_info) # pylint: disable=star-args
     debugger.__name__ = debug_function_str
     return debugger
+
+def _notify_going_into_debugger(exc_info):
+    if context.session is not None:
+        context.session.reporter.report_before_debugger(exc_info)
+    else:
+        print('\nException caught in debugger: {0}'.format(traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()))
 
 def _only_tb(exc_info):  # pragma: no cover
     return (exc_info[2],)

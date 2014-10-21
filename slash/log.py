@@ -125,7 +125,7 @@ class SessionLogging(object):
         symlink = self._normalize_path(symlink)
 
         if not os.path.isabs(symlink):
-            symlink = os.path.join(config.root.log.root, symlink)
+            symlink = os.path.join(self._normalize_path(config.root.log.root), symlink)
 
         try:
             ensure_containing_directory(symlink)

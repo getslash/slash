@@ -6,6 +6,9 @@ class ReporterInterface(object):
     def notify_after_console_output(self):
         pass
 
+    def report_before_debugger(self, exc_info):
+        pass
+
     def report_session_start(self, session):
         pass
 
