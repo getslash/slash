@@ -11,7 +11,7 @@ _PARAM_INFO_ATTR_NAME = '__slash_parametrize__'
 def parametrize(parameter_name, values):
     """Decorator to create multiple test cases out of a single function or module, where the cases vary by the value of ``parameter_name``, as iterated through ``values``.
     """
-    
+
     def decorator(func):
 
         params = getattr(func, _PARAM_INFO_ATTR_NAME, None)
