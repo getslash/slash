@@ -82,7 +82,7 @@ The only case that is not easily covered by the assert statement is asserting Ex
 
 .. code:: python
 
-	  with slash.raises_exception(SomeException) as caught:
+	  with slash.assert_raises(SomeException) as caught:
 	      some_func()
 
 	  assert caught.exception.param == 'some_value'

@@ -58,7 +58,7 @@ Slash uses `gossip <http://gossip.readthedocs.org>`_ to implement hooks, so we c
 		def collect_logs():
 		    shutil.copytree(...)
 
-Now we need to supply arguments to``copytree``. We want to copy only the directory of the current session, into a destination directory also specific to this session. How do we do this? The important information can be extracted from :class:`slash.session <slash.core.session.Session>`, which is a proxy to the current object representing the session:
+Now we need to supply arguments to ``copytree``. We want to copy only the directory of the current session, into a destination directory also specific to this session. How do we do this? The important information can be extracted from :class:`slash.session <slash.core.session.Session>`, which is a proxy to the current object representing the session:
 
 .. code-block:: python
 
