@@ -52,11 +52,12 @@ class TestSuite(object):
         for i in range(num_tests):
             self.add_test()
 
-    def add_test(self, regular_function=None):
+    def add_test(self, regular_function=None, parent=None):
         if regular_function is None:
             regular_function = next(self._regular_function)
         test = PlannedTest(self, regular_function)
-        parent = self._get_test_container(regular_function)
+        if parent is None:
+            parent = self._get_test_container(regular_function)
         if not regular_function:
             assert test.cls is None
             test.cls = parent

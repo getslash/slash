@@ -23,7 +23,9 @@ from .utils.pattern_matching import Matcher
 
 _logger = Logger(__name__)
 
+
 class Loader(object):
+
     """
     Provides iteration interfaces to load runnable tests from various places
     """
@@ -65,7 +67,8 @@ class Loader(object):
 
         factory = self._get_runnable_test_factory(thing)
         if factory is None:
-            raise ValueError("Cannot get runnable tests from {0!r}".format(thing))
+            raise ValueError(
+                "Cannot get runnable tests from {0!r}".format(thing))
 
         return factory.generate_tests(fixture_store=context.session.fixture_store)
 
@@ -78,9 +81,21 @@ class Loader(object):
 
         for test in self._iter_path(path):
             if address_in_file is not None:
-                if address_in_file not in (test.__slash__.factory_name, test.__slash__.address_in_file):
+                if not self._address_in_file_matches(address_in_file, test):
                     continue
             yield test
+
+    def _address_in_file_matches(self, address_in_file, test):
+        if address_in_file == test.__slash__.factory_name:
+            return True
+        test_address_in_file = test.__slash__.address_in_file
+        if address_in_file == test_address_in_file:
+            return True
+        if '(' in test_address_in_file:
+            if address_in_file == test_address_in_file[:test_address_in_file.index('(')]:
+                return True
+
+        return False
 
     def _iter_path(self, path):
         return self._iter_paths([path])
@@ -104,7 +119,8 @@ class Loader(object):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                     except Exception as e:
-                        raise CannotLoadTests("Could not load {0!r} ({1})".format(file_path, e))
+                        raise CannotLoadTests(
+                            "Could not load {0!r} ({1})".format(file_path, e))
                 if module is not None:
                     with self._adding_local_fixtures(file_path, module):
                         for runnable in self._iter_runnable_tests_in_module(file_path, module):
@@ -118,8 +134,10 @@ class Loader(object):
         try:
             self._local_config.push_path(os.path.dirname(file_path))
             try:
-                context.session.fixture_store.add_fixtures_from_dict(self._local_config.get_dict())
-                context.session.fixture_store.add_fixtures_from_dict(vars(module))
+                context.session.fixture_store.add_fixtures_from_dict(
+                    self._local_config.get_dict())
+                context.session.fixture_store.add_fixtures_from_dict(
+                    vars(module))
                 context.session.fixture_store.resolve()
                 yield
             finally:
@@ -146,10 +164,11 @@ class Loader(object):
 
     def _iter_runnable_tests_in_module(self, file_path, module):
         for thing_name, thing in iteritems(vars(module)):
-            if thing is RunnableTestFactory: # probably imported directly
+            if thing is RunnableTestFactory:  # probably imported directly
                 continue
 
-            factory = self._get_runnable_test_factory(thing, module_name=module.__name__, file_path=file_path, name=thing_name)
+            factory = self._get_runnable_test_factory(
+                thing, module_name=module.__name__, file_path=file_path, name=thing_name)
             if factory is None:
                 continue
 
@@ -168,6 +187,7 @@ class Loader(object):
                 return FunctionTestFactory(func=thing, module_name=module_name, file_path=file_path, factory_name=name)
 
         return None
+
 
 def _walk(p):
     if os.path.isfile(p):
