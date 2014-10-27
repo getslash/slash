@@ -1,3 +1,4 @@
+import itertools
 import sys
 import time
 import uuid
@@ -9,8 +10,8 @@ from ..interfaces import Activatable
 from ..reporting.null_reporter import NullReporter
 from ..utils.id_space import IDSpace
 from ..warnings import SessionWarnings
-from .result import SessionResults
 from .fixtures.fixture_store import FixtureStore
+from .result import SessionResults
 
 
 class Session(Activatable):
@@ -23,6 +24,7 @@ class Session(Activatable):
         super(Session, self).__init__()
         self.id = "{0}_0".format(uuid.uuid1())
         self.id_space = IDSpace(self.id)
+        self.test_index_counter = itertools.count()
         self._started = False
         self._complete = False
         self._active_context = None

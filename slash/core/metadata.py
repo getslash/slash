@@ -1,6 +1,8 @@
 
 class Metadata(object):
 
+    test_index0 = None
+
     def __init__(self, factory, test, address_in_factory=None):
         super(Metadata, self).__init__()
         self.id = None
@@ -13,6 +15,12 @@ class Metadata(object):
         if address_in_factory is not None:
             self.address_in_file += address_in_factory
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
+
+    @property
+    def test_index1(self):
+        if self.test_index0 is None:
+            return None
+        return self.test_index0 + 1
 
     def __repr__(self):
         return '<{0}>'.format(self.address)

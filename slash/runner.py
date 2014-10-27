@@ -37,7 +37,7 @@ def run_tests(iterable, stop_on_error=None):
     complete = False
     fixture_scope_manager = FixtureScopeManager(context.session.fixture_store)
     for test in test_iterator:
-        ensure_test_metadata(test)
+        _set_test_metadata(test)
         test_filename = test.__slash__.file_path
         if last_filename != test_filename:
             context.session.reporter.report_file_start(test_filename)
@@ -64,6 +64,12 @@ def run_tests(iterable, stop_on_error=None):
         context.session.mark_complete()
     elif last_filename is not None:
         context.session.reporter.report_file_end(last_filename)
+
+def _set_test_metadata(test):
+    ensure_test_metadata(test)
+    assert test.__slash__.test_index0 is None
+    test.__slash__.test_index0 = next(context.session.test_index_counter)
+
 
 def _mark_remaining_skipped(test_iterator):
     for test in test_iterator:

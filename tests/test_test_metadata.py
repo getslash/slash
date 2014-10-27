@@ -3,7 +3,13 @@ from .utils import run_tests_assert_success
 import itertools
 import os
 import slash
-import pytest
+
+
+def test_test_index(populated_suite):
+    session = populated_suite.run().session
+    for index, result in enumerate(session.results):
+        assert result.test_metadata.test_index0 == index
+        assert result.test_metadata.test_index1 == index + 1
 
 
 class TestMetadataTest(TestCase):
