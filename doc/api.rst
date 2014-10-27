@@ -95,4 +95,7 @@ Internals
   :members:
 
 .. automodule:: slash.runner
-   :members:
+  :members:
+
+.. autoclass:: slash.core.metadata.Metadata
+  :members:

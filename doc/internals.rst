@@ -33,7 +33,12 @@ The currently active session is accessible through ``slash.session``:
 Test Metadata
 -------------
 
-Each test being run contains the ``__slash__`` attribute, meant to store metadata about the test being run. 
+.. index::
+   single: metadata
+   couple: test; metadata
+   couple: metadata; test
+
+Each test being run contains the ``__slash__`` attribute, meant to store metadata about the test being run. The attribute is an instance of :class:`slash.core.metadata.Metadata`.
 
 .. note:: Slash does not save the actual test instance being run. This is important because in most cases dead tests contain reference to whole object graphs that need to be released to conserve memory. The only thing that is saved is the test metadata structure.
 
