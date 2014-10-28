@@ -55,3 +55,13 @@ class ReporterInterface(object):
 
     def report_test_failure(self, test, result):
         pass
+
+    def report_test_error_added(self, test, error):
+        pass
+
+    def report_test_failure_added(self, test, error):
+        pass
+
+    def report_test_skip_added(self, test, reason):
+        pass
+

@@ -76,10 +76,12 @@ class Result(object):
         return self._interrupted
 
     def add_error(self, e=None):
-        self._add_error(self._errors, e)
+        err = self._add_error(self._errors, e)
+        context.reporter.report_test_error_added(context.test, err)
 
     def add_failure(self, e=None):
-        self._add_error(self._failures, e)
+        err = self._add_error(self._failures, e)
+        context.reporter.report_test_failure_added(context.test, err)
 
     def _add_error(self, error_list, error=None):
         try:
@@ -88,12 +90,14 @@ class Result(object):
             if not isinstance(error, Error):
                 error = Error(error)
             error_list.append(error)
+            return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)
             raise
 
     def add_skip(self, reason):
         self._skips.append(reason)
+        context.reporter.report_test_skip_added(context.test, reason)
 
     def get_errors(self):
         return self._errors
@@ -116,7 +120,6 @@ class Result(object):
                 if getattr(self, "is_{0}".format(attr))()
             )
         )
-
 
 class GlobalResult(Result):
     pass

@@ -185,7 +185,6 @@ class ConsoleReporter(ReporterInterface):
         return result.test_metadata.address if result.test_metadata else '**global**'
 
     def _report_error(self, result, error, marker):
-        line = ''
         if not error.traceback:
             frames = []
         elif self._level > VERBOSITIES.WARNING:
@@ -256,11 +255,14 @@ class ConsoleReporter(ReporterInterface):
     def report_file_start(self, filename):
         self._file_failed = False
         self._file_has_skips = False
-        self._terminal.write(filename)
-        self._terminal.write(' ')
+        if not self._verobsity_allows(VERBOSITIES.NOTICE):
+            self._terminal.write(filename)
+            self._terminal.write(' ')
 
     @from_verbosity(VERBOSITIES.WARNING)
     def report_file_end(self, filename):
+        if self._verobsity_allows(VERBOSITIES.NOTICE):
+            return
         self._terminal.write('  ')
         if self._file_failed:
             self._terminal.line('FAIL', red=True)
@@ -270,19 +272,28 @@ class ConsoleReporter(ReporterInterface):
             self._terminal.line('PASS', green=True)
 
     def report_test_success(self, test, result):
-        self._terminal.write('.')
+        if not self._verobsity_allows(VERBOSITIES.NOTICE):
+            self._terminal.write('.')
 
-    def report_test_skip(self, test, result):
-        self._terminal.write('s', yellow=True)
+    def report_test_skip_added(self, test, reason):
         self._file_has_skips = True
+        if self._verobsity_allows(VERBOSITIES.NOTICE):
+            self._terminal.write('Skipped: {0}\n'.format(reason), yellow=True)
+        else:
+            self._terminal.write('s', yellow=True)
 
-    def report_test_error(self, test, result):
-        self._file_failed = True
-        self._terminal.write('E', red=True)
+    def report_test_error_added(self, test, error):
+        self._report_test_error_failure_added(test, error, 'E')
 
-    def report_test_failure(self, test, result):
+    def report_test_failure_added(self, test, error):
+        self._report_test_error_failure_added(test, error, 'F')
+
+    def _report_test_error_failure_added(self, test, e, errtype):
         self._file_failed = True
-        self._terminal.write('F', red=True)
+        if not self._verobsity_allows(VERBOSITIES.NOTICE):
+            self._terminal.write(errtype, red=True)
+        else:
+            self._terminal.write('{0}: {1}\n'.format(errtype, e), red=True)
 
     def _format_duration(self, duration):
         seconds = duration % 60
