@@ -129,7 +129,7 @@ assert_raises.__doc__ = raise_exception.__doc__.replace(
 
 
 def assert_almost_equal(a, b, delta=0.00000001):
-    """Asserts that |a - b| <= delta
+    """Asserts that abs(a - b) <= delta
     """
     assert abs(a - b) <= delta
 
