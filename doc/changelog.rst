@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`194` add assert_almost_equal
 * :feature:`190` Support __slash__.test_index0 and __slash__.test_index1 for easier enumeration in logs
 * :feature:`179` Documentation overhaul
 * :feature:`183` Add slash.parameters.toggle as a shortcut for iterating ``[True, False]``

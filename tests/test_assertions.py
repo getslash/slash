@@ -3,8 +3,42 @@ from .utils import (
     CustomException,
     )
 from contextlib import contextmanager
+
+import pytest
+
+import slash
 from slash import should
 from slash.exceptions import TestFailed
+
+@pytest.mark.parametrize('pair', [
+    (1, 1),
+    (1, 1.00000001),
+    ])
+def test_assert_almost_equal_positive(pair):
+    a, b = pair
+    slash.assert_almost_equal(a, b)
+
+@pytest.mark.parametrize('combination', [
+    (1, 1, 0),
+    (1, 1, 0.1),
+    (1, 1.1, 0.5),
+    (1.0001, 1.00009, 0.00002),
+    ])
+def test_assert_almost_equal_positive_with_delta(combination):
+    a, b, delta = combination
+    slash.assert_almost_equal(a, b, delta)
+
+@pytest.mark.parametrize('combination', [
+    (1, 12, 0),
+    (1, 1.1, 0.00001),
+    (1.0001, 1.00009, 0.000001),
+    ])
+def test_assert_almost_equal_negative_with_delta(combination):
+    a, b, delta = combination
+    with pytest.raises(AssertionError):
+        slash.assert_almost_equal(a, b, delta)
+
+
 
 class AssertionsTest(TestCase):
 

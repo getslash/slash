@@ -8,6 +8,7 @@ from .core.session import Session
 from . import assertions
 should = assertions
 from .assertions import (
+    assert_almost_equal,
     assert_contains,
     assert_equal,
     assert_equals,

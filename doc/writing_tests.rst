@@ -78,7 +78,10 @@ When the above assertion fails, for instance, you can expect an elaborate output
 
 .. note:: The assertion rewriting code is provided by `dessert <https://github.com/vmalloc/dessert>`_, which is a direct port of the code that powers `pytest <http://pytest.org>`_. All credit goes to Holger Krekel and his fellow devs for this masterpiece.
 
-The only case that is not easily covered by the assert statement is asserting Exception raises. This is easily done with :func:`slash.assert_raises`:
+More Assertion Utilities
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+One case that is not easily covered by the assert statement is asserting Exception raises. This is easily done with :func:`slash.assert_raises`:
 
 .. code:: python
 
@@ -86,6 +89,12 @@ The only case that is not easily covered by the assert statement is asserting Ex
 	      some_func()
 
 	  assert caught.exception.param == 'some_value'
+
+You also have :func:`slash.assert_almost_equal` to test for near equality:
+
+.. code:: python
+
+	  slash.assert_almost_equal(1.001, 1, max_delta=0.1)
 
 Test Setups and Teardowns
 -------------------------
