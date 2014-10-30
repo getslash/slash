@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.9.1 <30-10-2014>`
 * :release:`0.9.0 <30-10-2014>`
 * :feature:`194` add assert_almost_equal
 * :feature:`190` Support __slash__.test_index0 and __slash__.test_index1 for easier enumeration in logs
