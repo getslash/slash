@@ -19,6 +19,8 @@ Assertions
 
 .. autofunction:: slash.assert_raises
 
+.. autofunction:: slash.assert_almost_equal
+
 Cleanups
 --------
 
