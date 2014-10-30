@@ -29,9 +29,32 @@ Usually when a user hits Ctrl+C this means he wants to terminate the running pro
 Exception Handling Context
 --------------------------
 
-Slash contains a special context, :func:`slash.exception_handling.handling_exceptions`. The purpose of this context is to give your infrastructure a chance to handle an erroneous case as close as possible to its occurrence. 
+Exceptions can occur in many places, both in tests and in surrounding infrastructure. In many cases you want to give Slash the first oppurtunity to handle an exception before it propagates. For instance, assume you have the following code:
 
-This context can be safely nested -- once an exception is handled, it is appropriately marked, so the outer contexts will skip handling it:
+.. code-block:: python
+
+    def test_function():
+        func1()
+
+    def func1():
+        with some_cleanup_context():
+	    func2()
+
+    def func2():
+        do_something_that_can_fail()
+
+In the above code, if ``do_something_that_can_fail`` raises an exception, and assuming you're running slash with ``--pdb``, you will indeed be thrown into a debugger. However, the end consequence will not be what you expect, since ``some_cleanup_context`` will have already been left, meaning any cleanups it performs on exit take place *before* the debugger is entered. This is because the exception handling code Slash uses kicks in only after the exception propagates out of the test function.
+
+In order to give Slash a chance to handle the exception closer to where it originates, Slash provices a special context, :func:`slash.exception_handling.handling_exceptions`. The purpose of this context is to give your infrastructure a chance to handle an erroneous case as close as possible to its occurrence:
+
+.. code-block:: python
+
+    def func1():
+        with some_cleanup_context(), slash.handle_exceptions_context():
+	    func2()
+
+
+the :func:`handling_exceptions <slash.exception_handling.handling_exceptions>` context can be safely nested -- once an exception is handled, it is appropriately marked, so the outer contexts will skip handling it:
 
 .. code-block:: python
 
@@ -66,9 +89,22 @@ Marks with Special Meanings
 Exception Swallowing
 --------------------
 
-Slash provides a convenience context for swallowing exceptions in various places. This is useful in case you want to write fail-safe code. This is done with :func:`.get_exception_swallowing_context`.
+Slash provides a convenience context for swallowing exceptions in various places, :func:`.get_exception_swallowing_context`. This is useful in case you want to write infrastructure code that should not collapse your session execution if it fails. Use cases for this feature:
 
-Swallowed exceptions get reported to log as debug logs, and assuming the :ref:`conf.sentry.dsn` configuration path is set, also get reported to `sentry <http://getsentry.com>`_.
+1. Reporting results to external services, which might be unavailable at times
+2. Automatic issue reporting to bug trackers
+3. Experimental features that you want to test, but don't want to disrupt the general execution of your test suites.
+
+Swallowed exceptions get reported to log as debug logs, and assuming the :ref:`conf.sentry.dsn` configuration path is set, also get reported to `sentry <http://getsentry.com>`_:
+
+.. code-block:: python
+
+
+   def attempt_to_upload_logs():
+       with slash.get_exception_swallowing_context():
+            ...
+
+
 
 You can force certain exceptions through by using the :func:`.noswallow` or ``disable_exception_swallowing`` functions:
 
