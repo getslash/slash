@@ -6,7 +6,7 @@ from .._compat import string_types, StringIO, iteritems
 from ..exception_handling import is_exception_fatal
 from ..utils.traceback_utils import distill_traceback
 from ..utils.formatter import Formatter
-
+from ..conf import config
 
 class Error(object):
 
@@ -68,6 +68,8 @@ class DetailedTraceback(object):
         super(DetailedTraceback, self).__init__()
         self.error = error
         self.cached_repr = None
+        self._truncate_lines = config.root.log.truncate_traceback_printouts
+        self.MAX_LINE_LENGTH = 160
 
     def _format(self):
         stream = StringIO()
@@ -84,11 +86,19 @@ class DetailedTraceback(object):
                                 if index == 0:
                                     f.writeln(title)
                                     f.indent()
-                                f.writeln(' - {0}: {1}'.format(var_name, var_repr['value']))
+                                value_to_print = ' - {0}: {1}'.format(var_name, var_repr['value'])
+                                if self._truncate_lines and len(value_to_print) > self.MAX_LINE_LENGTH:
+                                    value_to_print = self._truncate(value_to_print)
+                                f.writeln(value_to_print)
                         f.dedent()
         return stream.getvalue()
+
+    def _truncate(self, line):
+        line = line[:self.MAX_LINE_LENGTH - 3] + "..."
+        return line
 
     def __repr__(self):
         if self.cached_repr is None:
             self.cached_repr = self._format()
         return self.cached_repr
+

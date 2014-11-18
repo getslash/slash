@@ -10,7 +10,7 @@ from ..log import VERBOSITIES
 from ..utils.iteration import iteration
 from ..utils.python import wraps
 from .reporter_interface import ReporterInterface
-
+from ..conf import config
 
 def from_verbosity(level):
     def decorator(func):
@@ -67,6 +67,8 @@ class ConsoleReporter(ReporterInterface):
         self._level = level
         self._stream = stream
         self._terminal = TerminalWriterWrapper(file=stream)
+        self._truncate_lines = config.root.log.truncate_console_frame_locals
+        self.MAX_LINE_LENGTH = 160
 
     def notify_before_console_output(self):
         self._terminal.clear_line_in_progress()
@@ -231,8 +233,15 @@ class ConsoleReporter(ReporterInterface):
             if index > 0:
                 self._terminal.write(', ')
             self._terminal.write('{0}: '.format(name), yellow=True, bold=True)
-            self._terminal.write(value['value'])
+            value_to_write = value['value']
+            if self._truncate_lines and len(value_to_write) > self.MAX_LINE_LENGTH:
+                value_to_write = self._truncate(value_to_write)
+            self._terminal.write(value_to_write)
         self._terminal.write('\n\n')
+
+    def _truncate(self, line):
+        line = line[:self.MAX_LINE_LENGTH - 3] + "..."
+        return line
 
     def _write_frame_code(self, frame):
         if frame.code_string:
@@ -301,3 +310,4 @@ class ConsoleReporter(ReporterInterface):
         minutes = duration % 60
         hours = duration / 60
         return '{0:02}:{1:02}:{2:02}'.format(int(hours), int(minutes), int(seconds))
+
