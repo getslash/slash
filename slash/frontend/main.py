@@ -40,7 +40,7 @@ def main():
         return func(args.argv)
     return 0
 
-def slash_version(args):
+def slash_version(_):
     print('Slash v{0}'.format(__version__))
 
 ################################## Boilerplate ################################
