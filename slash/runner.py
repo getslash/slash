@@ -164,7 +164,8 @@ def _set_current_test_context(test):
         context.test_methodname = test.__slash__.factory_name
     else:
         context.test_classname = test.__slash__.factory_name
-        context.test_methodname = test.__slash__.address_in_factory
+        # this includes a dot (.), so it has to be truncated
+        context.test_methodname = test.__slash__.address_in_factory[1:]
     try:
         yield
     finally:
