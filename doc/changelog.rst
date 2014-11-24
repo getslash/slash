@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`198` fix test_methodname accidentally starting with a dot
 * :release:`0.9.1 <30-10-2014>`
 * :release:`0.9.0 <30-10-2014>`
 * :feature:`194` add assert_almost_equal
