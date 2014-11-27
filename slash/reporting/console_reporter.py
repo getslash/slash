@@ -115,6 +115,7 @@ class ConsoleReporter(ReporterInterface):
         if self._verobsity_allows(VERBOSITIES.ERROR):
             self._report_failures(session)
             self._report_errors(session)
+            self._report_additional_test_details(session)
         elif self._verobsity_allows(VERBOSITIES.CRITICAL):
             self._report_failures_and_errors_concise(session)
 
@@ -158,6 +159,20 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_errors(self, session):
         self._report_error_objects('ERRORS', session.results.iter_all_errors(), 'E')
+
+    def _report_additional_test_details(self, session):
+        first = True
+        for result, details in session.results.iter_all_additional_details():
+            if result.is_success():
+                continue
+
+            if first:
+                self._terminal.sep('=', 'ADDITIONAL DETAILS')
+                first = False
+
+            self._terminal.lsep('_', '____ {0}'.format(self._get_location(result)))
+            for key, value in details.iteritems():
+                self._terminal.write('> {0}: {1}\n'.format(key, value))
 
     def _report_error_objects(self, title, iterator, marker):
         iterator = list(iterator)

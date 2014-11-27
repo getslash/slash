@@ -247,6 +247,30 @@ This is possible using the :func:`slash.add_error` and :func:`slash.add_failure`
 .. autofunction:: slash.add_failure
 
 
+Storing Additional Test Details
+-------------------------------
+
+It is possible for a test to store some objects that may help investigation in cause of failure.
+
+This is possible using the :func:`slash.set_test_detail` method. This method accepts a hashable key object and a printable object. In case the test fails, the stored objects will be printed in the test summary:
+
+.. code-block:: python
+
+ class MyTest(slash.Test):
+
+    def test_one(self):
+        slash.add_test_detail('log', '/var/log/foo.log')
+        slash.set_error("Some condition is not met!")
+
+    def test_two(self):
+        # Every test has its own unique storage, so it's possible to use the same key in multiple tests
+        slash.set_test_detail('log', '/var/log/bar.log')
+
+In this case we probably won't see the details of test_two, as it should finish successfully.
+
+.. autofunction:: slash.set_test_detail
+
+
 .. _global_state:
 
 Global State

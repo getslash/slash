@@ -20,6 +20,7 @@ class Result(object):
         self._errors = []
         self._failures = []
         self._skips = []
+        self._details = {}
         self._started = False
         self._finished = False
         self._interrupted = False
@@ -83,6 +84,9 @@ class Result(object):
         err = self._add_error(self._failures, e)
         context.reporter.report_test_failure_added(context.test, err)
 
+    def set_test_detail(self, key, value):
+        self._details[key] = value
+
     def _add_error(self, error_list, error=None):
         try:
             if error is None:
@@ -104,6 +108,9 @@ class Result(object):
 
     def get_failures(self):
         return self._failures
+
+    def get_additional_details(self):
+        return self._details
 
     def get_skips(self):
         return self._skips
@@ -143,6 +150,11 @@ class SessionResults(object):
             self.get_num_errors(),
             self.get_num_failures(),
             self.get_num_skipped())
+
+    def iter_all_additional_details(self):
+        for result in self.iter_all_results():
+            if result.get_additional_details():
+                yield result, result.get_additional_details()
 
     def iter_all_failures(self):
         for result in self.iter_all_results():
