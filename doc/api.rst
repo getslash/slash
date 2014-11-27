@@ -28,6 +28,8 @@ Cleanups
 
 .. autofunction:: slash.add_critical_cleanup
 
+.. autofunction:: slash.add_success_only_cleanup
+
 Skips
 -----
 

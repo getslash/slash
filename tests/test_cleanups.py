@@ -70,8 +70,11 @@ class CleanupsTest(TestCase):
             def test(self_):
                 slash.add_cleanup(self.events.cleanup, 1)
                 slash.add_cleanup(self.events.cleanup, 2)
+                slash.add_success_only_cleanup(self.events.cleanup, 3)
                 if fail_test:
                     raise Exception("!!!")
+        if not fail_test:
+            self.events.cleanup(3).and_raise(ThirdException())
         self.events.cleanup(2).and_raise(SecondException())
         self.events.cleanup(1).and_raise(FirstException())
         self.forge.replay()
@@ -82,12 +85,12 @@ class CleanupsTest(TestCase):
         [result] = session.results.iter_test_results()
         errors = result.get_errors()
 
-        assert len(errors) == (3 if fail_test else 2)
+        assert len(errors) == 3
 
         self.assertEquals(len(errors), len(exc_infos))
         self.assertEquals(
             [e[0] for e in exc_infos],
-            [Exception, SecondException, FirstException] if fail_test else [SecondException, FirstException],
+            [Exception, SecondException, FirstException] if fail_test else [ThirdException, SecondException, FirstException],
             )
         self.assertEquals(self._successful_tests, [])
 
