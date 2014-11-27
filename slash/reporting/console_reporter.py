@@ -29,6 +29,15 @@ class TerminalWriterWrapper(object):
         self._writer = TerminalWriter(file=file)
         self._line = ''
 
+    def lsep(self, sep, msg):
+        """Write a left-justified line filled with the separator until the end of the line"""
+        fullwidth = self._writer.fullwidth
+        if sys.platform == "win32":
+            # see py.io documentation for an explanation
+            fullwidth -= 1
+
+        self._writer.write('{0} {1}\n'.format(msg, sep * (fullwidth - 1 - len(msg))))
+
     def sep(self, *args, **kw):
         self._line = ''
         return self._writer.sep(*args, **kw)
@@ -164,11 +173,13 @@ class ConsoleReporter(ReporterInterface):
                 self._report_error(result, error, marker)
 
     def _report_error_location(self, result, object_index, total_num_errors, marker, error):
-        self._terminal.sep('_', '{0:YYYY-MM-DD HH:mm:ss ZZ}: {1}'.format(error.time.to('local'), self._get_location(result)))
+        self._terminal.lsep('_', '____ {0:YYYY-MM-DD HH:mm:ss ZZ}: {1}{2}'.format(
+            error.time.to('local'), self._get_location(result),
+            ' - {0}'.format(error.message) if not error.traceback else ''))
         if self._verobsity_allows(VERBOSITIES.INFO) and result.test_metadata:
             location = '{0}:{1}{2}/{3}'.format(
                 result.test_metadata.id, marker, object_index, total_num_errors)
-            self._terminal.sep('_', location)
+            self._terminal.lsep('_', location)
 
     def _report_failures_and_errors_concise(self, session):
         for result in session.results.iter_all_results():
