@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`189` add add_success_only_cleanup
 * :release:`0.9.1 <30-10-2014>`
 * :release:`0.9.0 <30-10-2014>`
 * :feature:`194` add assert_almost_equal
