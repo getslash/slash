@@ -116,14 +116,14 @@ class Loader(object):
                     _logger.debug("{0} is not wanted. Skipping...", file_path)
                     continue
                 module = None
-                with self._handling_import_errors(file_path):
-                    try:
+                try:
+                    with self._handling_import_errors(file_path):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
-                    except Exception as e:
-                        tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_traceback)[-1]
-                        raise CannotLoadTests(
-                            "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
+                except Exception as e:
+                    tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_traceback)[-1]
+                    raise CannotLoadTests(
+                        "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
                 if module is not None:
                     with self._adding_local_fixtures(file_path, module):
                         for runnable in self._iter_runnable_tests_in_module(file_path, module):
