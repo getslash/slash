@@ -29,18 +29,30 @@ class TerminalWriterWrapper(object):
         self._writer = TerminalWriter(file=file)
         self._line = ''
 
+    def lsep(self, sep, msg):
+        """Write a left-justified line filled with the separator until the end of the line"""
+        fullwidth = self._writer.fullwidth
+        if sys.platform == "win32":
+            # see py.io documentation for an explanation
+            fullwidth -= 1
+
+        self._do_write('{0} {1}\n'.format(msg, sep * (fullwidth - 1 - len(msg))))
+
     def sep(self, *args, **kw):
         self._line = ''
         return self._writer.sep(*args, **kw)
 
     def write(self, line, **kw):
         line = str(line)
-        self._writer.write(line, **kw)
+        self._do_write(line, **kw)
+        self._line = self._get_line_remainder(line)
+
+    def _get_line_remainder(self, line):
+        if '\r' in line:
+            line = line.split('\r', 1)[-1]
         if '\n' in line:
-            line = line.rsplit('\n', 1)[-1].rsplit('\r', 1)[-1]
-            self._line = line
-        else:
-            self._line += line
+            line = line.split('\n', 1)[-1]
+        return line
 
     def line(self, *args, **kw):
         self._writer.line(*args, **kw)
@@ -51,13 +63,16 @@ class TerminalWriterWrapper(object):
 
     def clear_line_in_progress(self):
         if self._line and self._writer.hasmarkup:
-            self._writer.write('\r')
-            self._writer.write(' ' * len(self._line))
-            self._writer.write('\r')
+            self._do_write('\r')
+            self._do_write(' ' * len(self._line))
+            self._do_write('\r')
 
     def restore_line_in_progress(self):
         if self._writer.hasmarkup:
-            self._writer.write(self._line)
+            self._do_write(self._line)
+
+    def _do_write(self, *args, **kwargs):
+        return self._writer.write(*args, **kwargs)
 
 
 class ConsoleReporter(ReporterInterface):
