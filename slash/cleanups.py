@@ -7,12 +7,14 @@ _logger = logbook.Logger(__name__)
 
 class _Cleanup(object):
 
-    def __init__(self, func, args, kwargs, critical=False):
+    def __init__(self, func, args, kwargs, critical=False, success_only=False):
+        assert not (success_only and critical)
         super(_Cleanup, self).__init__()
         self.func = func
         self.args = args
         self.kwargs = kwargs
         self.critical = critical
+        self.success_only = success_only
 
     def __call__(self):
         return self.func(*self.args, **self.kwargs)  # pylint: disable=W0142
@@ -37,15 +39,24 @@ def add_critical_cleanup(_func, *args, **kwargs):
     _add_cleanup(_Cleanup(_func, args, kwargs, critical=True))
 
 
+def add_success_only_cleanup(_func, *args, **kwargs):
+    """
+    Same as :func:`.add_cleanup`, only the cleanup will be called only if the test succeeds
+    """
+    _add_cleanup(_Cleanup(_func, args, kwargs, success_only=True))
+
+
 def _add_cleanup(cleanup):
     _get_cleanups().append(cleanup)
 
 
-def call_cleanups(critical_only=False):
+def call_cleanups(critical_only=False, success_only=False):
     cleanups = _get_cleanups()
     while cleanups:
         cleanup = cleanups.pop()
         if critical_only and not cleanup.critical:
+            continue
+        if not success_only and cleanup.success_only:
             continue
         with handling_exceptions(swallow=True):
             _logger.debug("Calling cleanup: {0}", cleanup)

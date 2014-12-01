@@ -104,7 +104,8 @@ def _cleanup_context():
             exc_info = sys.exc_info()
             raise
     finally:
-        call_cleanups(critical_only=exc_info is not None and exc_info[0] is KeyboardInterrupt)
+        call_cleanups(critical_only=exc_info is not None and exc_info[0] is KeyboardInterrupt,
+                      success_only=exc_info is None)
         del exc_info
 
 @contextmanager

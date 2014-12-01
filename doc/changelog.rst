@@ -2,6 +2,9 @@ Changelog
 =========
 
 * :feature:`196` Add 'slash version' to display current version
+* :feature:`189` add add_success_only_cleanup
+* :release:`0.9.3 <1-12-2014>`
+* :bug:`204` Fixed a console formatting issue causing empty lines to be emitted without reason
 * :release:`0.9.2 <24-11-2014>`
 * :bug:`198` fix test_methodname accidentally starting with a dot
 * :release:`0.9.1 <30-10-2014>`
