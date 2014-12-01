@@ -52,6 +52,8 @@ def debug_if_needed(exc_info=None):
         exc_info = sys.exc_info()
     if exc_info[0] is SkipTest and not config.root.debug.debug_skips:
         return
+    if isinstance(exc_info[1], (SystemExit,)):
+        return
 
     launch_debugger(exc_info)
 
