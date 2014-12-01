@@ -1,4 +1,5 @@
 import itertools
+import traceback
 import os
 from types import FunctionType, GeneratorType
 from contextlib import contextmanager
@@ -7,6 +8,7 @@ from emport import import_file
 from logbook import Logger
 
 import dessert
+import sys
 
 from .conf import config
 from ._compat import iteritems, string_types
@@ -119,8 +121,9 @@ class Loader(object):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                     except Exception as e:
+                        tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_traceback)[-1]
                         raise CannotLoadTests(
-                            "Could not load {0!r} ({1})".format(file_path, e))
+                            "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
                 if module is not None:
                     with self._adding_local_fixtures(file_path, module):
                         for runnable in self._iter_runnable_tests_in_module(file_path, module):
