@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :feature:`203` Group result output by tests, not by error type
+* :feature:`199` A separate configuration for traceback verbosity level (``log.traceback_level``, also controlled via ``--tb=[0-5]``)
 * :feature:`196` Add 'slash version' to display current version
 * :feature:`189` add add_success_only_cleanup
 * :release:`0.9.3 <1-12-2014>`

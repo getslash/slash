@@ -26,6 +26,9 @@ class Result(object):
         self._interrupted = False
         self._log_path = None
 
+    def has_errors_or_failures(self):
+        return bool(self._failures or self._errors)
+
     def get_log_path(self):
         return self._log_path
 
@@ -114,6 +117,9 @@ class Result(object):
 
     def get_skips(self):
         return self._skips
+
+    def has_skips(self):
+        return bool(self._skips)
 
     def has_fatal_exception(self):
         return any(e.is_fatal() for e in
