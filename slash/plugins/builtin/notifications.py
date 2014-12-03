@@ -44,8 +44,8 @@ class Plugin(PluginInterface):
 
     def _notify(self, title, message):
         for func, api_key in [
-                (partial(_post_notification ,"https://prowl.weks.net/publicapi/add"), config.root.plugins.notifications.prowl_api_key),
-                (partial(_post_notification ,"https://www.notifymyandroid.com/publicapi/notify"), config.root.plugins.notifications.nma_api_key),
+                (partial(_post_notification, "https://prowl.weks.net/publicapi/add"), config.root.plugins.notifications.prowl_api_key),
+                (partial(_post_notification, "https://www.notifymyandroid.com/publicapi/notify"), config.root.plugins.notifications.nma_api_key),
                 (_pushbullet_notification, config.root.plugins.notifications.pushbullet_api_key),
                 ]:
             if api_key is None:
