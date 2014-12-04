@@ -21,6 +21,21 @@ def test_result_summary(populated_suite):
     assert results.get_num_skipped() == 1
     assert results.get_num_successful() == len(populated_suite) - 4
 
+def test_has_errors_or_failures(populated_suite):
+    populated_suite[2].fail()
+    populated_suite[3].error()
+    results = populated_suite.run().session.results
+    assert not results[0].has_errors_or_failures()
+    assert results[2].has_errors_or_failures()
+    assert results[3].has_errors_or_failures()
+
+
+def test_has_skips(populated_suite):
+    populated_suite[1].skip()
+    results = populated_suite.run().session.results
+    assert not results[0].has_skips()
+    assert results[1].has_skips()
+
 
 def test_result_data_is_unique():
 

@@ -12,6 +12,7 @@ config = Config({
     },
     "log": {
         "console_level": logbook.WARNING // Doc("console log level (can be repeated). Higher log level means quieter output.") // Cmdline(decrease="-v", increase="-q"),
+        "traceback_level": 4 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),
         "truncate_console_lines": True // Doc("truncate long log lines on the console") // Cmdline(arg='--truncate-console-lines', metavar='yes/no'),
         "root": None // Doc("Root directory for logs") // Cmdline(arg="-l", metavar="DIR"),
         "subpath": "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),

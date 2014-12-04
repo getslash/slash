@@ -135,12 +135,12 @@ class TestSuite(object):
         for test in self._all_tests:
             test.fix()
 
-    def run(self, stop_on_error=None, pattern=None, expect_interruption=False):
+    def run(self, stop_on_error=None, pattern=None, expect_interruption=False, reporter=None):
         if pattern is None:
             pattern = self._path
         self.commit()
         assert not _active_fixture_uuids
-        with slash.Session() as session:
+        with slash.Session(reporter=reporter) as session:
             with session.get_started_context():
                 self.session_id = session.id
                 try:
