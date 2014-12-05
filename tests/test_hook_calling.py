@@ -1,8 +1,27 @@
 import slash
 from slash import plugins
 from slash.plugins import PluginInterface
+from slash import hooks
 
 from .utils import TestCase
+
+
+def test_hook__test_interrupt(populated_suite, request, checkpoint):
+    request.addfinalizer(
+        hooks.test_interrupt.register(checkpoint)
+        .unregister)
+
+    test_index = int(len(populated_suite) / 2)
+    for index, test in enumerate(populated_suite):
+        if index == test_index:
+            test.interrupt()
+        elif index > test_index:
+            test.expect_deselect()
+    populated_suite.run(expect_interruption=True)
+    assert checkpoint.called
+
+
+#### Older tests below, need modernizing ####
 
 class HookCallingTest(TestCase):
 

@@ -529,6 +529,10 @@ class PlannedTest(SuiteObject, Parametrizable):
     def expect_failure(self):
         self._expected_result = _FAILURE
 
+    def interrupt(self):
+        self.inject_line('raise KeyboardInterrupt()')
+        self.expect_interruption()
+
     def expect_interruption(self):
         self._expected_result = _INTERRUPT
 

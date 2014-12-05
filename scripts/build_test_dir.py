@@ -47,6 +47,8 @@ class Application(object):
                 t.error()
             elif element == 'S':
                 t.skip()
+            elif element == 'i':
+                t.interrupt()
             else:
                 parser.error("Unknown marker: {0!r}".format(element))
 
