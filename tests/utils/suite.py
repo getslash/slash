@@ -151,7 +151,7 @@ class TestSuite(object):
                         raise
                 else:
                     assert not expect_interruption, 'Test run did not get interrupted'
-                slash.hooks.result_summary()
+            slash.hooks.result_summary()
         verified_session = self.verify_last_run(stop_on_error=stop_on_error)
         assert session is verified_session.session
         assert not _active_fixture_uuids

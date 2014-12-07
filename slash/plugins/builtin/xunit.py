@@ -26,9 +26,6 @@ class Plugin(PluginInterface):
         self._start_time = datetime.datetime.now()
         self._xunit_elements = []
 
-    def session_end(self):
-        del self._xunit_elements
-
     def test_start(self):
         self._xunit_elements.append(E("testcase", {
             "name": str(context.test),
