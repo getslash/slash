@@ -141,7 +141,7 @@ class ConsoleReporter(ReporterInterface):
 
         kwargs = {'bold': True}
         msg = 'Session ended.'
-        if session.results.is_success():
+        if session.results.is_success(allow_skips=True):
             kwargs.update(green=True)
         else:
             kwargs.update(red=True)
