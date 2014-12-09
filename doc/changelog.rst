@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`209` Test cleanups are now called before fixture cleanups
 * :feature:`203` Group result output by tests, not by error type
 * :feature:`199` A separate configuration for traceback verbosity level (``log.traceback_level``, also controlled via ``--tb=[0-5]``)
 * :feature:`196` Add 'slash version' to display current version

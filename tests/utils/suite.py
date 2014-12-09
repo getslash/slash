@@ -365,17 +365,16 @@ class Fixture(SuiteObject, Parametrizable):
         self._cleanups = []
 
     def add_cleanup(self):
-        self._cleanups.append(_uuid())
-
+        returned = FixtureCleanup()
+        self._cleanups.append(returned)
+        return returned
 
     def verify_callbacks(self, result):
-        self._verify_markers(result, 'fixture_cleanups', self._cleanups[::-1])
-
-    def _verify_markers(self, result, markers_key, expected):
+        expected = [evt.id for evt in self._cleanups[::-1]]
         if not expected:
-            assert markers_key not in result.data
+            assert 'fixture_cleanups' not in result.data
         else:
-            assert result.data[markers_key] == expected
+            assert result.data['fixture_cleanups'] == expected
 
     def add_fixture(self, fixture):
         self.fixtures.append(fixture)
@@ -406,7 +405,7 @@ class Fixture(SuiteObject, Parametrizable):
             with formatter.indented():
                 formatter.writeln('_active_fixture_uuids.pop({0!r})'.format(self.uuid))
 
-            self._add_this_markers(formatter, 'add_cleanup', self._cleanups, 'fixture_cleanups')
+            self._add_cleanup_code(formatter)
 
             formatter.writeln('return {0}'.format(fixture_info_dict_code))
 
@@ -418,13 +417,13 @@ class Fixture(SuiteObject, Parametrizable):
             args.append('scope={0!r}'.format(self.scope))
         return '' if not args else '({0})'.format(', '.join(args))
 
-    def _add_this_markers(self, formatter, callback_name, markers, result_data_key):
-        for index, marker in enumerate(markers):
-            formatter.write('@this.')
-            formatter.writeln(callback_name)
+    def _add_cleanup_code(self, formatter):
+        for index, cleanup in enumerate(self._cleanups):
+            formatter.writeln('@this.add_cleanup')
             formatter.writeln('def callback{0}():'.format(index))
             with formatter.indented():
-                formatter.writeln('_test_result.data.setdefault({0!r}, []).append({1!r})'.format(result_data_key, marker))
+                formatter.writeln('_test_result.data.setdefault("fixture_cleanups", []).append({0!r})'.format(cleanup.id))
+                formatter.writeln(cleanup.get_event_appending_line())
 
 
 
@@ -496,13 +495,14 @@ class PlannedTest(SuiteObject, Parametrizable):
         self._injected_lines = list(lines) + self._injected_lines
 
     def add_cleanup(self, critical=False):
-        cleanup_id = _uuid()
-        self._cleanups.append({'id': cleanup_id, 'critical': critical})
+        returned = Cleanup(critical=critical)
+        self._cleanups.append(returned)
         self.prepend_lines([
             'def _cleanup():',
-            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(
-                cleanup_id),
+            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(returned.id),
+            '    {0}'.format(returned.get_event_appending_line()),
             'slash.add_{0}cleanup(_cleanup)'.format('critical_' if critical else '')])
+        return returned
 
     def prepend_line(self, line):
         self.prepend_lines([line])
@@ -622,10 +622,10 @@ class PlannedTest(SuiteObject, Parametrizable):
             raise NotImplementedError()  # pragma: no cover
 
         for cleanup in self._cleanups:
-            if self._expected_result == _INTERRUPT and not cleanup['critical']:
-                assert cleanup['id'] not in result.data.get('cleanups', [])
+            if self._expected_result == _INTERRUPT and not cleanup.critical:
+                assert cleanup.id not in result.data.get('cleanups', [])
             else:
-                assert cleanup['id'] in result.data.get('cleanups', [])
+                assert cleanup.id in result.data.get('cleanups', [])
 
     def _should_fixture_be_active(self, fixture):
         if fixture in self._fixtures:
@@ -662,5 +662,26 @@ class ResultWrapper(object):
                    ) == 1, 'too many matching tests'
         return self.results_by_test_uuid[planned_test.uuid][0]
 
+
+class Event(object):
+
+    def __init__(self):
+        super(Event, self).__init__()
+        self.id = _uuid()
+
+    def get_event_id(self):
+        return '{0}:{1}'.format(type(self).__name__, self.id)
+
+    def get_event_appending_line(self):
+        return 'slash.context.result.data.setdefault("events", []).append({0!r})'.format(self.get_event_id())
+
+class Cleanup(Event):
+
+    def __init__(self, critical=False):
+        super(Cleanup, self).__init__()
+        self.critical = critical
+
+class FixtureCleanup(Cleanup):
+    pass
 
 _active_fixture_uuids = {}
