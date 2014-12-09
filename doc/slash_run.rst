@@ -14,6 +14,8 @@ Verbosity
 
 Verbosity is increased with ``-v`` and decreased with ``-q``. Those can be specified multiple times.
 
+In addition to the verbosity itself, tracebacks which are displayed at the session summary can be controlled via tha ``--tb`` flag, specifying the verbosity level of the tracebacks. ``0`` means no tracebacks, while ``5`` means the highest detail available.
+
 .. seealso:: :ref:`logging`
 
 Loading Tests from Files
@@ -29,6 +31,7 @@ Debugging & Failures
 Debugging is done with ``--pdb``, which invokes the best debugger available.
 
 Stopping at the first unsuccessful test is done with the ``-x`` flag.
+
 
 .. seealso:: :ref:`exceptions`
 
