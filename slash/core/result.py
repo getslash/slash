@@ -96,6 +96,7 @@ class Result(object):
                 error = Error.capture_exception()
             if not isinstance(error, Error):
                 error = Error(error)
+            _logger.debug('Error added: {0}', error)
             error_list.append(error)
             return error
         except Exception:
