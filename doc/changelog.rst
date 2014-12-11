@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`16` Added ``slash.requires`` decorator to formally specify test requirements
 * :feature:`209` Test cleanups are now called before fixture cleanups
 * :feature:`203` Group result output by tests, not by error type
 * :feature:`199` A separate configuration for traceback verbosity level (``log.traceback_level``, also controlled via ``--tb=[0-5]``)

@@ -220,6 +220,30 @@ Slash also provides :func:`slash.skipped`, which is a decorator to skip specific
  class EntirelySkippedTest(slash.Test):
      # ...
 
+Requirements
+------------
+In many cases you want to depend in our test on a certain precondition in order to run. Requirements provide an explicit way of stating those requirements. Use :func:`slash.requires` to specify requirements:
+
+.. code-block:: python
+
+
+  def is_some_condition_met():
+      return True
+		
+  @slash.requires(is_some_condition_met)
+  def test_something():
+      ...
+
+Requirements are stronger than skips, since they can be reported separately and imply a basic precondition that is not met in the current testing environment. 
+
+When a requirement fails, the test is skipped without even being started, and appears in the eventual console summary along with the unmet requirements. If you want to control the message shown if the requirement is not met, you can pass the ``message`` parameter:
+
+.. code-block:: python
+       
+  @slash.requires(is_some_condition_met, message='My condition is not met!')
+  def test_something():
+      ...
+
 Warnings
 --------
 

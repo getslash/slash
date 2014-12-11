@@ -39,6 +39,11 @@ Skips
 
 .. autofunction:: slash.skip_test
 
+Requirements
+------------
+
+.. autofunction:: slash.requires
+
 Warnings
 --------
 

@@ -44,8 +44,10 @@ def run_tests(iterable, stop_on_error=None):
             last_filename = test_filename
         context.session.reporter.report_test_start(test)
         _logger.notice("{0}", test.__slash__.address)
-        with _get_run_context_stack(test, test_iterator, fixture_scope_manager):
-            test.run()
+
+        with _get_run_context_stack(test, test_iterator, fixture_scope_manager) as should_run:
+            if should_run:
+                test.run()
         result = context.session.results[test]
         context.session.reporter.report_test_end(test, result)
         if not test_iterator.has_next() or ensure_test_metadata(test_iterator.peek()).file_path != last_filename:
@@ -81,17 +83,29 @@ def _get_run_context_stack(test, test_iterator, fixture_scope_manager):
     yielded = False
     with ExitStack() as stack:
         stack.enter_context(_get_test_context(test))
+
+        if not _check_test_requirements(test):
+            yield False
+            return
+
         stack.enter_context(_get_test_hooks_context())
         stack.enter_context(_update_result_context())
         stack.enter_context(_get_test_fixture_context(test, test_iterator, fixture_scope_manager))
         stack.enter_context(_cleanup_context())
         stack.enter_context(handling_exceptions())
         yielded = True
-        yield
+        yield True
     # if some of the context entries throw SkipTest, the yield result above will not be reached.
     # we have to make sure that yield happens or else the context manager will raise on __exit__...
     if not yielded:
-        yield
+        yield False
+
+def _check_test_requirements(test):
+    unmet_reqs = test.get_unmet_requirements()
+    if unmet_reqs:
+        context.result.add_skip('Unmet requirements: {0}'.format(unmet_reqs))
+        return False
+    return True
 
 @contextmanager
 def _cleanup_context():

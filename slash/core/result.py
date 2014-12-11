@@ -184,9 +184,14 @@ class SessionResults(object):
         return self._iterator()
 
     def is_success(self, allow_skips=False):
-        return self.global_result.is_success() and \
-            all(result.is_finished() and result.is_success(allow_skips=allow_skips)
-                for result in self._iterator())
+        if not self.global_result.is_success():
+            return False
+        for result in self._iterator():
+            if not result.is_finished() and not result.is_skip():
+                return False
+            if not result.is_success(allow_skips=allow_skips):
+                return False
+        return True
 
     def get_num_results(self):
         return len(self._results_dict)

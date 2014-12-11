@@ -199,7 +199,7 @@ class TestSuite(object):
             results = returned.results_by_test_uuid.get(test.uuid)
 
             if not test.selected:
-                assert results is None, 'Deselected test {0} unexpectedly run!'.format(
+                assert results is None or not any(r.is_started() for r in results), 'Deselected test {0} unexpectedly run!'.format(
                     test)
                 continue
 
@@ -443,6 +443,7 @@ class PlannedTest(SuiteObject, Parametrizable):
 
         self._injected_lines = []
         self._fixtures = []
+        self._decorators = []
 
     def iter_expected_fixture_variations(self):
 
@@ -507,6 +508,15 @@ class PlannedTest(SuiteObject, Parametrizable):
     def prepend_line(self, line):
         self.prepend_lines([line])
 
+    def add_requirement(self, fullfilled, use_message=False):
+        decorator = 'slash.requires(lambda : {0}'.format(bool(fullfilled))
+        if use_message:
+            decorator += ', message="some requirement message"'
+        decorator += ')'
+        self._decorators.append(decorator)
+        if not fullfilled:
+            self.expect_deselect()
+
     def add_fixture(self, fixture=None):
         if fixture is None:
             fixture = self.file.add_fixture()
@@ -557,6 +567,8 @@ class PlannedTest(SuiteObject, Parametrizable):
 
     def commit(self, formatter):
         self.add_parametrize_decorators(formatter)
+        for decorator in self._decorators:
+            formatter.writeln('@{0}'.format(decorator))
         formatter.writeln("def {0}({1}):".format(
             self.function_name, self._get_args_string()))
         with formatter.indented():
@@ -661,6 +673,13 @@ class ResultWrapper(object):
         assert len(self.results_by_test_uuid[planned_test.uuid]
                    ) == 1, 'too many matching tests'
         return self.results_by_test_uuid[planned_test.uuid][0]
+
+    def __contains__(self, x):
+        try:
+            self[x]
+        except LookupError:
+            return False
+        return True
 
 
 class Event(object):
