@@ -1,4 +1,6 @@
 import pytest
+import slash
+from slash.loader import Loader
 
 @pytest.mark.parametrize('requirement_fullfilled', [True, False])
 @pytest.mark.parametrize('use_message', [True, False])
@@ -14,3 +16,24 @@ def test_requirements(populated_suite, suite_test, requirement_fullfilled, use_f
     else:
         assert not results[suite_test].is_started()
         assert results[suite_test].is_skip()
+
+
+def test_requirements_on_class():
+
+    def req1():
+        pass
+
+    def req2():
+        pass
+
+    @slash.requires(req1)
+    class Test(slash.Test):
+
+        @slash.requires(req2)
+        def test_something(self):
+            pass
+
+    with slash.Session():
+        [test] = Loader().get_runnables(Test)
+
+    assert [r._req for r in test.get_requirements()] == [req1, req2]

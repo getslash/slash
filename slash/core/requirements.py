@@ -17,8 +17,8 @@ def requires(req, message=None):
     return decorator
 
 
-def get_unmet_requirements(test):
-    return [req for req in getattr(test, _SLASH_REQUIRES_KEY_NAME, []) if not req.is_met()]
+def get_requirements(test):
+    return list(getattr(test, _SLASH_REQUIRES_KEY_NAME, []))
 
 
 class Requirement(object):

@@ -244,6 +244,24 @@ When a requirement fails, the test is skipped without even being started, and ap
   def test_something():
       ...
 
+When writing tests as classes, you can also decorate the class itself with requirements, and even add requirements only to specific methods:
+
+.. code-block:: python
+       
+  @slash.requires(running_microwave)
+  class MicrowaveTest(slash.Test):
+
+       def test_is_running(self):
+           assert microwave.is_running()
+
+       @slash.requires(is_cold_food_available)
+       def test_heating(self):
+           food = get_cold_food()
+	   microwave.heat(food)
+	   assert food.is_hot()
+
+
+
 Warnings
 --------
 

@@ -8,7 +8,7 @@ from ..utils.python import getargspec
 from .fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
-from .requirements import get_unmet_requirements
+from .requirements import get_requirements
 
 
 class TestTestFactory(RunnableTestFactory):
@@ -102,8 +102,8 @@ class Test(RunnableTest):
             return ""
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
 
-    def get_unmet_requirements(self):
-        return get_unmet_requirements(getattr(self, self._test_method_name))
+    def get_requirements(self):
+        return get_requirements(type(self)) + get_requirements(getattr(self, self._test_method_name))
 
     def run(self):  # pylint: disable=E0202
         """

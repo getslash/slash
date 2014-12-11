@@ -13,5 +13,11 @@ class RunnableTest(object):
         """
         raise NotImplementedError()  # pragma: no cover
 
+    def get_unmet_requirements(self):
+        return [r for r in self.get_requirements() if not r.is_met()]
+
+    def get_requirements(self):
+        raise NotImplementedError() # pragma: no cover
+
     def __repr__(self):
         return repr(self.__slash__)
