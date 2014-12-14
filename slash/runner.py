@@ -15,6 +15,7 @@ from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.fixtures.fixture_scope_manager import FixtureScopeManager
 from .utils.iteration import PeekableIterator
+from .utils.interactive import notify_if_slow_context
 from .core.error import Error, DetailedTraceback
 
 
@@ -156,7 +157,8 @@ def _get_test_hooks_context():
     except TestFailed:
         hooks.test_failure()  # pylint: disable=no-member
     except KeyboardInterrupt:
-        hooks.test_interrupt()  # pylint: disable=no-member
+        with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
+            hooks.test_interrupt()  # pylint: disable=no-member
         raise
     except:
         hooks.test_error()  # pylint: disable=no-member
