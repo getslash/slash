@@ -399,6 +399,26 @@ def test_fixture_store_add(fixture_func, fixture_func_name):
     assert f.get_fixture_by_name(
         fixture_func_name).fixture_func is fixture_func
 
+def test_nofixtures_decorator(store):
+
+    @slash.nofixtures
+    def func1(a, b, c):
+        pass
+
+    [var] = store.iter_parametrization_variations(funcs=[func1])
+    assert var == {}
+
+def test_nofixtures_decorator_methods(store):
+
+    class TestClass(slash.Test):
+        @slash.nofixtures
+        def before(self, a, b, c):
+            pass
+
+    [var] = store.iter_parametrization_variations(methods=[('before', TestClass.before)])
+    assert var == {}
+
+
 
 @pytest.fixture(params=[True, False])
 def fixture_func(request, fixture_func_name):

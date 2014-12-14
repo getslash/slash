@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`214` Added ``slash.nofixtures`` decorator to opt out of automatic fixture deduction.
 * :feature:`16` Added ``slash.requires`` decorator to formally specify test requirements
 * :feature:`209` Test cleanups are now called before fixture cleanups
 * :feature:`203` Group result output by tests, not by error type
