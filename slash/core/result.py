@@ -20,10 +20,14 @@ class Result(object):
         self._errors = []
         self._failures = []
         self._skips = []
+        self._details = {}
         self._started = False
         self._finished = False
         self._interrupted = False
         self._log_path = None
+
+    def has_errors_or_failures(self):
+        return bool(self._failures or self._errors)
 
     def get_log_path(self):
         return self._log_path
@@ -83,12 +87,16 @@ class Result(object):
         err = self._add_error(self._failures, e)
         context.reporter.report_test_failure_added(context.test, err)
 
+    def set_test_detail(self, key, value):
+        self._details[key] = value
+
     def _add_error(self, error_list, error=None):
         try:
             if error is None:
                 error = Error.capture_exception()
             if not isinstance(error, Error):
                 error = Error(error)
+            _logger.debug('Error added: {0}', error)
             error_list.append(error)
             return error
         except Exception:
@@ -105,8 +113,14 @@ class Result(object):
     def get_failures(self):
         return self._failures
 
+    def get_additional_details(self):
+        return self._details
+
     def get_skips(self):
         return self._skips
+
+    def has_skips(self):
+        return bool(self._skips)
 
     def has_fatal_exception(self):
         return any(e.is_fatal() for e in
@@ -144,6 +158,11 @@ class SessionResults(object):
             self.get_num_failures(),
             self.get_num_skipped())
 
+    def iter_all_additional_details(self):
+        for result in self.iter_all_results():
+            if result.get_additional_details():
+                yield result, result.get_additional_details()
+
     def iter_all_failures(self):
         for result in self.iter_all_results():
             if result.get_failures():
@@ -165,9 +184,14 @@ class SessionResults(object):
         return self._iterator()
 
     def is_success(self, allow_skips=False):
-        return self.global_result.is_success() and \
-            all(result.is_finished() and result.is_success(allow_skips=allow_skips)
-                for result in self._iterator())
+        if not self.global_result.is_success():
+            return False
+        for result in self._iterator():
+            if not result.is_finished() and not result.is_skip():
+                return False
+            if not result.is_success(allow_skips=allow_skips):
+                return False
+        return True
 
     def get_num_results(self):
         return len(self._results_dict)

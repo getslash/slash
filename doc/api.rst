@@ -39,6 +39,18 @@ Skips
 
 .. autofunction:: slash.skip_test
 
+Fixtures
+--------
+
+.. autofunction:: slash.fixture
+
+.. autofunction:: slash.nofixtures
+
+Requirements
+------------
+
+.. autofunction:: slash.requires
+
 Warnings
 --------
 

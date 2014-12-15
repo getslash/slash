@@ -8,6 +8,7 @@ from ..utils.python import getargspec
 from .fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
+from .requirements import get_requirements
 
 
 class TestTestFactory(RunnableTestFactory):
@@ -62,6 +63,9 @@ class TestTestFactory(RunnableTestFactory):
             if hasattr(cls, name):
                 yield getattr(cls, name)
 
+    def get_unmet_requirements(self):
+        raise NotImplementedError() # pragma: no cover
+
 
 class Test(RunnableTest):
     """
@@ -97,6 +101,9 @@ class Test(RunnableTest):
         if not kwargs:
             return ""
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
+
+    def get_requirements(self):
+        return get_requirements(type(self)) + get_requirements(getattr(self, self._test_method_name))
 
     def run(self):  # pylint: disable=E0202
         """

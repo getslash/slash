@@ -48,3 +48,15 @@ def add_failure(msg):
     """
     if context.session is not None:
         context.session.results.current.add_failure(msg)
+
+
+def set_test_detail(key, value):
+    """
+    Store an object providing additional information about the current running test in a certain key.
+    Each test has its own storage.
+
+    :param key: a hashable object
+    :param value: can be either an object or a string representing additional details
+    """
+    if context.session is not None:
+        context.session.results.current.set_test_detail(key, value)

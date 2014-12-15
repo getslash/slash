@@ -5,6 +5,7 @@ from numbers import Number
 from ..._compat import iteritems, OrderedDict, string_types, imap, izip, reduce, xrange
 from ...utils.python import getargspec
 from .parameters import Parametrization, get_parametrization_fixtures
+from .utils import nofixtures
 
 _PRINTABLE_TYPES = (Number,) + string_types
 
@@ -31,10 +32,15 @@ class VariationFactory(object):
         self._add_needed_fixtures_from_function(func, is_method=False)
 
     def _add_needed_fixtures_from_function(self, func, is_method):
+
         if isinstance(func, tuple):
             namespace, func = func
         else:
             namespace = None
+
+        if nofixtures.is_marked(func):
+            return
+
         arg_names = getargspec(func).args[1 if is_method else 0:]
 
         parametrizations = {}

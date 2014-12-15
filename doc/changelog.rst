@@ -1,9 +1,18 @@
 Changelog
 =========
 
+* :release:`0.10.0 <15-12-2014>`
+* :feature:`214` Added ``slash.nofixtures`` decorator to opt out of automatic fixture deduction.
+* :feature:`16` Added ``slash.requires`` decorator to formally specify test requirements
+* :feature:`209` Test cleanups are now called before fixture cleanups
+* :feature:`203` Group result output by tests, not by error type
+* :feature:`199` A separate configuration for traceback verbosity level (``log.traceback_level``, also controlled via ``--tb=[0-5]``)
+* :feature:`196` Add 'slash version' to display current version
+* :feature:`189` add add_success_only_cleanup
 * :release:`0.9.3 <1-12-2014>`
 * :bug:`204` Fixed a console formatting issue causing empty lines to be emitted without reason
-* :feature:`189` add add_success_only_cleanup
+* :release:`0.9.2 <24-11-2014>`
+* :bug:`198` fix test_methodname accidentally starting with a dot
 * :release:`0.9.1 <30-10-2014>`
 * :release:`0.9.0 <30-10-2014>`
 * :feature:`194` add assert_almost_equal

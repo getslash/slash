@@ -135,12 +135,12 @@ class TestSuite(object):
         for test in self._all_tests:
             test.fix()
 
-    def run(self, stop_on_error=None, pattern=None, expect_interruption=False):
+    def run(self, stop_on_error=None, pattern=None, expect_interruption=False, reporter=None):
         if pattern is None:
             pattern = self._path
         self.commit()
         assert not _active_fixture_uuids
-        with slash.Session() as session:
+        with slash.Session(reporter=reporter) as session:
             with session.get_started_context():
                 self.session_id = session.id
                 try:
@@ -151,7 +151,7 @@ class TestSuite(object):
                         raise
                 else:
                     assert not expect_interruption, 'Test run did not get interrupted'
-                slash.hooks.result_summary()
+            slash.hooks.result_summary()
         verified_session = self.verify_last_run(stop_on_error=stop_on_error)
         assert session is verified_session.session
         assert not _active_fixture_uuids
@@ -199,7 +199,7 @@ class TestSuite(object):
             results = returned.results_by_test_uuid.get(test.uuid)
 
             if not test.selected:
-                assert results is None, 'Deselected test {0} unexpectedly run!'.format(
+                assert results is None or not any(r.is_started() for r in results), 'Deselected test {0} unexpectedly run!'.format(
                     test)
                 continue
 
@@ -365,17 +365,16 @@ class Fixture(SuiteObject, Parametrizable):
         self._cleanups = []
 
     def add_cleanup(self):
-        self._cleanups.append(_uuid())
-
+        returned = FixtureCleanup()
+        self._cleanups.append(returned)
+        return returned
 
     def verify_callbacks(self, result):
-        self._verify_markers(result, 'fixture_cleanups', self._cleanups[::-1])
-
-    def _verify_markers(self, result, markers_key, expected):
+        expected = [evt.id for evt in self._cleanups[::-1]]
         if not expected:
-            assert markers_key not in result.data
+            assert 'fixture_cleanups' not in result.data
         else:
-            assert result.data[markers_key] == expected
+            assert result.data['fixture_cleanups'] == expected
 
     def add_fixture(self, fixture):
         self.fixtures.append(fixture)
@@ -406,7 +405,7 @@ class Fixture(SuiteObject, Parametrizable):
             with formatter.indented():
                 formatter.writeln('_active_fixture_uuids.pop({0!r})'.format(self.uuid))
 
-            self._add_this_markers(formatter, 'add_cleanup', self._cleanups, 'fixture_cleanups')
+            self._add_cleanup_code(formatter)
 
             formatter.writeln('return {0}'.format(fixture_info_dict_code))
 
@@ -418,13 +417,13 @@ class Fixture(SuiteObject, Parametrizable):
             args.append('scope={0!r}'.format(self.scope))
         return '' if not args else '({0})'.format(', '.join(args))
 
-    def _add_this_markers(self, formatter, callback_name, markers, result_data_key):
-        for index, marker in enumerate(markers):
-            formatter.write('@this.')
-            formatter.writeln(callback_name)
+    def _add_cleanup_code(self, formatter):
+        for index, cleanup in enumerate(self._cleanups):
+            formatter.writeln('@this.add_cleanup')
             formatter.writeln('def callback{0}():'.format(index))
             with formatter.indented():
-                formatter.writeln('_test_result.data.setdefault({0!r}, []).append({1!r})'.format(result_data_key, marker))
+                formatter.writeln('_test_result.data.setdefault("fixture_cleanups", []).append({0!r})'.format(cleanup.id))
+                formatter.writeln(cleanup.get_event_appending_line())
 
 
 
@@ -444,6 +443,7 @@ class PlannedTest(SuiteObject, Parametrizable):
 
         self._injected_lines = []
         self._fixtures = []
+        self._decorators = []
 
     def iter_expected_fixture_variations(self):
 
@@ -496,16 +496,26 @@ class PlannedTest(SuiteObject, Parametrizable):
         self._injected_lines = list(lines) + self._injected_lines
 
     def add_cleanup(self, critical=False):
-        cleanup_id = _uuid()
-        self._cleanups.append({'id': cleanup_id, 'critical': critical})
+        returned = Cleanup(critical=critical)
+        self._cleanups.append(returned)
         self.prepend_lines([
             'def _cleanup():',
-            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(
-                cleanup_id),
+            '    slash.context.result.data.setdefault("cleanups", []).append({0!r})'.format(returned.id),
+            '    {0}'.format(returned.get_event_appending_line()),
             'slash.add_{0}cleanup(_cleanup)'.format('critical_' if critical else '')])
+        return returned
 
     def prepend_line(self, line):
         self.prepend_lines([line])
+
+    def add_requirement(self, fullfilled, use_message=False):
+        decorator = 'slash.requires(lambda : {0}'.format(bool(fullfilled))
+        if use_message:
+            decorator += ', message="some requirement message"'
+        decorator += ')'
+        self._decorators.append(decorator)
+        if not fullfilled:
+            self.expect_deselect()
 
     def add_fixture(self, fixture=None):
         if fixture is None:
@@ -528,6 +538,10 @@ class PlannedTest(SuiteObject, Parametrizable):
 
     def expect_failure(self):
         self._expected_result = _FAILURE
+
+    def interrupt(self):
+        self.inject_line('raise KeyboardInterrupt()')
+        self.expect_interruption()
 
     def expect_interruption(self):
         self._expected_result = _INTERRUPT
@@ -553,6 +567,8 @@ class PlannedTest(SuiteObject, Parametrizable):
 
     def commit(self, formatter):
         self.add_parametrize_decorators(formatter)
+        for decorator in self._decorators:
+            formatter.writeln('@{0}'.format(decorator))
         formatter.writeln("def {0}({1}):".format(
             self.function_name, self._get_args_string()))
         with formatter.indented():
@@ -618,10 +634,10 @@ class PlannedTest(SuiteObject, Parametrizable):
             raise NotImplementedError()  # pragma: no cover
 
         for cleanup in self._cleanups:
-            if self._expected_result == _INTERRUPT and not cleanup['critical']:
-                assert cleanup['id'] not in result.data.get('cleanups', [])
+            if self._expected_result == _INTERRUPT and not cleanup.critical:
+                assert cleanup.id not in result.data.get('cleanups', [])
             else:
-                assert cleanup['id'] in result.data.get('cleanups', [])
+                assert cleanup.id in result.data.get('cleanups', [])
 
     def _should_fixture_be_active(self, fixture):
         if fixture in self._fixtures:
@@ -658,5 +674,33 @@ class ResultWrapper(object):
                    ) == 1, 'too many matching tests'
         return self.results_by_test_uuid[planned_test.uuid][0]
 
+    def __contains__(self, x):
+        try:
+            self[x]
+        except LookupError:
+            return False
+        return True
+
+
+class Event(object):
+
+    def __init__(self):
+        super(Event, self).__init__()
+        self.id = _uuid()
+
+    def get_event_id(self):
+        return '{0}:{1}'.format(type(self).__name__, self.id)
+
+    def get_event_appending_line(self):
+        return 'slash.context.result.data.setdefault("events", []).append({0!r})'.format(self.get_event_id())
+
+class Cleanup(Event):
+
+    def __init__(self, critical=False):
+        super(Cleanup, self).__init__()
+        self.critical = critical
+
+class FixtureCleanup(Cleanup):
+    pass
 
 _active_fixture_uuids = {}

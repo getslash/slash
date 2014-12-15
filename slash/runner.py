@@ -15,6 +15,7 @@ from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.fixtures.fixture_scope_manager import FixtureScopeManager
 from .utils.iteration import PeekableIterator
+from .utils.interactive import notify_if_slow_context
 from .core.error import Error, DetailedTraceback
 
 
@@ -44,8 +45,10 @@ def run_tests(iterable, stop_on_error=None):
             last_filename = test_filename
         context.session.reporter.report_test_start(test)
         _logger.notice("{0}", test.__slash__.address)
-        with _get_run_context_stack(test, test_iterator, fixture_scope_manager):
-            test.run()
+
+        with _get_run_context_stack(test, test_iterator, fixture_scope_manager) as should_run:
+            if should_run:
+                test.run()
         result = context.session.results[test]
         context.session.reporter.report_test_end(test, result)
         if not test_iterator.has_next() or ensure_test_metadata(test_iterator.peek()).file_path != last_filename:
@@ -81,17 +84,29 @@ def _get_run_context_stack(test, test_iterator, fixture_scope_manager):
     yielded = False
     with ExitStack() as stack:
         stack.enter_context(_get_test_context(test))
+
+        if not _check_test_requirements(test):
+            yield False
+            return
+
         stack.enter_context(_get_test_hooks_context())
         stack.enter_context(_update_result_context())
-        stack.enter_context(_cleanup_context())
         stack.enter_context(_get_test_fixture_context(test, test_iterator, fixture_scope_manager))
+        stack.enter_context(_cleanup_context())
         stack.enter_context(handling_exceptions())
         yielded = True
-        yield
+        yield True
     # if some of the context entries throw SkipTest, the yield result above will not be reached.
     # we have to make sure that yield happens or else the context manager will raise on __exit__...
     if not yielded:
-        yield
+        yield False
+
+def _check_test_requirements(test):
+    unmet_reqs = test.get_unmet_requirements()
+    if unmet_reqs:
+        context.result.add_skip('Unmet requirements: {0}'.format(unmet_reqs))
+        return False
+    return True
 
 @contextmanager
 def _cleanup_context():
@@ -142,7 +157,8 @@ def _get_test_hooks_context():
     except TestFailed:
         hooks.test_failure()  # pylint: disable=no-member
     except KeyboardInterrupt:
-        hooks.test_interrupt()  # pylint: disable=no-member
+        with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
+            hooks.test_interrupt()  # pylint: disable=no-member
         raise
     except:
         hooks.test_error()  # pylint: disable=no-member
@@ -165,7 +181,8 @@ def _set_current_test_context(test):
         context.test_methodname = test.__slash__.factory_name
     else:
         context.test_classname = test.__slash__.factory_name
-        context.test_methodname = test.__slash__.address_in_factory
+        # this includes a dot (.), so it has to be truncated
+        context.test_methodname = test.__slash__.address_in_factory[1:]
     try:
         yield
     finally:

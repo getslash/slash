@@ -1,8 +1,9 @@
-
-from .fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
+from ..utils.python import getargspec
+from .fixtures.parameters import (bound_parametrizations_context,
+                                  get_parametrization_fixtures)
+from .requirements import get_requirements
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
-from ..utils.python import getargspec
 
 
 class FunctionTest(RunnableTest):
@@ -21,6 +22,9 @@ class FunctionTest(RunnableTest):
             self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             kwargs = self._fixture_store.get_fixture_dict(self._func_args, namespace=self._fixture_namespace)
             self._func(**kwargs)  # pylint: disable=star-args
+
+    def get_requirements(self):
+        return get_requirements(self._func)
 
 
 class FunctionTestFactory(RunnableTestFactory):

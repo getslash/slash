@@ -6,10 +6,15 @@ import sys
 from py.io import TerminalWriter
 
 from .._compat import iteritems
+from ..conf import config
 from ..log import VERBOSITIES
 from ..utils.iteration import iteration
 from ..utils.python import wraps
 from .reporter_interface import ReporterInterface
+
+# traceback levels
+NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH_CONTEXT_AND_VARS = range(
+    5)
 
 
 def from_verbosity(level):
@@ -22,6 +27,7 @@ def from_verbosity(level):
         return new_func
     return decorator
 
+
 class TerminalWriterWrapper(object):
 
     def __init__(self, file):
@@ -29,14 +35,15 @@ class TerminalWriterWrapper(object):
         self._writer = TerminalWriter(file=file)
         self._line = ''
 
-    def lsep(self, sep, msg):
+    def lsep(self, sep, msg, **kw):
         """Write a left-justified line filled with the separator until the end of the line"""
         fullwidth = self._writer.fullwidth
         if sys.platform == "win32":
             # see py.io documentation for an explanation
             fullwidth -= 1
 
-        self._do_write('{0} {1}\n'.format(msg, sep * (fullwidth - 1 - len(msg))))
+        self._do_write(
+            '{0} {1}\n'.format(msg, sep * ((fullwidth - 1 - len(msg)) / len(sep))), **kw)
 
     def sep(self, *args, **kw):
         self._line = ''
@@ -91,7 +98,8 @@ class ConsoleReporter(ReporterInterface):
 
     def report_before_debugger(self, exc_info):
         self.notify_before_console_output()
-        self._terminal.write('Exception caught in debugger: {0} {1}\n'.format(exc_info[0], exc_info[1]), red=True)
+        self._terminal.write('Exception caught in debugger: {0} {1}\n'.format(
+            exc_info[0], exc_info[1]), red=True)
         self.notify_after_console_output()
 
     def report_collection_start(self):
@@ -104,7 +112,8 @@ class ConsoleReporter(ReporterInterface):
         self._report_num_collected(collected, stillworking=False)
 
     def _report_num_collected(self, collected, stillworking):
-        self._terminal.write('\r{0} tests collected{1}'.format(len(collected), '...' if stillworking else '   \n'), white=True, bold=True)
+        self._terminal.write('\r{0} tests collected{1}'.format(
+            len(collected), '...' if stillworking else '   \n'), white=True, bold=True)
 
     def _is_verbose(self, level):
         return self._level <= level
@@ -116,142 +125,149 @@ class ConsoleReporter(ReporterInterface):
     def report_session_end(self, session):
 
         if not self._verobsity_allows(VERBOSITIES.WARNING):
-            self._terminal.write('\n')  # for concise outputs we need to break the sequence of dots...
+            # for concise outputs we need to break the sequence of dots...
+            self._terminal.write('\n')
 
-        if self._verobsity_allows(VERBOSITIES.ERROR):
-            self._report_failures(session)
-            self._report_errors(session)
-        elif self._verobsity_allows(VERBOSITIES.CRITICAL):
-            self._report_failures_and_errors_concise(session)
-
-        if self._verobsity_allows(VERBOSITIES.INFO):
-            self._report_all_skips(session)
+        for index, (test_index, test_result, infos) in enumerate(self._iter_reported_results(session)):
+            if index == 0:
+                self._terminal.sep('=', 'Session Summary', red=True, bold=True)
+            self._report_test_summary_header(test_index, test_result)
+            self._report_additional_test_details(test_result)
+            for info_reporter in infos:
+                info_reporter(test_result)
 
         if self._verobsity_allows(VERBOSITIES.WARNING):
-            self._report_warning_summary(session)
+            self._report_result_warning_summary(session)
 
         kwargs = {'bold': True}
         msg = 'Session ended.'
-        if session.results.is_success():
+        if session.results.is_success(allow_skips=True):
             kwargs.update(green=True)
         else:
             kwargs.update(red=True)
             msg += ' {0} successful, {1} skipped, {2} failures, {3} errors.'.format(
-                session.results.get_num_successful(), session.results.get_num_skipped(),
+                session.results.get_num_successful(
+                ), session.results.get_num_skipped(),
                 session.results.get_num_failures(), session.results.get_num_errors())
 
-        msg += ' Total duration: {0}'.format(self._format_duration(session.duration))
+        msg += ' Total duration: {0}'.format(
+            self._format_duration(session.duration))
         self._terminal.sep('=', msg, **kwargs)  # pylint: disable=star-args
 
-    def _report_warning_summary(self, session):
+    def _iter_reported_results(self, session):
+        for test_index, test_result in enumerate(session.results.iter_test_results()):
+            infos = self._get_result_info_generators(test_result)
+            if not infos:
+                continue
+            yield test_index, test_result, infos
+
+    def _report_test_summary_header(self, index, test_result):
+        self._terminal.lsep(
+            "=", '== #{0}: {1}'.format(index + 1, test_result.test_metadata.address))
+
+    def _get_result_info_generators(self, test_result):
+        returned = []
+        if self._verobsity_allows(VERBOSITIES.ERROR) and test_result.has_errors_or_failures():
+            returned.append(self._report_result_errors_failures)
+        if self._verobsity_allows(VERBOSITIES.INFO) and test_result.has_skips():
+            returned.append(self._report_result_skip_summary)
+
+        return returned
+
+    def _report_result_warning_summary(self, session):
         warnings_by_key = collections.defaultdict(list)
         for warning in session.warnings:
             warnings_by_key[warning.key].append(warning)
         for i, (warning_key, warnings) in iteration(iteritems(warnings_by_key)):
             if i.first:
-                self._terminal.sep('=', 'Warnings ({0} total)'.format(len(session.warnings)), yellow=True)
+                self._terminal.sep(
+                    '=', 'Warnings ({0} total)'.format(len(session.warnings)), yellow=True)
             self._terminal.write(
                 ' * {d[filename]}:{d[lineno]:03} -- '.format(d=warnings[0].details), yellow=True)
-            self._terminal.write(warnings[0].details['message'], yellow=True, bold=True)
+            self._terminal.write(
+                warnings[0].details['message'], yellow=True, bold=True)
             self._terminal.write(
                 ' (Repeated {0} times)\n'.format(len(warnings)), yellow=True)
 
     def _verobsity_allows(self, level):
         return self._level <= level
 
-    def _report_failures(self, session):
-        self._report_error_objects('FAILURES', session.results.iter_all_failures(), 'F')
+    def _report_result_errors_failures(self, test_result):
+        all_errs = list(
+            itertools.chain(itertools.izip(itertools.repeat("E"), test_result.get_errors()),
+                            itertools.izip(itertools.repeat("F"), test_result.get_failures())))
+        for index, (err_type, err) in enumerate(all_errs):
+            err_header = ' - {0}/{1} {2} ({3:YYYY-MM-DD HH:mm:ss ZZ}): {4}'.format(
+                index + 1,
+                len(all_errs),
+                err_type,
+                err.time.to('local'),
+                ' - {0}'.format(err.message) if not err.traceback else '')
+            self._terminal.lsep(' -', err_header, red=True)
+            self._report_traceback(err_type, err)
 
-    def _report_errors(self, session):
-        self._report_error_objects('ERRORS', session.results.iter_all_errors(), 'E')
-
-    def _report_error_objects(self, title, iterator, marker):
-        iterator = list(iterator)
-        total_num_errors = sum(len(errors) for _, errors in iterator)
-        error_number = 0
-        for result_iteration, (result, errors) in iteration(iterator):
-            if result_iteration.first:
-                self._terminal.sep('=', title)
-
-            for error_iteration, error in iteration(errors):
-                error_number += 1
-                self._report_error_location(result, error_number, total_num_errors, marker, error)
-                self._report_error(result, error, marker)
-
-    def _report_error_location(self, result, object_index, total_num_errors, marker, error):
-        self._terminal.sep('_', '{0:YYYY-MM-DD HH:mm:ss ZZ}: {1}'.format(error.time.to('local'), self._get_location(result)))
-        if self._verobsity_allows(VERBOSITIES.INFO) and result.test_metadata:
-            location = '{0}:{1}{2}/{3}'.format(
-                result.test_metadata.id, marker, object_index, total_num_errors)
-            self._terminal.sep('_', location)
-
-    def _report_failures_and_errors_concise(self, session):
-        for result in session.results.iter_all_results():
-            if result.get_errors() or result.get_failures():
-                self._terminal.write(self._get_location(result))
-                self._terminal.write(':')
-                if result.get_errors():
-                    self._terminal.write(' {0} errors'.format(len(result.get_errors())))
-                if result.get_failures():
-                    self._terminal.write(' {0} failures'.format(len(result.get_failures())))
-                self._terminal.write('\n')
-
-    def _get_location(self, result):
-        return result.test_metadata.address if result.test_metadata else '**global**'
-
-    def _report_error(self, result, error, marker):
-        if not error.traceback:
+    def _report_traceback(self, err_type, err):
+        traceback_level = config.root.log.traceback_level
+        if not err.traceback or traceback_level == NO_TRACEBACK:
             frames = []
-        elif self._level > VERBOSITIES.WARNING:
-            frames = [error.traceback.frames[-1]]
+        elif traceback_level == SINGLE_FRAME:
+            frames = [err.traceback.frames[-1]]
         else:
-            frames = error.traceback.frames
+            frames = err.traceback.frames
         for frame_iteration, frame in iteration(frames):
-            if not frame_iteration.first:
-                self._terminal.sep('- ')
-            self._write_frame_locals(frame)
-            code_lines = self._write_frame_code(frame)
+            self._terminal.write(
+                '  {0}:{1}:\n'.format(frame.filename, frame.lineno), black=True, bold=True)
+            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+                if not frame_iteration.first:
+                    self._terminal.sep('- ')
+                self._write_frame_locals(frame)
+            code_lines = self._write_frame_code(
+                frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
-                self._terminal.write(marker, red=True, bold=True)
+                self._terminal.write(err_type, red=True, bold=True)
                 if code_lines:
-                    indent = ''.join(itertools.takewhile(str.isspace, code_lines[-1]))
+                    indent = ''.join(
+                        itertools.takewhile(str.isspace, code_lines[-1]))
                 else:
                     indent = ''
-                self._terminal.write(self._indent_with(error.message, indent), red=True, bold=True)
+                self._terminal.write(
+                    self._indent_with(err.message, indent), red=True, bold=True)
                 self._terminal.write('\n')
-            self._terminal.write('{0}:{1}:\n'.format(frame.filename, frame.lineno))
+
+    def _report_additional_test_details(self, result):
+        if result.is_success():
+            return
+        detail_items = iteritems(result.get_additional_details())
 
         log_path = result.get_log_path()
         if log_path is not None:
-            self._terminal.write('(Log file: {0})\n'.format(log_path), black=True, bold=True)
+            detail_items = itertools.chain(detail_items, [('Log', log_path)])
 
+        for index, (key, value) in enumerate(detail_items):
+            if index == 0:
+                self._terminal.write(' - Additional Details:\n', black=True, bold=True)
+            self._terminal.write('    > {0}: {1!r}\n'.format(key, value), black=True, bold=True)
 
     def _indent_with(self, text, indent):
         return '\n'.join(indent + line for line in text.splitlines())
 
-    def _report_all_skips(self, session):
-        for item, result in iteration(result for result in session.results.iter_test_results() if result.is_skip()):
-            if item.first:
-                self._terminal.sep('=', 'SKIPS')
-            self._terminal.write(result.test_metadata, yellow=True)
-            self._terminal.write('\t')
-            self._terminal.write(result.get_skips()[0])
-            self._terminal.write('\n')
+    def _report_result_skip_summary(self, result):
+        self._terminal.write('\tSkipped ({0})\n'.format(result.get_skips()[0]), yellow=True)
 
-    @from_verbosity(VERBOSITIES.NOTICE)
     def _write_frame_locals(self, frame):
         if not frame.locals and not frame.globals:
             return
         for index, (name, value) in enumerate(itertools.chain(iteritems(frame.locals), iteritems(frame.globals))):
             if index > 0:
                 self._terminal.write(', ')
-            self._terminal.write('{0}: '.format(name), yellow=True, bold=True)
+            self._terminal.write(
+                '    {0}: '.format(name), yellow=True, bold=True)
             self._terminal.write(value['value'])
         self._terminal.write('\n\n')
 
-    def _write_frame_code(self, frame):
+    def _write_frame_code(self, frame, include_context):
         if frame.code_string:
-            if self._verobsity_allows(VERBOSITIES.NOTICE):
+            if include_context:
                 code_lines = frame.code_string.splitlines()
             else:
                 code_lines = [frame.code_line]
@@ -264,7 +280,6 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write(line, white=True, bold=True)
                 self._terminal.write('\n')
             return code_lines
-
 
     @from_verbosity(VERBOSITIES.WARNING)
     def report_file_start(self, filename):

@@ -56,6 +56,34 @@ You can control what happens when the lifetime of your fixture ends. By default,
 		    this.add_cleanup(returned.turn_off)
 		    return returned
 
+Opting Out of Fixtures
+----------------------
+
+In some cases you may want to turn off Slash's automatic deduction of parameters as fixtures. For instance in the following case you want to explicitly call a version of a base class's ``before`` method:
+
+.. code-block:: python
+       
+       >>> class BaseTest(slash.Test):
+       ...     def before(self, param):
+       ...         self._construct_case_with(param)
+
+       >>> class DerivedTest(BaseTest):
+       ...     @slash.parametrize('x', [1, 2, 3])
+       ...     def before(self, x):
+       ...         param_value = self._compute_param(x)
+       ...         super(DerivedTest, self).before(x)
+
+This case would fail to load, since Slash will assume ``param`` is a fixture name and will not find such a fixture to use. The solution is to use :func:`slash.nofixtures` on the parent class's ``before`` method to mark that ``param`` is *not* a fixture name:
+
+.. code-block:: python
+       
+       >>> class BaseTest(slash.Test):
+       ...     @slash.nofixtures
+       ...     def before(self, param):
+       ...         self._construct_case_with(param)
+
+
+
 Fixture Needing Other Fixtures
 ------------------------------
 

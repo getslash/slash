@@ -3,6 +3,7 @@ import itertools
 
 from ..._compat import izip, iteritems
 from ...utils.python import getargspec
+from ...utils.function_marker import function_marker
 
 _id_gen = itertools.count(1000)
 
@@ -14,6 +15,9 @@ def fixture(func=None, name=None, scope=None, autouse=False):
         func.__slash_fixture__ = FixtureInfo(func, name=name, scope=scope, autouse=autouse)
 
     return func
+
+nofixtures = function_marker('__slash_nofixtures__')
+nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fixture deduction. Slash will not attempt to parse needed fixtures from its argument list'
 
 
 class FixtureInfo(object):

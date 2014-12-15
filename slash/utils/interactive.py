@@ -1,3 +1,8 @@
+from __future__ import print_function
+
+import threading
+from contextlib import contextmanager
+
 try:
     from IPython import embed # pylint: disable=F0401
 except ImportError:
@@ -16,3 +21,18 @@ def start_interactive_shell(**namespace):
     Any keyword argument specified will be available in the shell ``globals``.
     """
     _interact(namespace)
+
+
+@contextmanager
+def notify_if_slow_context(message, slow_seconds=1):
+    evt = threading.Event()
+    def notifier():
+        if not evt.wait(timeout=slow_seconds):
+            print(message)
+    thread = threading.Thread(target=notifier)
+    thread.start()
+    try:
+        yield
+    finally:
+        evt.set()
+        thread.join()

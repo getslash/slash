@@ -1,12 +1,16 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import contextlib
 import logbook # pylint: disable=F0401
 import sys
 
+from ..__version__ import __version__
+
 _COMMANDS = {
     "run": "slash.frontend.slash_run:slash_run",
     "resume": "slash.frontend.slash_run:slash_resume",
+    "version": "slash.frontend.main:slash_version",
 }
 
 
@@ -36,6 +40,8 @@ def main():
         return func(args.argv)
     return 0
 
+def slash_version(_):
+    print('Slash v{0}'.format(__version__))
 
 ################################## Boilerplate ################################
 _DEFAULT_LOG_LEVEL = logbook.WARNING

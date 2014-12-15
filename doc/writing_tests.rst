@@ -220,6 +220,48 @@ Slash also provides :func:`slash.skipped`, which is a decorator to skip specific
  class EntirelySkippedTest(slash.Test):
      # ...
 
+Requirements
+------------
+In many cases you want to depend in our test on a certain precondition in order to run. Requirements provide an explicit way of stating those requirements. Use :func:`slash.requires` to specify requirements:
+
+.. code-block:: python
+
+
+  def is_some_condition_met():
+      return True
+		
+  @slash.requires(is_some_condition_met)
+  def test_something():
+      ...
+
+Requirements are stronger than skips, since they can be reported separately and imply a basic precondition that is not met in the current testing environment. 
+
+When a requirement fails, the test is skipped without even being started, and appears in the eventual console summary along with the unmet requirements. If you want to control the message shown if the requirement is not met, you can pass the ``message`` parameter:
+
+.. code-block:: python
+       
+  @slash.requires(is_some_condition_met, message='My condition is not met!')
+  def test_something():
+      ...
+
+When writing tests as classes, you can also decorate the class itself with requirements, and even add requirements only to specific methods:
+
+.. code-block:: python
+       
+  @slash.requires(running_microwave)
+  class MicrowaveTest(slash.Test):
+
+       def test_is_running(self):
+           assert microwave.is_running()
+
+       @slash.requires(is_cold_food_available)
+       def test_heating(self):
+           food = get_cold_food()
+	   microwave.heat(food)
+	   assert food.is_hot()
+
+
+
 Warnings
 --------
 
@@ -248,6 +290,30 @@ This is possible using the :func:`slash.add_error` and :func:`slash.add_failure`
 .. autofunction:: slash.add_error
 
 .. autofunction:: slash.add_failure
+
+
+Storing Additional Test Details
+-------------------------------
+
+It is possible for a test to store some objects that may help investigation in cause of failure.
+
+This is possible using the :func:`slash.set_test_detail` method. This method accepts a hashable key object and a printable object. In case the test fails, the stored objects will be printed in the test summary:
+
+.. code-block:: python
+
+ class MyTest(slash.Test):
+
+    def test_one(self):
+        slash.add_test_detail('log', '/var/log/foo.log')
+        slash.set_error("Some condition is not met!")
+
+    def test_two(self):
+        # Every test has its own unique storage, so it's possible to use the same key in multiple tests
+        slash.set_test_detail('log', '/var/log/bar.log')
+
+In this case we probably won't see the details of test_two, as it should finish successfully.
+
+.. autofunction:: slash.set_test_detail
 
 
 .. _global_state:
