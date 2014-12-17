@@ -128,9 +128,11 @@ class ConsoleReporter(ReporterInterface):
             # for concise outputs we need to break the sequence of dots...
             self._terminal.write('\n')
 
+        header_format = self._get_session_summary_header_format(session)
+
         for index, (test_index, test_result, infos) in enumerate(self._iter_reported_results(session)):
             if index == 0:
-                self._terminal.sep('=', 'Session Summary', red=True, bold=True)
+                self._terminal.sep('=', 'Session Summary', **header_format)   # pylint: disable=star-args
             self._report_test_summary_header(test_index, test_result)
             self._report_additional_test_details(test_result)
             for info_reporter in infos:
@@ -139,20 +141,23 @@ class ConsoleReporter(ReporterInterface):
         if self._verobsity_allows(VERBOSITIES.WARNING):
             self._report_result_warning_summary(session)
 
-        kwargs = {'bold': True}
         msg = 'Session ended.'
-        if session.results.is_success(allow_skips=True):
-            kwargs.update(green=True)
-        else:
-            kwargs.update(red=True)
-            msg += ' {0} successful, {1} skipped, {2} failures, {3} errors.'.format(
-                session.results.get_num_successful(
-                ), session.results.get_num_skipped(),
-                session.results.get_num_failures(), session.results.get_num_errors())
+        msg += ' {0} successful, {1} skipped, {2} failures, {3} errors.'.format(
+            session.results.get_num_successful(
+            ), session.results.get_num_skipped(),
+            session.results.get_num_failures(), session.results.get_num_errors())
 
         msg += ' Total duration: {0}'.format(
             self._format_duration(session.duration))
-        self._terminal.sep('=', msg, **kwargs)  # pylint: disable=star-args
+        self._terminal.sep('=', msg, **header_format)  # pylint: disable=star-args
+
+    def _get_session_summary_header_format(self, session):
+        returned = {'bold': True}
+        if session.results.is_success(allow_skips=True):
+            returned.update(green=True)
+        else:
+            returned.update(red=True)
+        return returned
 
     def _iter_reported_results(self, session):
         for test_index, test_result in enumerate(session.results.iter_test_results()):
