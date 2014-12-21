@@ -67,7 +67,7 @@ def _collect_tests(app, args):  # pylint: disable=unused-argument
 
     collected = app.test_loader.get_runnables(paths)
     if len(collected) == 0 and not app.args.interactive:
-        app.error("No tests specified")
+        app.error("No tests could be collected", usage=False)
 
     return collected
 
