@@ -7,32 +7,32 @@ from slash.core.result import SessionResults
 
 from .utils import run_tests_assert_success
 
-def test_result_summary(populated_suite):
+def test_result_summary(suite):
 
-    populated_suite[2].fail()
-    populated_suite[3].error()
-    populated_suite[4].error()
-    populated_suite[5].skip()
+    suite[2].when_run.fail()
+    suite[3].when_run.raise_exception()
+    suite[4].when_run.raise_exception()
+    suite[5].when_run.skip()
 
-    results = populated_suite.run().session.results
+    results = suite.run().session.results
 
     assert results.get_num_errors() == 2
     assert results.get_num_failures() == 1
     assert results.get_num_skipped() == 1
-    assert results.get_num_successful() == len(populated_suite) - 4
+    assert results.get_num_successful() == len(suite) - 4
 
-def test_has_errors_or_failures(populated_suite):
-    populated_suite[2].fail()
-    populated_suite[3].error()
-    results = populated_suite.run().session.results
+def test_has_errors_or_failures(suite):
+    suite[2].when_run.fail()
+    suite[3].when_run.raise_exception()
+    results = suite.run().session.results
     assert not results[0].has_errors_or_failures()
     assert results[2].has_errors_or_failures()
     assert results[3].has_errors_or_failures()
 
 
-def test_has_skips(populated_suite):
-    populated_suite[1].skip()
-    results = populated_suite.run().session.results
+def test_has_skips(suite):
+    suite[1].when_run.skip()
+    results = suite.run().session.results
     assert not results[0].has_skips()
     assert results[1].has_skips()
 

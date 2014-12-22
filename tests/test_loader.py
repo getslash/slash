@@ -5,23 +5,19 @@ from slash import Session
 from slash.exceptions import CannotLoadTests
 from slash.loader import Loader
 
-
-def test_loading_function(suite):
-    suite.add_test(regular_function=True)
-    suite.run()
-
+from .utils.suite_writer import Suite
 
 @pytest.mark.parametrize('specific_method', [True, False])
 @pytest.mark.parametrize('with_parameters', [True, False])
-def test_iter_specific_factory(populated_suite, suite_test, specific_method, with_parameters):
+def test_iter_specific_factory(suite, suite_test, specific_method, with_parameters):
 
     if suite_test.cls is not None and specific_method:
-        populated_suite.add_test(parent=suite_test.cls)
+        suite_test.cls.add_method_test()
 
     if with_parameters:
-        suite_test.parametrize()
+        suite_test.add_parameter()
 
-    for test in populated_suite:
+    for test in suite:
         if suite_test.cls is None and test is not suite_test:
             # we are selecting a specific function, and that's not it:
             test.expect_deselect()
@@ -30,18 +26,18 @@ def test_iter_specific_factory(populated_suite, suite_test, specific_method, wit
         elif specific_method and suite_test.cls is test.cls and suite_test is not test:
             test.expect_deselect()
 
-    path = populated_suite.commit()
+    path = suite.commit()
     if suite_test.cls:
         assert suite_test.cls.tests
         factory_name = suite_test.cls.name
     else:
-        factory_name = suite_test.function_name
+        factory_name = suite_test.name
 
-    pattern = '{0}:{1}'.format(os.path.join(path, suite_test.file.name), factory_name)
+    pattern = '{0}:{1}'.format(os.path.join(path, suite_test.file.get_relative_path()), factory_name)
     if suite_test.cls is not None and specific_method:
         assert len(suite_test.cls.tests) > 1
-        pattern += '.{0}'.format(suite_test.function_name)
-    populated_suite.run(pattern=pattern)
+        pattern += '.{0}'.format(suite_test.name)
+    suite.run(args=[pattern])
 
 
 def test_import_error_registers_as_session_error(active_slash_session, test_loader):
@@ -52,20 +48,26 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
     [error] = errors
 
 
-def test_import_errors_with_session(unloadable_suite):
-    with Session() as s:
-        with pytest.raises(CannotLoadTests):
-            Loader().get_runnables(unloadable_suite.path)
+def test_import_errors_with_session():
 
-    [err] = s.results.global_result.get_errors()
-    assert 'No module named nonexistent' in err.message or "No module named 'nonexistent'" in err.message
+    suite = Suite()
+
+    for i in range(20):
+        suite.add_test()
+
+    problematic = suite.files[1]
+    problematic.prepend_line('from nonexistent import nonexistent')
+
+    for test in suite:
+        test.expect_deselect()
+
+    summary = suite.run()
+
+    assert 0 != summary.exit_code
+
+    errs = summary.session.results.global_result.get_errors()
+    for err in errs:
+        assert 'No module named nonexistent' in err.message or "No module named 'nonexistent'" in err.message
 
 
-@pytest.fixture
-def unloadable_suite(suite):
-    suite.populate()
-
-    suite.files[2].inject_line('from nonexistent import nonexistent')
-
-    suite.commit()
     return suite

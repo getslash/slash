@@ -1,16 +1,16 @@
 from slash.utils.pattern_matching import Matcher
 
 
-def test_string_patterns(populated_suite, config_override):
-    selected_test = populated_suite[len(populated_suite) // 2]
+def test_string_patterns(suite, config_override):
+    selected_test = suite[len(suite) // 2]
 
-    config_override("run.filter_string", selected_test.uuid)
+    config_override("run.filter_string", selected_test.id)
 
-    for i, test in enumerate(populated_suite):
+    for i, test in enumerate(suite):
         if test is not selected_test:
             test.expect_deselect()
 
-    populated_suite.run()
+    suite.run()
 
 
 def test_matcher():

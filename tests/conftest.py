@@ -13,7 +13,7 @@ from slash import resuming
 from slash.loader import Loader
 
 from .utils.cartesian import Cartesian
-from .utils.suite import TestSuite
+from .utils.suite_writer import Suite
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -24,7 +24,8 @@ def random_seed():
 @pytest.fixture(scope='session', autouse=True)
 def no_user_config(request):
     tmpdir = tempfile.mkdtemp()
-    slash.conf.config.root.run.user_customization_file_path = os.path.join(tmpdir, 'slashrc')
+    slash.conf.config.root.run.user_customization_file_path = os.path.join(
+        tmpdir, 'slashrc')
 
     @request.addfinalizer
     def cleanup():
@@ -100,43 +101,27 @@ def fix_resume_path(request):
 
 
 @pytest.fixture
-def suite_test(populated_suite, test_factory, is_last_test):
-    returned = test_factory(populated_suite)
+def suite_test(suite, test_type, is_last_test):
+    returned = suite.add_test(type=test_type)
     if not is_last_test:
-        _ = test_factory(populated_suite)
+        _ = suite.add_test(type=test_type)
 
     return returned
-
 
 @pytest.fixture(params=[True, False])
 def is_last_test(request):
     return request.param
 
 
-def _create_regular_test_function(suite):
-    return suite.add_test(regular_function=True)
-
-
-def _create_test_method(suite):
-    return suite.add_test(regular_function=False)
-
-
-@pytest.fixture(params=[_create_regular_test_function,
-                        _create_test_method])
-def test_factory(request):
+@pytest.fixture(params=['method', 'function'])
+def test_type(request):
     return request.param
 
 
-@pytest.fixture(scope='function')
-def populated_suite(suite):
-    suite.populate()
-    return suite
-
-
-@pytest.fixture(scope="function")
-def suite(request):
-    returned = TestSuite()
-    request.addfinalizer(returned.cleanup)
+@pytest.fixture
+def suite():
+    returned = Suite()
+    returned.populate()
     return returned
 
 

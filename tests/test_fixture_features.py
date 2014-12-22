@@ -6,18 +6,18 @@ import slash
 from .utils import run_tests_in_session
 
 
-def test_fixture_cleanup(populated_suite, suite_test):
-    fixture = populated_suite.add_fixture()
+def test_fixture_cleanup(suite, suite_test):
+    fixture = suite.slashconf.add_fixture()
     for i in range(3):
         fixture.add_cleanup()
-    suite_test.add_fixture(fixture)
-    populated_suite.run()
+    suite_test.depend_on_fixture(fixture)
+    suite.run()
 
 
 @pytest.mark.parametrize('scope', ['session', 'module'])
-def test_fixture_autouse_with_scoping(populated_suite, suite_test, scope):
+def test_fixture_autouse_with_scoping(suite, suite_test, scope):
 
     fixture = suite_test.file.add_fixture(autouse=True, scope=scope)
-    fixture.add_cleanup()
+    c = fixture.add_cleanup()
 
-    session = populated_suite.run()
+    summary = suite.run()

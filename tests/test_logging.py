@@ -23,14 +23,18 @@ def test_last_session_symlinks(files_dir, links_dir, session):
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
-def test_last_test_not_overriden_by_stop_on_error(links_dir, populated_suite):
-    failed_test = populated_suite[4]
-    failed_test.fail()
-    results = populated_suite.run(stop_on_error=True)
+def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
+    failed_test = suite[4]
+    failed_test.when_run.fail()
+    # we stop on error...
+    for test in suite[5:]:
+        test.expect_skip()
+    summary = suite.run(additional_args=['-x'])
+
+    [failed_result] = summary.get_all_results_for_test(failed_test)
 
     for link_name in ('last-test', 'last-failed'):
-        assert links_dir.join(link_name).readlink() == results[
-            failed_test].get_log_path()
+        assert links_dir.join(link_name).readlink() == failed_result.get_log_path()
 
 
 def test_result_log_links(files_dir, session):
@@ -40,13 +44,14 @@ def test_result_log_links(files_dir, session):
         assert result.get_log_path().startswith(str(files_dir))
 
 
-def test_last_failed(populated_suite, links_dir):
-    populated_suite[-5].fail()
-    last_failed = populated_suite[-2]
-    last_failed.fail()
-    results = populated_suite.run()
+def test_last_failed(suite, links_dir):
+    suite[-5].when_run.fail()
+    last_failed = suite[-2]
+    last_failed.when_run.fail()
+    summary = suite.run()
 
-    fail_log = results[last_failed].get_log_path()
+    [result] = summary.get_all_results_for_test(last_failed)
+    fail_log = result.get_log_path()
     assert os.path.isfile(fail_log)
     assert links_dir.join('last-failed').readlink() == fail_log
 

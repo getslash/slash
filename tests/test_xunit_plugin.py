@@ -17,8 +17,8 @@ def test_xunit_plugin(results, xunit_filename):
 
 
 @pytest.fixture
-def results(populated_suite, xunit_filename):
-    populated_suite.run()
+def results(suite, xunit_filename):
+    suite.run()
 
 @pytest.fixture
 def xunit_filename(tmpdir, request, config_override):

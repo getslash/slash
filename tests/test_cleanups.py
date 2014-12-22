@@ -7,25 +7,23 @@ from slash.loader import Loader
 from .utils import TestCase
 
 
-def test_test_cleanups_happen_before_fixture_cleanups(populated_suite, suite_test):
-    fixture = populated_suite.add_fixture()
-    suite_test.add_fixture(fixture)
+def test_test_cleanups_happen_before_fixture_cleanups(suite, suite_test):
+    fixture = suite.slashconf.add_fixture()
+    suite_test.depend_on_fixture(fixture)
     fixture_cleanup = fixture.add_cleanup()
     test_cleanup = suite_test.add_cleanup()
-    results = populated_suite.run()
-    test_result = results[suite_test]
-    events = test_result.data['events']
-    assert events.index(fixture_cleanup.get_event_id()) > events.index(
-        test_cleanup.get_event_id()) >= 0
+    events = suite.run().events
+
+    assert events[fixture_cleanup].timestamp > events[test_cleanup].timestamp
 
 
-def test_cleanups(populated_suite, suite_test):
+def test_cleanups(suite, suite_test):
 
-    suite_test.add_cleanup()
+    cleanup = suite_test.add_cleanup()
 
-    results = populated_suite.run()
+    summary = suite.run()
 
-    assert results[suite_test].data['cleanups']
+    assert summary.events[cleanup]
 
 
 def test_cleanup_args_kwargs_deprecated():

@@ -42,7 +42,7 @@ class ArgumentParsingTest(TestCase):
 
     callback_success = False
 
-    def _collect_tests_stub(self, app, args):
+    def _collect_tests_stub(self, app, args, test_sort_key):
         self.assertTrue(config.root.debug.enabled)
         self.assertEquals(app.args.positionals, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully
@@ -93,73 +93,75 @@ class SlashHelpTest(ArgumentParsingTest):
             "usage: slash command..."), self.stdout.getvalue())
 
 
-def test_slash_run_directory_success(suite_path, populated_suite):
-    result = _execute_slash_run([suite_path], populated_suite)
-    assert result == 0, 'slash run did not return 0 on success'
+def test_slash_run_directory_success(suite):
+    assert suite.run().exit_code == 0
 
 
-def test_slash_run_default_directory(config_override, suite_path, populated_suite):
+def test_slash_run_default_directory(config_override, suite, suite_path):
     config_override("run.default_sources", [suite_path])
-    assert _execute_slash_run([], populated_suite) == 0
+    suite.run(args=[], commit=False)
 
 
-def test_slash_run_success_if_skips(populated_suite):
-
-    populated_suite[1].skip()
-    path = populated_suite.commit()
-    assert _execute_slash_run([path], populated_suite) == 0
+def test_slash_run_success_if_skips(suite):
+    suite[1].when_run.skip()
+    assert suite.run().exit_code == 0
 
 
-def test_slash_run_from_file(tmpdir, suite_path, populated_suite):
+def test_slash_run_from_file(tmpdir, suite):
 
-    assert len(populated_suite.files) > 2
-    file1 = populated_suite.files[0]
-    file2 = populated_suite.files[-1]
+    for i in range(20):
+        suite.add_test()
 
-    deselected = [t for t in populated_suite if t.file not in (file1, file2)]
+    suite_path = suite.commit()
+
+    assert len(suite.files) > 2
+    file1 = suite.files[0]
+    file2 = suite.files[-1]
+
+    deselected = [t for t in suite if t.file not in (file1, file2)]
     assert deselected
     for d in deselected:
         d.expect_deselect()
 
+    assert os.path.isdir(suite_path)
+
     filename1 = str(tmpdir.join("file1.txt"))
     filename2 = str(tmpdir.join("file2.txt"))
-    with open(filename1, "w") as f:
-        print("# this is a comment", file=f)
-        print(os.path.join(suite_path, file1.path), file=f)
 
-    with open(filename2, "w") as f:
-        print("# this is a comment", file=f)
-        print(os.path.join(suite_path, file2.path), file=f)
+    for suite_file, filename in zip((file1, file2), (filename1, filename2)):
+        with open(filename, "w") as f:
+            print("# this is a comment", file=f)
+            f_name = os.path.join(suite_path, suite_file.get_relative_path())
+            assert os.path.isdir(suite_path)
+            assert os.path.exists(f_name)
+            print(f_name, file=f)
 
-    result = _execute_slash_run(["-f", filename1, "-f", filename2], populated_suite)
-    assert result == 0, 'usage: slash run failed'
+    suite.run(args=["-f", filename1, "-f", filename2], commit=False)
 
 
 @pytest.mark.parametrize('failure_type', ['fail', 'error'])
-def test_slash_run_directory_failure(populated_suite, failure_type):
-    getattr(populated_suite[1], failure_type)()
-    path = populated_suite.commit()
-    assert _execute_slash_run([path], populated_suite) != 0
+def test_slash_run_directory_failure(suite, failure_type):
+    getattr(suite[1].when_run, failure_type)()
+    path = suite.commit()
+    assert suite.run().exit_code != 0
 
 
-def test_slash_run_specific_file(populated_suite, suite_path):
+def test_slash_run_specific_file(suite):
 
-    assert len(populated_suite.files) > 1
+    for i in range(5):
+        suite.add_test()
+    suite_path = suite.commit()
 
-    file = populated_suite.files[1]
+    assert len(suite.files) > 1
 
-    deselected = [t for t in populated_suite if t.file != file]
+    file = suite.files[1]
+
+    deselected = [t for t in suite if t.file != file]
     assert deselected
     for t in deselected:
         t.expect_deselect()
 
-    _execute_slash_run([os.path.join(suite_path, file.path)], populated_suite)
-
-
-def _execute_slash_run(argv, suite_object):
-    exitcode = slash_run.slash_run(argv, report_stream=NullFile())
-    suite_object.verify_last_run()
-    return exitcode
+    suite.run(args=[os.path.join(suite_path, file.get_relative_path())], commit=False)
 
 
 @pytest.fixture(autouse=True)
@@ -168,5 +170,7 @@ def no_site_load(forge):
 
 
 @pytest.fixture
-def suite_path(populated_suite):
-    return populated_suite.commit()
+def suite_path(suite):
+    returned = suite.commit()
+    assert os.path.isdir(returned)
+    return returned

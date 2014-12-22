@@ -2,7 +2,11 @@ import itertools
 import json
 import os
 
+import logbook
+
 from .utils.path import ensure_directory
+
+_logger = logbook.Logger(__name__)
 
 _RESUME_DIR = os.path.expanduser("~/.slash/session_states")
 _RESUME_COUNTER = itertools.count()
@@ -24,6 +28,7 @@ def save_resume_state(session_result):
             ],
         }, f)
     os.rename(tmp_filename, resume_filename)
+    _logger.debug('Saved resume state to {0}', resume_filename)
     _cleanup_old_files()
 
 
@@ -39,6 +44,7 @@ def _get_session_id_from_filename(filename):
 
 def _cleanup_old_files():
     for _, deleted_filename in _get_resume_state_files_by_mtime()[_MAX_NUM_SAVED_SESSIONS:]:
+        _logger.debug('Deleting old statefile {0!r}...', deleted_filename)
         os.unlink(deleted_filename)
 
 def _get_resume_state_files_by_mtime():
