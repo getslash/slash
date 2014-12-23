@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`211` Added ``log.last_session_dir_symlink`` to create symlinks to log directory of the last run session
 * :release:`0.10.0 <15-12-2014>`
 * :feature:`214` Added ``slash.nofixtures`` decorator to opt out of automatic fixture deduction.
 * :feature:`16` Added ``slash.requires`` decorator to formally specify test requirements

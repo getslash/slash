@@ -41,6 +41,7 @@ Last Log Symlinks
 Slash can be instructed to maintain a symlink to recent logs. This is useful to quickly find the last test executed and dive into its logs.
 
  *  To make slash store a symlink to the last session log file, use :ref:`conf.log.last_session_symlink`
+ *  To make slash store a symlink to the last session log directory, use :ref:`conf.log.last_session_dir_symlink`
  *  To make slash store a symlink to the last session log file, use :ref:`conf.log.last_test_symlink`
  *  To make slash store a symlink to the last session log file, use :ref:`conf.log.last_failed_symlink`
 

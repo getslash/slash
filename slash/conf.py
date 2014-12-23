@@ -18,6 +18,7 @@ config = Config({
         "subpath": "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),
         "session_subpath": "{context.session.id}/session.log",
         "last_session_symlink": None // Doc("If set, specifies a symlink path to the last session log file in each run"),
+        "last_session_dir_symlink": None // Doc("If set, specifies a symlink path to the last session log directory"),
         "last_test_symlink": None // Doc("If set, specifies a symlink path to the last test log file in each run"),
         "last_failed_symlink": None // Doc("If set, specifies a symlink path to the last failed test log file"),
         "silence_loggers": [] // Doc("Logger names to silence"),

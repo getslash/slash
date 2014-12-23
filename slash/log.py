@@ -86,6 +86,8 @@ class SessionLogging(object):
         with self._get_file_logging_context(
             config.root.log.session_subpath, config.root.log.last_session_symlink) as path:
             self.session_log_path = path
+            if config.root.log.last_session_dir_symlink is not None:
+                self._try_create_symlink(os.path.dirname(self.session_log_path), config.root.log.last_session_dir_symlink)
             yield path
 
     @contextmanager
