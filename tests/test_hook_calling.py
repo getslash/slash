@@ -20,6 +20,18 @@ def test_hook__test_interrupt(populated_suite, request, checkpoint):
     populated_suite.run(expect_interruption=True)
     assert checkpoint.called
 
+def test_hook__test_failure_without_exception(populated_suite, request, checkpoint, suite_test):
+    request.addfinalizer(
+        hooks.test_failure.register(checkpoint)
+        .unregister)
+
+    suite_test.inject_line('slash.add_failure("failure")')
+    suite_test.expect_failure()
+
+    populated_suite.run()
+    assert checkpoint.called
+
+
 
 #### Older tests below, need modernizing ####
 

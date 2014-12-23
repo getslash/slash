@@ -165,8 +165,11 @@ def _get_test_hooks_context():
     except:
         hooks.test_error()  # pylint: disable=no-member
     else:
-        if context.session.results.get_result(context.test).is_success_finished():
+        res = context.session.results.get_result(context.test)
+        if res.is_success_finished():
             hooks.test_success()  # pylint: disable=no-member
+        elif res.is_just_failure():
+            hooks.test_failure() # pylint: disable=no-member
         else:
             hooks.test_error()  # pylint: disable=no-member
     finally:
