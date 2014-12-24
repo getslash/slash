@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`220` ``slash.add_cleanup`` no longer receives arbitrary positional args or keyword args. The old form is still allowed for now but issues a deprecation warning.
 * :feature:`211` Added ``log.last_session_dir_symlink`` to create symlinks to log directory of the last run session
 * :release:`0.10.0 <15-12-2014>`
 * :feature:`214` Added ``slash.nofixtures`` decorator to opt out of automatic fixture deduction.

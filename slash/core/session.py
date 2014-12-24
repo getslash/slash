@@ -45,7 +45,6 @@ class Session(Activatable):
         with handling_exceptions():
             ctx.push_context()
             assert ctx.context.session is None
-            ctx.push_context()
             ctx.context.session = self
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()

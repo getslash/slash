@@ -28,26 +28,39 @@ def add_cleanup(_func, *args, **kwargs):
     Adds a cleanup function to the cleanup stack. Cleanups are executed in a LIFO order.
 
     Positional arguments and keywords are passed to the cleanup function when called.
+
+    :param critical: If True, this cleanup will take place even when tests are interrupted by the user (Using Ctrl+C for instance)
+    :param success_only: If True, execute this cleanup only if no errors are encountered
+    :param args: positional arguments to pass to the cleanup function
+    :param kwargs: keyword arguments to pass to the cleanup function
     """
-    _add_cleanup(_Cleanup(_func, args, kwargs))
+    critical = kwargs.pop('critical', False)
+    success_only = kwargs.pop('success_only', False)
+
+    new_kwargs = kwargs.pop('kwargs', {}).copy()
+    new_args = list(kwargs.pop('args', ()))
+    if args or kwargs:
+        _logger.warning(
+            'Passing *args/**kwargs to slash.add_cleanup is deprecated')
+        new_args.extend(args)
+        new_kwargs.update(kwargs)
+
+    added = _Cleanup(_func, new_args, new_kwargs, critical=critical, success_only=success_only)
+    _get_cleanups().append(added)
 
 
 def add_critical_cleanup(_func, *args, **kwargs):
     """
     Same as :func:`.add_cleanup`, only the cleanup will be called even on interrupted tests
     """
-    _add_cleanup(_Cleanup(_func, args, kwargs, critical=True))
+    return add_cleanup(_func, critical=True, *args, **kwargs)
 
 
 def add_success_only_cleanup(_func, *args, **kwargs):
     """
     Same as :func:`.add_cleanup`, only the cleanup will be called only if the test succeeds
     """
-    _add_cleanup(_Cleanup(_func, args, kwargs, success_only=True))
-
-
-def _add_cleanup(cleanup):
-    _get_cleanups().append(cleanup)
+    return add_cleanup(_func, success_only=True, *args, **kwargs)
 
 
 def call_cleanups(critical_only=False, success_only=False):
