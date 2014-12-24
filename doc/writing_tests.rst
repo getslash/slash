@@ -304,7 +304,7 @@ This is possible using the :func:`slash.set_test_detail` method. This method acc
  class MyTest(slash.Test):
 
     def test_one(self):
-        slash.add_test_detail('log', '/var/log/foo.log')
+        slash.set_test_detail('log', '/var/log/foo.log')
         slash.set_error("Some condition is not met!")
 
     def test_two(self):
