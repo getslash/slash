@@ -117,7 +117,7 @@ class Loader(object):
                     continue
                 module = None
                 try:
-                    with self._handling_import_errors(file_path):
+                    with handling_exceptions(context="during import"):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
@@ -147,15 +147,6 @@ class Loader(object):
                 self._local_config.pop_path()
         finally:
             context.session.fixture_store.pop_namespace()
-
-    @contextmanager
-    def _handling_import_errors(self, file_path):
-        with handling_exceptions(context="during import", swallow=(context.session is not None)):
-            try:
-                yield
-            except Exception as e:
-                _logger.error("Failed to import {0} ({1})", file_path, e)
-                raise
 
     def _is_excluded(self, test):
         if self._matcher is None:

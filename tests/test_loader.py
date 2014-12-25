@@ -54,9 +54,9 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
 
 def test_import_errors_with_session(unloadable_suite):
     with Session() as s:
-        tests = Loader().get_runnables(unloadable_suite.path)
+        with pytest.raises(CannotLoadTests):
+            Loader().get_runnables(unloadable_suite.path)
 
-    assert tests
     [err] = s.results.global_result.get_errors()
     assert 'No module named nonexistent' in err.message or "No module named 'nonexistent'" in err.message
 
