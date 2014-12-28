@@ -121,7 +121,7 @@ class Loader(object):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
-                    tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_traceback)[-1]
+                    tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_info()[2])[-1]
                     raise CannotLoadTests(
                         "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
                 if module is not None:

@@ -1,3 +1,5 @@
+from .._compat import get_underlying_classmethod_function
+
 def function_marker(name):
     return Marker(name)
 
@@ -18,5 +20,5 @@ class Marker(object):
     @staticmethod
     def _normalize(func):
         if isinstance(func, (classmethod, staticmethod)):
-            func = func.__func__
+            return get_underlying_classmethod_function(func)
         return func

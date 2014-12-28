@@ -1,11 +1,12 @@
 # pylint: disable=import-error,no-name-in-module
+from __future__ import division
 import collections
 import itertools
 import sys
 
 from py.io import TerminalWriter
 
-from .._compat import iteritems
+from .._compat import iteritems, izip
 from ..conf import config
 from ..log import VERBOSITIES
 from ..utils.iteration import iteration
@@ -43,7 +44,7 @@ class TerminalWriterWrapper(object):
             fullwidth -= 1
 
         self._do_write(
-            '{0} {1}\n'.format(msg, sep * ((fullwidth - 1 - len(msg)) / len(sep))), **kw)
+            '{0} {1}\n'.format(msg, sep * ((fullwidth - 1 - len(msg)) // len(sep))), **kw)
 
     def sep(self, *args, **kw):
         self._line = ''
@@ -199,8 +200,8 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_result_errors_failures(self, test_result):
         all_errs = list(
-            itertools.chain(itertools.izip(itertools.repeat("E"), test_result.get_errors()),
-                            itertools.izip(itertools.repeat("F"), test_result.get_failures())))
+            itertools.chain(izip(itertools.repeat("E"), test_result.get_errors()),
+                            izip(itertools.repeat("F"), test_result.get_failures())))
         for index, (err_type, err) in enumerate(all_errs):
             err_header = ' - {0}/{1} {2} ({3:YYYY-MM-DD HH:mm:ss ZZ}): {4}'.format(
                 index + 1,
