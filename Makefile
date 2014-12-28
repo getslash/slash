@@ -9,7 +9,7 @@ test: env
 env: .env/.up-to-date
 
 .env/.up-to-date: setup.py Makefile
-	virtualenv .env
+	python -m virtualenv .env
 	.env/bin/python scripts/install_test_deps.py
 	.env/bin/pip install -e .
 	.env/bin/pip install -r ./doc/pip_requirements.txt
