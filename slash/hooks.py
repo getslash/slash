@@ -37,8 +37,8 @@ _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()
 _slash_group.set_exception_policy(gossip.RaiseDefer())
 
-@gossip.register('gossip.on_handler_exception')
-def debugger(handler, exception, hook):  # pylint: disable=unused-argument
+@gossip.register('gossip.on_handler_exception') # pylint: disable=unused-argument
+def debugger(handler, exception, hook): # pylint: disable=unused-argument
     from .exception_handling import handle_exception
 
     if hook.group is _slash_group and config.root.debug.debug_hook_handlers:
