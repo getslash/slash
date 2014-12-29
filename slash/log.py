@@ -26,6 +26,7 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
     def __init__(self, *args, **kwargs):
         super(ConsoleHandler, self).__init__(*args, **kwargs)
         self._truncate_lines = config.root.log.truncate_console_lines
+        self._truncate_errors = config.root.log.truncate_console_errors
 
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
@@ -35,7 +36,8 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
     def format(self, record):
         result = super(ConsoleHandler, self).format(record)
-        if self._truncate_lines and len(result) > self.MAX_LINE_LENGTH:
+        should_truncate = self._truncate_errors or record.level < logbook.ERROR
+        if self._truncate_lines and len(result) > self.MAX_LINE_LENGTH and should_truncate:
             result = "\n".join(
                 self._truncate(line) for line in result.splitlines())
         return result
