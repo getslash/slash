@@ -79,9 +79,13 @@ def checkpoint():
 class Checkpoint(object):
 
     called = False
+    args = None
+    kwargs = None
 
     def __call__(self, *args, **kwargs):
         self.called = True
+        self.args = args
+        self.kwargs = kwargs
 
 
 @pytest.fixture(autouse=True, scope="function")

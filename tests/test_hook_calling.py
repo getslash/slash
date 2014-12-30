@@ -2,8 +2,22 @@ import slash
 from slash import plugins
 from slash.plugins import PluginInterface
 from slash import hooks
+import pytest
+import gossip
 
 from .utils import TestCase
+
+
+class SessionEndException(Exception):
+    pass
+
+
+class SessionStartException(Exception):
+    pass
+
+
+class TestEndException(Exception):
+    pass
 
 
 def test_hook__test_interrupt(populated_suite, request, checkpoint):
@@ -31,6 +45,37 @@ def test_hook__test_failure_without_exception(populated_suite, request, checkpoi
     populated_suite.run()
     assert checkpoint.called
 
+
+@pytest.mark.parametrize(
+    'hook_exception', [
+        ('slash.session_start', SessionStartException),
+        ('slash.session_end', SessionEndException),
+        ('slash.test_end', TestEndException)])
+@pytest.mark.parametrize('debug_enabled', [True, False])
+def test_debugger_called_on_hooks(hook_exception, request, forge, config_override, checkpoint, debug_enabled):
+    hook_name, exception_type = hook_exception
+
+    @gossip.register(hook_name)
+    def raise_exc():
+        raise exception_type()
+
+    request.addfinalizer(raise_exc.gossip.unregister)
+    config_override("debug.enabled", debug_enabled)
+
+    def test_something():
+        pass
+
+    forge.replace_with(slash.utils.debug, 'launch_debugger', checkpoint)
+
+    with pytest.raises(exception_type):
+        with slash.Session() as s:
+            with s.get_started_context():
+                slash.runner.run_tests(slash.loader.Loader().get_runnables(test_something))
+
+    assert checkpoint.called == debug_enabled
+    if debug_enabled:
+        assert checkpoint.args[0][0] is exception_type
+        assert type(checkpoint.args[0][1]) is exception_type
 
 
 #### Older tests below, need modernizing ####

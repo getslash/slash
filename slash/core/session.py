@@ -60,7 +60,8 @@ class Session(Activatable):
     def get_started_context(self):
         self.start_time = time.time()
         try:
-            hooks.session_start()  # pylint: disable=no-member
+            with handling_exceptions():
+                hooks.session_start()  # pylint: disable=no-member
             hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield
@@ -68,7 +69,9 @@ class Session(Activatable):
             self._started = False
             self.end_time = time.time()
             self.duration = self.end_time - self.start_time
-            hooks.session_end()  # pylint: disable=no-member
+
+            with handling_exceptions():
+                hooks.session_end()  # pylint: disable=no-member
             self.reporter.report_session_end(self)
 
     def mark_complete(self):

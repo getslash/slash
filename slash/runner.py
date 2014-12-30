@@ -91,6 +91,7 @@ def _get_run_context_stack(test, test_iterator, fixture_scope_manager):
             yield False
             return
 
+        stack.enter_context(handling_exceptions())
         stack.enter_context(_get_test_hooks_context())
         stack.enter_context(_update_result_context())
         stack.enter_context(_get_test_fixture_context(test, test_iterator, fixture_scope_manager))
