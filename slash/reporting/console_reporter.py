@@ -56,11 +56,7 @@ class TerminalWriterWrapper(object):
         self._line = self._get_line_remainder(line)
 
     def _get_line_remainder(self, line):
-        if '\r' in line:
-            line = line.split('\r', 1)[-1]
-        if '\n' in line:
-            line = line.split('\n', 1)[-1]
-        return line
+        return line.rsplit('\r', 1)[-1].rsplit('\n', 1)[-1]
 
     def line(self, *args, **kw):
         self._writer.line(*args, **kw)
