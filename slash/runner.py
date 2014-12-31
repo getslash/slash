@@ -122,6 +122,8 @@ def _cleanup_context():
             exc_info = sys.exc_info()
             raise
     finally:
+        with handling_exceptions():
+            hooks.before_test_cleanups()  # pylint: disable=no-member
         call_cleanups(critical_only=exc_info is not None and exc_info[0] is KeyboardInterrupt,
                       success_only=exc_info is None)
         del exc_info

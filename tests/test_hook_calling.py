@@ -1,3 +1,4 @@
+from slash._compat import ExitStack
 import slash
 from slash import plugins
 from slash.plugins import PluginInterface
@@ -17,6 +18,10 @@ class SessionStartException(Exception):
 
 
 class TestEndException(Exception):
+    pass
+
+
+class BeforeTestCleanupException(Exception):
     pass
 
 
@@ -48,12 +53,13 @@ def test_hook__test_failure_without_exception(populated_suite, request, checkpoi
 
 @pytest.mark.parametrize(
     'hook_exception', [
-        ('slash.session_start', SessionStartException),
-        ('slash.session_end', SessionEndException),
-        ('slash.test_end', TestEndException)])
+        ('slash.session_start', SessionStartException, True),
+        ('slash.session_end', SessionEndException, True),
+        ('slash.test_end', TestEndException, True),
+        ('slash.before_test_cleanups', BeforeTestCleanupException, False)])
 @pytest.mark.parametrize('debug_enabled', [True, False])
 def test_debugger_called_on_hooks(hook_exception, request, forge, config_override, checkpoint, debug_enabled):
-    hook_name, exception_type = hook_exception
+    hook_name, exception_type, should_raise = hook_exception
 
     @gossip.register(hook_name)
     def raise_exc():
@@ -67,7 +73,9 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
 
     forge.replace_with(slash.utils.debug, 'launch_debugger', checkpoint)
 
-    with pytest.raises(exception_type):
+    with ExitStack() as exception_stack:
+        if should_raise:
+            exception_stack.enter_context(pytest.raises(exception_type))
         with slash.Session() as s:
             with s.get_started_context():
                 slash.runner.run_tests(slash.loader.Loader().get_runnables(test_something))
@@ -76,6 +84,30 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
     if debug_enabled:
         assert checkpoint.args[0][0] is exception_type
         assert type(checkpoint.args[0][1]) is exception_type
+
+
+def test_before_cleanup_hook(request, forge):
+    cleanup = forge.create_wildcard_function_stub(name='cleanup')
+    before_cleanup_hook = forge.create_wildcard_function_stub(name='before_test_cleanup')
+    test_end_hook = forge.create_wildcard_function_stub(name='test_end')
+    gossip.register(before_cleanup_hook, 'slash.before_test_cleanups')
+    gossip.register(test_end_hook, 'slash.test_end')
+
+    request.addfinalizer(before_cleanup_hook.gossip.unregister)
+    request.addfinalizer(test_end_hook.gossip.unregister)
+
+    before_cleanup_hook()
+    cleanup()
+    test_end_hook()
+
+    forge.replay()
+
+    def test_something():
+        slash.add_cleanup(cleanup)
+
+    with slash.Session() as s:
+        with s.get_started_context():
+            slash.runner.run_tests(slash.loader.Loader().get_runnables(test_something))
 
 
 #### Older tests below, need modernizing ####

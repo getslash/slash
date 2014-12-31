@@ -20,6 +20,7 @@ _define('after_session_start', doc="Second entry point for session start, useful
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
 _define('test_start', doc="Called right after a test starts")
 _define('test_end', doc="Called right before a test ends, regardless of the reason for termination")
+_define('before_test_cleanups', doc="Called right before a test cleanups are executed")
 _define('test_success', doc="Called on test success")
 _define('test_error', doc="Called on test error")
 _define('test_failure', doc="Called on test failure")
