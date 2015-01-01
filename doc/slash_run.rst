@@ -7,7 +7,7 @@ The main front-end for Slash is the ``slash run`` utility, invoked from the comm
 
 By default, it receives the path to load and run tests from::
 
-  $ slsh run /path/to/tests
+  $ slash run /path/to/tests
 
 Verbosity
 ---------
