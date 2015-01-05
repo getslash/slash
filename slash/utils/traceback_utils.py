@@ -71,6 +71,9 @@ class DistilledTraceback(object):
         super(DistilledTraceback, self).__init__()
         self.frames = []
 
+    def to_list(self):
+        return [frame.to_dict() for frame in self.frames]
+
     @property
     def cause(self):
         if self.frames:
@@ -90,6 +93,12 @@ class DistilledFrame(object):
         self.code_string = "".join(
             linecache.getline(self.filename, lineno)
             for lineno in range(frame.f_code.co_firstlineno, self.lineno + 1)) or None
+
+    def to_dict(self):
+        serialized = {}
+        for attr in ['filename', 'lineno', 'func_name', 'locals', 'globals', 'code_line', 'code_string']:
+            serialized[attr] = getattr(self, attr)
+        return serialized
 
     def _capture_globals(self, frame):
         used_globals = set(frame.f_code.co_names)

@@ -1,3 +1,4 @@
+import json
 import os
 
 import emport
@@ -29,6 +30,15 @@ def test_frame_locals(error):
         "local_func_1": {
             "value": "'global_func_1'"
         }}
+
+def test_to_list(error):
+    serialized = error.traceback.to_list()
+    assert serialized[-3]['locals'] == {
+        "local_func_1": {
+            "value": "'global_func_1'"
+        }}
+    # Just make sure that it's serializable
+    json.dumps(serialized)
 
 def test_frame_locals_no_assertion_markers(assertion_error):
     for var_name, var in assertion_error.cause.locals.items():
