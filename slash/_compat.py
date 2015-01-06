@@ -77,3 +77,14 @@ try:
     from contextlib import ExitStack #pylint: disable=E0611
 except ImportError:
     from contextlib2 import ExitStack
+
+if sys.version_info < (2, 7):
+
+    def get_underlying_classmethod_function(func):
+        returned = func.__get__(True)
+        return getattr(returned, 'im_func', returned)
+
+else:
+
+    def get_underlying_classmethod_function(func):
+        return func.__func__

@@ -1,23 +1,34 @@
+import os
+import random
 import shutil
 import tempfile
 
 import logbook.compat
-
 from forge import Forge
+
 import gossip
 import pytest
 import slash
 from slash import resuming
 from slash.loader import Loader
 
-from .utils.suite import TestSuite
 from .utils.cartesian import Cartesian
+from .utils.suite import TestSuite
 
-import random
 
 @pytest.fixture(scope='session', autouse=True)
 def random_seed():
     random.seed(0xdeadface)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def no_user_config(request):
+    tmpdir = tempfile.mkdtemp()
+    slash.conf.config.root.run.user_customization_file_path = os.path.join(tmpdir, 'slashrc')
+
+    @request.addfinalizer
+    def cleanup():
+        os.rmdir(tmpdir)
 
 
 @pytest.fixture
@@ -68,9 +79,13 @@ def checkpoint():
 class Checkpoint(object):
 
     called = False
+    args = None
+    kwargs = None
 
     def __call__(self, *args, **kwargs):
         self.called = True
+        self.args = args
+        self.kwargs = kwargs
 
 
 @pytest.fixture(autouse=True, scope="function")

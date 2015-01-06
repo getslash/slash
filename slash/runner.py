@@ -67,6 +67,8 @@ def run_tests(iterable, stop_on_error=None):
         context.session.mark_complete()
     elif last_filename is not None:
         context.session.reporter.report_file_end(last_filename)
+    _logger.debug('Session finished. is_success={0} has_skips={1}',
+                  context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
 
 def _set_test_metadata(test):
     ensure_test_metadata(test)
@@ -89,6 +91,7 @@ def _get_run_context_stack(test, test_iterator, fixture_scope_manager):
             yield False
             return
 
+        stack.enter_context(handling_exceptions())
         stack.enter_context(_get_test_hooks_context())
         stack.enter_context(_update_result_context())
         stack.enter_context(_get_test_fixture_context(test, test_iterator, fixture_scope_manager))
@@ -119,6 +122,8 @@ def _cleanup_context():
             exc_info = sys.exc_info()
             raise
     finally:
+        with handling_exceptions():
+            hooks.before_test_cleanups()  # pylint: disable=no-member
         call_cleanups(critical_only=exc_info is not None and exc_info[0] is KeyboardInterrupt,
                       success_only=exc_info is None)
         del exc_info
@@ -163,8 +168,11 @@ def _get_test_hooks_context():
     except:
         hooks.test_error()  # pylint: disable=no-member
     else:
-        if context.session.results.get_result(context.test).is_success_finished():
+        res = context.session.results.get_result(context.test)
+        if res.is_success_finished():
             hooks.test_success()  # pylint: disable=no-member
+        elif res.is_just_failure():
+            hooks.test_failure() # pylint: disable=no-member
         else:
             hooks.test_error()  # pylint: disable=no-member
     finally:

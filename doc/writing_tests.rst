@@ -180,12 +180,12 @@ Slash provides a facility for cleanups. These get called whenever a test finishe
 			self.product.press_power()
 			slash.add_cleanup(self.product.wait_until_off)
 			slash.add_cleanup(self.product.press_power)
-			slash.add_success_only_cleanup(self.product.pack_for_shipping)
+			slash.add_cleanup(self.product.pack_for_shipping, success_only=True)
 			self.product.wait_until_on()
 
-.. note:: When a test is interrupted, most likely due to a ``KeyboardInterrupt``, cleanups are not called unless added with the :func:`.add_critical_cleanup` function. This is in order to save time during interruption handling. See :ref:`interruptions <KeyboardInterrupt>`.
+.. note:: When a test is interrupted, most likely due to a ``KeyboardInterrupt``, cleanups are not called unless added with the ``critical`` keyword argument. This is in order to save time during interruption handling. See :ref:`interruptions <KeyboardInterrupt>`.
 
-.. note:: A cleanup added with :func:`.add_success_only_cleanup` will be called only if the test ends successfully
+.. note:: A cleanup added with ``success_only_cleanup`` will be called only if the test ends successfully
 
 Skips
 -----
@@ -304,7 +304,7 @@ This is possible using the :func:`slash.set_test_detail` method. This method acc
  class MyTest(slash.Test):
 
     def test_one(self):
-        slash.add_test_detail('log', '/var/log/foo.log')
+        slash.set_test_detail('log', '/var/log/foo.log')
         slash.set_error("Some condition is not met!")
 
     def test_two(self):

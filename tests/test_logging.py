@@ -19,6 +19,7 @@ def test_last_session_symlinks(files_dir, links_dir, session):
     assert session_log_file.check()
 
     assert links_dir.join("last-session").readlink() == session_log_file
+    assert links_dir.join("last-session-dir").readlink() == session_log_file.dirname
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
@@ -72,6 +73,8 @@ def logs_dir(request, config_override, tmpdir, relative_symlinks):
     config_override("log.root", str(returned.join("files")))
     config_override("log.last_session_symlink",
                     str("../links/last-session" if relative_symlinks else returned.join("links", "last-session")))
+    config_override("log.last_session_dir_symlink",
+                    str("../links/last-session-dir" if relative_symlinks else returned.join("links", "last-session-dir")))
     config_override("log.last_test_symlink",
                     str("../links/last-test" if relative_symlinks else returned.join("links", "last-test")))
     config_override("log.last_failed_symlink",

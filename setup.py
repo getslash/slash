@@ -12,7 +12,7 @@ with open(_in_same_dir("slash", "__version__.py")) as version_file:
 install_requires = [
     "arrow",
     "colorama",
-    "confetti>=2.2.3",
+    "confetti>=2.3.0",
     "dessert",
     "emport==1.0.0",
     "gossip>=0.9.0",

@@ -239,5 +239,8 @@ class SessionResults(object):
 
     def __getitem__(self, test):
         if isinstance(test, Number):
-            return self._results_dict.values()[test]
+            try:
+                return next(itertools.islice(itervalues(self._results_dict), test, test + 1))
+            except StopIteration:
+                raise IndexError()
         return self.get_result(test)

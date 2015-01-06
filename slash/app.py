@@ -18,8 +18,12 @@ class Application(object):
         self.report_stream = report_stream
         self.test_loader = Loader()
         self.session = Session(reporter=ConsoleReporter(level=config.root.log.console_level, stream=report_stream))
-    def error(self, *args, **kwargs):
-        self.parser.error(*args, **kwargs)
+
+    def error(self, message, usage=True):
+        if usage:
+            self.parser.error(message)
+        else:
+            sys.exit('Error: {0}'.format(message))
 
 @contextmanager
 def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, positionals_metavar=None):
