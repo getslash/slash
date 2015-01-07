@@ -65,3 +65,6 @@ class ReporterInterface(object):
     def report_test_skip_added(self, test, reason):
         pass
 
+    def report_fancy_message(self, headline, message):
+        pass
+
