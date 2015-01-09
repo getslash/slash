@@ -61,9 +61,9 @@ class TerminalWriterWrapper(object):
 
         def write_line(line_to_write):
             eol_padding = box_width - (len(line_to_write) + 3)
-            self._do_write('* {0}{1}*\n'.format(line_to_write, ' ' * eol_padding), **kw)
+            self._do_write('* {0}{1}*\n'.format(line_to_write, ' ' * eol_padding), **kw)  # pylint: disable=star-args
 
-        self._do_write('\n** {0} {1}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)
+        self._do_write('\n** {0} {1}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)  # pylint: disable=star-args
         for line in msg.split('\n'):
             if not line:
                 write_line('')
