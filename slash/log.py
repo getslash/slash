@@ -30,9 +30,16 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
-        if returned is None:
-            returned = super(ConsoleHandler, self).get_color(record)
-        return returned
+        if returned is not None:
+            return returned
+
+        if record.level >= logbook.ERROR:
+            return 'red'
+        elif record.level >= logbook.WARNING:
+            return 'yellow'
+        elif record.level >= logbook.NOTICE:
+            return 'white'
+        return None # default
 
     def format(self, record):
         result = super(ConsoleHandler, self).format(record)
