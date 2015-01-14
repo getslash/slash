@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Add ``slash.session.reporter.report_fancy_message``
 * :release:`0.11.0 <06-01-2015>`
 * :feature:`226` Implemented ``slash.hooks.before_test_cleanups``.
 * :feature:`220` ``slash.add_cleanup`` no longer receives arbitrary positional args or keyword args. The old form is still allowed for now but issues a deprecation warning.
