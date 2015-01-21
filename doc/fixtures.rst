@@ -161,6 +161,7 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 
 		@slash.fixture(autouse=True, scope='session')
 		def temp_dir():
+		    """Create a temporary directory"""
 		    directory = '/some/directory'
 		    os.makedirs(directory)
 
@@ -169,3 +170,14 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 		        shutil.rmtree(directory)
 		    
 
+Listing Available Fixtures
+--------------------------
+
+Slash can be invoked wite the ``fixtures`` command, which gets a path to a testing directory. This command lists the available fixtures for the specified testing directory:
+
+    $ slash fixtures path/to/tests
+
+    temp_dir
+        Create a temporary directory
+
+        Source: path/to/tests/utilities.py:8

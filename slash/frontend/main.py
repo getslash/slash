@@ -11,6 +11,7 @@ _COMMANDS = {
     "run": "slash.frontend.slash_run:slash_run",
     "resume": "slash.frontend.slash_run:slash_resume",
     "version": "slash.frontend.main:slash_version",
+    "fixtures": "slash.frontend.slash_fixtures:slash_fixtures",
 }
 
 

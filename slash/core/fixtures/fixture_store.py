@@ -21,6 +21,9 @@ class FixtureStore(object):
         self._cleanups_by_scope = {}
         self._all_needed_parametrization_ids_by_fixture_id = {}
 
+    def __iter__(self):
+        return itervalues(self._fixtures_by_id)
+
     def push_namespace(self):
         self._namespaces.append(Namespace(self, parent=self._namespaces[-1]))
 
