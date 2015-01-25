@@ -29,5 +29,5 @@ def test_autouse_fixtures_specific_module(tracked_suite, suite_test):
 def tracked_suite(suite, suite_test):
     assert len(suite)
     for test in suite:
-        test.prepend_line('slash.context.result.data["active_fixtures"] = __sw__.get_fixture_memento()')
+        test.prepend_line('slash.context.result.data["active_fixtures"] = __ut__.get_fixture_memento()')
     return suite

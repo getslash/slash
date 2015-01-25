@@ -63,7 +63,7 @@ class Test(Function, Element):
             code_formatter.writeln('@slash.add_cleanup')
             code_formatter.writeln('def _cleanup{0}():'.format(index))
             with code_formatter.indented():
-                code_formatter.writeln('__sw__.events.add({0!r})'.format(cleanup_event))
+                code_formatter.writeln('__ut__.events.add({0!r})'.format(cleanup_event))
 
     def _get_function_name(self):
         return 'test_{0}'.format(self.id)

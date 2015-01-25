@@ -52,7 +52,7 @@ class File(TestContainer, CodeElement):
     def _body_context(self, code_formatter):
         with super(File, self)._body_context(code_formatter):
             if self.suite.debug_info:
-                code_formatter.writeln('import __sw__')
+                code_formatter.writeln('import __ut__')
             code_formatter.writeln('import slash')
             code_formatter.writeln()
             yield None

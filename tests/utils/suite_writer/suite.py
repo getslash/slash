@@ -130,11 +130,11 @@ class Suite(object):
     @contextmanager
     def _capture_events(self, summary):
 
-        sys.modules['__sw__'] = summary.tracker
+        sys.modules['__ut__'] = summary.tracker
         try:
             yield
         finally:
-            sys.modules.pop('__sw__')
+            sys.modules.pop('__ut__')
 
     def commit(self):
         path = self._path

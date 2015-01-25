@@ -36,7 +36,7 @@ class Function(CodeElement):
     def _write_event(self, code_formatter, eventcode):
         if self.suite.debug_info:
             code_formatter.writeln(
-                '__sw__.events.add({0!r}, {1!r})'.format(
+                '__ut__.events.add({0!r}, {1!r})'.format(
                     eventcode, self.id))
 
     def add_deferred_event(self, decorator, name='deferred'):
@@ -74,7 +74,7 @@ class Function(CodeElement):
             code_formatter.writeln('@{0[decorator]}'.format(deferred))
             code_formatter.writeln('def _defferred{0}():'.format(index))
             with code_formatter.indented():
-                code_formatter.writeln('__sw__.events.add({0[event]!r})'.format(deferred))
+                code_formatter.writeln('__ut__.events.add({0[event]!r})'.format(deferred))
             code_formatter.writeln()
 
     def _write_return(self, code_formatter):
@@ -91,7 +91,7 @@ class Function(CodeElement):
         if not self.suite.debug_info:
             return
         for p in self._parameters:
-            code_formatter.writeln('__sw__.notify_parameter_value({0!r}, {1})'.format(
+            code_formatter.writeln('__ut__.notify_parameter_value({0!r}, {1})'.format(
                 p.id, p.name))
 
     def _get_function_name(self):

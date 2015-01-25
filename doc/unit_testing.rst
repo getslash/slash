@@ -131,3 +131,4 @@ And specify autouse (or implicit) fixtures:
        >>> t = suite.add_test()
        >>> suite.run().ok()
        True
+

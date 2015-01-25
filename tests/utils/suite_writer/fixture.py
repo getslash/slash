@@ -28,13 +28,13 @@ class Fixture(Function):
 
         self._write_event(code_formatter, 'fixture_start')
         code_formatter.writeln(
-            '__sw__.notify_fixture_start({0!r}, {1})'.format(self.id, self._get_value_string()))
+            '__ut__.notify_fixture_start({0!r}, {1})'.format(self.id, self._get_value_string()))
         code_formatter.writeln('@this.add_cleanup')
         code_formatter.writeln('def cleanup():')
         with code_formatter.indented():
             self._write_event(code_formatter, 'fixture_end')
             code_formatter.writeln(
-                '__sw__.notify_fixture_end({0!r})'.format(self.id))
+                '__ut__.notify_fixture_end({0!r})'.format(self.id))
 
         super(Fixture, self)._write_prologue(code_formatter)
 
