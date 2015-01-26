@@ -120,16 +120,17 @@ class FixtureStore(object):
     def get_fixture_by_id(self, fixture_id):
         return self._fixtures_by_id[fixture_id]
 
-    def get_fixture_dict(self, required_names, namespace=None):
+    def get_fixture_dict(self, required_names, namespace=None, get_values=True):
+        returned = {}
 
         if namespace is None:
             namespace = self.get_current_namespace()
 
-        returned = {}
-
         for required_name in required_names:
             fixture = namespace.get_fixture_by_name(required_name)
-            returned[required_name] = self.get_fixture_value(fixture, name=required_name)
+            if get_values:
+                fixture = self.get_fixture_value(fixture, name=required_name)
+            returned[required_name] = fixture
         return returned
 
     def get_fixture_value(self, fixture, name=None):
