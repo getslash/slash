@@ -52,6 +52,6 @@ def slash_fixtures(args, report_stream=sys.stdout):
                     _print('    {0}'.format(line))
 
             _print('    Source: {0}:{1}'.format(
-                os.path.relpath(inspect.getsourcefile(fixture_func)),
+                os.path.relpath(inspect.getsourcefile(fixture_func), path),
                 inspect.getsourcelines(fixture_func)[1]))
             _print('\n')
