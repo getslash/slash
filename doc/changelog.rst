@@ -1,6 +1,9 @@
 Changelog
 =========
 
+* :release:`0.12.0 <01-02-2015>`
+* :feature:`177` Added 'slash fixtures' command line utility to list available fixtures
+* :feature:`-` Add ``slash.session.reporter.report_fancy_message``
 * :release:`0.11.0 <06-01-2015>`
 * :feature:`226` Implemented ``slash.hooks.before_test_cleanups``.
 * :feature:`220` ``slash.add_cleanup`` no longer receives arbitrary positional args or keyword args. The old form is still allowed for now but issues a deprecation warning.

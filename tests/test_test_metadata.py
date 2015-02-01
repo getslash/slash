@@ -5,8 +5,8 @@ import os
 import slash
 
 
-def test_test_index(populated_suite):
-    session = populated_suite.run().session
+def test_test_index(suite):
+    session = suite.run().session
     for index, result in enumerate(session.results):
         assert result.test_metadata.test_index0 == index
         assert result.test_metadata.test_index1 == index + 1

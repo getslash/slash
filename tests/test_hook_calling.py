@@ -25,29 +25,29 @@ class BeforeTestCleanupException(Exception):
     pass
 
 
-def test_hook__test_interrupt(populated_suite, request, checkpoint):
+def test_hook__test_interrupt(suite, request, checkpoint):
     request.addfinalizer(
         hooks.test_interrupt.register(checkpoint)
         .unregister)
 
-    test_index = int(len(populated_suite) / 2)
-    for index, test in enumerate(populated_suite):
+    test_index = int(len(suite) / 2)
+    for index, test in enumerate(suite):
         if index == test_index:
-            test.interrupt()
+            test.when_run.interrupt()
         elif index > test_index:
             test.expect_deselect()
-    populated_suite.run(expect_interruption=True)
+    suite.run(expect_interruption=True)
     assert checkpoint.called
 
-def test_hook__test_failure_without_exception(populated_suite, request, checkpoint, suite_test):
+def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_test):
     request.addfinalizer(
         hooks.test_failure.register(checkpoint)
         .unregister)
 
-    suite_test.inject_line('slash.add_failure("failure")')
+    suite_test.append_line('slash.add_failure("failure")')
     suite_test.expect_failure()
 
-    populated_suite.run()
+    suite.run()
     assert checkpoint.called
 
 

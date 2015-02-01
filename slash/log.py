@@ -30,9 +30,16 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
-        if returned is None:
-            returned = super(ConsoleHandler, self).get_color(record)
-        return returned
+        if returned is not None:
+            return returned
+
+        if record.level >= logbook.ERROR:
+            return 'red'
+        elif record.level >= logbook.WARNING:
+            return 'yellow'
+        elif record.level >= logbook.NOTICE:
+            return 'white'
+        return None # default
 
     def format(self, record):
         result = super(ConsoleHandler, self).format(record)
@@ -96,18 +103,18 @@ class SessionLogging(object):
     def _get_file_logging_context(self, filename_template, symlink):
         with ExitStack() as stack:
             handler, path = self._get_file_log_handler(filename_template, symlink)
-            stack.enter_context(handler)
-            stack.enter_context(self.console_handler)
-            stack.enter_context(self.warnings_handler)
+            stack.enter_context(handler.applicationbound())
+            stack.enter_context(self.console_handler.applicationbound())
+            stack.enter_context(self.warnings_handler.applicationbound())
             stack.enter_context(self._get_silenced_logs_context())
             for extra_handler in _extra_handlers:
-                stack.enter_context(extra_handler)
+                stack.enter_context(extra_handler.applicationbound())
             yield path
 
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:
             return ExitStack()
-        return SilencedLoggersHandler(config.root.log.silence_loggers)
+        return SilencedLoggersHandler(config.root.log.silence_loggers).applicationbound()
 
     def _get_file_log_handler(self, subpath, symlink):
         root_path = config.root.log.root

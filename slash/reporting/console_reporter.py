@@ -5,6 +5,7 @@ import itertools
 import sys
 
 from py.io import TerminalWriter
+from textwrap import wrap
 
 from .._compat import iteritems, izip
 from ..conf import config
@@ -36,15 +37,40 @@ class TerminalWriterWrapper(object):
         self._writer = TerminalWriter(file=file)
         self._line = ''
 
-    def lsep(self, sep, msg, **kw):
-        """Write a left-justified line filled with the separator until the end of the line"""
+    def _get_full_width(self):
         fullwidth = self._writer.fullwidth
         if sys.platform == "win32":
             # see py.io documentation for an explanation
             fullwidth -= 1
 
+        return fullwidth
+
+    def lsep(self, sep, msg, **kw):
+        """Write a left-justified line filled with the separator until the end of the line"""
+
         self._do_write(
-            '{0} {1}\n'.format(msg, sep * ((fullwidth - 1 - len(msg)) // len(sep))), **kw)
+            '{0} {1}\n'.format(msg, sep * ((self._get_full_width() - 1 - len(msg)) // len(sep))), **kw)
+
+    def write_box(self, headline, msg, **kw):
+        box_width = min(self._get_full_width(), 60)
+        line_width = box_width - 4
+
+        max_headline_length = box_width - 6
+        if len(headline) > max_headline_length:
+            headline = headline[max_headline_length:]
+
+        def write_line(line_to_write):
+            eol_padding = box_width - (len(line_to_write) + 3)
+            self._do_write('* {0}{1}*\n'.format(line_to_write, ' ' * eol_padding), **kw)  # pylint: disable=star-args
+
+        self._do_write('\n** {0} {1}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)  # pylint: disable=star-args
+        for line in msg.split('\n'):
+            if not line:
+                write_line('')
+            else:
+                for sub_line in wrap(line, line_width):
+                    write_line(sub_line)
+        self._do_write('{0}\n\n'.format('*' * box_width), **kw)
 
     def sep(self, *args, **kw):
         self._line = ''
@@ -326,6 +352,11 @@ class ConsoleReporter(ReporterInterface):
             self._terminal.write(errtype, red=True)
         else:
             self._terminal.write('{0}: {1}\n'.format(errtype, e), red=True)
+
+    def report_fancy_message(self, headline, message):
+        if self._verobsity_allows(VERBOSITIES.INFO):
+            self._terminal.write_box(headline, message, bold=True, yellow=True)
+
 
     def _format_duration(self, duration):
         seconds = duration % 60

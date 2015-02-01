@@ -15,10 +15,12 @@ from ..utils.interactive import start_interactive_shell
 
 _logger = logbook.Logger(__name__)
 
-def slash_run(args, report_stream=None, resume=False):
+def slash_run(args, report_stream=None, resume=False, app_callback=None, test_sort_key=None):
     if report_stream is None:
         report_stream = sys.stderr
     with _get_slash_app_context(args, report_stream, resume) as app:
+        if app_callback is not None:
+            app_callback(app)
         try:
             with handling_exceptions():
                 if resume:
@@ -26,9 +28,9 @@ def slash_run(args, report_stream=None, resume=False):
                     if not session_ids:
                         session_ids = [get_last_resumeable_session_id()]
                     to_resume = [x for session_id in session_ids for x in get_tests_to_resume(session_id)]
-                    collected = app.test_loader.get_runnables(to_resume)
+                    collected = app.test_loader.get_runnables(to_resume, sort_key=test_sort_key)
                 else:
-                    collected = _collect_tests(app, args)
+                    collected = _collect_tests(app, args, test_sort_key=test_sort_key)
             with app.session.get_started_context():
                 if app.args.interactive:
                     start_interactive_shell()
@@ -53,7 +55,7 @@ def _get_slash_app_context(args, report_stream, resume_session):
 
 slash_resume = functools.partial(slash_run, resume=True)
 
-def _collect_tests(app, args):  # pylint: disable=unused-argument
+def _collect_tests(app, args, test_sort_key=None):  # pylint: disable=unused-argument
     paths = app.args.positionals
 
     paths = _extend_paths_from_suite_files(paths)
@@ -65,7 +67,7 @@ def _collect_tests(app, args):  # pylint: disable=unused-argument
     if not paths and not app.args.interactive:
         app.error("No tests specified")
 
-    collected = app.test_loader.get_runnables(paths)
+    collected = app.test_loader.get_runnables(paths, sort_key=test_sort_key)
     if len(collected) == 0 and not app.args.interactive:
         app.error("No tests could be collected", usage=False)
 

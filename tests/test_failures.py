@@ -1,13 +1,16 @@
 import pytest
 
-@pytest.mark.parametrize('error_adder', ['add_error', 'add_failure'])
-def test_adding_errors(error_adder, suite):
+from .utils.suite_writer import Suite
 
-    test = suite.add_test()
+@pytest.mark.parametrize('error_adder', ['add_error', 'add_failure'])
+def test_adding_errors(error_adder, test_type):
+
+    suite = Suite()
+    test = suite.add_test(type=test_type)
 
     for i in range(2):
-        test.inject_line('slash.{0}("msg{1}")'.format(error_adder, i))
-    test.inject_line('slash.{0}(object())'.format(error_adder))
+        test.append_line('slash.{0}("msg{1}")'.format(error_adder, i))
+    test.append_line('slash.{0}(object())'.format(error_adder))
 
     if error_adder == 'add_error':
         test.expect_error()

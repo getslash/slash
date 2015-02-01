@@ -20,31 +20,36 @@ def test_interruption_triggers_gossip(request, interrupted_suite, interrupted_te
     def cleanup():
         skip.gossip.unregister()
 
-    results = interrupted_suite.run(expect_interruption=True)
+    summary = interrupted_suite.run(expect_interruption=True)
     assert test_id['value'] is not None
-    assert results[interrupted_test].test_metadata.id == test_id['value']
+    for result in summary.get_all_results_for_test(interrupted_test):
+        assert result.test_metadata.id == test_id['value']
 
 
 def test_critical_cleanups_called(interrupted_suite, interrupted_test):
-    interrupted_test.add_cleanup()
-    interrupted_suite.run(expect_interruption=True)
+    cleanup = interrupted_test.add_deferred_event(
+        'slash.add_critical_cleanup', 'critical_cleanup')
+    summary = interrupted_suite.run(expect_interruption=True)
+    assert cleanup in summary.events
 
 
 def test_non_critical_cleanups_not_called(interrupted_suite, interrupted_test):
-    interrupted_test.add_cleanup(critical=True)
-    interrupted_suite.run(expect_interruption=True)
+    cleanup = interrupted_test.add_cleanup()
+    summary = interrupted_suite.run(expect_interruption=True)
+    assert cleanup not in summary.events
+
 
 
 @pytest.fixture
-def interrupted_suite(populated_suite, interrupted_index):
-    for index, test in enumerate(populated_suite):
+def interrupted_suite(suite, interrupted_index):
+    for index, test in enumerate(suite):
         if index == interrupted_index:
-            test.inject_line('raise KeyboardInterrupt()')
+            test.append_line('raise KeyboardInterrupt()')
             test.expect_interruption()
         elif index > interrupted_index:
             test.expect_deselect()
 
-    return populated_suite
+    return suite
 
 
 @pytest.fixture
@@ -53,5 +58,5 @@ def interrupted_test(interrupted_suite, interrupted_index):
 
 
 @pytest.fixture
-def interrupted_index(populated_suite):
-    return int(len(populated_suite) // 2)
+def interrupted_index(suite):
+    return int(len(suite) // 2)

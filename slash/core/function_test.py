@@ -1,3 +1,4 @@
+from .._compat import itervalues
 from ..utils.python import getargspec
 from .fixtures.parameters import (bound_parametrizations_context,
                                   get_parametrization_fixtures)
@@ -22,6 +23,11 @@ class FunctionTest(RunnableTest):
             self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             kwargs = self._fixture_store.get_fixture_dict(self._func_args, namespace=self._fixture_namespace)
             self._func(**kwargs)  # pylint: disable=star-args
+
+    def get_needed_fixtures(self):
+        fixtures_dict = self._fixture_store.get_fixture_dict(self._func_args, namespace=self._fixture_namespace, get_values=False)
+        return frozenset(itervalues(fixtures_dict))
+
 
     def get_requirements(self):
         return get_requirements(self._func)

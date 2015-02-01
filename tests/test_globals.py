@@ -2,16 +2,20 @@ import pytest
 import slash
 from slash import context, Session
 from .utils import run_tests_assert_success
+from .utils.suite_writer import Suite
 
 
-def test_current_test(suite):
+def test_current_test():
+    suite = Suite()
 
-    suite.add_test(regular_function=False).inject_line(
-        'assert slash.test is self')
-    suite.add_test(regular_function=False).inject_line(
-        'assert slash.context.test is self')
-    suite.add_test(regular_function=False).inject_line(
-        'assert slash.context.test.id is self.__slash__.id')
+    suite.add_test(type='method').prepend_line(
+        'assert slash.test == self')
+    suite.add_test(type='method').prepend_line(
+        'assert slash.context.test == self')
+    suite.add_test(type='method').prepend_line(
+        'assert slash.context.test.__slash__.id == self.__slash__.id')
+
+    suite.run()
 
 
 def test_get_current_session():

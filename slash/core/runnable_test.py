@@ -19,5 +19,8 @@ class RunnableTest(object):
     def get_requirements(self):
         raise NotImplementedError() # pragma: no cover
 
+    def get_needed_fixtures(self):
+        raise NotImplementedError()
+
     def __repr__(self):
         return repr(self.__slash__)

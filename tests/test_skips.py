@@ -47,16 +47,16 @@ def test_method_with_reason():
     _assert_skips(Test, "reason")
 
 
-def test_class_decorator(populated_suite):
+def test_class_decorator(suite):
 
-    cls = populated_suite.classes[1]
+    cls = suite.classes[1]
 
-    cls.decorate('slash.skipped("reason")')
+    cls.add_decorator('slash.skipped("reason")')
 
     for test in cls.tests:
         test.expect_skip()
 
-    results = populated_suite.run()
+    results = suite.run()
 
     for test in cls.tests:
         result = results[test]

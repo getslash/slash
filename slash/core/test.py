@@ -1,7 +1,7 @@
 import functools
 import itertools
 
-from .._compat import iteritems, izip
+from .._compat import iteritems, izip, itervalues
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest
 from ..utils.python import getargspec
@@ -122,6 +122,12 @@ class Test(RunnableTest):
             finally:
                 with handling_exceptions():
                     self.after()
+
+    def get_needed_fixtures(self):
+        fixture_dict = self._fixture_store.get_fixture_dict(
+            self._needed_fixtures,
+            namespace=self._fixture_namespace, get_values=False)
+        return frozenset(itervalues(fixture_dict))
 
     def before(self):
         """
