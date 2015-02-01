@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.12.0 <01-02-2015>`
 * :feature:`177` Added 'slash fixtures' command line utility to list available fixtures
 * :feature:`-` Add ``slash.session.reporter.report_fancy_message``
 * :release:`0.11.0 <06-01-2015>`
