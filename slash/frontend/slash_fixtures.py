@@ -8,7 +8,8 @@ import slash
 from slash.utils.python import get_underlying_func
 
 
-_COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL # pylint: disable=no-member
+_COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member
+
 
 def _title_style(s):
     # pylint: disable=no-member
@@ -18,7 +19,6 @@ def _title_style(s):
 def _unused_style(s):
     # pylint: disable=no-member
     return '{0}{1}{2}'.format(colorama.Fore.YELLOW, s, _COLOR_RESET)
-
 
 
 def _doc_style(s):
@@ -35,7 +35,7 @@ def slash_fixtures(args, report_stream=sys.stdout):
         runnables = loader.get_runnables([path])
         used_fixtures = set()
         for test in runnables:
-            used_fixtures.update(test.get_needed_fixtures())
+            used_fixtures.update(test.get_required_fixture_objects())
 
         for fixture in session.fixture_store:
             if not hasattr(fixture, 'fixture_func'):

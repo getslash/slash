@@ -12,8 +12,12 @@ class Function(CodeElement):
         super(Function, self).__init__(suite)
         self._decorators = []
         self._parameters = []
+        self._additional_parameter_string = ""
         self._fixtures = []
         self._deferred_events = []
+
+    def add_parameter_string(self, s):
+        self._additional_parameter_string += s
 
     def add_decorator(self, decorator_string):
         self._decorators.append(decorator_string)
@@ -49,7 +53,9 @@ class Function(CodeElement):
     def _body_context(self, code_formatter):
         self._write_decorators(code_formatter)
         code_formatter.writeln('def {0}({1}):'.format(
-            self._get_function_name(), ', '.join(self._get_argument_names())))
+            self._get_function_name(),
+            self._get_parameter_string()))
+
         with code_formatter.indented():
             if not self.suite.debug_info:
                 code_formatter.writeln('pass')
@@ -60,6 +66,13 @@ class Function(CodeElement):
             self._write_epilogue(code_formatter)
             self._write_return(code_formatter)
         code_formatter.writeln()
+
+    def _get_parameter_string(self):
+        returned = ', '.join(self._get_argument_names())
+        if returned and self._additional_parameter_string:
+            returned += ', '
+        returned += self._additional_parameter_string
+        return returned
 
     def _write_prologue(self, code_formatter):
         pass
