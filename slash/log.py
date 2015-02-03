@@ -12,10 +12,30 @@ _logger = logbook.Logger(__name__)
 
 _custom_colors = {}
 
+
+class _NormalizedObject(object):
+    def __init__(self, obj):
+        self._obj = obj
+
+    def __getattr__(self, name):
+        return _NormalizedObject(getattr(self._obj, name))
+
+    @staticmethod
+    def _escape(s):
+        return s.replace('\\', '_').replace('/', '_')
+
+    def __str__(self):
+        return self._escape(str(self._obj))
+
+    def __repr__(self):
+        return self._escape(repr(self._obj))
+
+
 def set_log_color(logger_name, level, color):
     """Sets the color displayed in the console, according to the logger name and level
     """
     _custom_colors[logger_name, level] = color
+
 
 class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
@@ -122,7 +142,7 @@ class SessionLogging(object):
             log_path = None
             handler = logbook.NullHandler(bubble=False)
         else:
-            log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=context)))
+            log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=_NormalizedObject(context))))
             ensure_containing_directory(log_path)
             handler = logbook.FileHandler(log_path, bubble=False)
             self._try_create_symlink(log_path, symlink)
