@@ -31,6 +31,7 @@ def slash_fixtures(args, report_stream=sys.stdout):
 
     path = args[0] if args else '.'
     with slash.Session() as session:
+        slash.site.load()
         loader = slash.loader.Loader()
         runnables = loader.get_runnables([path])
         used_fixtures = set()
