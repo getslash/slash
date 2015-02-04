@@ -7,6 +7,7 @@ import logbook  # pylint: disable=F0401
 import logbook.more
 from ._compat import ExitStack
 import os
+import numbers
 
 _logger = logbook.Logger(__name__)
 
@@ -18,7 +19,8 @@ class _NormalizedObject(object):
         self._obj = obj
 
     def __getattr__(self, name):
-        return _NormalizedObject(getattr(self._obj, name))
+        obj = getattr(self._obj, name)
+        return obj if isinstance(obj, numbers.Number) else _NormalizedObject(obj)
 
     @staticmethod
     def _escape(s):
