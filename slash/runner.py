@@ -203,16 +203,16 @@ def _update_result_context():
     assert result
     result.mark_started()
     try:
-        try:
+        with handling_exceptions():
             yield result
-        except:
-            _logger.debug("Exception escaped test:\n{0}", DetailedTraceback(Error.capture_exception()))
-            raise
     except SkipTest as e:
         result.add_skip(e.reason)
         raise
     except KeyboardInterrupt:
         result.mark_interrupted()
+        raise
+    except Exception as e:
+        _logger.debug("Exception escaped test:\n{0}", DetailedTraceback(Error.capture_exception()))
         raise
     finally:
         result.mark_finished()

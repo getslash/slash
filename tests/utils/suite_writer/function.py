@@ -43,10 +43,10 @@ class Function(CodeElement):
                 '__ut__.events.add({0!r}, {1!r})'.format(
                     eventcode, self.id))
 
-    def add_deferred_event(self, decorator, name='deferred'):
+    def add_deferred_event(self, decorator, name='deferred', extra_code=()):
         event = '{0}_{1}'.format(name, uuid4())
         self._deferred_events.append({
-            'decorator': decorator, 'event': event})
+            'decorator': decorator, 'event': event, 'extra_code': extra_code})
         return event
 
     @contextmanager
@@ -88,6 +88,8 @@ class Function(CodeElement):
             code_formatter.writeln('def _defferred{0}():'.format(index))
             with code_formatter.indented():
                 code_formatter.writeln('__ut__.events.add({0[event]!r})'.format(deferred))
+                for line in deferred['extra_code']:
+                    code_formatter.writeln(line)
             code_formatter.writeln()
 
     def _write_return(self, code_formatter):

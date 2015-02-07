@@ -19,6 +19,13 @@ def test_fixture_cleanup_at_end_of_suite(suite):
     assert cleanup in summary.events
 
 
+def test_fixture_cleanup_failure_fails_test(suite, suite_test, defined_fixture):
+    suite_test.depend_on_fixture(defined_fixture)
+    cleanup = defined_fixture.add_cleanup(extra_code=['raise Exception()'])
+    suite_test.expect_error()
+    suite.run()
+
+
 def test_fixture_parameters(suite, suite_test, defined_fixture):
     defined_fixture.add_parameter()
     suite_test.depend_on_fixture(defined_fixture)
