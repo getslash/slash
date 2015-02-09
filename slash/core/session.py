@@ -9,6 +9,7 @@ from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
 from ..reporting.null_reporter import NullReporter
 from ..utils.id_space import IDSpace
+from ..utils.interactive import notify_if_slow_context
 from ..warnings import SessionWarnings
 from .fixtures.fixture_store import FixtureStore
 from .result import SessionResults
@@ -61,7 +62,8 @@ class Session(Activatable):
         self.start_time = time.time()
         try:
             with handling_exceptions():
-                hooks.session_start()  # pylint: disable=no-member
+                with notify_if_slow_context("Initializing session..."):
+                    hooks.session_start()  # pylint: disable=no-member
             hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield

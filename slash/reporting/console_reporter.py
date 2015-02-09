@@ -357,6 +357,11 @@ class ConsoleReporter(ReporterInterface):
         if self._verobsity_allows(VERBOSITIES.INFO):
             self._terminal.write_box(headline, message, bold=True, yellow=True)
 
+    def report_message(self, message):
+        self.notify_before_console_output()
+        self._terminal.write(message)
+        self._terminal.write('\n')
+        self.notify_after_console_output()
 
     def _format_duration(self, duration):
         seconds = duration % 60
