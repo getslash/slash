@@ -5,12 +5,16 @@ import emport
 
 import dessert
 import pytest
-from slash.core.error import Error, DetailedTraceback
+from slash.core.error import Error
 
 
 def test_error_exception_str_repr(error):
     assert "NotImplementedError" in str(error)
     assert "NotImplementedError" in repr(error)
+
+def test_detailed_exception(error):
+    assert error.get_detailed_str()
+    assert 'NotImplementedError' in error.get_detailed_str()
 
 def test_error_filename(error):
     assert error.filename == os.path.abspath(__file__)
@@ -65,9 +69,7 @@ def test_capture_exception_twice_caches_object(error):
 
 
 def test_detailed_traceback(error):
-    detailed = DetailedTraceback(error)
-    assert detailed.cached_repr is None
-    detailed = str(detailed)
+    detailed = error.get_detailed_str()
     assert detailed
 
 ####

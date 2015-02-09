@@ -10,7 +10,7 @@ from ..utils.formatter import Formatter
 
 class Error(object):
 
-    traceback = exception_type = exception = arg = None
+    traceback = exception_type = exception = arg = _cached_detailed_traceback_str = None
 
     def __init__(self, msg=None, exc_info=None):
         super(Error, self).__init__()
@@ -60,35 +60,29 @@ class Error(object):
     def __repr__(self):
         return self.message
 
-class DetailedTraceback(object):
-    """Lazily format detailed tracebacks for error objects
-    """
-
-    def __init__(self, error):
-        super(DetailedTraceback, self).__init__()
-        self.error = error
-        self.cached_repr = None
-
-    def _format(self):
-        stream = StringIO()
-        f = Formatter(stream, indentation_string='  ')
-        f.writeln("Traceback (most recent call last):")
-        with f.indented():
-            for frame in self.error.traceback.frames:
-                f.writeln('File "{f.filename}", line {f.lineno}, in {f.func_name}:'.format(f=frame))
-                with f.indented():
-                    f.writeln('>', frame.code_line.strip() or '?')
+    def get_detailed_traceback_str(self):
+        if self._cached_detailed_traceback_str is None:
+            stream = StringIO()
+            f = Formatter(stream, indentation_string='  ')
+            f.writeln("Traceback (most recent call last):")
+            with f.indented():
+                for frame in self.traceback.frames:
+                    f.writeln('File "{f.filename}", line {f.lineno}, in {f.func_name}:'.format(f=frame))
                     with f.indented():
-                        for title, vars in [('globals', frame.globals), ('locals', frame.locals)]:
-                            for index, (var_name, var_repr) in enumerate(iteritems(vars)):
-                                if index == 0:
-                                    f.writeln(title)
-                                    f.indent()
-                                f.writeln(' - {0}: {1}'.format(var_name, var_repr['value']))
-                        f.dedent()
-        return stream.getvalue()
+                        f.writeln('>', frame.code_line.strip() or '?')
+                        with f.indented():
+                            for title, vars in [('globals', frame.globals), ('locals', frame.locals)]:
+                                for index, (var_name, var_repr) in enumerate(iteritems(vars)):
+                                    if index == 0:
+                                        f.writeln(title)
+                                        f.indent()
+                                    f.writeln(' - {0}: {1}'.format(var_name, var_repr['value']))
+                            f.dedent()
+            self._cached_detailed_traceback_str = stream.getvalue()
 
-    def __repr__(self):
-        if self.cached_repr is None:
-            self.cached_repr = self._format()
-        return self.cached_repr
+        return self._cached_detailed_traceback_str
+
+    def get_detailed_str(self):
+        return '{0}*** {1}'.format(
+            self.get_detailed_traceback_str(), self)
+

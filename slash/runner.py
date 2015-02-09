@@ -16,7 +16,7 @@ from .core.metadata import ensure_test_metadata
 from .core.fixtures.fixture_scope_manager import FixtureScopeManager
 from .utils.iteration import PeekableIterator
 from .utils.interactive import notify_if_slow_context
-from .core.error import Error, DetailedTraceback
+from .core.error import Error
 
 
 _logger = logbook.Logger(__name__)
@@ -212,7 +212,7 @@ def _update_result_context():
         result.mark_interrupted()
         raise
     except Exception as e:
-        _logger.debug("Exception escaped test:\n{0}", DetailedTraceback(Error.capture_exception()))
+        _logger.debug("Exception escaped test:\n{0}", Error.capture_exception().get_detailed_str())
         raise
     finally:
         result.mark_finished()
