@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Slash now emits a console message when session_start handlers take too long
 * :release:`0.12.0 <01-02-2015>`
 * :feature:`177` Added 'slash fixtures' command line utility to list available fixtures
 * :feature:`-` Add ``slash.session.reporter.report_fancy_message``
