@@ -64,12 +64,12 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
         return None # default
 
     def format(self, record):
-        result = super(ConsoleHandler, self).format(record)
+        message = record.message
         should_truncate = self._truncate_errors or record.level < logbook.ERROR
-        if self._truncate_lines and len(result) > self.MAX_LINE_LENGTH and should_truncate:
-            result = "\n".join(
-                self._truncate(line) for line in result.splitlines())
-        return result
+        if self._truncate_lines and len(message) > self.MAX_LINE_LENGTH and should_truncate:
+            record.message = "\n".join(self._truncate(line) for line in message.splitlines())
+        return super(ConsoleHandler, self).format(record)
+
 
     def _truncate(self, line):
         if len(line) > self.MAX_LINE_LENGTH:
