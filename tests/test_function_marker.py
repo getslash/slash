@@ -12,6 +12,20 @@ def test_is_marked(marker, func):
     marker(func)
     assert marker.is_marked(func)
 
+@pytest.mark.parametrize('value', [True, False, 'value', 2.0])
+def test_marker_value(func, value):
+
+    marker = function_marker('bla')
+
+    func = marker(value)(func)
+
+    assert marker.is_marked(func)
+    assert marker.get_value(func) == value
+
+def test_marker_value_does_not_exist(func):
+    with pytest.raises(LookupError):
+        function_marker('bla').get_value(func)
+
 def test_marker_on_methods(marker):
 
     class Obj(object):
