@@ -2,7 +2,7 @@ import itertools
 
 import logbook
 
-from slash._compat import iteritems, itervalues
+from slash._compat import iteritems, itervalues, xrange
 
 _logger = logbook.Logger(__name__)
 
@@ -21,18 +21,20 @@ def _validate_single_test(test, results):
 
     for param_values in _iter_param_value_sets(test):
 
-        for index, result in enumerate(results):
+        for repetition in xrange(test.get_num_expected_repetitions()):
 
-            if _result_matches(test, result, param_values):
+            for index, result in enumerate(results):
 
-                results.pop(index)
+                if _result_matches(test, result, param_values):
 
-                _validate_single_test_result(test, result)
+                    results.pop(index)
 
-                break
-        else:
-            assert False, 'Could not find parameter set {0}'.format(
-                param_values)
+                    _validate_single_test_result(test, result)
+
+                    break
+            else:
+                assert False, 'Could not find parameter set {0}'.format(
+                    param_values)
 
     assert not results, 'Unmatched results exist'
 

@@ -44,7 +44,8 @@ Fixtures
 
 .. autofunction:: slash.fixture
 
-.. autofunction:: slash.nofixtures
+.. autofunction:: slash.nofixtures()
+
 
 Requirements
 ------------
@@ -103,6 +104,12 @@ Exceptions
 .. autofunction:: slash.exception_handling.get_exception_swallowing_context
 
 
+Misc. Utilities
+---------------
+
+.. autofunction:: slash.repeat(num_repetitions)
+
+  A decorator specifying that the decorated test is to be repeated a given amount of times
 
 Internals
 ---------
