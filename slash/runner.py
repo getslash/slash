@@ -144,13 +144,14 @@ def _get_test_context(test, logging=True):
     test.__slash__.id = context.session.id_space.allocate()
     with _set_current_test_context(test):
         result = context.session.results.create_result(test)
+        prev_result = context.result
         context.result = result
         try:
             with (context.session.logging.get_test_logging_context() if logging else ExitStack()):
                 _logger.debug("Started test: {0}", test)
                 yield
         finally:
-            context.result = None
+            context.result = prev_result
 
 @contextmanager
 def _get_test_hooks_context():
