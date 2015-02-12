@@ -1,7 +1,10 @@
+from .._compat import xrange
+
 from .fixtures.parameters import bound_parametrizations_context
 from .requirements import get_requirements
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
+from .markers import repeat
 
 
 class FunctionTest(RunnableTest):
@@ -38,4 +41,5 @@ class FunctionTestFactory(RunnableTestFactory):
         namespace = fixture_store.get_current_namespace()
         for variation in fixture_store.iter_parametrization_variations(funcs=[self.func]):
             address = '({0})'.format(variation.representation) if variation else None
-            yield address, FunctionTest(self.func, fixture_store, namespace, variation)
+            for _ in xrange(repeat.get_value(self.func, 1)):
+                yield address, FunctionTest(self.func, fixture_store, namespace, variation)

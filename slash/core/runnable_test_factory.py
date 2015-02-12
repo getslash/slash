@@ -22,3 +22,4 @@ class RunnableTestFactory(object):
 
     def _generate_tests(self, fixture_store):
         raise NotImplementedError()  # pragma: no cover
+
