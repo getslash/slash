@@ -24,8 +24,8 @@ class Marker(object):
     def is_marked(self, func):
         return hasattr(self._normalize(func), self._mark)
 
-    def get_value(self, func):
-        returned = getattr(self._normalize(func), self._mark, NOTHING)
+    def get_value(self, func, default=NOTHING):
+        returned = getattr(self._normalize(func), self._mark, default)
         if returned is NOTHING:
             raise LookupError()
         return returned

@@ -26,6 +26,8 @@ def test_marker_value_does_not_exist(func):
     with pytest.raises(LookupError):
         function_marker('bla').get_value(func)
 
+    assert function_marker('bla').get_value(func, 1) == 1
+
 def test_marker_on_methods(marker):
 
     class Obj(object):
