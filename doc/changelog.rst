@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :feature:`140` Add ``--repeat-each`` command line argument to repeat each test multiple times
+* :feature:`249` Add @slash.repeat decorator to repeat tests multiple times
 * :feature:`-` Slash now emits a console message when session_start handlers take too long
 * :release:`0.12.0 <01-02-2015>`
 * :feature:`177` Added 'slash fixtures' command line utility to list available fixtures
