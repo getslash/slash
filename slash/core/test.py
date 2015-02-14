@@ -5,7 +5,6 @@ from .._compat import iteritems, izip, xrange
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest
 from .fixtures.parameters import bound_parametrizations_context
-from .markers import repeat
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
 from .requirements import get_requirements
@@ -26,7 +25,7 @@ class TestTestFactory(RunnableTestFactory):
                 continue
 
             for fixture_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
-                for _ in xrange(repeat.get_value(getattr(self.test, test_method_name), 1)):
+                for _ in xrange(self._get_num_repetitions(getattr(self.test, test_method_name))):
                     case = self.test(
                         test_method_name,
                         fixture_store=fixture_store,

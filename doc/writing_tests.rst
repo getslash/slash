@@ -431,3 +431,5 @@ Use the :func:`slash.repeat(num_repetitions)` decorator to make a test repeat se
        @slash.repeat(5)
        def test_probabilistic():
            assert still_works()
+
+.. note:: You can also use the `--repeat-each=X` argument to `slash run`, causing it to repeat each test being loaded a specified amount of times

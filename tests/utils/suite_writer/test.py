@@ -18,6 +18,9 @@ class Test(Function, Element):
 
     def repeat(self, num_repetitions):
         self.add_decorator('slash.repeat({0})'.format(num_repetitions))
+        self.expect_repetition(num_repetitions)
+
+    def expect_repetition(self, num_repetitions):
         self._repetitions *= num_repetitions
 
     def get_num_expected_repetitions(self):
