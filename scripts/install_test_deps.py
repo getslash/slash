@@ -13,6 +13,7 @@ if __name__ == '__main__':
         "coverage",
         "coveralls",
         "pytest",
+        "pytest-xdist",
         "pytest-capturelog",
         "pytest-cov",
         "pyforge",
