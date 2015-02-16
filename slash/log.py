@@ -117,7 +117,7 @@ class SessionLogging(object):
         with self._get_file_logging_context(
             config.root.log.session_subpath, config.root.log.last_session_symlink) as path:
             self.session_log_path = path
-            if config.root.log.last_session_dir_symlink is not None:
+            if config.root.log.last_session_dir_symlink is not None and self.session_log_path is not None:
                 self._try_create_symlink(os.path.dirname(self.session_log_path), config.root.log.last_session_dir_symlink)
             yield path
 
@@ -155,7 +155,7 @@ class SessionLogging(object):
         return os.path.expanduser(p)
 
     def _try_create_symlink(self, path, symlink):
-        if symlink is None:
+        if symlink is None or config.root.log.root is None:
             return
 
         symlink = self._normalize_path(symlink)

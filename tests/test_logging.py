@@ -23,6 +23,12 @@ def test_last_session_symlinks(files_dir, links_dir, session):
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
+@pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
+def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
+    config_override('log.{0}'.format(symlink_name), 'some/subdir')
+    assert suite.run().ok()
+
+
 def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
     failed_test = suite[4]
     failed_test.when_run.fail()
