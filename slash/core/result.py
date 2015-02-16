@@ -6,6 +6,7 @@ import logbook
 
 from .._compat import itervalues, OrderedDict
 from ..ctx import context
+from .. import hooks
 from .error import Error
 
 _logger = logbook.Logger(__name__)
@@ -98,6 +99,7 @@ class Result(object):
                 error = Error(error)
             _logger.debug('Error added: {0}', error)
             error_list.append(error)
+            hooks.error_added(result=self, error=error) # pylint: disable=no-member
             return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)

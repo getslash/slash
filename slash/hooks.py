@@ -26,6 +26,8 @@ _define('test_error', doc="Called on test error")
 _define('test_failure', doc="Called on test failure")
 _define('test_skip', doc="Called on test skip", arg_names=("reason",))
 
+_define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
+
 _define('result_summary', doc="Called at the end of the execution, when printing results")
 
 _define('exception_caught_before_debugger',
