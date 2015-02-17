@@ -63,35 +63,39 @@ class VariationFactory(object):
         param_ids = list(reduce(set.union, imap(self._store.get_all_needed_parametrization_ids, self._needed_fixtures), set()))
         parametrizations = [self._store.get_fixture_by_id(param_id) for param_id in param_ids]
         if not param_ids:
-            yield Variation()
+            yield Variation(self._store)
             return
         for value_indices in itertools.product(*(xrange(len(p.values)) for p in parametrizations)):
             yield self._build_variation(parametrizations, value_indices)
 
     def _build_variation(self, parametrizations, value_indices):
-        variation_dict = dict((p.info.id, p.values[param_index])
+        param_value_indices = dict((p.info.id, param_index)
                               for p, param_index in izip(parametrizations, value_indices))
-        return Variation(variation_dict, representation=self._build_representation(variation_dict))
+        return Variation(self._store, param_value_indices, representation=self._build_representation(param_value_indices))
 
-    def _build_representation(self, variation_dict):
+    def _build_representation(self, param_value_indices):
 
         if not self._named_fixture_ids:
             return None
 
         parts = []
         for fixture_id, fixture_name in iteritems(self._named_fixture_ids):
-            fixture = self._store.get_fixture_by_id(fixture_id)
-            needed_ids = self._store.get_all_needed_parametrization_ids(fixture)
-            combination = frozenset((param_id, variation_dict[param_id]) for param_id in needed_ids)
-            value_str = self._known_value_strings[fixture_id].get(combination)
-            if value_str is None:
-                if isinstance(fixture, Parametrization) and self._is_printable(variation_dict[fixture_id]):
-                    value_str = str(variation_dict[fixture_id])
-                else:
-                    value_str = '{0}{1}'.format(fixture_name, len(self._known_value_strings[fixture_id]))
-                self._known_value_strings[fixture_id][combination] = value_str
+            value_str = self._get_fixture_value_string(fixture_id, fixture_name, param_value_indices)
             parts.append('{0}={1}'.format(fixture_name, value_str))
         return ', '.join(parts)
+
+    def _get_fixture_value_string(self, fixture_id, fixture_name, param_value_indices):
+        fixture = self._store.get_fixture_by_id(fixture_id)
+        needed_ids = self._store.get_all_needed_parametrization_ids(fixture)
+        combination = frozenset((param_id, param_value_indices[param_id]) for param_id in needed_ids)
+        value_str = self._known_value_strings[fixture_id].get(combination)
+        if value_str is None:
+            if isinstance(fixture, Parametrization) and self._is_printable(param_value_indices[fixture_id]):
+                value_str = str(fixture.values[param_value_indices[fixture_id]])
+            else:
+                value_str = '{0}{1}'.format(fixture_name, len(self._known_value_strings[fixture_id]))
+                self._known_value_strings[fixture_id][combination] = value_str
+        return value_str
 
     def _is_printable(self, value):
         return isinstance(value, _PRINTABLE_TYPES)
@@ -103,33 +107,34 @@ class Variation(object):
     This mostly applies for parametrization fixtures. The other fixtures follow since they are either constant
     or indirectly depend on parametrization"""
 
-    def __init__(self, variation_dict=None, representation=None):
+    def __init__(self, store, param_value_indices=None, representation=None):
         super(Variation, self).__init__()
-        if variation_dict is None:
-            variation_dict = {}
-        self.variation_dict = variation_dict
+        self._store = store
+        if param_value_indices is None:
+            param_value_indices = {}
+        self.param_value_indices = param_value_indices
         self.representation = representation
 
     def has_value_for_fixture_id(self, fixture_id):
-        return fixture_id in self.variation_dict
+        return fixture_id in self.param_value_indices
 
     def get_fixture_value(self, fixture_id):
-        return self.variation_dict[fixture_id]
+        return self._store.get_fixture_by_id(fixture_id).values[self.param_value_indices[fixture_id]]
 
     def __eq__(self, other):
         if isinstance(other, Variation):
-            other = other.variation_dict
+            other = other.param_value_indices
         if not isinstance(other, dict):
             return NotImplemented
-        return self.variation_dict == other
+        return self.param_value_indices == other
 
     def __ne__(self, other):
         return not (self == other)  # pylint: disable=superfluous-parens
 
     def __repr__(self):
-        return 'Variation({0})'.format(', '.join('{0}={1}'.format(key, value) for key, value in iteritems(self.variation_dict)))
+        return 'Variation({0})'.format(', '.join('{0}={1}'.format(key, value) for key, value in iteritems(self.param_value_indices)))
 
     def __nonzero__(self):
-        return bool(self.variation_dict)
+        return bool(self.param_value_indices)
 
     __bool__ = __nonzero__

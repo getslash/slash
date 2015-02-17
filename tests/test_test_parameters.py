@@ -1,8 +1,10 @@
+import copy
+
 import pytest
 import slash
 
-from .utils.suite_writer import Suite
 from .utils import run_tests_assert_success
+from .utils.suite_writer import Suite
 
 
 def test_test_parametrization(test_type):
@@ -25,6 +27,31 @@ def test_parameters_toggle():
     session = run_tests_assert_success(test_example)
 
     assert [False, True] == sorted(result.data['param'] for result in session.results)
+
+
+def test_dict_parameter_values():
+
+    values = [{'value': 1}, {'value': 2}]
+
+    @slash.parametrize('param', copy.deepcopy(values))
+    def test_example(param):
+        _set('param', param)
+
+    session = run_tests_assert_success(test_example)
+    assert values == sorted(result.data['param'] for result in session.results)
+
+
+def test_duplicate_parameters():
+
+    values = ["a", "b", "a"]
+
+    @slash.parametrize('param', copy.deepcopy(values))
+    def test_example(param):
+        _set('param', param)
+
+    session = run_tests_assert_success(test_example)
+    assert sorted(values) == sorted(result.data['param'] for result in session.results)
+
 
 
 def test_before_after_parameters(cartesian):
