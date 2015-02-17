@@ -38,7 +38,7 @@ def test_dict_parameter_values():
         _set('param', param)
 
     session = run_tests_assert_success(test_example)
-    assert values == sorted(result.data['param'] for result in session.results)
+    assert values == sorted((result.data['param'] for result in session.results), key=values.index)
 
 
 def test_duplicate_parameters():
