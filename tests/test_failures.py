@@ -27,3 +27,15 @@ def test_adding_errors(error_adder, test_type):
     assert 'msg0' in objs[0].message
     assert 'msg1' in objs[1].message
     assert '<object object at 0x' in objs[2].message
+
+
+def test_manual_add_error_preserves_traceback(suite, suite_test):
+    suite_test.append_line('slash.add_error("error here")')
+    suite_test.expect_error()
+    summary = suite.run()
+
+    [result] = summary.get_all_results_for_test(suite_test)
+    [err] = result.get_errors()
+
+    assert err.traceback is not None
+

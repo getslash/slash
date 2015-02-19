@@ -4,7 +4,7 @@ import traceback
 
 from .._compat import string_types, StringIO, iteritems
 from ..exception_handling import is_exception_fatal
-from ..utils.traceback_utils import distill_traceback
+from ..utils.traceback_utils import distill_traceback, distill_call_stack
 from ..utils.formatter import Formatter
 
 
@@ -12,7 +12,7 @@ class Error(object):
 
     traceback = exception_type = exception = arg = _cached_detailed_traceback_str = None
 
-    def __init__(self, msg=None, exc_info=None):
+    def __init__(self, msg=None, exc_info=None, frame_correction=0):
         super(Error, self).__init__()
         self.time = arrow.utcnow()
         if msg is None and exc_info is not None:
@@ -23,7 +23,9 @@ class Error(object):
         self.message = msg
         if exc_info is not None:
             self.exception_type, self.exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
-            self.traceback = distill_traceback(tb)
+            self.traceback = distill_traceback(tb, frame_correction=frame_correction)
+        else:
+            self.traceback = distill_call_stack(frame_correction=frame_correction+4)
 
     def is_fatal(self):
         return self.exception is not None and is_exception_fatal(self.exception)

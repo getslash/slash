@@ -55,7 +55,7 @@ def test_frame_globals(error):
         }}
 
 
-def test_capture_exception_twice_caches_object(error):
+def test_capture_exception_twice_caches_object():
     try:
         try:
             raise RuntimeError()
@@ -83,6 +83,17 @@ def error():
     else:
         assert False, "Did not fail"
 
+@pytest.fixture
+def non_exception_error():
+    def func1():
+        return func2()
+    def func2():
+        return Error('some_error')
+
+    err = func1()
+    return err
+
+
 global_func_1 = "global_func_1"
 global_func_2 = "global_func_2"
 global_func_3 = "global_func_3"
@@ -108,6 +119,7 @@ def assertion_error(tmpdir):
     filename.write("""
 def f(x):
     return x
+
 def g(x):
     return x
 
