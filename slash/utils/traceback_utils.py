@@ -42,7 +42,7 @@ def _get_tb_frames(tb):
     return returned
 
 def _get_sys_trace_frames():
-    return [f[0] for f in reversed(inspect.stack())]
+    return [f[0] for f in reversed(inspect.stack()[:-1])]
 
 def _is_frame_muted(frame):
     try:
@@ -57,10 +57,7 @@ def _deduce_frame_function(frame):
         if frame_module is None:
             return None
 
-        frame_self = frame.f_locals.get("self", None)
-        if frame_self is None:
-            return (frame_module, frame.f_code.co_name)
-        return (frame_module, type(frame_self).__name__, frame.f_code.co_name)
+        return (frame_module, frame.f_code.co_name)
     finally:
         del frame
 
@@ -70,8 +67,15 @@ def _deduce_frame_module(frame):
 
 
 _MUTED_LOCATIONS = set([
-    ("slash.core.test", "Test", "run"),
+    ("slash.core.function_test", "run"),
+    ("slash.core.test", "run"),
     ("slash.exception_handling", "handling_exceptions"),
+    ("slash.core.fixtures.fixture_store", "call_with_fixtures"),
+    ("slash.frontend.main", "__main__"),
+    ("slash.frontend.main", "main"),
+    ("slash.frontend.main", "main_entry_point"),
+    ("slash.frontend.slash_run", "slash_run"),
+    ("slash.runner", "run_tests"),
 ])
 
 
