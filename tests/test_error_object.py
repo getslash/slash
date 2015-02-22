@@ -5,12 +5,16 @@ import emport
 
 import dessert
 import pytest
-from slash.core.error import Error, DetailedTraceback
+from slash.core.error import Error
 
 
 def test_error_exception_str_repr(error):
     assert "NotImplementedError" in str(error)
     assert "NotImplementedError" in repr(error)
+
+def test_detailed_exception(error):
+    assert error.get_detailed_str()
+    assert 'NotImplementedError' in error.get_detailed_str()
 
 def test_error_filename(error):
     assert error.filename == os.path.abspath(__file__)
@@ -51,7 +55,7 @@ def test_frame_globals(error):
         }}
 
 
-def test_capture_exception_twice_caches_object(error):
+def test_capture_exception_twice_caches_object():
     try:
         try:
             raise RuntimeError()
@@ -65,9 +69,7 @@ def test_capture_exception_twice_caches_object(error):
 
 
 def test_detailed_traceback(error):
-    detailed = DetailedTraceback(error)
-    assert detailed.cached_repr is None
-    detailed = str(detailed)
+    detailed = error.get_detailed_str()
     assert detailed
 
 ####
@@ -80,6 +82,17 @@ def error():
         return Error.capture_exception()
     else:
         assert False, "Did not fail"
+
+@pytest.fixture
+def non_exception_error():
+    def func1():
+        return func2()
+    def func2():
+        return Error('some_error')
+
+    err = func1()
+    return err
+
 
 global_func_1 = "global_func_1"
 global_func_2 = "global_func_2"
@@ -106,6 +119,7 @@ def assertion_error(tmpdir):
     filename.write("""
 def f(x):
     return x
+
 def g(x):
     return x
 

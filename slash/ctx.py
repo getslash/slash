@@ -8,7 +8,7 @@ class GlobalStorage(object):
 
 
 class Context(object):
-    session = test = test_id = None
+    session = test = test_id = result = None
 
     def __init__(self):
         super(Context, self).__init__()

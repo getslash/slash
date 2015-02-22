@@ -1,12 +1,29 @@
 from uuid import uuid1
 
 import pytest
-from slash import context
+import slash
+from slash import context, Session
 from slash.ctx import Context, ContextAttributeProxy
 
 
 def test_null_context():
     assert context.test_id is None
+    assert context.result is None
+
+def test_session_context_result():
+    with Session() as s:
+        assert context.session is s
+        assert context.result is s.results.global_result
+
+def test_test_context_result(suite):
+    for test in suite:
+        test.append_line('assert slash.context.result is slash.session.results[slash.context.test]')
+
+    @slash.hooks.result_summary.register
+    def assert_result_back_to_normal():
+        assert context.result is context.session.results.global_result
+
+    assert suite.run().ok()
 
 def test_cannot_pop_bottom():
     assert len(context._stack) == 1

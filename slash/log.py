@@ -7,15 +7,37 @@ import logbook  # pylint: disable=F0401
 import logbook.more
 from ._compat import ExitStack
 import os
+import numbers
 
 _logger = logbook.Logger(__name__)
 
 _custom_colors = {}
 
+
+class _NormalizedObject(object):
+    def __init__(self, obj):
+        self._obj = obj
+
+    def __getattr__(self, name):
+        obj = getattr(self._obj, name)
+        return obj if isinstance(obj, numbers.Number) else _NormalizedObject(obj)
+
+    @staticmethod
+    def _escape(s):
+        return s.replace('\\', '_').replace('/', '_')
+
+    def __str__(self):
+        return self._escape(str(self._obj))
+
+    def __repr__(self):
+        return self._escape(repr(self._obj))
+
+
 def set_log_color(logger_name, level, color):
     """Sets the color displayed in the console, according to the logger name and level
     """
     _custom_colors[logger_name, level] = color
+
 
 class ConsoleHandler(logbook.more.ColorizedStderrHandler):
 
@@ -42,12 +64,12 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
         return None # default
 
     def format(self, record):
-        result = super(ConsoleHandler, self).format(record)
+        message = record.message
         should_truncate = self._truncate_errors or record.level < logbook.ERROR
-        if self._truncate_lines and len(result) > self.MAX_LINE_LENGTH and should_truncate:
-            result = "\n".join(
-                self._truncate(line) for line in result.splitlines())
-        return result
+        if self._truncate_lines and len(message) > self.MAX_LINE_LENGTH and should_truncate:
+            record.message = "\n".join(self._truncate(line) for line in message.splitlines())
+        return super(ConsoleHandler, self).format(record)
+
 
     def _truncate(self, line):
         if len(line) > self.MAX_LINE_LENGTH:
@@ -95,7 +117,7 @@ class SessionLogging(object):
         with self._get_file_logging_context(
             config.root.log.session_subpath, config.root.log.last_session_symlink) as path:
             self.session_log_path = path
-            if config.root.log.last_session_dir_symlink is not None:
+            if config.root.log.last_session_dir_symlink is not None and self.session_log_path is not None:
                 self._try_create_symlink(os.path.dirname(self.session_log_path), config.root.log.last_session_dir_symlink)
             yield path
 
@@ -122,7 +144,7 @@ class SessionLogging(object):
             log_path = None
             handler = logbook.NullHandler(bubble=False)
         else:
-            log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=context)))
+            log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=_NormalizedObject(context))))
             ensure_containing_directory(log_path)
             handler = logbook.FileHandler(log_path, bubble=False)
             self._try_create_symlink(log_path, symlink)
@@ -133,7 +155,7 @@ class SessionLogging(object):
         return os.path.expanduser(p)
 
     def _try_create_symlink(self, path, symlink):
-        if symlink is None:
+        if symlink is None or config.root.log.root is None:
             return
 
         symlink = self._normalize_path(symlink)

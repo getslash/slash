@@ -14,6 +14,17 @@ class Test(Function, Element):
         self._expected_result = _SUCCESS
         self._selected = True
         self.when_run = WhenRunHelper(self)
+        self._repetitions = 1
+
+    def repeat(self, num_repetitions):
+        self.add_decorator('slash.repeat({0})'.format(num_repetitions))
+        self.expect_repetition(num_repetitions)
+
+    def expect_repetition(self, num_repetitions):
+        self._repetitions *= num_repetitions
+
+    def get_num_expected_repetitions(self):
+        return self._repetitions
 
     def add_cleanup(self):
         return self.add_deferred_event('slash.add_cleanup', name='test_cleanup')

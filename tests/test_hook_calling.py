@@ -25,6 +25,39 @@ class BeforeTestCleanupException(Exception):
     pass
 
 
+def test_hook__error_added_during_test(suite, request, checkpoint, suite_test):
+
+    request.addfinalizer(
+        hooks.error_added.register(checkpoint)
+        .unregister)
+
+    suite_test.when_run.raise_exception()
+
+    summary = suite.run()
+    assert checkpoint.called
+    [result] = summary.get_all_results_for_test(suite_test)
+    assert checkpoint.kwargs['result'] is result
+
+
+def test_hook__error_added_after_test(suite, request, checkpoint, suite_test):
+
+    request.addfinalizer(
+        hooks.error_added.register(checkpoint)
+        .unregister)
+
+    summary = suite.run()
+    assert not checkpoint.called
+    [result] = summary.get_all_results_for_test(suite_test)
+    try:
+        1/0
+    except:
+        result.add_error()
+    assert checkpoint.called
+    assert checkpoint.kwargs['result'] is result
+    assert 'ZeroDivisionError' in str(checkpoint.kwargs['error'])
+
+
+
 def test_hook__test_interrupt(suite, request, checkpoint):
     request.addfinalizer(
         hooks.test_interrupt.register(checkpoint)

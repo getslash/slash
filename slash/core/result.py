@@ -6,6 +6,7 @@ import logbook
 
 from .._compat import itervalues, OrderedDict
 from ..ctx import context
+from .. import hooks
 from .error import Error
 
 _logger = logbook.Logger(__name__)
@@ -79,25 +80,26 @@ class Result(object):
     def is_interrupted(self):
         return self._interrupted
 
-    def add_error(self, e=None):
-        err = self._add_error(self._errors, e)
+    def add_error(self, e=None, frame_correction=0):
+        err = self._add_error(self._errors, e, frame_correction=frame_correction+1)
         context.reporter.report_test_error_added(context.test, err)
 
-    def add_failure(self, e=None):
-        err = self._add_error(self._failures, e)
+    def add_failure(self, e=None, frame_correction=0):
+        err = self._add_error(self._failures, e, frame_correction=frame_correction+1)
         context.reporter.report_test_failure_added(context.test, err)
 
     def set_test_detail(self, key, value):
         self._details[key] = value
 
-    def _add_error(self, error_list, error=None):
+    def _add_error(self, error_list, error=None, frame_correction=0):
         try:
             if error is None:
                 error = Error.capture_exception()
             if not isinstance(error, Error):
-                error = Error(error)
+                error = Error(error, frame_correction=frame_correction+1)
             _logger.debug('Error added: {0}', error)
             error_list.append(error)
+            hooks.error_added(result=self, error=error) # pylint: disable=no-member
             return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)

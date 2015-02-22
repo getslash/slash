@@ -68,3 +68,6 @@ class ReporterInterface(object):
     def report_fancy_message(self, headline, message):
         pass
 
+    def report_message(self, message):
+        pass
+

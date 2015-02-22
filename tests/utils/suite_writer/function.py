@@ -12,8 +12,12 @@ class Function(CodeElement):
         super(Function, self).__init__(suite)
         self._decorators = []
         self._parameters = []
+        self._additional_parameter_string = ""
         self._fixtures = []
         self._deferred_events = []
+
+    def add_parameter_string(self, s):
+        self._additional_parameter_string += s
 
     def add_decorator(self, decorator_string):
         self._decorators.append(decorator_string)
@@ -39,17 +43,19 @@ class Function(CodeElement):
                 '__ut__.events.add({0!r}, {1!r})'.format(
                     eventcode, self.id))
 
-    def add_deferred_event(self, decorator, name='deferred'):
+    def add_deferred_event(self, decorator, name='deferred', extra_code=()):
         event = '{0}_{1}'.format(name, uuid4())
         self._deferred_events.append({
-            'decorator': decorator, 'event': event})
+            'decorator': decorator, 'event': event, 'extra_code': extra_code})
         return event
 
     @contextmanager
     def _body_context(self, code_formatter):
         self._write_decorators(code_formatter)
         code_formatter.writeln('def {0}({1}):'.format(
-            self._get_function_name(), ', '.join(self._get_argument_names())))
+            self._get_function_name(),
+            self._get_parameter_string()))
+
         with code_formatter.indented():
             if not self.suite.debug_info:
                 code_formatter.writeln('pass')
@@ -60,6 +66,13 @@ class Function(CodeElement):
             self._write_epilogue(code_formatter)
             self._write_return(code_formatter)
         code_formatter.writeln()
+
+    def _get_parameter_string(self):
+        returned = ', '.join(self._get_argument_names())
+        if returned and self._additional_parameter_string:
+            returned += ', '
+        returned += self._additional_parameter_string
+        return returned
 
     def _write_prologue(self, code_formatter):
         pass
@@ -75,6 +88,8 @@ class Function(CodeElement):
             code_formatter.writeln('def _defferred{0}():'.format(index))
             with code_formatter.indented():
                 code_formatter.writeln('__ut__.events.add({0[event]!r})'.format(deferred))
+                for line in deferred['extra_code']:
+                    code_formatter.writeln(line)
             code_formatter.writeln()
 
     def _write_return(self, code_formatter):

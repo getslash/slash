@@ -1,11 +1,10 @@
 import functools
 import itertools
 
-from .._compat import iteritems, izip, itervalues
+from .._compat import iteritems, izip, xrange
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest
-from ..utils.python import getargspec
-from .fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
+from .fixtures.parameters import bound_parametrizations_context
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
 from .requirements import get_requirements
@@ -25,24 +24,17 @@ class TestTestFactory(RunnableTestFactory):
             if not test_method_name.startswith("test"):
                 continue
 
-            test_method = getattr(self.test, test_method_name)
-            needed_fixtures = self._get_needed_fixtures(test_method)
-
             for fixture_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
-                case = self.test(
-                    test_method_name,
-                    needed_fixtures=needed_fixtures,
-                    fixture_store=fixture_store,
-                    fixture_namespace=fixture_store.get_current_namespace(),
-                    fixture_variation=fixture_variation,
-                )
-                if self.test.__slash_skipped__:
-                    case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
-                yield case._get_address_in_factory(), case  # pylint: disable=protected-access
-
-    def _get_needed_fixtures(self, method):
-        parametrized = set(p.name for p in get_parametrization_fixtures(method))
-        return [name for name in getargspec(method).args[1:] if name not in parametrized]
+                for _ in xrange(self._get_num_repetitions(getattr(self.test, test_method_name))):
+                    case = self.test(
+                        test_method_name,
+                        fixture_store=fixture_store,
+                        fixture_namespace=fixture_store.get_current_namespace(),
+                        fixture_variation=fixture_variation,
+                    )
+                    if self.test.__slash_skipped__:
+                        case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
+                    yield case._get_address_in_factory(), case  # pylint: disable=protected-access
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(
@@ -71,13 +63,12 @@ class Test(RunnableTest):
     """
     This is a base class for implementing unittest-style test classes.
     """
-    def __init__(self, test_method_name, fixture_store, fixture_namespace, fixture_variation, needed_fixtures):
+    def __init__(self, test_method_name, fixture_store, fixture_namespace, fixture_variation):
         super(Test, self).__init__()
         self._test_method_name = test_method_name
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
         self._fixture_variation = fixture_variation
-        self._needed_fixtures = needed_fixtures
 
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
@@ -88,6 +79,10 @@ class Test(RunnableTest):
     def skip_all(cls, reason=None):
         cls.__slash_skipped__ = True
         cls.__slash_skipped_reason__ = reason
+
+    def get_required_fixture_objects(self):
+        method = getattr(self, self._test_method_name)
+        return self._fixture_store.get_required_fixture_objects(method, namespace=self._fixture_namespace, is_method=True)
 
     def _get_address_in_factory(self):
         returned = ''
@@ -115,19 +110,13 @@ class Test(RunnableTest):
             self.before()
             try:
                 with handling_exceptions():
-                    fixture_kwargs = self._fixture_store.get_fixture_dict(
-                        self._needed_fixtures,
-                        namespace=self._fixture_namespace)
-                    method(**fixture_kwargs)  # pylint: disable=star-args
+                    self._fixture_store.call_with_fixtures(
+                        method, namespace=self._fixture_namespace,
+                        is_method=True,
+                    )
             finally:
                 with handling_exceptions():
                     self.after()
-
-    def get_needed_fixtures(self):
-        fixture_dict = self._fixture_store.get_fixture_dict(
-            self._needed_fixtures,
-            namespace=self._fixture_namespace, get_values=False)
-        return frozenset(itervalues(fixture_dict))
 
     def before(self):
         """

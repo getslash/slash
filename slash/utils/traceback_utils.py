@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import inspect
 import linecache
 import os
 import sys
@@ -14,17 +15,34 @@ def get_traceback_string(exc_info=None):
     return "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
 
 
-def distill_traceback(tb):
+def distill_traceback(tb, **kw):
+    return _distill_frames(_get_tb_frames(tb), **kw)
 
+
+def distill_call_stack(**kw):
+    return _distill_frames(_get_sys_trace_frames(), **kw)
+
+
+def _distill_frames(frames, frame_correction=0):
     returned = DistilledTraceback()
-    while tb is not None:
-        if _is_frame_and_below_muted(tb.tb_frame):
+    frames = frames[:len(frames)-frame_correction+1]
+    for frame in frames:
+        if _is_frame_and_below_muted(frame):
             break
-        if not _is_frame_muted(tb.tb_frame):
-            returned.frames.append(DistilledFrame(tb.tb_frame))
+        if not _is_frame_muted(frame):
+            returned.frames.append(DistilledFrame(frame))
+    return returned
+
+
+def _get_tb_frames(tb):
+    returned = []
+    while tb is not None:
+        returned.append(tb.tb_frame)
         tb = tb.tb_next
     return returned
 
+def _get_sys_trace_frames():
+    return [f[0] for f in reversed(inspect.stack()[:-1])]
 
 def _is_frame_muted(frame):
     try:
@@ -39,10 +57,7 @@ def _deduce_frame_function(frame):
         if frame_module is None:
             return None
 
-        frame_self = frame.f_locals.get("self", None)
-        if frame_self is None:
-            return (frame_module, frame.f_code.co_name)
-        return (frame_module, type(frame_self).__name__, frame.f_code.co_name)
+        return (frame_module, frame.f_code.co_name)
     finally:
         del frame
 
@@ -52,8 +67,15 @@ def _deduce_frame_module(frame):
 
 
 _MUTED_LOCATIONS = set([
-    ("slash.core.test", "Test", "run"),
+    ("slash.core.function_test", "run"),
+    ("slash.core.test", "run"),
     ("slash.exception_handling", "handling_exceptions"),
+    ("slash.core.fixtures.fixture_store", "call_with_fixtures"),
+    ("slash.frontend.main", "__main__"),
+    ("slash.frontend.main", "main"),
+    ("slash.frontend.main", "main_entry_point"),
+    ("slash.frontend.slash_run", "slash_run"),
+    ("slash.runner", "run_tests"),
 ])
 
 

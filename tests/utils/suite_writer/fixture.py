@@ -12,8 +12,8 @@ class Fixture(Function):
         self.scope = scope
         self.autouse = autouse
 
-    def add_cleanup(self):
-        return self.add_deferred_event('this.add_cleanup', name='fixture_cleanup')
+    def add_cleanup(self, **kwargs):
+        return self.add_deferred_event('this.add_cleanup', name='fixture_cleanup', **kwargs)
 
     def _write_decorators(self, code_formatter):
         self._write_fixture_decorator(code_formatter)

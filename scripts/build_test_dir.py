@@ -4,7 +4,7 @@ import sys
 
 import random
 
-from tests.utils.suite import TestSuite
+from tests.utils.suite_writer import Suite
 
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument('--fixtures', dest='use_fixtures', action='store_true', default=False)
@@ -24,17 +24,17 @@ class Application(object):
 
     def main(self):
 
-        s = TestSuite(self._args.dir)
+        s = Suite(path=self._args.dir, debug_info=False)
         if not self._args.summary:
             parser.error("No summary given")
         for index, element in enumerate(self._args.summary):
             t = s.add_test()
             if self._args.use_fixtures and index % _FIXTURE_FREQ == 0:
                 if index % 2 == 0:
-                    f = t.add_fixture(t.file.add_fixture())
+                    f = t.depend_on_fixture(t.file.add_fixture())
                 else:
-                    f = t.add_fixture(s.add_fixture())
-                f.parametrize()
+                    f = t.depend_on_fixture(s.slashconf.add_fixture())
+                #f.parametrize()
 
             if self._args.use_parameters and index % _PARAM_FREQ == 0:
                 t.parametrize()
@@ -42,13 +42,13 @@ class Application(object):
             if element == '.':
                 pass
             elif element == 'F':
-                t.fail()
+                t.when_run.fail()
             elif element == 'E':
-                t.error()
+                t.when_run.error()
             elif element == 'S':
-                t.skip()
+                t.when_run.skip()
             elif element == 'i':
-                t.interrupt()
+                t.when_run.interrupt()
             else:
                 parser.error("Unknown marker: {0!r}".format(element))
 

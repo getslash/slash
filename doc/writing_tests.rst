@@ -417,3 +417,19 @@ This is solved with the :func:`slash.abstract_test_class` decorator:
             assert_true(hasattr(self.file, "write"))
         def test_has_read_method(self):
             assert_true(hasattr(self.file, "read"))
+
+Misc. Utilities
+---------------
+
+Repeating Tests
+~~~~~~~~~~~~~~~
+
+Use the :func:`slash.repeat(num_repetitions)` decorator to make a test repeat several times:
+
+.. code-block:: python
+       
+       @slash.repeat(5)
+       def test_probabilistic():
+           assert still_works()
+
+.. note:: You can also use the `--repeat-each=X` argument to `slash run`, causing it to repeat each test being loaded a specified amount of times

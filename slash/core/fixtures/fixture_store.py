@@ -2,10 +2,11 @@ from sentinels import NOTHING
 
 from ..._compat import iteritems, itervalues
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
+from ...utils.python import getargspec
 from .fixture import Fixture
 from .namespace import Namespace
-from .parameters import Parametrization
-from .utils import get_scope_by_name
+from .parameters import Parametrization, get_parametrization_fixtures
+from .utils import get_scope_by_name, nofixtures
 from .variation import VariationFactory
 
 
@@ -20,6 +21,27 @@ class FixtureStore(object):
         self._values_by_id = {}
         self._cleanups_by_scope = {}
         self._all_needed_parametrization_ids_by_fixture_id = {}
+
+    def call_with_fixtures(self, test_func, namespace, is_method):
+
+        if not nofixtures.is_marked(test_func):
+            arg_names = self.get_required_fixture_names(test_func, is_method=is_method)
+            kwargs = self.get_fixture_dict(arg_names, namespace)
+        else:
+            kwargs = {}
+
+        return test_func(**kwargs)  # pylint: disable=star-args
+
+    def get_required_fixture_names(self, test_func, is_method):
+        skip_names = set(p.name for p in get_parametrization_fixtures(test_func))
+        arg_names = [name for name in getargspec(test_func).args if name not in skip_names]
+        if is_method:
+            arg_names = arg_names[1:]
+        return arg_names
+
+    def get_required_fixture_objects(self, test_func, namespace, is_method):
+        names = self.get_required_fixture_names(test_func, is_method=is_method)
+        return set(itervalues(self.get_fixture_dict(names, namespace=namespace, get_values=False)))
 
     def __iter__(self):
         return itervalues(self._fixtures_by_id)
@@ -120,13 +142,15 @@ class FixtureStore(object):
     def get_fixture_by_id(self, fixture_id):
         return self._fixtures_by_id[fixture_id]
 
-    def get_fixture_dict(self, required_names, namespace=None, get_values=True):
+    def get_fixture_dict(self, required_names, namespace=None, get_values=True, skip_names=frozenset()):
         returned = {}
 
         if namespace is None:
             namespace = self.get_current_namespace()
 
         for required_name in required_names:
+            if required_name in skip_names:
+                continue
             fixture = namespace.get_fixture_by_name(required_name)
             if get_values:
                 fixture = self.get_fixture_value(fixture, name=required_name)

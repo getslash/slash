@@ -16,7 +16,7 @@ from .core.metadata import ensure_test_metadata
 from .core.fixtures.fixture_scope_manager import FixtureScopeManager
 from .utils.iteration import PeekableIterator
 from .utils.interactive import notify_if_slow_context
-from .core.error import Error, DetailedTraceback
+from .core.error import Error
 
 
 _logger = logbook.Logger(__name__)
@@ -144,13 +144,14 @@ def _get_test_context(test, logging=True):
     test.__slash__.id = context.session.id_space.allocate()
     with _set_current_test_context(test):
         result = context.session.results.create_result(test)
+        prev_result = context.result
         context.result = result
         try:
             with (context.session.logging.get_test_logging_context() if logging else ExitStack()):
                 _logger.debug("Started test: {0}", test)
                 yield
         finally:
-            context.result = None
+            context.result = prev_result
 
 @contextmanager
 def _get_test_hooks_context():
@@ -203,16 +204,16 @@ def _update_result_context():
     assert result
     result.mark_started()
     try:
-        try:
+        with handling_exceptions():
             yield result
-        except:
-            _logger.debug("Exception escaped test:\n{0}", DetailedTraceback(Error.capture_exception()))
-            raise
     except SkipTest as e:
         result.add_skip(e.reason)
         raise
     except KeyboardInterrupt:
         result.mark_interrupted()
+        raise
+    except Exception as e:
+        _logger.debug("Exception escaped test:\n{0}", Error.capture_exception().get_detailed_str())
         raise
     finally:
         result.mark_finished()

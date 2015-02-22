@@ -173,7 +173,7 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 Listing Available Fixtures
 --------------------------
 
-Slash can be invoked wite the ``fixtures`` command, which gets a path to a testing directory. This command lists the available fixtures for the specified testing directory:
+Slash can be invoked with the ``fixtures`` command, which gets a path to a testing directory. This command lists the available fixtures for the specified testing directory:
 
     $ slash fixtures path/to/tests
 

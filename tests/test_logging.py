@@ -23,6 +23,12 @@ def test_last_session_symlinks(files_dir, links_dir, session):
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
+@pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
+def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
+    config_override('log.{0}'.format(symlink_name), 'some/subdir')
+    assert suite.run().ok()
+
+
 def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
     failed_test = suite[4]
     failed_test.when_run.fail()
@@ -142,7 +148,7 @@ class LoggingTest(TestCase):
         self.override_config(
             "log.subpath",
             os.path.join("{context.session.id}",
-                         "{context.test_id}", "debug.log")
+                         "{context.test.__slash__.test_index0:03}-{context.test_id}", "debug.log")
         )
         self.override_config(
             "log.session_subpath",
@@ -162,8 +168,8 @@ class LoggingTest(TestCase):
         self.addCleanup(gossip.unregister_token, _TOKEN)
 
         self.session = run_tests_assert_success(SampleTest)
-        self.test_ids = [
-            result.test_metadata.id for result in self.session.results.iter_test_results()]
+        self.tests_metadata = [
+            result.test_metadata for result in self.session.results.iter_test_results()]
         self._test_all_run()
         self._test_test_logs_written()
         self._test_session_logs()
@@ -175,17 +181,18 @@ class LoggingTest(TestCase):
             if method_name.startswith("test")
         ]
         self.assertTrue(methods)
-        self.assertEquals(len(self.test_ids), len(methods))
+        self.assertEquals(len(self.tests_metadata), len(methods))
 
     def _test_test_logs_written(self):
-        for test_id in self.test_ids:
+        for test_metadata in self.tests_metadata:
+            test_dir = "{0:03}-{1}".format(test_metadata.test_index0, test_metadata.id)
             log_path = os.path.join(
-                self.log_path, self.session.id, test_id, "debug.log")
+                self.log_path, self.session.id, test_dir, "debug.log")
             with open(log_path) as f:
                 data = f.read()
-            for other_test_id in self.test_ids:
-                if other_test_id != test_id:
-                    self.assertNotIn(other_test_id, data)
+            for other_test in self.tests_metadata:
+                if other_test.id != test_metadata.id:
+                    self.assertNotIn(other_test.id, data)
             self.assertNotIn(_SESSION_START_MARK, data)
             self.assertNotIn(_SESSION_END_MARK, data)
 
@@ -194,7 +201,7 @@ class LoggingTest(TestCase):
             data = f.read()
         self.assertIn(_SESSION_START_MARK, data)
         self.assertIn(_SESSION_END_MARK, data)
-        for test_id in self.test_ids:
+        for test_id in (t.id for t in self.tests_metadata):
             self.assertNotIn(test_id, data)
 
     def _test_no_silenced_logger_records(self):

@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import threading
 from contextlib import contextmanager
+from ..ctx import context
 
 try:
     from IPython import embed # pylint: disable=F0401
@@ -27,8 +28,8 @@ def start_interactive_shell(**namespace):
 def notify_if_slow_context(message, slow_seconds=1):
     evt = threading.Event()
     def notifier():
-        if not evt.wait(timeout=slow_seconds):
-            print(message)
+        if not evt.wait(timeout=slow_seconds) and context.session is not None:
+            context.session.reporter.report_message(message)
     thread = threading.Thread(target=notifier)
     thread.start()
     try:
