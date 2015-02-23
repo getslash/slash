@@ -34,9 +34,8 @@ from .core.test import Test
 from .core.test import abstract_test_class
 from .core.fixtures import parametrize, parameters
 from .core.fixtures.utils import fixture, nofixtures
-from .core.markers import repeat
 from .core.requirements import requires
-from .utils import skip_test, skipped, add_error, add_failure, set_test_detail
+from .utils import skip_test, skipped, add_error, add_failure, set_test_detail, repeat
 from .app import get_application_context
 from .runner import run_tests
 import logbook

@@ -1,6 +1,7 @@
 import functools
 
 from ..ctx import context
+from ..core.markers import repeat as repeat_marker
 from ..exceptions import SkipTest
 
 
@@ -10,6 +11,12 @@ def skip_test(*args):
     exception. It can optionally receive a reason argument.
     """
     raise SkipTest(*args)
+
+def repeat(num_repetitions):
+    """
+    Marks a test to be repeated multiple times when run
+    """
+    return repeat_marker(num_repetitions)
 
 
 def skipped(thing, reason=None):

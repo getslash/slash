@@ -107,9 +107,8 @@ Exceptions
 Misc. Utilities
 ---------------
 
-.. autofunction:: slash.repeat(num_repetitions)
+.. autofunction:: slash.repeat
 
-  A decorator specifying that the decorated test is to be repeated a given amount of times
 
 Internals
 ---------

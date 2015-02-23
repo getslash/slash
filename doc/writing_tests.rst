@@ -424,7 +424,7 @@ Misc. Utilities
 Repeating Tests
 ~~~~~~~~~~~~~~~
 
-Use the :func:`slash.repeat(num_repetitions)` decorator to make a test repeat several times:
+Use the :func:`slash.repeat` decorator to make a test repeat several times:
 
 .. code-block:: python
        
