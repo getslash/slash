@@ -18,6 +18,8 @@ Console logs are colorized according to their level by default. This is done usi
 
 .. note:: Available colors are taken from **logbook**. Options are "black", "darkred", "darkgreen", "brown", "darkblue", "purple", "teal", "lightgray", "darkgray", "red", "green", "yellow", "blue", "fuchsia", "turquoise", "white"
 
+.. note:: You can also colorize log fiels by setting the :ref:`conf.log.colorize` configuration variable to ``True``
+
 Controlling the Log Subdir Template
 -----------------------------------
 

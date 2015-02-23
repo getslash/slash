@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`263` Support writing colors to log files
 * :feature:`264` Allow specifying location of .slashrc via configuration
 * :release:`0.13.0 <22-02-2015>`
 * :feature:`261` Added a traceback to manually added errors (throush ``slash.add_error`` and friends)

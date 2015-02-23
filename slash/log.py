@@ -38,17 +38,7 @@ def set_log_color(logger_name, level, color):
     """
     _custom_colors[logger_name, level] = color
 
-
-class ConsoleHandler(logbook.more.ColorizedStderrHandler):
-
-    MAX_LINE_LENGTH = 160
-
-    default_format_string = '[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}'
-
-    def __init__(self, *args, **kwargs):
-        super(ConsoleHandler, self).__init__(*args, **kwargs)
-        self._truncate_lines = config.root.log.truncate_console_lines
-        self._truncate_errors = config.root.log.truncate_console_errors
+class ColorizedHandlerMixin(logbook.more.ColorizingStreamHandlerMixin):
 
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
@@ -62,6 +52,24 @@ class ConsoleHandler(logbook.more.ColorizedStderrHandler):
         elif record.level >= logbook.NOTICE:
             return 'white'
         return None # default
+
+class ColorizedFileHandler(ColorizedHandlerMixin, logbook.FileHandler):
+
+    def should_colorize(self, record):
+        return True
+
+
+class ConsoleHandler(ColorizedHandlerMixin, logbook.StderrHandler):
+
+    MAX_LINE_LENGTH = 160
+
+    default_format_string = '[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}'
+
+    def __init__(self, *args, **kwargs):
+        super(ConsoleHandler, self).__init__(*args, **kwargs)
+        self._truncate_lines = config.root.log.truncate_console_lines
+        self._truncate_errors = config.root.log.truncate_console_errors
+
 
     def format(self, record):
         message = record.message
@@ -146,10 +154,15 @@ class SessionLogging(object):
         else:
             log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=_NormalizedObject(context))))
             ensure_containing_directory(log_path)
-            handler = logbook.FileHandler(log_path, bubble=False)
+            handler = self._get_file_handler_class()(log_path, bubble=False)
             self._try_create_symlink(log_path, symlink)
             self._set_formatting(handler)
         return handler, log_path
+
+    def _get_file_handler_class(self):
+        if config.root.log.colorize:
+            return ColorizedFileHandler
+        return logbook.FileHandler
 
     def _normalize_path(self, p):
         return os.path.expanduser(p)
