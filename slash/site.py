@@ -27,7 +27,7 @@ def _load_slashrc():
     _load_file_if_exists(os.path.expanduser(config.root.run.user_customization_file_path))
 
 def _load_local_slashrc():
-    _load_file_if_exists(os.path.abspath("./.slashrc"))
+    _load_file_if_exists(os.path.abspath(os.path.expanduser(config.root.run.project_customization_file_path)))
 
 def _load_file_if_exists(path):
     if os.path.isfile(path):

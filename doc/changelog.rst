@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`264` Allow specifying location of .slashrc via configuration
 * :release:`0.13.0 <22-02-2015>`
 * :feature:`261` Added a traceback to manually added errors (throush ``slash.add_error`` and friends)
 * :feature:`258` Added ``hooks.error_added``, a hook that is called when an error is added to a test result or to a global result. Also works when errors are added after the test has ended. 

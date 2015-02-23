@@ -13,6 +13,8 @@ Customization Basics
 
 In order to customize Slash we have to write code that will be executed when Slash loads. Slash offers an easy way to do this -- by placing a file named ``.slashrc`` in your project's root directory. This file is loaded as a regular Python file, so we will write regular Python code in it.
 
+.. note:: The ``.slashrc`` file location is read from the configuration (:ref:`conf.run.project_customization_file_path`). However since it is ready before the command-line parsing phase, it cannot be specified using ``-o``.
+
 Hooks and Plugins
 ~~~~~~~~~~~~~~~~~
 
