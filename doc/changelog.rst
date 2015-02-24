@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`257` ``slash fixtures`` is now ``slash list``, and learned the ability to list both fixtures and tests
 * :feature:`263` Support writing colors to log files
 * :feature:`264` Allow specifying location of .slashrc via configuration
 * :release:`0.13.0 <22-02-2015>`
