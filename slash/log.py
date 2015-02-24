@@ -96,6 +96,7 @@ class SessionLogging(object):
     """
     def __init__(self, session):
         super(SessionLogging, self).__init__()
+        self.session = session
         self.warnings_handler = WarnHandler(session.warnings)
         self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level)
         #: contains the path for the session logs
@@ -125,6 +126,7 @@ class SessionLogging(object):
         with self._get_file_logging_context(
             config.root.log.session_subpath, config.root.log.last_session_symlink) as path:
             self.session_log_path = path
+            self.session.results.global_result.set_log_path(path)
             if config.root.log.last_session_dir_symlink is not None and self.session_log_path is not None:
                 self._try_create_symlink(os.path.dirname(self.session_log_path), config.root.log.last_session_dir_symlink)
             yield path

@@ -23,6 +23,13 @@ def test_last_session_symlinks(files_dir, links_dir, session):
     assert links_dir.join("last-test").readlink() == test_log_file
 
 
+def test_global_result_get_log_path(files_dir, suite):
+    summary = suite.run()
+    assert summary.session.results.global_result.get_log_path() is not None
+    assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
+
+
+
 @pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
 def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
     config_override('log.{0}'.format(symlink_name), 'some/subdir')
