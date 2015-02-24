@@ -36,7 +36,7 @@ def test_log_file_colorize(files_dir, config_override, suite):
     with open(logfile, 'rb') as f:
         log_data = f.read()
 
-    assert '\x1b[' in log_data
+    assert b'\x1b[' in log_data
 
 
 @pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
