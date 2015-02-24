@@ -29,6 +29,15 @@ def test_global_result_get_log_path(files_dir, suite):
     assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
 
 
+def test_log_file_colorize(files_dir, config_override, suite):
+    config_override('log.colorize', True)
+    summary = suite.run()
+    logfile = summary.session.results.global_result.get_log_path()
+    with open(logfile, 'rb') as f:
+        log_data = f.read()
+
+    assert '\x1b[' in log_data
+
 
 @pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
 def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
