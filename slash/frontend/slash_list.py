@@ -14,7 +14,7 @@ _COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_
 
 
 def _styler(style):
-    return '{0}{{0}}{1}'.format(style, _COLOR_RESET).format
+    return lambda s: '{0}{1}{2}'.format(style, s, _COLOR_RESET)
 
 UNDERLINED = '\x1b[4m'
 
