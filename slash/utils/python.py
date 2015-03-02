@@ -1,7 +1,10 @@
 import functools
 import inspect
+import sys
 
 from sentinels import NOTHING
+
+from .._compat import reraise
 
 
 def wraps(func, preserve=()):
@@ -24,3 +27,14 @@ def get_underlying_func(func):
 
 def getargspec(func):
     return inspect.getargspec(get_underlying_func(func))
+
+
+def call_all_raise_first(_funcs, *args, **kwargs):
+    exc_info = None
+    for func in _funcs:
+        try:
+            func(*args, **kwargs)
+        except Exception: # pylint: disable=broad-except
+            exc_info = sys.exc_info()
+    if exc_info is not None:
+        reraise(*exc_info)

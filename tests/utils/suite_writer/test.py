@@ -26,8 +26,8 @@ class Test(Function, Element):
     def get_num_expected_repetitions(self):
         return self._repetitions
 
-    def add_cleanup(self):
-        return self.add_deferred_event('slash.add_cleanup', name='test_cleanup')
+    def add_cleanup(self, **kw):
+        return self.add_deferred_event('slash.add_cleanup', name='test_cleanup', **kw)
 
     def expect_failure(self):
         self._expect(_FAIL)

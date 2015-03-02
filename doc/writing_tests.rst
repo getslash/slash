@@ -140,6 +140,7 @@ Slash exposes a global logger intended for tests, which is recommended for use i
  import slash
 
  class SomeTest(slash.Test):
+
      def test_1(self):
          slash.logger.debug("Hello!")
 
@@ -185,7 +186,9 @@ Slash provides a facility for cleanups. These get called whenever a test finishe
 
 .. note:: When a test is interrupted, most likely due to a ``KeyboardInterrupt``, cleanups are not called unless added with the ``critical`` keyword argument. This is in order to save time during interruption handling. See :ref:`interruptions <KeyboardInterrupt>`.
 
-.. note:: A cleanup added with ``success_only_cleanup`` will be called only if the test ends successfully
+.. note:: A cleanup added with ``success_only=True`` will be called only if the test ends successfully
+
+Cleanups also receive an optional ``scope`` parameter, which can be either ``'session'``, ``'module'`` or ``'test'`` (the default). The ``scope`` parameter controls *when* the cleanup should take place. *Session* cleanups happen at the end of the test session, *module* cleanups happen before Slash switches between test files during execution and *test* cleanups happen at the end of the test which added the cleanup callback.
 
 Skips
 -----

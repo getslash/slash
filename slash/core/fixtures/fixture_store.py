@@ -95,10 +95,12 @@ class FixtureStore(object):
                 stack.extend(itervalues(fixture.fixture_kwargs))
         return frozenset(returned)
 
-    def begin_scope(self, scope):
+    def push_scope(self, scope):
         scope = get_scope_by_name(scope)
 
-    def end_scope(self, scope):
+    def pop_scope(self, scope, in_failure, in_interruption): # pylint: disable=unused-argument
+        if in_interruption:
+            return
         scope = get_scope_by_name(scope)
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
             if s <= scope:

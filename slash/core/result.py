@@ -197,6 +197,9 @@ class SessionResults(object):
                 return False
         return True
 
+    def is_interrupted(self):
+        return any(result.is_interrupted() for result in self._iterator())
+
     def get_num_results(self):
         return len(self._results_dict)
 

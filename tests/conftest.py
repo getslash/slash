@@ -1,9 +1,9 @@
+import itertools
 import os
 import random
 import shutil
 import tempfile
 
-import logbook.compat
 from forge import Forge
 
 import gossip
@@ -14,6 +14,11 @@ from slash.loader import Loader
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
+
+
+@pytest.fixture(scope='session', autouse=True)
+def unittest_mode_logging():
+    slash.config.root.log.unittest_mode = True
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -76,17 +81,19 @@ def cleanup_hook_registrations(request):
 def checkpoint():
     return Checkpoint()
 
+_timestamp = itertools.count(1000000)
+
 
 class Checkpoint(object):
 
     called = False
-    args = None
-    kwargs = None
+    args = kwargs = timestamp = None
 
     def __call__(self, *args, **kwargs):
         self.called = True
         self.args = args
         self.kwargs = kwargs
+        self.timestamp = next(_timestamp)
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -108,6 +115,7 @@ def suite_test(suite, test_type, is_last_test):
 
     return returned
 
+
 @pytest.fixture(params=[True, False])
 def is_last_test(request):
     return request.param
@@ -123,11 +131,6 @@ def suite():
     returned = Suite()
     returned.populate()
     return returned
-
-
-@pytest.fixture
-def setup_logging(request):
-    logbook.compat.LoggingHandler().push_application()
 
 
 @pytest.fixture

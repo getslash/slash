@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`170` Add optional ``scope`` argument to ``add_cleanup``, controlling when the cleanup should take place
 * :feature:`280` Add optional message argument to ``assert_raises``
 * :feature:`274` Add optional separation between console log format and file log format
 * :feature:`275` Add get_no_deprecations_context to disable deprecation messages temporarily

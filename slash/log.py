@@ -148,6 +148,8 @@ class SessionLogging(object):
             stack.enter_context(self.console_handler.applicationbound())
             stack.enter_context(self.warnings_handler.applicationbound())
             stack.enter_context(self._get_silenced_logs_context())
+            if config.root.log.unittest_mode:
+                stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True))
             for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler.applicationbound())
             yield path

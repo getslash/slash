@@ -39,7 +39,6 @@ def test_non_critical_cleanups_not_called(interrupted_suite, interrupted_test):
     assert cleanup not in summary.events
 
 
-
 @pytest.fixture
 def interrupted_suite(suite, interrupted_index):
     for index, test in enumerate(suite):

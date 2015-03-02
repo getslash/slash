@@ -27,6 +27,7 @@ config = Config({
         "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
         "console_format": None // Doc("Optional format to be used for console output. Defaults to the regular format"),
         "localtime": False // Doc("Use local time for logging. If False, will use UTC"),
+        "unittest_mode": False,
     },
     "run": {
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),

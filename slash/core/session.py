@@ -5,6 +5,7 @@ import uuid
 from contextlib import contextmanager
 
 from .. import ctx, hooks, log
+from .cleanup_manager import CleanupManager
 from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
 from ..reporting.null_reporter import NullReporter
@@ -37,6 +38,7 @@ class Session(Activatable):
         if reporter is None:
             reporter = NullReporter()
         self.reporter = reporter
+        self.cleanups = CleanupManager()
 
     @property
     def started(self):
@@ -51,10 +53,12 @@ class Session(Activatable):
             ctx.context.result = self.results.global_result
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()
+            self.cleanups.push_scope('session-global')
 
     def deactivate(self):
         self.results.global_result.mark_finished()
         with handling_exceptions():
+            self.cleanups.pop_scope('session-global')
             self._logging_context.__exit__(*sys.exc_info())
             self._logging_context = None
             ctx.pop_context()
