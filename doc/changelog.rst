@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` start_interactive_shell now automatically adds the contents of slash.g to the interactive namespace
 * :feature:`257` ``slash fixtures`` is now ``slash list``, and learned the ability to list both fixtures and tests
 * :feature:`263` Support writing colors to log files
 * :feature:`264` Allow specifying location of .slashrc via configuration

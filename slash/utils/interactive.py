@@ -21,6 +21,8 @@ def start_interactive_shell(**namespace):
 
     Any keyword argument specified will be available in the shell ``globals``.
     """
+    if context.g is not None:
+        namespace.update(context.g.__dict__)
     _interact(namespace)
 
 
