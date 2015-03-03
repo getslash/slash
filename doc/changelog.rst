@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :feature:`269` Add option to specify suite files within suite files
+* :feature:`268` Treat relative paths listed in suite files (-f) relative to the file's location
 * :feature:`-` start_interactive_shell now automatically adds the contents of slash.g to the interactive namespace
 * :feature:`257` ``slash fixtures`` is now ``slash list``, and learned the ability to list both fixtures and tests
 * :feature:`263` Support writing colors to log files
