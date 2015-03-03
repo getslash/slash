@@ -22,6 +22,23 @@ def test_iter_suite_paths_files_relpath(filename, paths):
 
     assert list(_iter_suite_file_paths([filename])) == paths
 
+@pytest.mark.parametrize('use_relpath', [True, False])
+def test_files_containing_files(filename, paths, use_relpath):
+    filename2 = os.path.join(os.path.dirname(filename), 'file2.txt')
+
+    with open(filename2, 'w') as f:
+        f.write('\n'.join(paths[::-1]))
+
+    if use_relpath:
+        filename2 = os.path.basename(filename2)
+
+    with open(filename, 'w') as f:
+        f.write('\n'.join(paths))
+        f.write('\n')
+        f.write(filename2)
+
+    assert list(_iter_suite_file_paths([filename])) == paths + paths[::-1]
+
 
 @pytest.fixture
 def filename(tmpdir):

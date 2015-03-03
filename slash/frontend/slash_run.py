@@ -84,12 +84,19 @@ def _extend_paths_from_suite_files(paths):
 
 def _iter_suite_file_paths(suite_files):
     for filename in suite_files:
+
         dirname = os.path.abspath(os.path.dirname(filename))
-        for line in open(filename):
-            line = line.strip()
-            if not line or line.startswith("#"):
+        for path in open(filename):
+            path = path.strip()
+            if not path or path.startswith("#"):
                 continue
-            path = line.strip()
+
             if not os.path.isabs(path):
                 path = os.path.join(os.path.abspath(dirname), path)
+
+            if not path.endswith('.py'):
+                for p in _iter_suite_file_paths([path]):
+                    yield p
+                continue
+
             yield path
