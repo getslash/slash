@@ -39,6 +39,18 @@ def test_log_file_colorize(files_dir, config_override, suite):
     assert b'\x1b[' in log_data
 
 
+def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test, config_override):
+    assert slash.config.root.log.truncate_console_lines
+
+    long_string = 'a' * 1000
+    suite_test.append_line('slash.logger.info({0!r})'.format(long_string))
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    with open(result.get_log_path()) as logfile:
+        logfile_data = logfile.read()
+        assert long_string in logfile_data
+
+
 @pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
 def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
     config_override('log.{0}'.format(symlink_name), 'some/subdir')
