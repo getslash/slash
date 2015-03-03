@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.14.0 <03-03-2015>`
 * :feature:`269` Add option to specify suite files within suite files
 * :feature:`268` Treat relative paths listed in suite files (-f) relative to the file's location
 * :feature:`-` start_interactive_shell now automatically adds the contents of slash.g to the interactive namespace
