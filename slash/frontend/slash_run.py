@@ -1,4 +1,5 @@
 import functools
+import os
 import sys
 from contextlib import contextmanager
 
@@ -78,10 +79,17 @@ def _extend_paths_from_suite_files(paths):
     if not suite_files:
         return paths
     paths = list(paths)
+    paths.extend(_iter_suite_file_paths(suite_files))
+    return paths
+
+def _iter_suite_file_paths(suite_files):
     for filename in suite_files:
+        dirname = os.path.abspath(os.path.dirname(filename))
         for line in open(filename):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            paths.append(line)
-    return paths
+            path = line.strip()
+            if not os.path.isabs(path):
+                path = os.path.join(os.path.abspath(dirname), path)
+            yield path
