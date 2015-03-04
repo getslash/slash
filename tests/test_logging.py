@@ -29,14 +29,19 @@ def test_global_result_get_log_path(files_dir, suite):
     assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
 
 
-def test_log_file_colorize(files_dir, config_override, suite):
+def test_log_file_colorize(files_dir, config_override, suite, suite_test):
     config_override('log.colorize', True)
     summary = suite.run()
-    logfile = summary.session.results.global_result.get_log_path()
-    with open(logfile, 'rb') as f:
-        log_data = f.read()
+    suite_test.append_line('slash.logger.notice("hey")')
+    logfiles = [
+        summary.session.results.global_result.get_log_path(),
+        summary.get_all_results_for_test(suite_test)[0].get_log_path(),
+    ]
+    for logfile in logfiles:
+        with open(logfile, 'rb') as f:
+            log_data = f.read()
 
-    assert b'\x1b[' in log_data
+        assert b'\x1b[' in log_data
 
 
 def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test, config_override):
