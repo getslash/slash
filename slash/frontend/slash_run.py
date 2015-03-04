@@ -92,9 +92,9 @@ def _iter_suite_file_paths(suite_files):
                 continue
 
             if not os.path.isabs(path):
-                path = os.path.join(os.path.abspath(dirname), path)
+                path = os.path.abspath(os.path.join(dirname, path))
 
-            if not path.endswith('.py'):
+            if not path.endswith('.py') and '.py:' not in path and not os.path.isdir(path):
                 for p in _iter_suite_file_paths([path]):
                     yield p
                 continue
