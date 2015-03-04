@@ -31,8 +31,8 @@ def test_global_result_get_log_path(files_dir, suite):
 
 def test_log_file_colorize(files_dir, config_override, suite, suite_test):
     config_override('log.colorize', True)
-    summary = suite.run()
     suite_test.append_line('slash.logger.notice("hey")')
+    summary = suite.run()
     logfiles = [
         summary.session.results.global_result.get_log_path(),
         summary.get_all_results_for_test(suite_test)[0].get_log_path(),
