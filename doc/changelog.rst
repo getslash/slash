@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.14.1 <04-03-2015>`
 * :bug:`270` Fixed handling of directory names and class/method names in suite files
 * :release:`0.14.0 <03-03-2015>`
 * :feature:`269` Add option to specify suite files within suite files
