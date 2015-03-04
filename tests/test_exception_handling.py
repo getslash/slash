@@ -1,12 +1,31 @@
-from .utils import (
-    TestCase,
-    CustomException,
-    )
 from contextlib import contextmanager
+
 from forge import Anything
+
+import pytest
 from slash import exception_handling
-from slash.utils import debug
 from slash.exceptions import SkipTest
+from slash.utils import debug
+
+from .utils import CustomException, TestCase
+
+
+def test_passthrough_types():
+
+    value = CustomException()
+
+    with pytest.raises(CustomException) as caught:
+        with exception_handling.handling_exceptions(passthrough_types=(CustomException,)):
+            raise value
+    assert value is caught.value
+    assert not exception_handling.is_exception_handled(value)
+
+    with pytest.raises(CustomException) as caught:
+        with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)):
+            raise value
+    assert value is caught.value
+    assert exception_handling.is_exception_handled(value)
+
 
 class ExceptionMarksTest(TestCase):
     def test_exception_mark(self):

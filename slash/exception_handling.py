@@ -42,9 +42,16 @@ _EXCEPTION_HANDLERS = [
 
 @contextmanager
 def handling_exceptions(**kwargs):
+    """Context manager handling exceptions that are raised within it
+
+    :param passthrough_types: a tuple specifying exception types to avoid handling, raising them immediately onward
+    """
     swallow = kwargs.pop("swallow", False)
+    passthrough_types = kwargs.pop('passthrough_types', ())
     try:
         yield
+    except passthrough_types:
+        raise
     except:
         handle_exception(sys.exc_info(), **kwargs)
         if not swallow:
