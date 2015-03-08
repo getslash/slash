@@ -1,5 +1,7 @@
 import functools
 import sys
+import threading
+from contextlib import contextmanager
 
 import logbook
 
@@ -7,6 +9,23 @@ from .._compat import string_types
 
 _deprecation_logger = logbook.Logger("slash.deprecation")
 _deprecation_locations = set()
+
+class _Local(threading.local):
+    enabled = True
+
+_local = _Local()
+
+
+@contextmanager
+def get_no_deprecations_context():
+    """Disables deprecation messages temporarily
+    """
+    prev_enabled = _local.enabled
+    _local.enabled = False
+    try:
+        yield
+    finally:
+        _local.enabled = prev_enabled
 
 
 def deprecated(func=None, message=None, since=None):
@@ -26,14 +45,15 @@ def deprecated(func=None, message=None, since=None):
 
     @functools.wraps(func)
     def new_func(*args, **kwargs):
-        caller_location = _get_caller_location()
-        if caller_location not in _deprecation_locations:
-            warning = "{func.__module__}.{func.__name__} is deprecated.".format(
-                func=func)
-            if message is not None:
-                warning += " {0}".format(message)
-            _deprecation_logger.warning(warning)
-            _deprecation_locations.add(caller_location)
+        if _local.enabled:
+            caller_location = _get_caller_location()
+            if caller_location not in _deprecation_locations:
+                warning = "{func.__module__}.{func.__name__} is deprecated.".format(
+                    func=func)
+                if message is not None:
+                    warning += " {0}".format(message)
+                _deprecation_logger.warning(warning)
+                _deprecation_locations.add(caller_location)
         return func(*args, **kwargs)
 
     if new_func.__doc__:  # pylint: disable=no-member

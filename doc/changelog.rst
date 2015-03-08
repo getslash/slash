@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`275` Add get_no_deprecations_context to disable deprecation messages temporarily
 * :feature:`271` Add passthrough_types=TYPES parameter to handling_exceptions context
 * :release:`0.14.1 <04-03-2015>`
 * :bug:`270` Fixed handling of directory names and class/method names in suite files
