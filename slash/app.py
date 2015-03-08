@@ -17,7 +17,7 @@ class Application(object):
         self.args = args
         self.report_stream = report_stream
         self.test_loader = Loader()
-        self.session = Session(reporter=ConsoleReporter(level=config.root.log.console_level, stream=report_stream))
+        self.session = Session(reporter=ConsoleReporter(level=config.root.log.console_level, stream=report_stream), console_stream=report_stream)
 
     def error(self, message, usage=True):
         if usage:

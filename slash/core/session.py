@@ -21,7 +21,7 @@ class Session(Activatable):
 
     duration = start_time = end_time = None
 
-    def __init__(self, reporter=None):
+    def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
         self.id = "{0}_0".format(uuid.uuid1())
         self.id_space = IDSpace(self.id)
@@ -31,7 +31,7 @@ class Session(Activatable):
         self._active_context = None
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
-        self.logging = log.SessionLogging(self)
+        self.logging = log.SessionLogging(self, console_stream=console_stream)
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults(self)
         if reporter is None:

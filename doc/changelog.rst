@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`274` Add optional separation between console log format and file log format
 * :feature:`275` Add get_no_deprecations_context to disable deprecation messages temporarily
 * :feature:`271` Add passthrough_types=TYPES parameter to handling_exceptions context
 * :release:`0.14.1 <04-03-2015>`

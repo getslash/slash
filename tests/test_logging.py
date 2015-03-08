@@ -10,6 +10,19 @@ import slash
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase
 
 
+def test_console_format(suite, suite_test, config_override, tmpdir):
+    config_override('log.format', 'file: {record.message}')
+    config_override('log.console_format', 'console: {record.message}')
+    config_override('log.root', str(tmpdir))
+    suite_test.append_line('slash.logger.error("message here")')
+    summary = suite.run(additional_args=['-vvv'])
+
+    assert 'console: message here' in summary.get_console_output()
+
+    [result] = summary.get_all_results_for_test(suite_test)
+    with open(result.get_log_path()) as f:
+        assert 'file: message here' in f.read()
+
 def test_last_session_symlinks(files_dir, links_dir, session):
 
     test_log_file = files_dir.join(

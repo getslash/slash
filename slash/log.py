@@ -1,3 +1,5 @@
+import sys
+
 from . import context
 from .conf import config
 from .utils.path import ensure_containing_directory
@@ -59,14 +61,15 @@ class ColorizedFileHandler(ColorizedHandlerMixin, logbook.FileHandler):
         return True
 
 
-class ConsoleHandler(ColorizedHandlerMixin, logbook.StderrHandler):
+class ConsoleHandler(logbook.StreamHandler, ColorizedHandlerMixin):
 
     MAX_LINE_LENGTH = 160
 
     default_format_string = '[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}'
 
-    def __init__(self, *args, **kwargs):
-        super(ConsoleHandler, self).__init__(*args, **kwargs)
+    def __init__(self, **kw):
+        stream = kw.pop('stream', sys.stderr)
+        logbook.StreamHandler.__init__(self, stream=stream, **kw)
         self._truncate_lines = config.root.log.truncate_console_lines
         self._truncate_errors = config.root.log.truncate_console_errors
 
@@ -94,16 +97,18 @@ class SessionLogging(object):
     """
     A context creator for logging within a session and its tests
     """
-    def __init__(self, session):
+    def __init__(self, session, console_stream=None):
         super(SessionLogging, self).__init__()
+        if console_stream is None:
+            console_stream = sys.stderr
         self.session = session
         self.warnings_handler = WarnHandler(session.warnings)
-        self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level)
+        self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level, stream=console_stream)
         #: contains the path for the session logs
         self.session_log_path = None
         #: contains the path for the current test logs
         self.test_log_path = None
-        self._set_formatting(self.console_handler)
+        self._set_formatting(self.console_handler, config.root.log.console_format or config.root.log.format)
 
     @contextmanager
     def get_test_logging_context(self):
@@ -158,7 +163,7 @@ class SessionLogging(object):
             ensure_containing_directory(log_path)
             handler = self._get_file_handler_class()(log_path, bubble=False)
             self._try_create_symlink(log_path, symlink)
-            self._set_formatting(handler)
+            self._set_formatting(handler, config.root.log.format)
         return handler, log_path
 
     def _get_file_handler_class(self):
@@ -188,10 +193,9 @@ class SessionLogging(object):
         except Exception:  # pylint: disable=broad-except
             _logger.debug("Failed to create symlink {0} --> {1}", path, symlink, exc_info=True)
 
-    def _set_formatting(self, handler):
+    def _set_formatting(self, handler, fmt):
         if config.root.log.localtime:
             logbook.set_datetime_format("local")
-        fmt = config.root.log.format
         if fmt is not None:
             handler.format_string = fmt
 
