@@ -61,7 +61,7 @@ class ColorizedFileHandler(ColorizedHandlerMixin, logbook.FileHandler):
         return True
 
 
-class ConsoleHandler(logbook.StreamHandler, ColorizedHandlerMixin):
+class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
 
     MAX_LINE_LENGTH = 160
 
