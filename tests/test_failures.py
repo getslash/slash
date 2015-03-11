@@ -39,3 +39,11 @@ def test_manual_add_error_preserves_traceback(suite, suite_test):
 
     assert err.traceback is not None
 
+def test_manual_add_error_requires_argument(suite, suite_test):
+    suite_test.append_line('slash.add_error()')
+    suite_test.expect_error()
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    [err] = result.get_errors()
+    assert 'RuntimeError' in str(err)
+    assert 'add_error() must be called' in str(err)

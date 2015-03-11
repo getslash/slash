@@ -95,6 +95,8 @@ class Result(object):
         try:
             if error is None:
                 error = Error.capture_exception()
+                if error is None:
+                    raise RuntimeError('add_error() must be called with either an argument or in an active exception')
             if not isinstance(error, Error):
                 error = Error(error, frame_correction=frame_correction+1)
             _logger.debug('Error added: {0}', error)

@@ -33,6 +33,8 @@ class Error(object):
     @classmethod
     def capture_exception(cls):
         _, exc_value, _ = exc_info = sys.exc_info()
+        if exc_value is None:
+            return None
         cached = getattr(exc_value, "__slash_captured_error__", None)
         if cached is not None:
             return cached

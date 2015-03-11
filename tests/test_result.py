@@ -21,6 +21,7 @@ def test_result_summary(suite):
     assert results.get_num_skipped() == 1
     assert results.get_num_successful() == len(suite) - 4
 
+
 def test_has_errors_or_failures(suite):
     suite[2].when_run.fail()
     suite[3].when_run.raise_exception()
