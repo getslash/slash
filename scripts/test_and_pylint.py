@@ -15,7 +15,7 @@ def _cmd(cmd):
 
 if __name__ == '__main__':
     try:
-        _cmd("py.test tests -n 4 --cov=slash --cov-report=html")
+        _cmd("py.test tests --tx popen -n 4 --cov=slash --cov-report=html")
         if not (_PYPY or _OLD_PYTHON):
             _cmd("pylint --rcfile=.pylintrc setup.py")
             _cmd("pylint --rcfile=.pylintrc slash")
