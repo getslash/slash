@@ -186,7 +186,7 @@ class SessionLogging(object):
         try:
             ensure_containing_directory(symlink)
 
-            if os.path.exists(symlink):
+            if os.path.exists(symlink) or os.path.islink(symlink):
                 os.unlink(symlink)
             os.symlink(path, symlink)
 

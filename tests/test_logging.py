@@ -89,6 +89,25 @@ def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
         assert links_dir.join(link_name).readlink() == failed_result.get_log_path()
 
 
+def test_last_test_delete_log_file(links_dir, suite, suite_test):
+    os.makedirs(str(links_dir))
+    temp_file = os.path.abspath(str(links_dir.join('somepath')))
+    with open(temp_file, 'w'):
+        pass
+    os.symlink(temp_file, str(links_dir.join('last-test')))
+    os.unlink(temp_file)
+
+    assert not os.path.exists(str(links_dir.join('last-test')))
+    assert os.path.islink(str(links_dir.join('last-test')))
+
+
+    summary = suite.run()
+    with open(summary.session.results.global_result.get_log_path()) as f:
+        assert 'OSError: ' not in f.read()
+    # assert links_dir.join('last-test').readlink() == list(summary.session.results)[-1].get_log_path()
+
+
+
 def test_result_log_links(files_dir, session):
 
     for result in session.results.iter_test_results():
