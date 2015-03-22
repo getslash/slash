@@ -102,7 +102,7 @@ assert_not_in = not_be_in
 
 
 @contextmanager
-def raise_exception(exception_class):
+def raise_exception(exception_class, msg=None):
     """
     Ensures a subclass of **ARG1** leaves the wrapped context:
 
@@ -116,14 +116,15 @@ def raise_exception(exception_class):
         caught.exception = e
     else:
         expected_classes = exception_class
-        if not isinstance(expected_classes, tuple):
-            expected_classes = (expected_classes,)
-        raise TestFailed(
-            "{0} not raised".format("/".join(e.__name__ for e in expected_classes)))
+        if msg is None:
+            if not isinstance(expected_classes, tuple):
+                expected_classes = (expected_classes,)
+            msg = "{0} not raised".format("/".join(e.__name__ for e in expected_classes))
+        raise TestFailed(msg)
 
 
-def assert_raises(exception_class):
-    return raise_exception(exception_class)
+def assert_raises(exception_class, msg=None):
+    return raise_exception(exception_class, msg=msg)
 assert_raises.__doc__ = raise_exception.__doc__.replace(
     "raise_exception", "assert_raises")
 
