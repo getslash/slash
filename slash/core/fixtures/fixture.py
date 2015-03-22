@@ -26,7 +26,7 @@ class Fixture(FixtureBase):
         return '<Function Fixture around {0}>'.format(self.fixture_func)
 
     def get_value(self, kwargs):
-        return self.fixture_func(**kwargs)  # pylint: disable=star-args
+        return self.fixture_func(**kwargs)
 
     def _resolve(self, store):
         assert self.fixture_kwargs is None

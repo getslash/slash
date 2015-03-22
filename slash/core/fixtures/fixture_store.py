@@ -30,7 +30,7 @@ class FixtureStore(object):
         else:
             kwargs = {}
 
-        return test_func(**kwargs)  # pylint: disable=star-args
+        return test_func(**kwargs)
 
     def get_required_fixture_names(self, test_func, is_method):
         skip_names = set(p.name for p in get_parametrization_fixtures(test_func))

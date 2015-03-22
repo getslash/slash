@@ -17,7 +17,7 @@ class _Cleanup(object):
         self.success_only = success_only
 
     def __call__(self):
-        return self.func(*self.args, **self.kwargs)  # pylint: disable=W0142
+        return self.func(*self.args, **self.kwargs)
 
     def __repr__(self):
         return "{0} ({1},{2})".format(self.func, self.args, self.kwargs)

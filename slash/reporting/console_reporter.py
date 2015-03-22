@@ -61,9 +61,9 @@ class TerminalWriterWrapper(object):
 
         def write_line(line_to_write):
             eol_padding = box_width - (len(line_to_write) + 3)
-            self._do_write('* {0}{1}*\n'.format(line_to_write, ' ' * eol_padding), **kw)  # pylint: disable=star-args
+            self._do_write('* {0}{1}*\n'.format(line_to_write, ' ' * eol_padding), **kw)
 
-        self._do_write('\n** {0} {1}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)  # pylint: disable=star-args
+        self._do_write('\n** {0} {1}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)
         for line in msg.split('\n'):
             if not line:
                 write_line('')
@@ -155,7 +155,7 @@ class ConsoleReporter(ReporterInterface):
 
         for index, (test_index, test_result, infos) in enumerate(self._iter_reported_results(session)):
             if index == 0:
-                self._terminal.sep('=', 'Session Summary', **header_format)   # pylint: disable=star-args
+                self._terminal.sep('=', 'Session Summary', **header_format)
             self._report_test_summary_header(test_index, test_result)
             self._report_additional_test_details(test_result)
             for info_reporter in infos:
@@ -172,7 +172,7 @@ class ConsoleReporter(ReporterInterface):
 
         msg += ' Total duration: {0}'.format(
             self._format_duration(session.duration))
-        self._terminal.sep('=', msg, **header_format)  # pylint: disable=star-args
+        self._terminal.sep('=', msg, **header_format)
 
     def _get_session_summary_header_format(self, session):
         returned = {'bold': True}
