@@ -20,7 +20,7 @@ def _debugger(debug_function_str, exc_info_transform=None):  # pragma: no cover
         if exc_info_transform is not None:
             exc_info = exc_info_transform(exc_info)
         _notify_going_into_debugger(orig_exc_info)
-        func(*exc_info) # pylint: disable=star-args
+        func(*exc_info)
     debugger.__name__ = debug_function_str
     return debugger
 
