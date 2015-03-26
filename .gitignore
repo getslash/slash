@@ -8,3 +8,4 @@ dist
 .coverage
 .env
 htmlcov
+.DS_Store
