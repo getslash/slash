@@ -16,6 +16,17 @@ def test_fixtures_representation_strings(results, a_values, fixture_values, file
     assert set(result.test_metadata.address for result in results) == set(
         '{0}test_1(a={1}, fixture=fixture{2})'.format(prefix, i, j) for i, j in itertools.product(a_values, xrange(len(fixture_values))))
 
+def test_fixtures_strings_with_slashes():
+    with slash.Session():
+
+        @slash.parametrize('param', ['string/with/slash'])
+        def test_something(param):
+            pass
+
+        [loaded_test] = slash.loader.Loader().get_runnables([test_something])
+
+    assert '/' not in loaded_test.__slash__.address
+
 
 @pytest.fixture
 def results(filename):
