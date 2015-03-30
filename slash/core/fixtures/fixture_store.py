@@ -102,7 +102,7 @@ class FixtureStore(object):
         scope = get_scope_by_name(scope)
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
             if s <= scope:
-                for active_fixture in list(reversed(active_fixtures.values())):
+                for active_fixture in list(active_fixtures.values())[::-1]:
                     self._deactivate_fixture(active_fixture.fixture)
                 assert not active_fixtures
 
