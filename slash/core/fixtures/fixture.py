@@ -2,10 +2,8 @@ import itertools
 
 from ...exceptions import UnknownFixtures, InvalidFixtureScope
 
-from ...ctx import context
 from .namespace import Namespace
 from .parameters import get_parametrization_fixtures
-from .utils import FixtureInfo
 from .fixture_base import FixtureBase
 
 

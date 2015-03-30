@@ -102,7 +102,7 @@ class Parametrization(FixtureBase):
         self.scope = get_scope_by_name('test')
         self.values = list(values)
 
-    def get_value(self, kwargs):
+    def get_value(self, kwargs, active_fixture):
         raise NotImplementedError()  # pragma: no cover
 
     def get_variations(self):

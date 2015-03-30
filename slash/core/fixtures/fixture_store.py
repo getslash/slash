@@ -102,7 +102,7 @@ class FixtureStore(object):
         scope = get_scope_by_name(scope)
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
             if s <= scope:
-                for fixture_id, active_fixture in list(reversed(active_fixtures.items())):
+                for active_fixture in list(reversed(active_fixtures.values())):
                     self._deactivate_fixture(active_fixture.fixture)
                 assert not active_fixtures
 
@@ -216,7 +216,6 @@ class FixtureStore(object):
         return returned
 
     def _deactivate_fixture(self, fixture):
-        active_in_scope = self._active_fixtures_by_scope.get(fixture.info.scope, [])
         # in most cases it will be the last active fixture in its scope
         active = self._active_fixtures_by_scope[fixture.info.scope].pop(fixture.info.id, None)
         if active is not None:
