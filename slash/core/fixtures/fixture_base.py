@@ -7,7 +7,7 @@ class FixtureBase(object):
     def __init__(self):
         super(FixtureBase, self).__init__()
 
-    def get_value(self, kwargs):
+    def get_value(self, kwargs, active_fixture):
         raise NotImplementedError()  # pragma: no cover
 
     def get_variations(self):

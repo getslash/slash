@@ -25,7 +25,10 @@ class Fixture(FixtureBase):
     def __repr__(self):
         return '<Function Fixture around {0}>'.format(self.fixture_func)
 
-    def get_value(self, kwargs):
+    def get_value(self, kwargs, active_fixture):
+        if self.info.needs_this:
+            assert 'this' not in kwargs
+            kwargs['this'] = active_fixture
         return self.fixture_func(**kwargs)
 
     def _resolve(self, store):
@@ -41,11 +44,6 @@ class Fixture(FixtureBase):
             store.register_fixture_id(parametrization_fixture)
             parametrized.add(parametrization_fixture.name)
             self.parametrization_ids.append(parametrization_fixture.info.id)
-
-        if 'this' in self.info.required_args:
-            meta_fixture = ThisFixture(store, self)
-            store.register_fixture_id(meta_fixture)
-            self.namespace.add_name('this', meta_fixture.info.id)
 
         for name in self.info.required_args:
             if name in parametrized:
@@ -63,27 +61,3 @@ class Fixture(FixtureBase):
                 raise UnknownFixtures(name)
         return kwargs
 
-
-class ThisFixture(FixtureBase):
-
-    def __init__(self, store, fixture):
-        super(ThisFixture, self).__init__()
-        assert context.session is None or store is context.session.fixture_store
-        self.store = store
-        self.info = FixtureInfo()
-        self.fixture = fixture
-        self.name = self.fixture.info.name
-        self.scope = fixture.scope
-
-    def _resolve(self, store):
-        return {}
-
-    def add_cleanup(self, func):
-        self.store.add_cleanup(self.scope, func)
-
-    def get_value(self, kwargs):
-        assert not kwargs
-        return self
-
-    def __repr__(self):
-        return '<This Fixture>'

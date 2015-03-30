@@ -101,6 +101,9 @@ class DistilledTraceback(object):
         if self.frames:
             return self.frames[-1]
 
+    def __repr__(self):
+        return '\n'.join(str(frame) for frame in self.frames)
+
 
 class DistilledFrame(object):
 
@@ -139,7 +142,7 @@ class DistilledFrame(object):
                     if "@" not in local_name)
 
     def __repr__(self):
-        return '{0.filename}, line {0.lineno}: {0.code_line}'.format(self)
+        return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
 
 
 def _safe_repr(value):
