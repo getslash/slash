@@ -17,6 +17,21 @@ def test_fixtures_representation_strings(results, a_values, fixture_values, file
         '{0}test_1(a={1}, fixture=fixture{2})'.format(prefix, i, j) for i, j in itertools.product(a_values, xrange(len(fixture_values))))
 
 
+@pytest.mark.parametrize('non_printable', ['string/with/slashes', object()])
+def test_fixtures_avoid_non_printable_reprs_strs(non_printable):
+    with slash.Session():
+
+        @slash.parametrize('param', [non_printable])
+        def test_something(param):
+            pass
+
+        [loaded_test] = slash.loader.Loader().get_runnables([test_something])
+
+    assert '/' not in loaded_test.__slash__.address
+    assert repr(non_printable) not in loaded_test.__slash__.address
+    assert str(non_printable) not in loaded_test.__slash__.address
+
+
 @pytest.fixture
 def results(filename):
 

@@ -9,3 +9,5 @@ dist
 .env
 htmlcov
 .DS_Store
+TAGS
+.envrc

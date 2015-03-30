@@ -90,7 +90,7 @@ class VariationFactory(object):
         combination = frozenset((param_id, param_value_indices[param_id]) for param_id in needed_ids)
         value_str = self._known_value_strings[fixture_id].get(combination)
         if value_str is None:
-            if isinstance(fixture, Parametrization) and self._is_printable(param_value_indices[fixture_id]):
+            if isinstance(fixture, Parametrization) and self._is_printable(fixture.values[param_value_indices[fixture_id]]):
                 value_str = str(fixture.values[param_value_indices[fixture_id]])
             else:
                 value_str = '{0}{1}'.format(fixture_name, len(self._known_value_strings[fixture_id]))
@@ -98,7 +98,7 @@ class VariationFactory(object):
         return value_str
 
     def _is_printable(self, value):
-        return isinstance(value, _PRINTABLE_TYPES)
+        return isinstance(value, _PRINTABLE_TYPES) and not (isinstance(value, string_types) and '/' in value)
 
 
 class Variation(object):
