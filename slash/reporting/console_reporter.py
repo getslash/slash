@@ -243,12 +243,16 @@ class ConsoleReporter(ReporterInterface):
         else:
             frames = err.traceback.frames
         for frame_iteration, frame in iteration(frames):
-            self._terminal.write(
-                '  {0}:{1}:\n'.format(frame.filename, frame.lineno), black=True, bold=True)
             if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+
                 if not frame_iteration.first:
                     self._terminal.sep('- ')
+            self._terminal.write(
+                ' {0}:{1}\n'.format(frame.filename, frame.lineno), white=True, bold=True)
+
+            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
+
             code_lines = self._write_frame_code(
                 frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
@@ -261,6 +265,7 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write(
                     self._indent_with(err.message, indent), red=True, bold=True)
                 self._terminal.write('\n')
+
 
     def _report_additional_test_details(self, result):
         if result.is_success():
@@ -305,7 +310,7 @@ class ConsoleReporter(ReporterInterface):
                     self._terminal.write('>', white=True, bold=True)
                 else:
                     self._terminal.write(' ')
-                self._terminal.write(line, white=True, bold=True)
+                self._terminal.write(line, black=not line_iteration.last, bold=not line_iteration.last)
                 self._terminal.write('\n')
             return code_lines
 
