@@ -5,6 +5,8 @@ Changelog
 * :feature:`274` Add optional separation between console log format and file log format
 * :feature:`275` Add get_no_deprecations_context to disable deprecation messages temporarily
 * :feature:`271` Add passthrough_types=TYPES parameter to handling_exceptions context
+* :release:`0.14.3 <31-03-2015>`
+* :bug:`288` Fixed accidental log file line truncation
 * :release:`0.14.2 <29-03-2015>`
 * :bug:`285` Fixed representation of fixture values that should not be printable (strings with slashes, for instance)
 * :release:`0.14.1 <04-03-2015>`

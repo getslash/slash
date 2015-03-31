@@ -57,11 +57,12 @@ def test_log_file_colorize(files_dir, config_override, suite, suite_test):
         assert b'\x1b[' in log_data
 
 
-def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test, config_override):
+@pytest.mark.parametrize('level', ['info', 'notice', 'warning'])
+def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test, config_override, level):
     assert slash.config.root.log.truncate_console_lines
 
     long_string = 'a' * 1000
-    suite_test.append_line('slash.logger.info({0!r})'.format(long_string))
+    suite_test.append_line('slash.logger.{level}({msg!r})'.format(msg=long_string, level=level))
     summary = suite.run()
     [result] = summary.get_all_results_for_test(suite_test)
     with open(result.get_log_path()) as logfile:
