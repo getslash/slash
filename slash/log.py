@@ -79,9 +79,11 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         should_truncate = self._truncate_errors or record.level < logbook.ERROR
         if self._truncate_lines and len(orig_message) > self.MAX_LINE_LENGTH and should_truncate:
             record.message = "\n".join(self._truncate(line) for line in orig_message.splitlines())
-        returned = super(ConsoleHandler, self).format(record)
-        # we back up the original message to avoid propagating truncated lines into the file log
-        record.message = orig_message
+        try:
+            returned = super(ConsoleHandler, self).format(record)
+        finally:
+            # we back up the original message to avoid propagating truncated lines into the file log
+            record.message = orig_message
         return returned
 
     def _truncate(self, line):
