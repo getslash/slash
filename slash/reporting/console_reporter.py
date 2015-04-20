@@ -289,7 +289,13 @@ class ConsoleReporter(ReporterInterface):
         return '\n'.join(indent + line for line in text.splitlines())
 
     def _report_result_skip_summary(self, result):
-        self._terminal.write('\tSkipped ({0})\n'.format(result.get_skips()[0]), yellow=True)
+        msg = '\tSkipped'
+        skip_reason = result.get_skips()[0]
+        if skip_reason is not None:
+            msg += ' ({0})'.format(skip_reason)
+        msg += '\n'
+
+        self._terminal.write(msg, yellow=True)
 
     def _write_frame_locals(self, frame):
         if not frame.locals and not frame.globals:
