@@ -77,6 +77,8 @@ _MUTED_LOCATIONS = set([
     ("slash.frontend.slash_run", "slash_run"),
     ("slash.runner", "run_tests"),
     ("slash.runner", "_get_run_context_stack"),
+    ("slash.core.cleanup_manager", "call_cleanups"),
+    ("slash.core.cleanup_manager", "__call__"),
 ])
 
 
