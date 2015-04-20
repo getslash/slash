@@ -27,16 +27,6 @@ def test_passthrough_types():
     assert exception_handling.is_exception_handled(value)
 
 
-class ExceptionMarksTest(TestCase):
-    def test_exception_mark(self):
-        e = CustomException()
-        mark = object()
-        self.assertFalse(exception_handling.is_exception_marked(e, "a"))
-        self.assertFalse(exception_handling.is_exception_marked(e, "b"))
-        exception_handling.mark_exception(e, "a", mark)
-        self.assertTrue(exception_handling.is_exception_marked(e, "a"))
-        self.assertFalse(exception_handling.is_exception_marked(e, "b"))
-        self.assertIs(exception_handling.get_exception_mark(e, "a"), mark)
 
 class HandlingExceptionsContextTest(TestCase):
     def setUp(self):

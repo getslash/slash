@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from .utils.debug import debug_if_needed
+from .utils.exception_mark import mark_exception, get_exception_mark
 from . import hooks as trigger_hook
 from .ctx import context as slash_context
 from .conf import config
@@ -86,30 +87,6 @@ def is_exception_handled(e):
     Checks if the exception ``e`` already passed through the exception handling logic
     """
     return bool(get_exception_mark(e, "handled", False))
-
-_NO_DEFAULT = object()
-
-def is_exception_marked(e, name):
-    return get_exception_mark(e, name, _NO_DEFAULT) is not _NO_DEFAULT
-
-def mark_exception(e, name, value):
-    """
-    Associates a mark with a given value to the exception ``e``
-    """
-    _ensure_exception_marks(e)[name] = value
-
-def get_exception_mark(e, name, default=None):
-    """
-    Given an exception and a label name, get the value associated with that mark label.
-    If the label does not exist on the specified exception, ``default`` is returned.
-    """
-    return _ensure_exception_marks(e).get(name, default)
-
-def _ensure_exception_marks(e):
-    returned = getattr(e, "__slash_exc_marks__", None)
-    if returned is None:
-        returned = e.__slash_exc_marks__ = {}
-    return returned
 
 @contextmanager
 def get_exception_swallowing_context(report_to_sentry=True):
