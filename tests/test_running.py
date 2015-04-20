@@ -58,7 +58,7 @@ def test_stop_on_fatal_exception(suite, test, remaining_tests, failure_type):
     test.append_line('raise mark_exception_fatal({0}())'.format('AssertionError' if failure_type == 'failure' else 'Exception'))
     getattr(test, 'expect_{0}'.format(failure_type))()
     for remaining_test in remaining_tests:
-        remaining_test.expect_skip()
+        remaining_test.expect_not_run()
 
     suite.run()
 
@@ -74,7 +74,7 @@ def test_stop_on_error(suite, test, test_index, failure_type):
 
     for index, test in enumerate(suite):
         if index > test_index:
-            test.expect_skip()
+            test.expect_not_run()
 
     suite.run(additional_args=['-x'])
 

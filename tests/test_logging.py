@@ -81,7 +81,7 @@ def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
     failed_test.when_run.fail()
     # we stop on error...
     for test in suite[5:]:
-        test.expect_skip()
+        test.expect_not_run()
     summary = suite.run(additional_args=['-x'])
 
     [failed_result] = summary.get_all_results_for_test(failed_test)

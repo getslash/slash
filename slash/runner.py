@@ -67,7 +67,7 @@ def run_tests(iterable, stop_on_error=None):
         scope_manager.flush_remaining_scopes(
             in_failure=not complete, in_interruption=context.session.results.is_interrupted())
 
-    _mark_remaining_skipped(test_iterator)
+    _mark_unrun_tests(test_iterator)
     if complete:
         context.session.mark_complete()
     elif last_filename is not None:
@@ -82,10 +82,11 @@ def _set_test_metadata(test):
     test.__slash__.test_index0 = next(context.session.test_index_counter)
 
 
-def _mark_remaining_skipped(test_iterator):
-    for test in test_iterator:
+def _mark_unrun_tests(test_iterator):
+    remaining = list(test_iterator)
+    for test in remaining:
         with _get_test_context(test, logging=False):
-            context.result.add_skip("Did not run")
+            pass
 
 
 @contextmanager

@@ -61,6 +61,9 @@ class Result(object):
     def is_started(self):
         return self._started
 
+    def is_not_run(self):
+        return not self._started
+
     def mark_started(self):
         self._started = True
 
@@ -240,6 +243,9 @@ class SessionResults(object):
 
     def get_num_skipped(self):
         return self._count(Result.is_skip)
+
+    def get_num_not_run(self):
+        return self._count(Result.is_not_run, include_global=False)
 
     def _count(self, pred, include_global=True):
         returned = 0

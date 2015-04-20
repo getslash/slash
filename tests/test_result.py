@@ -41,6 +41,25 @@ def test_result_summary(suite):
     assert results.get_num_failures() == 1
     assert results.get_num_skipped() == 1
     assert results.get_num_successful() == len(suite) - 4
+    assert results.get_num_not_run() == 0
+
+
+def test_result_not_run(suite, suite_test, is_last_test):
+    suite_test.when_run.fail()
+
+    summary = suite.run(additional_args=['-x'])
+
+    num_not_run = summary.session.results.get_num_not_run()
+    if is_last_test:
+        assert num_not_run == 0
+    else:
+        assert 0 < num_not_run < len(suite)
+
+
+def test_result_not_run_zero_when_all_success(suite):
+    summary = suite.run()
+    assert summary.session.results.get_num_not_run() == 0
+
 
 
 def test_has_errors_or_failures(suite):

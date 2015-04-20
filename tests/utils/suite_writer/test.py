@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from .element import Element
 from .function import Function
 
-_SUCCESS, _FAIL, _ERROR, _INTERRUPT, _SKIP = ['SUCCESS', 'FAIL', 'ERROR', 'INTERRUPT', 'SKIP']
+_SUCCESS, _FAIL, _ERROR, _INTERRUPT, _SKIP, _NOT_RUN = ['SUCCESS', 'FAIL', 'ERROR', 'INTERRUPT', 'SKIP', 'NOT_RUN']
 
 class Test(Function, Element):
 
@@ -40,6 +40,9 @@ class Test(Function, Element):
 
     def expect_skip(self):
         self._expect(_SKIP)
+
+    def expect_not_run(self):
+        self._expect(_NOT_RUN)
 
     def expect_deselect(self):
         self._selected = False

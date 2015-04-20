@@ -170,6 +170,10 @@ class ConsoleReporter(ReporterInterface):
             ), session.results.get_num_skipped(),
             session.results.get_num_failures(), session.results.get_num_errors())
 
+        not_run = session.results.get_num_not_run()
+        if not_run:
+            msg += ' {0} not run.'.format(not_run)
+
         msg += ' Total duration: {0}'.format(
             self._format_duration(session.duration))
         self._terminal.sep('=', msg, **header_format)

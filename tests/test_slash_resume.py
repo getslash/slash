@@ -43,7 +43,7 @@ def test_resume(suite):
     suite[fail_index].when_run.fail()
     for index, test in enumerate(suite):
         if index > fail_index:
-            test.expect_skip()
+            test.expect_not_run()
     result = suite.run(additional_args=['-x'])
 
     save_resume_state(result.session.results)
