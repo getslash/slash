@@ -7,6 +7,7 @@ from sentinels import Sentinel
 _logger = logbook.Logger(__name__)
 
 from .. import hooks
+from ..ctx import context
 from ..exception_handling import handling_exceptions
 
 
@@ -109,6 +110,7 @@ class CleanupManager(object):
                 cleanup()
 
 
+
 class _Cleanup(object):
 
     def __init__(self, func, args, kwargs, critical=False, success_only=False):
@@ -119,9 +121,14 @@ class _Cleanup(object):
         self.kwargs = kwargs
         self.critical = critical
         self.success_only = success_only
+        self.result = context.result
 
     def __call__(self):
-        return self.func(*self.args, **self.kwargs)
+        try:
+            return self.func(*self.args, **self.kwargs)
+        except Exception:
+            self.result.add_exception()
+            raise
 
     def __repr__(self):
         return "{0} ({1},{2})".format(self.func, self.args, self.kwargs)

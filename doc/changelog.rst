@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`267` Scoped cleanups: associate errors in cleanups to their respective result object. This means that errors can be added to tests after they finish from now on.
 * :feature:`170` Add optional ``scope`` argument to ``add_cleanup``, controlling when the cleanup should take place
 * :feature:`280` Add optional message argument to ``assert_raises``
 * :feature:`274` Add optional separation between console log format and file log format

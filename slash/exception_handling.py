@@ -14,7 +14,7 @@ import sys
 
 _logger = logbook.Logger(__name__)
 
-def update_current_result(exc_info):
+def update_current_result(exc_info):  # pylint: disable=unused-argument
     if slash_context.session is None:
         return
     if slash_context.test is not None:

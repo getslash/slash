@@ -38,7 +38,7 @@ class Result(object):
         """
         if exc_info is None:
             exc_info = sys.exc_info()
-        exc_class, exc_value, _ = exc_info
+        exc_class, exc_value, _ = exc_info  # pylint: disable=unpacking-non-sequence
 
         if _ADDED_TO_RESULT.is_exception_marked(exc_value):
             return
