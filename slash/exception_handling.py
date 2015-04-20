@@ -4,7 +4,6 @@ from .utils.exception_mark import mark_exception, get_exception_mark
 from . import hooks as trigger_hook
 from .ctx import context as slash_context
 from .conf import config
-from .exceptions import TestFailed, SkipTest
 import functools
 import logbook
 try:
@@ -23,14 +22,11 @@ def update_current_result(exc_info):
     else:
         current_result = slash_context.session.results.global_result
 
-    exc_class = exc_info[0]
-    if issubclass(exc_class, (AssertionError, TestFailed)):
-        current_result.add_failure()
-    elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
-        current_result.add_error()
+    current_result.add_exception()
 
 def trigger_hooks_before_debugger(_):
     trigger_hook.exception_caught_before_debugger()  # pylint: disable=no-member
+
 def trigger_hooks_after_debugger(_):
     trigger_hook.exception_caught_after_debugger()  # pylint: disable=no-member
 

@@ -1,11 +1,32 @@
 import slash
+import pytest
 
 from .utils import TestCase
 from slash import Session
 from slash.core.result import Result
-from slash.core.result import SessionResults
+from slash.core.result import SessionResults, GlobalResult
 
 from .utils import run_tests_assert_success
+
+
+@pytest.mark.parametrize('use_error', [True, False])
+def test_result_add_exception_multiple_times(result, use_error):
+    second_result = type(result)()
+    try:
+        if use_error:
+            1 / 0
+        else:
+            assert 1 + 1 == 3
+    except:
+        for i in range(3):
+            result.add_exception()
+        second_result.add_exception()
+
+    assert result.is_error() == use_error
+    assert result.is_failure() == (not use_error)
+    assert len(result.get_errors() if use_error else result.get_failures()) == 1
+    assert second_result.is_success()
+
 
 def test_result_summary(suite):
 
@@ -54,11 +75,12 @@ def test_result_data_is_unique():
 
 
 class SessionResultTest(TestCase):
+
     def setUp(self):
         super(SessionResultTest, self).setUp()
         self.results = [
             Result() for _ in range(10)
-            ]
+        ]
         # one result with both errors and failures
         try:
             1 / 0
@@ -91,3 +113,8 @@ class SessionResultTest(TestCase):
         self.assertEquals(self.result.get_num_errors(), 3)
         self.assertEquals(self.result.get_num_skipped(), 2)
         self.assertEquals(self.result.get_num_failures(), 1)
+
+
+@pytest.fixture(params=[GlobalResult, Result])
+def result(request):
+    return request.param()

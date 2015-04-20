@@ -1,5 +1,6 @@
 import functools
 import itertools
+import sys
 from numbers import Number
 
 import logbook
@@ -8,8 +9,13 @@ from .._compat import itervalues, OrderedDict
 from ..ctx import context
 from .. import hooks
 from .error import Error
+from ..exceptions import TestFailed, SkipTest
+from ..utils.exception_mark import ExceptionMarker
 
 _logger = logbook.Logger(__name__)
+
+_ADDED_TO_RESULT = ExceptionMarker('added_to_result')
+
 
 class Result(object):
 
@@ -26,6 +32,22 @@ class Result(object):
         self._finished = False
         self._interrupted = False
         self._log_path = None
+
+    def add_exception(self, exc_info=None):
+        """Adds the currently active exception, assuming it wasn't already added to a result
+        """
+        if exc_info is None:
+            exc_info = sys.exc_info()
+        exc_class, exc_value, _ = exc_info
+
+        if _ADDED_TO_RESULT.is_exception_marked(exc_value):
+            return
+
+        _ADDED_TO_RESULT.mark_exception(exc_value)
+        if issubclass(exc_class, (AssertionError, TestFailed)):
+            self.add_failure()
+        elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
+            self.add_error()
 
     def has_errors_or_failures(self):
         return bool(self._failures or self._errors)
@@ -81,11 +103,11 @@ class Result(object):
         return self._interrupted
 
     def add_error(self, e=None, frame_correction=0):
-        err = self._add_error(self._errors, e, frame_correction=frame_correction+1)
+        err = self._add_error(self._errors, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_error_added(context.test, err)
 
     def add_failure(self, e=None, frame_correction=0):
-        err = self._add_error(self._failures, e, frame_correction=frame_correction+1)
+        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_failure_added(context.test, err)
 
     def set_test_detail(self, key, value):
@@ -98,10 +120,10 @@ class Result(object):
                 if error is None:
                     raise RuntimeError('add_error() must be called with either an argument or in an active exception')
             if not isinstance(error, Error):
-                error = Error(error, frame_correction=frame_correction+1)
+                error = Error(error, frame_correction=frame_correction + 1)
             _logger.debug('Error added: {0}', error)
             error_list.append(error)
-            hooks.error_added(result=self, error=error) # pylint: disable=no-member
+            hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)
@@ -128,7 +150,7 @@ class Result(object):
 
     def has_fatal_exception(self):
         return any(e.is_fatal() for e in
-            itertools.chain(self._errors, self._failures))
+                   itertools.chain(self._errors, self._failures))
 
     def __repr__(self):
         return "< Result ({0})>".format(
@@ -138,6 +160,7 @@ class Result(object):
                 if getattr(self, "is_{0}".format(attr))()
             )
         )
+
 
 class GlobalResult(Result):
     pass
