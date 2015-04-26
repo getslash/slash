@@ -16,6 +16,7 @@ if __name__ == '__main__':
         "pytest-xdist",
         "pytest-capturelog",
         "pytest-cov",
+        "pytest-timeout",
         "pyforge",
         "lxml", # for XSD validations
     ]

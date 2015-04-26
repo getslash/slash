@@ -81,10 +81,10 @@ class FixtureStore(object):
             _ = self.get_fixture_value(fixture)
 
     def _compute_all_needed_parametrization_ids(self, fixtureobj):
-        stack = [fixtureobj.info.id]
+        stack = [(fixtureobj.info.id, [fixtureobj.info.id], set([fixtureobj.info.id]))]
         returned = set()
         while stack:
-            fixture_id = stack.pop()
+            fixture_id, path, visited = stack.pop()
             if fixture_id in self._all_needed_parametrization_ids_by_fixture_id:
                 returned.update(self._all_needed_parametrization_ids_by_fixture_id[fixture_id])
                 continue
@@ -92,8 +92,18 @@ class FixtureStore(object):
             if fixture.parametrization_ids:
                 returned.update(fixture.parametrization_ids)
             if fixture.fixture_kwargs:
-                stack.extend(itervalues(fixture.fixture_kwargs))
+                for needed_id in itervalues(fixture.fixture_kwargs):
+                    if needed_id in visited:
+                        self._raise_cyclic_dependency_error(fixtureobj, path, needed_id)
+                    stack.append((needed_id, path + [needed_id], visited | set([needed_id])))
         return frozenset(returned)
+
+    def _raise_cyclic_dependency_error(self, fixtureobj, path, new_id):
+        raise CyclicFixtureDependency(
+            'Cyclic fixture dependency detected in {0}: {1}'.format(
+                fixtureobj.info.func.__code__.co_filename,
+                ' -> '.join(self._fixtures_by_id[f_id].info.name
+                            for f_id in path + [new_id])))
 
     def push_scope(self, scope):
         scope = get_scope_by_name(scope)
@@ -227,4 +237,3 @@ class FixtureStore(object):
         while self._unresolved_fixture_ids:
             fixture = self._fixtures_by_id[self._unresolved_fixture_ids.pop()]
             fixture.resolve(self)
-

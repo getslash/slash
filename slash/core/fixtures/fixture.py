@@ -1,6 +1,6 @@
 import itertools
 
-from ...exceptions import UnknownFixtures, InvalidFixtureScope
+from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
 from .namespace import Namespace
 from .parameters import get_parametrization_fixtures
@@ -53,7 +53,10 @@ class Fixture(FixtureBase):
                     raise InvalidFixtureScope('Fixture {0} is dependent on {1}, which has a smaller scope ({2} > {3})'.format(
                         self.info.name, name, self.scope, needed_fixture.scope))
 
-                assert needed_fixture is not self
+                if needed_fixture is self:
+                    raise CyclicFixtureDependency('Cyclic fixture dependency detected in {0}: {1} depends on itself'.format(
+                        self.info.func.__code__.co_filename,
+                        self.info.name))
                 kwargs[name] = needed_fixture.info.id
             except LookupError:
                 raise UnknownFixtures(name)
