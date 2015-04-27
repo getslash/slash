@@ -34,3 +34,9 @@ After the script finishes, push the relevant branches
 ```
 $ git push origin master:master develop:develop --tags
 ```
+
+Upload a release:
+```
+$ git checkout master
+$ python setup.py sdist upload
+```
