@@ -16,3 +16,15 @@ Slash is a testing framework written in Python for testing complex projects.
 * [Homepage](http://vmalloc.github.io/slash)
 
 * [Documentation](https://slash.readthedocs.org/en/latest/)
+
+Development
+===========
+
+Releasing a Version
+-------------------
+
+Run the following from the project's root (requires `git-flow`):
+
+```
+$ make release
+```
