@@ -67,10 +67,27 @@ In many cases you would like to receive options from the command line. Plugins c
 .. code-block:: python
 
  class ResultsReportingPlugin(PluginInterface):
+ 
      def configure_arg_parser(self, parser):
          parser.add_argument("--output-filename", help="File to write results to")
+ 
      def configure_parsed_args(self, args):
          self.output_filename = args.output_filename
+
+Plugin Configuration
+--------------------
+
+Plugins can expose the :func:`config <slash.plugins.PluginInterface.get_config>` can provide configuration to be placed under ``plugin_config.<plugin name>``:
+
+.. code-block:: python
+
+ class LogCollectionPlugin(PluginInterface):
+
+     def get_config(self):
+         return {
+             'log_destination': '/some/default/path'
+         }
+
 
 Plugin Examples
 ---------------

@@ -46,4 +46,8 @@ config = Config({
     "plugins": {
         "search_paths": [] // Doc("List of paths in which to search for plugin modules"),
     },
+
+    "plugin_config": {
+        # DO NOT store configuration here. It is intended for dynamically loaded plugins
+    },
 })
