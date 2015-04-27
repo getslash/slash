@@ -28,3 +28,9 @@ Run the following from the project's root (requires `git-flow`):
 ```
 $ make release
 ```
+
+After the script finishes, push the relevant branches
+
+```
+$ git push origin master:master develop:develop --tags
+```
