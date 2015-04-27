@@ -1,7 +1,7 @@
 Changelog
 =========
 
-* :feature:`289` Add unified plugin configuration section
+* :feature:`289` Added ``get_config`` optional method to plugins, allowing them to supplement configuration to ``config.root.plugin_config.<plugin_name>``
 * :feature:`282` Better handling of fixture dependency cycles
 * :feature:`286` Better handling of unrun tests when using `x` or similar. Count of unrun tests is now reported instead of detailed console line for each unrun test.
 * :feature:`267` Scoped cleanups: associate errors in cleanups to their respective result object. This means that errors can be added to tests after they finish from now on.
