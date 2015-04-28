@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.15.0 <28-04-2015>`
 * :feature:`289` Added ``get_config`` optional method to plugins, allowing them to supplement configuration to ``config.root.plugin_config.<plugin_name>``
 * :feature:`282` Better handling of fixture dependency cycles
 * :feature:`286` Better handling of unrun tests when using `x` or similar. Count of unrun tests is now reported instead of detailed console line for each unrun test.
