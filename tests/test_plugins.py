@@ -14,7 +14,7 @@ def test_active_decorator(request):
 
     request.addfinalizer(plugins.manager.install_builtin_plugins)
     request.addfinalizer(plugins.manager.uninstall_all)
-    
+
     plugins.manager.uninstall_all()
 
     @slash.plugins.active

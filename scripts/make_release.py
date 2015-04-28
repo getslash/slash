@@ -22,10 +22,11 @@ def main(args):
     version = raw_input("New version to release (default: {!r}): ".format(default)).strip()
     if not version:
         version = default
+    subprocess.check_call('git flow release start {}'.format(version), shell=True)
     _write_new_version(version)
     _write_changelog(version)
     subprocess.check_call("git commit -a -m 'v{}'".format(version), shell=True)
-    subprocess.check_call("git tag {}".format(version), shell=True)
+    subprocess.check_call('git flow release finish {}'.format(version), shell=True)
     return 0
 
 def _get_default_next_version():

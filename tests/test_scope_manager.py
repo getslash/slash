@@ -5,7 +5,7 @@ import itertools
 import pytest
 import slash
 from slash._compat import iteritems
-from slash.core.fixtures.fixture_scope_manager import FixtureScopeManager
+from slash.core.scope_manager import ScopeManager
 from slash.loader import Loader
 
 
@@ -32,7 +32,7 @@ def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
                 end_of_module = True
             else:
                 next_test = None
-            scope_manager.end_test(test, next_test=next_test)
+            scope_manager.end_test(test, next_test=next_test, exc_info=(None, None, None))
             if next_test is None:
                 assert dummy_fixture_store._scopes == []
             elif end_of_module:
@@ -43,8 +43,10 @@ def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
 
 
 @pytest.fixture
-def scope_manager(dummy_fixture_store):
-    return FixtureScopeManager(dummy_fixture_store)
+def scope_manager(dummy_fixture_store, forge):
+    session = slash.Session()
+    forge.replace_with(session, 'fixture_store', dummy_fixture_store)
+    return ScopeManager(session)
 
 
 @pytest.fixture
@@ -97,10 +99,10 @@ class DummyFixtureStore(object):
             functools.partial(itertools.count, 1))
         self._scope_ids = {}
 
-    def begin_scope(self, scope):
+    def push_scope(self, scope):
         self._scopes.append(scope)
         self._scope_ids[scope] = next(self._counters[scope])
 
-    def end_scope(self, scope):
+    def pop_scope(self, scope, in_failure, in_interruption):
         latest_scope = self._scopes.pop()
         assert latest_scope == scope

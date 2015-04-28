@@ -76,6 +76,9 @@ _MUTED_LOCATIONS = set([
     ("slash.frontend.main", "main_entry_point"),
     ("slash.frontend.slash_run", "slash_run"),
     ("slash.runner", "run_tests"),
+    ("slash.runner", "_get_run_context_stack"),
+    ("slash.core.cleanup_manager", "call_cleanups"),
+    ("slash.core.cleanup_manager", "__call__"),
 ])
 
 
@@ -100,6 +103,9 @@ class DistilledTraceback(object):
     def cause(self):
         if self.frames:
             return self.frames[-1]
+
+    def __repr__(self):
+        return '\n'.join(str(frame) for frame in self.frames)
 
 
 class DistilledFrame(object):
@@ -139,7 +145,7 @@ class DistilledFrame(object):
                     if "@" not in local_name)
 
     def __repr__(self):
-        return '{0.filename}, line {0.lineno}: {0.code_line}'.format(self)
+        return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
 
 
 def _safe_repr(value):

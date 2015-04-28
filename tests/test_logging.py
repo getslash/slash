@@ -10,6 +10,19 @@ import slash
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase
 
 
+def test_console_format(suite, suite_test, config_override, tmpdir):
+    config_override('log.format', 'file: {record.message}')
+    config_override('log.console_format', 'console: {record.message}')
+    config_override('log.root', str(tmpdir))
+    suite_test.append_line('slash.logger.error("message here")')
+    summary = suite.run(additional_args=['-vvv'])
+
+    assert 'console: message here' in summary.get_console_output()
+
+    [result] = summary.get_all_results_for_test(suite_test)
+    with open(result.get_log_path()) as f:
+        assert 'file: message here' in f.read()
+
 def test_last_session_symlinks(files_dir, links_dir, session):
 
     test_log_file = files_dir.join(
@@ -29,14 +42,19 @@ def test_global_result_get_log_path(files_dir, suite):
     assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
 
 
-def test_log_file_colorize(files_dir, config_override, suite):
+def test_log_file_colorize(files_dir, config_override, suite, suite_test):
     config_override('log.colorize', True)
+    suite_test.append_line('slash.logger.notice("hey")')
     summary = suite.run()
-    logfile = summary.session.results.global_result.get_log_path()
-    with open(logfile, 'rb') as f:
-        log_data = f.read()
+    logfiles = [
+        summary.session.results.global_result.get_log_path(),
+        summary.get_all_results_for_test(suite_test)[0].get_log_path(),
+    ]
+    for logfile in logfiles:
+        with open(logfile, 'rb') as f:
+            log_data = f.read()
 
-    assert b'\x1b[' in log_data
+        assert b'\x1b[' in log_data
 
 
 @pytest.mark.parametrize('level', ['info', 'notice', 'warning'])
@@ -63,13 +81,32 @@ def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
     failed_test.when_run.fail()
     # we stop on error...
     for test in suite[5:]:
-        test.expect_skip()
+        test.expect_not_run()
     summary = suite.run(additional_args=['-x'])
 
     [failed_result] = summary.get_all_results_for_test(failed_test)
 
     for link_name in ('last-test', 'last-failed'):
         assert links_dir.join(link_name).readlink() == failed_result.get_log_path()
+
+
+def test_last_test_delete_log_file(links_dir, suite, suite_test):
+    os.makedirs(str(links_dir))
+    temp_file = os.path.abspath(str(links_dir.join('somepath')))
+    with open(temp_file, 'w'):
+        pass
+    os.symlink(temp_file, str(links_dir.join('last-test')))
+    os.unlink(temp_file)
+
+    assert not os.path.exists(str(links_dir.join('last-test')))
+    assert os.path.islink(str(links_dir.join('last-test')))
+
+
+    summary = suite.run()
+    with open(summary.session.results.global_result.get_log_path()) as f:
+        assert 'OSError: ' not in f.read()
+    # assert links_dir.join('last-test').readlink() == list(summary.session.results)[-1].get_log_path()
+
 
 
 def test_result_log_links(files_dir, session):

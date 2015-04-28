@@ -40,6 +40,11 @@ class FixtureInfo(object):
             self.required_args = getargspec(func).args
         else:
             self.required_args = []
+        if 'this' in self.required_args:
+            self.required_args.remove('this')
+            self.needs_this = True
+        else:
+            self.needs_this = False
 
 def get_scope_by_name(scope_name):
     return _SCOPES[scope_name]

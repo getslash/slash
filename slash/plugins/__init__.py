@@ -91,6 +91,7 @@ class PluginManager(object):
         """
         Uninstalls a plugin
         """
+        plugin = self._get_installed_plugin(plugin)
         try:
             self.deactivate(plugin)
         except IncompatiblePlugin:
@@ -112,6 +113,7 @@ class PluginManager(object):
         """
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
+        self._configure(plugin)
         plugin.activate()
         for hook, callback in self._get_plugin_registrations(plugin):
             hook.register(callback, token=self._get_token(plugin_name))
@@ -130,6 +132,17 @@ class PluginManager(object):
             gossip.get_global_group().unregister_token(self._get_token(plugin_name))
             self._active.discard(plugin_name)
             plugin.deactivate()
+        self._unconfigure(plugin)
+
+    def _configure(self, plugin):
+        cfg = plugin.get_config()
+        if cfg is not None:
+            config['plugin_config'].extend({plugin.get_name(): cfg})
+
+    def _unconfigure(self, plugin):
+        plugin_config = config['plugin_config']
+        if plugin.get_name() in plugin_config:
+            plugin_config.pop(plugin.get_name())
 
     def _get_token(self, plugin_name):
         return "slash.plugins.{0}".format(plugin_name)

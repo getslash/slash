@@ -9,6 +9,7 @@ from tests.utils.suite_writer import Suite
 parser = argparse.ArgumentParser(usage="%(prog)s [options] args...")
 parser.add_argument('--fixtures', dest='use_fixtures', action='store_true', default=False)
 parser.add_argument('--parameters', dest='use_parameters', action='store_true', default=False)
+parser.add_argument('--debug-info', dest='debug_info', action='store_true', default=False)
 parser.add_argument("dir")
 parser.add_argument("summary")
 
@@ -24,7 +25,7 @@ class Application(object):
 
     def main(self):
 
-        s = Suite(path=self._args.dir, debug_info=False)
+        s = Suite(path=self._args.dir, debug_info=self._args.debug_info)
         if not self._args.summary:
             parser.error("No summary given")
         for index, element in enumerate(self._args.summary):

@@ -5,6 +5,7 @@ import uuid
 from contextlib import contextmanager
 
 from .. import ctx, hooks, log
+from .cleanup_manager import CleanupManager
 from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
 from ..reporting.null_reporter import NullReporter
@@ -21,7 +22,7 @@ class Session(Activatable):
 
     duration = start_time = end_time = None
 
-    def __init__(self, reporter=None):
+    def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
         self.id = "{0}_0".format(uuid.uuid1())
         self.id_space = IDSpace(self.id)
@@ -31,12 +32,13 @@ class Session(Activatable):
         self._active_context = None
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
-        self.logging = log.SessionLogging(self)
+        self.logging = log.SessionLogging(self, console_stream=console_stream)
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults(self)
         if reporter is None:
             reporter = NullReporter()
         self.reporter = reporter
+        self.cleanups = CleanupManager()
 
     @property
     def started(self):
@@ -51,10 +53,12 @@ class Session(Activatable):
             ctx.context.result = self.results.global_result
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()
+            self.cleanups.push_scope('session-global')
 
     def deactivate(self):
         self.results.global_result.mark_finished()
         with handling_exceptions():
+            self.cleanups.pop_scope('session-global')
             self._logging_context.__exit__(*sys.exc_info())
             self._logging_context = None
             ctx.pop_context()

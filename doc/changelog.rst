@@ -1,6 +1,16 @@
 Changelog
 =========
 
+* :release:`0.15.0 <28-04-2015>`
+* :feature:`289` Added ``get_config`` optional method to plugins, allowing them to supplement configuration to ``config.root.plugin_config.<plugin_name>``
+* :feature:`282` Better handling of fixture dependency cycles
+* :feature:`286` Better handling of unrun tests when using `x` or similar. Count of unrun tests is now reported instead of detailed console line for each unrun test.
+* :feature:`267` Scoped cleanups: associate errors in cleanups to their respective result object. This means that errors can be added to tests after they finish from now on.
+* :feature:`170` Add optional ``scope`` argument to ``add_cleanup``, controlling when the cleanup should take place
+* :feature:`280` Add optional message argument to ``assert_raises``
+* :feature:`274` Add optional separation between console log format and file log format
+* :feature:`275` Add get_no_deprecations_context to disable deprecation messages temporarily
+* :feature:`271` Add passthrough_types=TYPES parameter to handling_exceptions context
 * :release:`0.14.3 <31-03-2015>`
 * :bug:`288` Fixed accidental log file line truncation
 * :release:`0.14.2 <29-03-2015>`

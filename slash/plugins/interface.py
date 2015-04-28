@@ -12,6 +12,13 @@ class PluginInterface(object):
         """
         pass
 
+    def get_config(self):
+        """
+        Optional: should return a dictionary or a confetti object which will be placed under
+        ``slash.config.plugin_config.<plugin_name>``
+        """
+        pass
+
     def deactivate(self):
         """
         Called when the plugin is deactivated

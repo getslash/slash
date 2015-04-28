@@ -124,9 +124,9 @@ class FixtureTree(object):
 
     @contextmanager
     def testing_scope(self, scope):
-        self._fixture_store.begin_scope(scope)
+        self._fixture_store.push_scope(scope)
         yield
-        self._fixture_store.end_scope(scope)
+        self._fixture_store.pop_scope(scope, in_failure=False, in_interruption=False)
         scope_id = get_scope_by_name(scope)
         for fixture_name, fixture in iteritems(self._fixtures):
             if fixture.__slash_fixture__.scope <= scope_id:

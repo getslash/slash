@@ -170,6 +170,10 @@ class ConsoleReporter(ReporterInterface):
             ), session.results.get_num_skipped(),
             session.results.get_num_failures(), session.results.get_num_errors())
 
+        not_run = session.results.get_num_not_run()
+        if not_run:
+            msg += ' {0} not run.'.format(not_run)
+
         msg += ' Total duration: {0}'.format(
             self._format_duration(session.duration))
         self._terminal.sep('=', msg, **header_format)
@@ -243,12 +247,16 @@ class ConsoleReporter(ReporterInterface):
         else:
             frames = err.traceback.frames
         for frame_iteration, frame in iteration(frames):
-            self._terminal.write(
-                '  {0}:{1}:\n'.format(frame.filename, frame.lineno), black=True, bold=True)
             if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+
                 if not frame_iteration.first:
                     self._terminal.sep('- ')
+            self._terminal.write(
+                ' {0}:{1}\n'.format(frame.filename, frame.lineno), white=True, bold=True)
+
+            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
+
             code_lines = self._write_frame_code(
                 frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
@@ -261,6 +269,7 @@ class ConsoleReporter(ReporterInterface):
                 self._terminal.write(
                     self._indent_with(err.message, indent), red=True, bold=True)
                 self._terminal.write('\n')
+
 
     def _report_additional_test_details(self, result):
         if result.is_success():
@@ -280,7 +289,13 @@ class ConsoleReporter(ReporterInterface):
         return '\n'.join(indent + line for line in text.splitlines())
 
     def _report_result_skip_summary(self, result):
-        self._terminal.write('\tSkipped ({0})\n'.format(result.get_skips()[0]), yellow=True)
+        msg = '\tSkipped'
+        skip_reason = result.get_skips()[0]
+        if skip_reason is not None:
+            msg += ' ({0})'.format(skip_reason)
+        msg += '\n'
+
+        self._terminal.write(msg, yellow=True)
 
     def _write_frame_locals(self, frame):
         if not frame.locals and not frame.globals:
@@ -305,7 +320,7 @@ class ConsoleReporter(ReporterInterface):
                     self._terminal.write('>', white=True, bold=True)
                 else:
                     self._terminal.write(' ')
-                self._terminal.write(line, white=True, bold=True)
+                self._terminal.write(line, black=not line_iteration.last, bold=not line_iteration.last)
                 self._terminal.write('\n')
             return code_lines
 

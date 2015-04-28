@@ -75,6 +75,8 @@ def _validate_single_test_result(test, result):
         assert result.is_interrupted(), 'Test did not get interrupted as expected'
     elif expected == 'SKIP':
         assert result.is_skip()
+    elif expected == 'NOT_RUN':
+        assert result.is_not_run()
     else:
         raise NotImplementedError(
             'Unknown expected result: {0!r}'.format(expected))  # pragma: no cover

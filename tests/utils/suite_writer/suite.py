@@ -50,7 +50,7 @@ class Suite(object):
             self._slashconf = File(self, relpath='slashconf.py')
         return self._slashconf
 
-    def add_test(self, type=None):
+    def add_test(self, type=None, file=None):
         if type is None:
             type = self.strategy.get_test_type()
         if type == 'function':

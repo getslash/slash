@@ -136,11 +136,11 @@ def test_variation_equality(store):
 def _get_all_values(store, fixture_name):
     returned = []
     for variation in store.iter_parametrization_variations(fixture_ids=[store.get_fixture_by_name(fixture_name).info.id]):
-        store.begin_scope('test')
+        store.push_scope('test')
         with bound_parametrizations_context(variation):
             returned.append(
                 store.get_fixture_dict([fixture_name])[fixture_name])
-        store.end_scope('test')
+        store.pop_scope('test', in_failure=False, in_interruption=False)
     return returned
 
 

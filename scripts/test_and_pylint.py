@@ -14,8 +14,11 @@ def _cmd(cmd):
     subprocess.check_call(cmd, shell=True)
 
 if __name__ == '__main__':
+    cmd = "py.test tests --cov=slash --cov-report=html"
+    if '--parallel' in sys.argv:
+        cmd += ' -n 4'
     try:
-        _cmd("py.test tests -n 4 --cov=slash --cov-report=html")
+        _cmd(cmd)
         if not (_PYPY or _OLD_PYTHON):
             _cmd("pylint --rcfile=.pylintrc setup.py")
             _cmd("pylint --rcfile=.pylintrc slash")

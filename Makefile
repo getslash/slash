@@ -4,7 +4,7 @@ detox-test:
 	detox
 
 test: env
-	.env/bin/python scripts/test_and_pylint.py
+	.env/bin/python scripts/test_and_pylint.py --parallel
 
 env: .env/.up-to-date
 

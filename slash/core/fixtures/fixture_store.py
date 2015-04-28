@@ -1,6 +1,6 @@
-from sentinels import NOTHING
+import collections
 
-from ..._compat import iteritems, itervalues
+from ..._compat import iteritems, itervalues, OrderedDict
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
 from .fixture import Fixture
@@ -8,7 +8,7 @@ from .namespace import Namespace
 from .parameters import Parametrization, get_parametrization_fixtures
 from .utils import get_scope_by_name, nofixtures
 from .variation import VariationFactory
-
+from .active_fixture import ActiveFixture
 
 class FixtureStore(object):
 
@@ -16,11 +16,14 @@ class FixtureStore(object):
         super(FixtureStore, self).__init__()
         self._namespaces = [Namespace(self)]
         self._unresolved_fixture_ids = set()
-        self._fixtures_by_fixture_info = {}
         self._fixtures_by_id = {}
-        self._values_by_id = {}
-        self._cleanups_by_scope = {}
+        self._fixtures_by_fixture_info = {}
+        self._active_fixtures_by_scope = collections.defaultdict(OrderedDict)
+        self._computing = set()
         self._all_needed_parametrization_ids_by_fixture_id = {}
+
+    def get_active_fixture(self, fixture):
+        return self._active_fixtures_by_scope[fixture.info.scope].get(fixture.info.id)
 
     def call_with_fixtures(self, test_func, namespace, is_method):
 
@@ -55,10 +58,6 @@ class FixtureStore(object):
     def get_current_namespace(self):
         return self._namespaces[-1]
 
-    def add_cleanup(self, scope, cleanup):
-        assert isinstance(scope, int)
-        self._cleanups_by_scope.setdefault(scope, []).append(cleanup)
-
     def get_all_needed_parametrization_ids(self, fixtureobj):
         if self._unresolved_fixture_ids:
             raise UnresolvedFixtureStore()
@@ -82,10 +81,10 @@ class FixtureStore(object):
             _ = self.get_fixture_value(fixture)
 
     def _compute_all_needed_parametrization_ids(self, fixtureobj):
-        stack = [fixtureobj.info.id]
+        stack = [(fixtureobj.info.id, [fixtureobj.info.id], set([fixtureobj.info.id]))]
         returned = set()
         while stack:
-            fixture_id = stack.pop()
+            fixture_id, path, visited = stack.pop()
             if fixture_id in self._all_needed_parametrization_ids_by_fixture_id:
                 returned.update(self._all_needed_parametrization_ids_by_fixture_id[fixture_id])
                 continue
@@ -93,20 +92,31 @@ class FixtureStore(object):
             if fixture.parametrization_ids:
                 returned.update(fixture.parametrization_ids)
             if fixture.fixture_kwargs:
-                stack.extend(itervalues(fixture.fixture_kwargs))
+                for needed_id in itervalues(fixture.fixture_kwargs):
+                    if needed_id in visited:
+                        self._raise_cyclic_dependency_error(fixtureobj, path, needed_id)
+                    stack.append((needed_id, path + [needed_id], visited | set([needed_id])))
         return frozenset(returned)
 
-    def begin_scope(self, scope):
+    def _raise_cyclic_dependency_error(self, fixtureobj, path, new_id):
+        raise CyclicFixtureDependency(
+            'Cyclic fixture dependency detected in {0}: {1}'.format(
+                fixtureobj.info.func.__code__.co_filename,
+                ' -> '.join(self._fixtures_by_id[f_id].info.name
+                            for f_id in path + [new_id])))
+
+    def push_scope(self, scope):
         scope = get_scope_by_name(scope)
 
-    def end_scope(self, scope):
+    def pop_scope(self, scope, in_failure, in_interruption): # pylint: disable=unused-argument
+        if in_interruption:
+            return
         scope = get_scope_by_name(scope)
-        cleanups = self._cleanups_by_scope.get(scope, [])
-        for fixture_id, fixture in iteritems(self._fixtures_by_id):
-            if fixture.scope <= scope:
-                self._values_by_id.pop(fixture_id, None)
-        while cleanups:
-            cleanups.pop(-1)()
+        for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
+            if s <= scope:
+                for active_fixture in list(active_fixtures.values())[::-1]:
+                    self._deactivate_fixture(active_fixture.fixture)
+                assert not active_fixtures
 
     def ensure_known_parametrization(self, parametrization):
         if parametrization.info.id not in self._fixtures_by_id:
@@ -161,8 +171,8 @@ class FixtureStore(object):
         if name is None:
             name = fixture.info.name
 
-        self._fill_fixture_value(name, fixture)
-        return self._values_by_id[fixture.info.id]
+        value = self._fill_fixture_value(name, fixture)
+        return value
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
 
@@ -179,33 +189,51 @@ class FixtureStore(object):
         return variation_factory.iter_variations()
 
     def _fill_fixture_value(self, name, fixture):
-
-        fixture_value = self._values_by_id.get(fixture.info.id, NOTHING)
-        if fixture_value is _BUSY:
+        if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
                 'Fixture {0!r} is a part of a dependency cycle!'.format(name))
 
-        if fixture_value is not NOTHING:
-            return
+        active_fixture = self.get_active_fixture(fixture)
 
-        self._values_by_id[fixture.info.id] = _BUSY
+        if active_fixture is not None:
+            return active_fixture.value
+
+        self._computing.add(fixture.info.id)
+        try:
+            fixture_value = self._activate_fixture(fixture)
+        except:
+            self._deactivate_fixture(fixture)
+            raise
+        finally:
+            self._computing.discard(fixture.info.id)
+
+        return fixture_value
+
+    def _activate_fixture(self, fixture):
+        active_fixture = ActiveFixture(fixture)
 
         kwargs = {}
 
         if fixture.fixture_kwargs is None:
-            raise UnresolvedFixtureStore('Fixture {0} is unresolved!'.format(name))
+            raise UnresolvedFixtureStore('Fixture {0} is unresolved!'.format(fixture.info.name))
 
         for required_name, fixture_id in iteritems(fixture.fixture_kwargs):
-            self._fill_fixture_value(
+            kwargs[required_name] = self._fill_fixture_value(
                 required_name, self.get_fixture_by_id(fixture_id))
-            kwargs[required_name] = self._values_by_id[fixture_id]
 
-        self._values_by_id[fixture.info.id] = fixture.get_value(kwargs)
+
+        assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]
+        self._active_fixtures_by_scope[fixture.info.scope][fixture.info.id] = active_fixture
+        returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
+        return returned
+
+    def _deactivate_fixture(self, fixture):
+        # in most cases it will be the last active fixture in its scope
+        active = self._active_fixtures_by_scope[fixture.info.scope].pop(fixture.info.id, None)
+        if active is not None:
+            active.do_cleanups()
 
     def resolve(self):
         while self._unresolved_fixture_ids:
             fixture = self._fixtures_by_id[self._unresolved_fixture_ids.pop()]
             fixture.resolve(self)
-
-
-_BUSY = object()

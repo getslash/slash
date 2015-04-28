@@ -1,11 +1,9 @@
 import itertools
 
-from ...exceptions import UnknownFixtures, InvalidFixtureScope
+from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
-from ...ctx import context
 from .namespace import Namespace
 from .parameters import get_parametrization_fixtures
-from .utils import FixtureInfo
 from .fixture_base import FixtureBase
 
 
@@ -25,7 +23,10 @@ class Fixture(FixtureBase):
     def __repr__(self):
         return '<Function Fixture around {0}>'.format(self.fixture_func)
 
-    def get_value(self, kwargs):
+    def get_value(self, kwargs, active_fixture):
+        if self.info.needs_this:
+            assert 'this' not in kwargs
+            kwargs['this'] = active_fixture
         return self.fixture_func(**kwargs)
 
     def _resolve(self, store):
@@ -42,11 +43,6 @@ class Fixture(FixtureBase):
             parametrized.add(parametrization_fixture.name)
             self.parametrization_ids.append(parametrization_fixture.info.id)
 
-        if 'this' in self.info.required_args:
-            meta_fixture = ThisFixture(store, self)
-            store.register_fixture_id(meta_fixture)
-            self.namespace.add_name('this', meta_fixture.info.id)
-
         for name in self.info.required_args:
             if name in parametrized:
                 continue
@@ -57,33 +53,12 @@ class Fixture(FixtureBase):
                     raise InvalidFixtureScope('Fixture {0} is dependent on {1}, which has a smaller scope ({2} > {3})'.format(
                         self.info.name, name, self.scope, needed_fixture.scope))
 
-                assert needed_fixture is not self
+                if needed_fixture is self:
+                    raise CyclicFixtureDependency('Cyclic fixture dependency detected in {0}: {1} depends on itself'.format(
+                        self.info.func.__code__.co_filename,
+                        self.info.name))
                 kwargs[name] = needed_fixture.info.id
             except LookupError:
                 raise UnknownFixtures(name)
         return kwargs
 
-
-class ThisFixture(FixtureBase):
-
-    def __init__(self, store, fixture):
-        super(ThisFixture, self).__init__()
-        assert context.session is None or store is context.session.fixture_store
-        self.store = store
-        self.info = FixtureInfo()
-        self.fixture = fixture
-        self.name = self.fixture.info.name
-        self.scope = fixture.scope
-
-    def _resolve(self, store):
-        return {}
-
-    def add_cleanup(self, func):
-        self.store.add_cleanup(self.scope, func)
-
-    def get_value(self, kwargs):
-        assert not kwargs
-        return self
-
-    def __repr__(self):
-        return '<This Fixture>'

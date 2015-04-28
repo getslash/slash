@@ -43,10 +43,10 @@ class Function(CodeElement):
                 '__ut__.events.add({0!r}, {1!r})'.format(
                     eventcode, self.id))
 
-    def add_deferred_event(self, decorator, name='deferred', extra_code=()):
+    def add_deferred_event(self, decorator=None, name='deferred', extra_code=(), adder=None):
         event = '{0}_{1}'.format(name, uuid4())
         self._deferred_events.append({
-            'decorator': decorator, 'event': event, 'extra_code': extra_code})
+            'decorator': decorator, 'event': event, 'extra_code': extra_code, 'adder': adder})
         return event
 
     @contextmanager
@@ -84,12 +84,17 @@ class Function(CodeElement):
         if not self.suite.debug_info:
             return
         for index, deferred in enumerate(self._deferred_events, 1):
-            code_formatter.writeln('@{0[decorator]}'.format(deferred))
-            code_formatter.writeln('def _defferred{0}():'.format(index))
+            deferred_func_name = '_deferred{0}'.format(index)
+            adder = deferred['adder']
+            if adder is None:
+                code_formatter.writeln('@{0[decorator]}'.format(deferred))
+            code_formatter.writeln('def {0}():'.format(deferred_func_name))
             with code_formatter.indented():
                 code_formatter.writeln('__ut__.events.add({0[event]!r})'.format(deferred))
                 for line in deferred['extra_code']:
                     code_formatter.writeln(line)
+            if adder is not None:
+                code_formatter.write(adder.format(deferred_func_name))
             code_formatter.writeln()
 
     def _write_return(self, code_formatter):

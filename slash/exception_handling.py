@@ -1,9 +1,9 @@
 from contextlib import contextmanager
 from .utils.debug import debug_if_needed
+from .utils.exception_mark import mark_exception, get_exception_mark
 from . import hooks as trigger_hook
 from .ctx import context as slash_context
 from .conf import config
-from .exceptions import TestFailed, SkipTest
 import functools
 import logbook
 try:
@@ -14,7 +14,7 @@ import sys
 
 _logger = logbook.Logger(__name__)
 
-def update_current_result(exc_info):
+def update_current_result(exc_info):  # pylint: disable=unused-argument
     if slash_context.session is None:
         return
     if slash_context.test is not None:
@@ -22,14 +22,11 @@ def update_current_result(exc_info):
     else:
         current_result = slash_context.session.results.global_result
 
-    exc_class = exc_info[0]
-    if issubclass(exc_class, (AssertionError, TestFailed)):
-        current_result.add_failure()
-    elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
-        current_result.add_error()
+    current_result.add_exception()
 
 def trigger_hooks_before_debugger(_):
     trigger_hook.exception_caught_before_debugger()  # pylint: disable=no-member
+
 def trigger_hooks_after_debugger(_):
     trigger_hook.exception_caught_after_debugger()  # pylint: disable=no-member
 
@@ -42,9 +39,16 @@ _EXCEPTION_HANDLERS = [
 
 @contextmanager
 def handling_exceptions(**kwargs):
+    """Context manager handling exceptions that are raised within it
+
+    :param passthrough_types: a tuple specifying exception types to avoid handling, raising them immediately onward
+    """
     swallow = kwargs.pop("swallow", False)
+    passthrough_types = kwargs.pop('passthrough_types', ())
     try:
         yield
+    except passthrough_types:
+        raise
     except:
         handle_exception(sys.exc_info(), **kwargs)
         if not swallow:
@@ -79,30 +83,6 @@ def is_exception_handled(e):
     Checks if the exception ``e`` already passed through the exception handling logic
     """
     return bool(get_exception_mark(e, "handled", False))
-
-_NO_DEFAULT = object()
-
-def is_exception_marked(e, name):
-    return get_exception_mark(e, name, _NO_DEFAULT) is not _NO_DEFAULT
-
-def mark_exception(e, name, value):
-    """
-    Associates a mark with a given value to the exception ``e``
-    """
-    _ensure_exception_marks(e)[name] = value
-
-def get_exception_mark(e, name, default=None):
-    """
-    Given an exception and a label name, get the value associated with that mark label.
-    If the label does not exist on the specified exception, ``default`` is returned.
-    """
-    return _ensure_exception_marks(e).get(name, default)
-
-def _ensure_exception_marks(e):
-    returned = getattr(e, "__slash_exc_marks__", None)
-    if returned is None:
-        returned = e.__slash_exc_marks__ = {}
-    return returned
 
 @contextmanager
 def get_exception_swallowing_context(report_to_sentry=True):
