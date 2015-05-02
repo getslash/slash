@@ -110,6 +110,7 @@ html_theme_options = {
     'github_button': True,
     'github_banner': True,
     'travis_button': 'slash-testing/slash',
+    'analytics_id': 'UA-62537825-1',
 }
 html_sidebars = {
    '**': [
