@@ -26,7 +26,7 @@ def test_console_format(suite, suite_test, config_override, tmpdir):
 def test_last_session_symlinks(files_dir, links_dir, session):
 
     test_log_file = files_dir.join(
-        session.id, list(session.results.iter_test_results())[-1].test_metadata.id, "log")
+        session.id, list(session.results.iter_test_results())[-1].test_metadata.id, "debug.log")
     assert test_log_file.check()
     session_log_file = files_dir.join(session.id, "session.log")
     assert session_log_file.check()
