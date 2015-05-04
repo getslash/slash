@@ -17,7 +17,7 @@ config = Config({
         "truncate_console_lines": True // Doc("truncate long log lines on the console") // Cmdline(arg='--truncate-console-lines', metavar='yes/no'),
         "truncate_console_errors": False // Doc("If truncate_console_lines is set, also truncate long log lines, including and above the \"error\" level, on the console"),
         "root": None // Doc("Root directory for logs") // Cmdline(arg="-l", metavar="DIR"),
-        "subpath": "{context.session.id}/{context.test_id}/log" // Doc("Path to write logs to under the root"),
+        "subpath": "{context.session.id}/{context.test_id}/debug.log" // Doc("Path to write logs to under the root"),
         "session_subpath": "{context.session.id}/session.log",
         "last_session_symlink": None // Doc("If set, specifies a symlink path to the last session log file in each run"),
         "last_session_dir_symlink": None // Doc("If set, specifies a symlink path to the last session log directory"),
