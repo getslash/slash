@@ -27,7 +27,8 @@ config = Config({
         "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
         "console_format": None // Doc("Optional format to be used for console output. Defaults to the regular format"),
         "localtime": False // Doc("Use local time for logging. If False, will use UTC"),
-        "unittest_mode": False,
+        "unittest_mode": False // Doc("Used during unit testing. Emit all logs to stderr as well as the log files"),
+        "unified_session_log": False // Doc("Make the session log file contain all logs, including from tests"),
     },
     "run": {
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),

@@ -37,6 +37,8 @@ The Session Log
 
 Another important config path is :ref:`conf.log.session_subpath`. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
 
+The session log, by default, does not contain logs from tests, as they are redirected to test log files. However, setting the :ref:`conf.log.unified_session_log` to ``True`` will cause the session log to contain *all* logs from all tests.
+
 Last Log Symlinks
 -----------------
 

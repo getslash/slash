@@ -23,6 +23,7 @@ def test_console_format(suite, suite_test, config_override, tmpdir):
     with open(result.get_log_path()) as f:
         assert 'file: message here' in f.read()
 
+
 def test_last_session_symlinks(files_dir, links_dir, session):
 
     test_log_file = files_dir.join(
@@ -101,12 +102,10 @@ def test_last_test_delete_log_file(links_dir, suite, suite_test):
     assert not os.path.exists(str(links_dir.join('last-test')))
     assert os.path.islink(str(links_dir.join('last-test')))
 
-
     summary = suite.run()
     with open(summary.session.results.global_result.get_log_path()) as f:
         assert 'OSError: ' not in f.read()
     # assert links_dir.join('last-test').readlink() == list(summary.session.results)[-1].get_log_path()
-
 
 
 def test_result_log_links(files_dir, session):
@@ -126,6 +125,17 @@ def test_last_failed(suite, links_dir):
     fail_log = result.get_log_path()
     assert os.path.isfile(fail_log)
     assert links_dir.join('last-failed').readlink() == fail_log
+
+
+def test_unified_session_log(suite, suite_test, config_override, tmpdir):
+    marker = 'some_marker_here'
+    config_override('log.unified_session_log', True)
+    config_override('log.root', str(tmpdir))
+    config_override('log.session_subpath', 'session.log')
+    suite_test.append_line('slash.logger.info({0!r})'.format(marker))
+    summary = suite.run()
+    with tmpdir.join('session.log').open() as f:
+        assert marker in f.read()
 
 
 @pytest.fixture
