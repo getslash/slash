@@ -12,35 +12,35 @@ from .requirements import get_requirements
 
 class TestTestFactory(RunnableTestFactory):
 
-    def __init__(self, test, file_path, factory_name, module_name):
-        super(TestTestFactory, self).__init__(file_path=file_path, factory_name=factory_name, module_name=module_name)
-        self.test = test
+    def __init__(self, testclass):
+        super(TestTestFactory, self).__init__(testclass)
+        self.testclass = testclass
 
     def _generate_tests(self, fixture_store):
-        if is_abstract_base_class(self.test):
+        if is_abstract_base_class(self.testclass):
             return
 
-        for test_method_name in dir(self.test):
+        for test_method_name in dir(self.testclass):
             if not test_method_name.startswith("test"):
                 continue
 
             for fixture_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
-                for _ in xrange(self._get_num_repetitions(getattr(self.test, test_method_name))):
-                    case = self.test(
+                for _ in xrange(self._get_num_repetitions(getattr(self.testclass, test_method_name))):
+                    case = self.testclass(
                         test_method_name,
                         fixture_store=fixture_store,
                         fixture_namespace=fixture_store.get_current_namespace(),
                         fixture_variation=fixture_variation,
                     )
-                    if self.test.__slash_skipped__:
-                        case.run = functools.partial(SkipTest.throw, self.test.__slash_skipped_reason__)
+                    if self.testclass.__slash_skipped__:
+                        case.run = functools.partial(SkipTest.throw, self.testclass.__slash_skipped_reason__)
                     yield case._get_address_in_factory(), case  # pylint: disable=protected-access
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(
             izip(itertools.repeat('before'), self._get_all_before_methods()),
             izip(itertools.repeat('after'), self._get_all_after_methods()),
-            [getattr(self.test, test_method_name)],
+            [getattr(self.testclass, test_method_name)],
         ))
 
     def _get_all_before_methods(self):
@@ -51,7 +51,7 @@ class TestTestFactory(RunnableTestFactory):
 
     def _iter_inherited_methods(self, name):
 
-        for cls in self.test.__mro__:
+        for cls in self.testclass.__mro__:
             if hasattr(cls, name):
                 yield getattr(cls, name)
 

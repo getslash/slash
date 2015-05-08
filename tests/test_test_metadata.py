@@ -5,6 +5,11 @@ import os
 import slash
 
 
+def test_module_name_not_none_or_empty_string(suite):
+    for result in suite.run().session.results:
+        assert result.test_metadata.module_name
+
+
 def test_test_index(suite):
     session = suite.run().session
     for index, result in enumerate(session.results):
@@ -25,7 +30,7 @@ class TestMetadataTest(TestCase):
             self.tests = slash.loader.Loader().get_runnables(self.filename)
             self.session = run_tests_assert_success(self.tests, session=s)
         self.results = list(self.session.results.iter_test_results())
-        self.results.sort(key = lambda result: str(result.test_metadata))
+        self.results.sort(key=lambda result: str(result.test_metadata))
 
     def test_tests_have_correct_metadata(self):
         for test, result in zip(self.tests, self.session.results.iter_test_results()):

@@ -67,12 +67,10 @@ class Loader(object):
         if isinstance(thing, RunnableTest):
             return [thing]
 
-        factory = self._get_runnable_test_factory(thing)
-        if factory is None:
-            raise ValueError(
-                "Cannot get runnable tests from {0!r}".format(thing))
+        if not isinstance(thing, RunnableTestFactory):
+            thing = self._get_runnable_test_factory(thing)
 
-        return factory.generate_tests(fixture_store=context.session.fixture_store)
+        return thing.generate_tests(fixture_store=context.session.fixture_store)
 
     def _iter_test_address(self, address):
         if ':' in address:
@@ -161,24 +159,27 @@ class Loader(object):
             if thing is RunnableTestFactory:  # probably imported directly
                 continue
 
-            factory = self._get_runnable_test_factory(
-                thing, module_name=module.__name__, file_path=file_path, name=thing_name)
+            factory = self._get_runnable_test_factory(thing)
+
             if factory is None:
                 continue
+
+            factory.set_factory_name(thing_name)
+            factory.set_module_name(module.__name__)
+            factory.set_filename(file_path)
 
             for test in factory.generate_tests(fixture_store=context.session.fixture_store):
                 assert test.__slash__ is not None
                 yield test
 
-    def _get_runnable_test_factory(self, thing, module_name='', file_path='', name=''):
+    def _get_runnable_test_factory(self, thing):
+
         if isinstance(thing, type) and issubclass(thing, Test):
-            return TestTestFactory(thing, module_name=module_name, file_path=file_path, factory_name=name)
+            return TestTestFactory(thing)
 
         if isinstance(thing, FunctionType):
-            if not name:
-                name = thing.__name__
-            if name.startswith('test_'):
-                return FunctionTestFactory(func=thing, module_name=module_name, file_path=file_path, factory_name=name)
+            if thing.__name__.startswith('test_'):
+                return FunctionTestFactory(thing)
 
         return None
 

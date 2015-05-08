@@ -15,9 +15,10 @@ class Metadata(object):
         #: Back reference to the test to which this metadata placeholder belongs
         self.test = test
         #: The path to the file from which this test was loaded
-        self.file_path = factory.file_path
-        self.module_name = factory.module_name
-        self.factory_name = factory.factory_name
+        self.file_path = factory.get_filename()
+        self.module_name = factory.get_module_name()
+        assert self.module_name, 'Could not find module for {0}'.format(test)
+        self.factory_name = factory.get_factory_name()
         #: Address string to identify the test inside the file from which it was loaded
         self.address_in_file = self.factory_name
         self.address_in_factory = address_in_factory

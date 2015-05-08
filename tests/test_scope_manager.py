@@ -7,6 +7,7 @@ import slash
 from slash._compat import iteritems
 from slash.core.scope_manager import ScopeManager
 from slash.loader import Loader
+from .utils import make_runnable_tests
 
 
 def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
@@ -69,8 +70,8 @@ def tests_by_module():
             module_name = '__module_{0}'.format(module_index)
             returned.append([])
             for test_index in range(num_tests_per_module):
-                [test] = Loader().get_runnables([test_func])
-                assert not test.__slash__.module_name
+                [test] = make_runnable_tests(test_func)
+                assert test.__slash__.module_name
                 test.__slash__.module_name = module_name
                 returned[-1].append(test)
     return returned
