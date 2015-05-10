@@ -29,6 +29,6 @@ if __name__ == '__main__':
     if sys.version_info < (2, 7):
         deps.append("unittest2")
 
-    subprocess.check_call("{0} install --use-mirrors {1}".format(
+    subprocess.check_call("{0} install {1}".format(
         os.path.join(_BIN_PATH, "pip"),
         " ".join(repr(dep) for dep in deps)), shell=True)
