@@ -17,10 +17,16 @@ class ScopeManager(object):
     def begin_test(self, test):
         test_module = test.__slash__.module_name
         assert test_module
+
         if self._last_module is None:
             self._push_scope('session')
-            self._push_scope('module')
-        elif self._last_module != test_module:
+
+
+        if self._last_module != test_module:
+            if self._last_module is not None:
+                _logger.debug('Module scope has changed. Popping previous module scope')
+                self._pop_scope('module', in_failure=False, in_interruption=False)
+            assert self._scopes[-1] != 'module'
             self._push_scope('module')
         self._last_module = test_module
         self._push_scope('test')
@@ -38,9 +44,6 @@ class ScopeManager(object):
             _logger.debug('No next test. Popping scopes')
             self._pop_scope('module', **kw)
             self._pop_scope('session', **kw)
-        elif next_test.__slash__.module_name != self._last_module:
-            _logger.debug('Next test is in different module ({0.__slash__.module_name!r}) != {1._last_module!r}. Popping module scope', next_test, self)
-            self._pop_scope('module', **kw)
 
 
     def _push_scope(self, scope):
@@ -51,7 +54,7 @@ class ScopeManager(object):
 
     def _pop_scope(self, scope, **kw):
         popped = self._scopes.pop()
-        _logger.debug('Popped scope {0} (expected {1})', scope, popped)
+        _logger.debug('Popped scope {0} (expected {1})', popped, scope)
         assert popped == scope
         call_all_raise_first([self._session.cleanups.pop_scope, self._session.fixture_store.pop_scope],
                              scope, **kw)
