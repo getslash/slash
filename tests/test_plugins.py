@@ -9,6 +9,18 @@ from slash.plugins import IncompatiblePlugin, PluginInterface
 
 from .utils import CustomException, TestCase
 
+def test_class_variables_allowed(request):
+    request.addfinalizer(plugins.manager.install_builtin_plugins)
+    request.addfinalizer(plugins.manager.uninstall_all)
+
+    @slash.plugins.active
+    class SamplePlugin(PluginInterface):
+
+        ATTRIBUTE = 'some_value'
+
+        def get_name(self):
+            return 'sample'
+
 
 def test_active_decorator(request):
 

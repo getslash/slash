@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`306` Allow class variables in plugins
 * :feature:`300` Add `log.unified_session_log` flag to make session log contain all logs from all tests
 * :release:`0.15.0 <28-04-2015>`
 * :feature:`289` Added ``get_config`` optional method to plugins, allowing them to supplement configuration to ``config.root.plugin_config.<plugin_name>``

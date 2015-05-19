@@ -166,6 +166,10 @@ class PluginManager(object):
             if method_name.startswith("_"):
                 continue
             method = getattr(plugin, method_name)
+
+            if not hasattr(method, '__call__'):
+                continue
+
             hook_name = try_get_mark(method, "register_on")
             if hook_name is None:
                 expect_exists = True
