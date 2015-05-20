@@ -1,7 +1,7 @@
 import pytest
 import slash
 
-from .utils import TestCase
+from .utils import TestCase, make_runnable_tests
 
 
 @pytest.mark.parametrize("args", [(), ("message",)])
@@ -66,7 +66,7 @@ def test_class_decorator(suite):
 def _assert_skips(thing, reason=None):
     with slash.Session():
         if isinstance(thing, type) and issubclass(thing, slash.Test):
-            [thing] = slash.loader.Loader().get_runnables(thing)
+            [thing] = make_runnable_tests(thing)
             thing = thing.run
 
     with pytest.raises(slash.exceptions.SkipTest) as caught:

@@ -110,13 +110,14 @@ class SessionLogging(object):
         self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level, stream=console_stream)
         #: contains the path for the session logs
         self.session_log_path = None
+        self.session_log_handler = None
         #: contains the path for the current test logs
         self.test_log_path = None
         self._set_formatting(self.console_handler, config.root.log.console_format or config.root.log.format)
 
     @contextmanager
     def get_test_logging_context(self):
-        with self._get_file_logging_context(config.root.log.subpath, config.root.log.last_test_symlink) as path:
+        with self._get_file_logging_context(config.root.log.subpath, config.root.log.last_test_symlink) as (_, path):
             self.test_log_path = path
             context.result.set_log_path(path)
             try:
@@ -132,8 +133,10 @@ class SessionLogging(object):
 
     @contextmanager
     def get_session_logging_context(self):
+        assert self.session_log_handler is None
         with self._get_file_logging_context(
-            config.root.log.session_subpath, config.root.log.last_session_symlink) as path:
+            config.root.log.session_subpath, config.root.log.last_session_symlink) as (handler, path):
+            self.session_log_handler = handler
             self.session_log_path = path
             self.session.results.global_result.set_log_path(path)
             if config.root.log.last_session_dir_symlink is not None and self.session_log_path is not None:
@@ -152,7 +155,10 @@ class SessionLogging(object):
                 stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True))
             for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler.applicationbound())
-            yield path
+            if config.root.log.unified_session_log and self.session_log_handler is not None:
+                stack.enter_context(self.session_log_handler)
+
+            yield handler, path
 
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:

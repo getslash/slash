@@ -7,6 +7,29 @@ import slash
 from slash._compat import iteritems
 from slash.core.scope_manager import ScopeManager
 from slash.loader import Loader
+from .utils import make_runnable_tests
+from .utils.suite_writer import Suite
+
+
+def test_requirement_mismatch_end_of_module():
+    """Test that unmet requirements at end of file(module) still enable scope manager to detect the end and properly pop contextx"""
+
+    suite = Suite()
+
+    num_files = 3
+    num_tests_per_file = 5
+
+    for i in range(num_files):
+        file1 = suite.add_file()
+
+        for i in range(num_tests_per_file):
+            file1.add_function_test()
+
+        t = file1.add_function_test()
+        t.add_decorator('slash.requires(lambda: False)')
+        t.expect_skip()
+
+    suite.run()
 
 
 def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
@@ -35,11 +58,12 @@ def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
             scope_manager.end_test(test, next_test=next_test, exc_info=(None, None, None))
             if next_test is None:
                 assert dummy_fixture_store._scopes == []
-            elif end_of_module:
-                assert dummy_fixture_store._scopes == ['session']
             else:
                 assert dummy_fixture_store._scopes == ['session', 'module']
             assert dummy_fixture_store._scope_ids == last_scopes
+
+    scope_manager.flush_remaining_scopes()
+    assert not dummy_fixture_store._scopes
 
 
 @pytest.fixture
@@ -69,8 +93,8 @@ def tests_by_module():
             module_name = '__module_{0}'.format(module_index)
             returned.append([])
             for test_index in range(num_tests_per_module):
-                [test] = Loader().get_runnables([test_func])
-                assert not test.__slash__.module_name
+                [test] = make_runnable_tests(test_func)
+                assert test.__slash__.module_name
                 test.__slash__.module_name = module_name
                 returned[-1].append(test)
     return returned

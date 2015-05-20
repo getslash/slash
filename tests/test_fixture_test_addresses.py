@@ -4,7 +4,7 @@ import pytest
 import slash
 from slash._compat import ExitStack, xrange
 
-from .utils import run_tests_assert_success
+from .utils import run_tests_assert_success, make_runnable_tests
 from .utils.code_formatter import CodeFormatter
 
 
@@ -25,11 +25,11 @@ def test_fixtures_avoid_non_printable_reprs_strs(non_printable):
         def test_something(param):
             pass
 
-        [loaded_test] = slash.loader.Loader().get_runnables([test_something])
+        [loaded_test] = make_runnable_tests([test_something])
 
-    assert '/' not in loaded_test.__slash__.address
-    assert repr(non_printable) not in loaded_test.__slash__.address
-    assert str(non_printable) not in loaded_test.__slash__.address
+    assert '/' not in loaded_test.__slash__.address_in_file
+    assert repr(non_printable) not in loaded_test.__slash__.address_in_file
+    assert str(non_printable) not in loaded_test.__slash__.address_in_file
 
 
 @pytest.fixture

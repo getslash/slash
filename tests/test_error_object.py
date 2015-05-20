@@ -7,6 +7,7 @@ import dessert
 import pytest
 from slash.core.error import Error
 
+from .utils import without_pyc
 
 def test_error_exception_str_repr(error):
     assert "NotImplementedError" in str(error)
@@ -17,7 +18,7 @@ def test_detailed_exception(error):
     assert 'NotImplementedError' in error.get_detailed_str()
 
 def test_error_filename(error):
-    assert error.filename == os.path.abspath(__file__)
+    assert error.filename == without_pyc(os.path.abspath(__file__))
 
 def test_error_func_name(error):
     assert error.func_name == "func_3"

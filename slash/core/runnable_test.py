@@ -23,4 +23,4 @@ class RunnableTest(object):
         raise NotImplementedError() # pragma: no cover
 
     def __repr__(self):
-        return repr(self.__slash__)
+        return '<Runnable test {0!r}>'.format(self.__slash__)

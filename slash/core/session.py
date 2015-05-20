@@ -14,6 +14,7 @@ from ..utils.interactive import notify_if_slow_context
 from ..warnings import SessionWarnings
 from .fixtures.fixture_store import FixtureStore
 from .result import SessionResults
+from .scope_manager import ScopeManager
 
 
 class Session(Activatable):
@@ -27,6 +28,7 @@ class Session(Activatable):
         self.id = "{0}_0".format(uuid.uuid1())
         self.id_space = IDSpace(self.id)
         self.test_index_counter = itertools.count()
+        self.scope_manager = ScopeManager(self)
         self._started = False
         self._complete = False
         self._active_context = None

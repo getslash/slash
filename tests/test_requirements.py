@@ -2,6 +2,8 @@ import pytest
 import slash
 from slash.loader import Loader
 
+from .utils import make_runnable_tests
+
 @pytest.mark.parametrize('requirement_fullfilled', [True, False])
 @pytest.mark.parametrize('use_message', [True, False])
 @pytest.mark.parametrize('use_fixtures', [True, False])
@@ -38,6 +40,6 @@ def test_requirements_on_class():
             pass
 
     with slash.Session():
-        [test] = Loader().get_runnables(Test)
+        [test] = make_runnable_tests(Test)
 
     assert [r._req for r in test.get_requirements()] == [req1, req2]

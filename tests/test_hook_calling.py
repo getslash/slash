@@ -6,7 +6,7 @@ from slash import hooks
 import pytest
 import gossip
 
-from .utils import TestCase
+from .utils import TestCase, make_runnable_tests
 
 
 class SessionEndException(Exception):
@@ -111,7 +111,7 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
             exception_stack.enter_context(pytest.raises(exception_type))
         with slash.Session() as s:
             with s.get_started_context():
-                slash.runner.run_tests(slash.loader.Loader().get_runnables(test_something))
+                slash.runner.run_tests(make_runnable_tests(test_something))
 
     assert checkpoint.called == debug_enabled
     if debug_enabled:
@@ -140,7 +140,7 @@ def test_before_cleanup_hook(request, forge):
 
     with slash.Session() as s:
         with s.get_started_context():
-            slash.runner.run_tests(slash.loader.Loader().get_runnables(test_something))
+            slash.runner.run_tests(make_runnable_tests(test_something))
 
 
 #### Older tests below, need modernizing ####

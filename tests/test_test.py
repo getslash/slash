@@ -2,6 +2,7 @@ from .utils import (
     TestCase,
     CustomException,
     run_tests_in_session,
+    make_runnable_tests,
     )
 import itertools
 import slash
@@ -23,7 +24,7 @@ class TestTest(TestCase):
             def test_2(self):
                 events.append("test_2")
         with slash.Session():
-            tests = list(Loader().get_runnables(Test))
+            tests = make_runnable_tests(Test)
         for test in tests:
             self.assertIsInstance(test, Test)
         self.assertEquals(len(tests), 2)
@@ -43,7 +44,7 @@ class TestTest(TestCase):
             def after(self):
                 events.append("after")
         with slash.Session():
-            [test] = Loader().get_runnables(Test)
+            [test] = make_runnable_tests(Test)
         with self.assertRaises(CustomException):
             test.run()
         self.assertEquals(events, [])
@@ -73,7 +74,7 @@ class TestTest(TestCase):
             def after(self):
                 events.append("after")
         with slash.Session():
-            [test] = Loader().get_runnables(Test)
+            [test] = make_runnable_tests(Test)
         with self.assertRaises(CustomException):
             test.run()
         self.assertEquals(events, ["before", "test", "after"])
@@ -89,11 +90,11 @@ class AbstractTestTest(TestCase):
             def test3(self):
                 pass
         with slash.Session():
-            self.assertEquals(list(Loader().get_runnables(Abstract)), [])
+            self.assertEquals(list(make_runnable_tests(Abstract)), [])
         class Derived(Abstract):
             pass
         with slash.Session():
-            self.assertEquals(len(list(Loader().get_runnables(Derived))), 3)
+            self.assertEquals(len(list(make_runnable_tests(Derived))), 3)
 
 class TestParametersTest(TestCase):
     def test_parameters(self):
@@ -113,7 +114,7 @@ class TestParametersTest(TestCase):
             def after(self, d):
                 variations[-1].append(d)
         with slash.Session():
-            for test in Loader().get_runnables(Parameterized):
+            for test in make_runnable_tests(Parameterized):
                 test.run()
         self.assertEquals(
             set(tuple(x) for x in variations),

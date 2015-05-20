@@ -9,11 +9,17 @@ from slash.plugins import IncompatiblePlugin, PluginInterface
 
 from .utils import CustomException, TestCase
 
+def test_class_variables_allowed(restore_plugins_on_cleanup):
+    @slash.plugins.active
+    class SamplePlugin(PluginInterface):
 
-def test_active_decorator(request):
+        ATTRIBUTE = 'some_value'
 
-    request.addfinalizer(plugins.manager.install_builtin_plugins)
-    request.addfinalizer(plugins.manager.uninstall_all)
+        def get_name(self):
+            return 'sample'
+
+
+def test_active_decorator(restore_plugins_on_cleanup):
 
     plugins.manager.uninstall_all()
 
@@ -339,3 +345,8 @@ class StartSessionPlugin(PluginInterface):
 
     def deactivate(self):
         self._deactivate_called = True
+
+@pytest.fixture
+def restore_plugins_on_cleanup(request):
+    request.addfinalizer(plugins.manager.install_builtin_plugins)
+    request.addfinalizer(plugins.manager.uninstall_all)
