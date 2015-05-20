@@ -3,7 +3,8 @@ from __future__ import print_function
 import threading
 from contextlib import contextmanager
 from ..ctx import context
-from ..core.runnable_test import RunnableTest
+from ..core import metadata
+from ..core.function_test import FunctionTestFactory
 
 try:
     from IPython import embed # pylint: disable=F0401
@@ -27,22 +28,11 @@ def start_interactive_shell(**namespace):
 
     _interact(namespace)
 
-
-class InteractiveTest(RunnableTest):
-
-    def run(self):
-        start_interactive_shell()
-
-    def get_requirements(self):
-        return []
-
-    def get_required_fixture_objects(self):
-        return []
-
-    def __repr__(self):
-        return '<Interactive>'
-
-
+def generate_interactive_test():
+    [returned] = FunctionTestFactory(start_interactive_shell).generate_tests(context.session.fixture_store)
+    m = returned.__slash__ = metadata.Metadata(None, returned, '')
+    m.factory_name = m.address = 'Interactive'
+    return returned
 
 @contextmanager
 def notify_if_slow_context(message, slow_seconds=1):

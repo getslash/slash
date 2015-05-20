@@ -89,7 +89,7 @@ def _group_results_by_test_id(suite, run_result):
     groups = {}
 
     for result in run_result.session.results:
-        if '-Interactive-' ==  result.test_metadata.address:
+        if 'Interactive' ==  result.test_metadata.address:
             continue
         test_id = get_test_id_from_test_address(result.test_metadata.address)
         assert tests_by_id[test_id].is_selected()

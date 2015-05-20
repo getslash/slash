@@ -19,7 +19,7 @@ def test_interactive_test(forge, suite, checkpoint):
     assert checkpoint.called
 
     result = next(summary.session.results.iter_test_results())
-    assert repr(result.test_metadata) == '<-Interactive->'
+    assert repr(result.test_metadata) == '<Interactive>'
 
 
 @pytest.mark.parametrize('with_session', [True, False])
