@@ -3,6 +3,7 @@ from __future__ import print_function
 import threading
 from contextlib import contextmanager
 from ..ctx import context
+from ..core.runnable_test import RunnableTest
 
 try:
     from IPython import embed # pylint: disable=F0401
@@ -23,7 +24,24 @@ def start_interactive_shell(**namespace):
     """
     if context.g is not None:
         namespace.update(context.g.__dict__)
+
     _interact(namespace)
+
+
+class InteractiveTest(RunnableTest):
+
+    def run(self):
+        start_interactive_shell()
+
+    def get_requirements(self):
+        return []
+
+    def get_required_fixture_objects(self):
+        return []
+
+    def __repr__(self):
+        return '<Interactive>'
+
 
 
 @contextmanager

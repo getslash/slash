@@ -45,6 +45,8 @@ class ScopeManager(object):
             self._pop_scope('module', **kw)
             self._pop_scope('session', **kw)
 
+    def get_current_stack(self):
+        return self._scopes[:]
 
     def _push_scope(self, scope):
         self._scopes.append(scope)

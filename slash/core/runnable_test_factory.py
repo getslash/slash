@@ -7,7 +7,7 @@ from ..conf import config
 
 class RunnableTestFactory(object):
 
-    def __init__(self, param):
+    def __init__(self, param=None):
         super(RunnableTestFactory, self).__init__()
         self._param = param
         self._factory_name = self._filename = self._module_name = None

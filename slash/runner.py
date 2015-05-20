@@ -12,7 +12,6 @@ from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, SkipTest, TestFailed
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
-from .core.scope_manager import ScopeManager
 from .utils.iteration import PeekableIterator
 from .utils.interactive import notify_if_slow_context
 from .core.error import Error
@@ -36,7 +35,6 @@ def run_tests(iterable, stop_on_error=None):
     test_iterator = PeekableIterator(iterable)
     last_filename = None
     complete = False
-    scope_manager = ScopeManager(context.session)
     try:
         for test in test_iterator:
             _set_test_metadata(test)
@@ -47,7 +45,7 @@ def run_tests(iterable, stop_on_error=None):
             context.session.reporter.report_test_start(test)
             _logger.notice("{0}", test.__slash__.address)
 
-            with _get_run_context_stack(test, test_iterator, scope_manager) as should_run:
+            with _get_run_context_stack(test, test_iterator) as should_run:
                 if should_run:
                     test.run()
 
@@ -64,7 +62,7 @@ def run_tests(iterable, stop_on_error=None):
         else:
             complete = True
     finally:
-        scope_manager.flush_remaining_scopes(
+        context.session.scope_manager.flush_remaining_scopes(
             in_failure=not complete, in_interruption=context.session.results.is_interrupted())
 
     _mark_unrun_tests(test_iterator)
@@ -90,7 +88,7 @@ def _mark_unrun_tests(test_iterator):
 
 
 @contextmanager
-def _get_run_context_stack(test, test_iterator, scope_manager):
+def _get_run_context_stack(test, test_iterator):
     yielded = False
     # run_state is needed to support Python 2.6, where exc_info() disappears in some cases when using finally
     run_state = {'exc_info': (None, None, None)}
@@ -104,7 +102,7 @@ def _get_run_context_stack(test, test_iterator, scope_manager):
         stack.enter_context(handling_exceptions())
         stack.enter_context(_get_test_hooks_context())
         stack.enter_context(_update_result_context())
-        stack.enter_context(_get_test_scope_context(test, test_iterator, scope_manager, run_state))
+        stack.enter_context(_get_test_scope_context(test, test_iterator, run_state))
         stack.enter_context(handling_exceptions())
         yielded = True
         try:
@@ -128,12 +126,12 @@ def _check_test_requirements(test):
 
 
 @contextmanager
-def _get_test_scope_context(test, test_iterator, scope_manager, run_state):
-    scope_manager.begin_test(test)
+def _get_test_scope_context(test, test_iterator, run_state):
+    context.session.scope_manager.begin_test(test)
     try:
         yield
     finally:
-        scope_manager.end_test(test, next_test=test_iterator.peek_or_none(), exc_info=run_state['exc_info'])
+        context.session.scope_manager.end_test(test, next_test=test_iterator.peek_or_none(), exc_info=run_state['exc_info'])
 
 
 @contextmanager

@@ -1,3 +1,4 @@
+import itertools
 import functools
 import os
 import sys
@@ -7,12 +8,13 @@ import logbook
 
 from ..app import get_application_context
 from ..conf import config
+from ..core import metadata
 from ..exceptions import SlashException
 from ..exception_handling import handling_exceptions
 from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume,
                         save_resume_state)
 from ..runner import run_tests
-from ..utils.interactive import start_interactive_shell
+from ..utils.interactive import InteractiveTest
 
 _logger = logbook.Logger(__name__)
 
@@ -32,9 +34,9 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, test_so
                     collected = app.test_loader.get_runnables(to_resume, sort_key=test_sort_key)
                 else:
                     collected = _collect_tests(app, args, test_sort_key=test_sort_key)
-            with app.session.get_started_context():
                 if app.args.interactive:
-                    start_interactive_shell()
+                    collected = itertools.chain([_get_interactiv_test()], collected)
+            with app.session.get_started_context():
                 run_tests(collected)
         except SlashException as e:
             logbook.error(str(e))
@@ -45,6 +47,12 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, test_so
         if app.session.results.is_success(allow_skips=True):
             return 0
         return -1
+
+def _get_interactiv_test():
+    returned = InteractiveTest()
+    returned.__slash__ = metadata.Metadata(None, returned, '')
+    returned.__slash__.address = '-Interactive-'
+    return returned
 
 @contextmanager
 def _get_slash_app_context(args, report_stream, resume_session):

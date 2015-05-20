@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`307` Interactive test is now a first-class test and allows any operation that is allowed from within a regular test
 * :feature:`306` Allow class variables in plugins
 * :feature:`300` Add `log.unified_session_log` flag to make session log contain all logs from all tests
 * :release:`0.15.0 <28-04-2015>`

@@ -1,3 +1,4 @@
+import sys
 
 class Metadata(object):
 
@@ -14,11 +15,16 @@ class Metadata(object):
         self.id = None
         #: Back reference to the test to which this metadata placeholder belongs
         self.test = test
+        if factory is not None:
         #: The path to the file from which this test was loaded
-        self.file_path = factory.get_filename()
-        self.module_name = factory.get_module_name()
-        assert self.module_name, 'Could not find module for {0}'.format(test)
-        self.factory_name = factory.get_factory_name()
+            self.module_name = factory.get_module_name()
+            assert self.module_name, 'Could not find module for {0}'.format(test)
+            self.file_path = factory.get_filename()
+            self.factory_name = factory.get_factory_name()
+        else:
+            self.module_name = type(test).__module__
+            self.file_path = sys.modules[self.module_name].__file__
+            self.factory_name = '?'
         #: Address string to identify the test inside the file from which it was loaded
         self.address_in_file = self.factory_name
         self.address_in_factory = address_in_factory
