@@ -163,19 +163,22 @@ class PluginManager(object):
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
                 continue
-            if method_name.startswith("_"):
-                continue
+
             method = getattr(plugin, method_name)
 
             if not hasattr(method, '__call__'):
                 continue
 
-            hook_name = try_get_mark(method, "register_on")
-            if hook_name is None:
+            hook_name = try_get_mark(method, 'register_on')
+
+            if hook_name is not None:
+                expect_exists = False
+            else:
+                if method_name.startswith('_'):
+                    continue
                 expect_exists = True
                 hook_name = "slash.{0}".format(method_name)
-            else:
-                expect_exists = False
+
             try:
                 if expect_exists:
                     hook = gossip.get_hook(hook_name)
