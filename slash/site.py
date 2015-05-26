@@ -45,7 +45,7 @@ def _load_environment():
 
 def _load_entry_points():
     import pkg_resources
-    for customize_function_loader in pkg_resources.iter_entry_points("slash.site.customize"):
+    for customize_function_loader in pkg_resources.iter_entry_points("slash.site.customize"): # pylint: disable=no-member
         func = customize_function_loader.load()
         func()
 
