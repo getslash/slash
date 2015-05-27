@@ -18,7 +18,7 @@ from .core.error import Error
 
 
 _logger = logbook.Logger(__name__)
-log.set_log_color(_logger.name, logbook.NOTICE, 'teal')
+log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
 
 def run_tests(iterable, stop_on_error=None):
