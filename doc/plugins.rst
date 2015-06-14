@@ -52,6 +52,9 @@ Plugins are activated via :func:`slash.plugins.manager.activate <slash.plugins.P
          def func(self):
              ...
 
+
+``registers_on(None)`` has a special meaning - letting Slash know that this is not a hook entry point, but a private method belonging to the plugin class itself.
+
 .. seealso:: :ref:`hooks`
 
 

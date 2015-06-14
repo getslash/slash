@@ -32,6 +32,23 @@ def reset_gossip(request):
                 hook.unregister_all()
 
 
+def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
+
+    @slash.plugins.active
+    class SamplePlugin(PluginInterface):
+
+        def get_name(self):
+            return 'sample'
+
+        @plugins.registers_on(None)
+        def some_method_here(self):
+            checkpoint()
+
+    gossip.trigger('slash.some_method_here')
+    assert not checkpoint.called
+
+
+
 def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
 
     @slash.plugins.active

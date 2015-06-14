@@ -20,6 +20,11 @@ def test_try_get_mark_fail(marked_obj):
     assert try_get_mark(marked_obj, "nonexistent") is None
 
 
+def test_try_get_mark_fail_with_default(marked_obj):
+    _default = object()
+    assert try_get_mark(marked_obj, "nonexistent", _default) is _default
+
+
 @pytest.mark.parametrize('obj', [1, None, object(), type, "string"])
 def test_try_get_mark_fail_non_marked(obj):
     assert try_get_mark(obj, "mark") is None
