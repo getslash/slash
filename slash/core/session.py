@@ -71,8 +71,9 @@ class Session(Activatable):
         try:
             with handling_exceptions():
                 with notify_if_slow_context("Initializing session..."):
+                    hooks.before_session_start()  # pylint: disable=no-member
                     hooks.session_start()  # pylint: disable=no-member
-            hooks.after_session_start()  # pylint: disable=no-member
+                    hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield
         finally:

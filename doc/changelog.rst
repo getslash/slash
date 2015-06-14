@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`312` Add before_session_start hook
 * :feature:`308` Support registering private methods in plugins using registers_on
 * :release:`0.16.0 <20-05-2015>`
 * :feature:`307` Interactive test is now a first-class test and allows any operation that is allowed from within a regular test

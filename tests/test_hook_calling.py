@@ -49,13 +49,12 @@ def test_hook__error_added_after_test(suite, request, checkpoint, suite_test):
     assert not checkpoint.called
     [result] = summary.get_all_results_for_test(suite_test)
     try:
-        1/0
+        1 / 0
     except:
         result.add_error()
     assert checkpoint.called
     assert checkpoint.kwargs['result'] is result
     assert 'ZeroDivisionError' in str(checkpoint.kwargs['error'])
-
 
 
 def test_hook__test_interrupt(suite, request, checkpoint):
@@ -71,6 +70,7 @@ def test_hook__test_interrupt(suite, request, checkpoint):
             test.expect_deselect()
     suite.run(expect_interruption=True)
     assert checkpoint.called
+
 
 def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_test):
     request.addfinalizer(
@@ -150,7 +150,7 @@ class HookCallingTest(TestCase):
     def setUp(self):
         super(HookCallingTest, self).setUp()
         self.plugin1 = make_custom_plugin("plugin1", self)
-        self.plugin2 = make_custom_plugin("plugin2", self, hook_names=["session_start", "after_session_start"])
+        self.plugin2 = make_custom_plugin("plugin2", self, hook_names=["before_session_start", "session_start", "after_session_start"])
         self.addCleanup(plugins.manager.uninstall, self.plugin1)
         self.addCleanup(plugins.manager.uninstall, self.plugin2)
 
@@ -161,9 +161,12 @@ class HookCallingTest(TestCase):
             self.plugin2.activate()
 
         with self.forge.any_order():
+            self.plugin1.before_session_start()
+            self.plugin2.before_session_start()
+
+        with self.forge.any_order():
             self.plugin1.session_start()
             self.plugin2.session_start()
-
 
         with self.forge.any_order():
             self.plugin1.after_session_start()
@@ -185,6 +188,7 @@ class HookCallingTest(TestCase):
 def make_custom_plugin(name, test, hook_names=None):
 
     class CustomPlugin(PluginInterface):
+
         def get_name(self):
             return name
 
