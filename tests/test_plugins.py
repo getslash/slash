@@ -15,6 +15,7 @@ def restore_plugins_on_cleanup(request):
     request.addfinalizer(plugins.manager.install_builtin_plugins)
     request.addfinalizer(plugins.manager.uninstall_all)
 
+
 @pytest.fixture(autouse=True, scope="function")
 def reset_gossip(request):
     @request.addfinalizer
@@ -29,7 +30,6 @@ def reset_gossip(request):
                 hook.undefine()
             else:
                 hook.unregister_all()
-
 
 
 def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
