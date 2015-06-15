@@ -7,6 +7,17 @@ from slash.loader import Loader
 
 from .utils.suite_writer import Suite
 
+
+def test_total_num_tests(suite):
+    suite.debug_info = False
+
+    path = suite.commit()
+
+    with Session() as s:
+        Loader().get_runnables(path)
+        assert s.get_total_num_tests() == len(suite)
+
+
 @pytest.mark.parametrize('specific_method', [True, False])
 @pytest.mark.parametrize('with_parameters', [True, False])
 def test_iter_specific_factory(suite, suite_test, specific_method, with_parameters):

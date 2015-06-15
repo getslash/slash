@@ -90,3 +90,13 @@ class Session(Activatable):
 
     def is_complete(self):
         return self._complete
+
+    _total_num_tests = 0
+
+    def get_total_num_tests(self):
+        """Returns the total number of tests expected to run in this session
+        """
+        return self._total_num_tests
+
+    def increment_total_num_tests(self, increment):
+        self._total_num_tests += increment

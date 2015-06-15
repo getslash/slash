@@ -56,7 +56,7 @@ class Loader(object):
                 context.reporter.report_test_collected(returned, x)
         finally:
             context.reporter.report_collection_end(returned)
-
+        context.session.increment_total_num_tests(len(returned))
         return returned
 
     def _get_iterator(self, thing):
