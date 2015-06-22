@@ -13,7 +13,7 @@ Slash
 
 Slash is a testing framework written in Python for testing complex projects. 
 
-* [Homepage](http://vmalloc.github.io/slash)
+* [Homepage](http://slash-testing.github.io/slash/)
 
 * [Documentation](https://slash.readthedocs.org/en/latest/)
 
