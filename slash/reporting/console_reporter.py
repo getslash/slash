@@ -261,13 +261,8 @@ class ConsoleReporter(ReporterInterface):
                 frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
                 self._terminal.write(err_type, red=True, bold=True)
-                if code_lines:
-                    indent = ''.join(
-                        itertools.takewhile(str.isspace, code_lines[-1]))
-                else:
-                    indent = ''
                 self._terminal.write(
-                    self._indent_with(err.message, indent), red=True, bold=True)
+                    self._indent_with(err.message, 4), red=True, bold=True)
                 self._terminal.write('\n')
 
 
@@ -286,6 +281,8 @@ class ConsoleReporter(ReporterInterface):
             self._terminal.write('    > {0}: {1!r}\n'.format(key, value), black=True, bold=True)
 
     def _indent_with(self, text, indent):
+        if isinstance(indent, int):
+            indent = ' ' * indent
         return '\n'.join(indent + line for line in text.splitlines())
 
     def _report_result_skip_summary(self, result):
