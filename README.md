@@ -8,7 +8,7 @@ Slash
 | Supported Versions    | ![Supported Versions] (https://img.shields.io/pypi/pyversions/slash.svg)    |
 | Downloads             | ![Downloads] (https://img.shields.io/pypi/dm/slash.svg)                       |
 | Latest Version        | ![Latest Version] (https://img.shields.io/pypi/v/slash.svg)                  |
-| Test Coverage         | [![Coverage Status](https://coveralls.io/repos/slash-testing/slash/badge.svg)](https://coveralls.io/r/slash-testing/slash)   |
+| Test Coverage         | ![Coverage Status] (https://img.shields.io/coveralls/slash-testing/slash/develop.svg)   |
 
 
 
