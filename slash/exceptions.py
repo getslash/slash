@@ -46,6 +46,9 @@ class TestFailed(AssertionError):
     pass
 
 
+FAILURE_EXCEPTION_TYPES = (TestFailed, AssertionError)
+
+
 class SkipTest(SlashException):
 
     """

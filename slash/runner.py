@@ -9,7 +9,7 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, SkipTest, TestFailed
+from .exceptions import NoActiveSession, SkipTest, FAILURE_EXCEPTION_TYPES
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .utils.iteration import PeekableIterator
@@ -159,7 +159,7 @@ def _get_test_hooks_context():
         yield
     except SkipTest as skip_exception:
         hooks.test_skip(reason=skip_exception.reason)  # pylint: disable=no-member
-    except TestFailed:
+    except FAILURE_EXCEPTION_TYPES:
         hooks.test_failure()  # pylint: disable=no-member
     except KeyboardInterrupt:
         with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):

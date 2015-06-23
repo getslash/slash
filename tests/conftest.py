@@ -86,14 +86,18 @@ _timestamp = itertools.count(1000000)
 
 class Checkpoint(object):
 
-    called = False
+    called_count = 0
     args = kwargs = timestamp = None
 
     def __call__(self, *args, **kwargs):
-        self.called = True
+        self.called_count += 1
         self.args = args
         self.kwargs = kwargs
         self.timestamp = next(_timestamp)
+
+    @property
+    def called(self):
+        return self.called_count > 0
 
 
 @pytest.fixture(autouse=True, scope="function")

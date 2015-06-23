@@ -1,6 +1,20 @@
 import pytest
 
+import slash
 from .utils.suite_writer import Suite
+
+def test_failures_call_test_failure_hook(request, suite, suite_test, checkpoint):
+    suite_test.append_line('assert False')
+
+    @slash.hooks.test_failure.register
+    def callback(*_, **__):
+        checkpoint()
+
+    request.addfinalizer(callback.unregister)
+
+    suite_test.expect_failure()
+    summary = suite.run()
+    assert checkpoint.called_count == 1
 
 @pytest.mark.parametrize('error_adder', ['add_error', 'add_failure'])
 def test_adding_errors(error_adder, test_type):
