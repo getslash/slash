@@ -41,6 +41,13 @@ class Metadata(object):
         return None
 
     @property
+    def function_name(self):
+        returned = self.address_in_file
+        if '.' in returned:
+            returned = returned.rsplit('.', 1)[-1]
+        return returned.split('(', 1)[0]
+
+    @property
     def test_index1(self):
         """Same as ``test_index0``, only 1-based
         """

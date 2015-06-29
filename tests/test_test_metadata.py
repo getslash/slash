@@ -3,17 +3,35 @@ from .utils import run_tests_assert_success
 import itertools
 import os
 import slash
+import pytest
 
 
-def test_class_name(suite, suite_test, test_type):
+@pytest.mark.parametrize('parametrize', [True, False])
+def test_class_name(suite, suite_test, test_type, parametrize):
+    if parametrize:
+        suite_test.add_parameter(num_values=3)
     summary = suite.run()
-    [result] = summary.get_all_results_for_test(suite_test)
-    if test_type == 'method':
-        assert result.test_metadata.class_name.startswith('Test')
-    elif test_type == 'function':
-        assert result.test_metadata.class_name is None
-    else:
-        raise NotImplementedError() # pragma: no cover
+    for result in summary.get_all_results_for_test(suite_test):
+        if test_type == 'method':
+            assert result.test_metadata.class_name.startswith('Test')
+            assert '(' not in result.test_metadata.class_name
+        elif test_type == 'function':
+            assert result.test_metadata.class_name is None
+        else:
+            raise NotImplementedError() # pragma: no cover
+
+
+@pytest.mark.parametrize('parametrize', [True, False])
+def test_function_name(suite, suite_test, test_type, parametrize):
+    if parametrize:
+        suite_test.add_parameter(num_values=3)
+
+    summary = suite.run()
+    for result in summary.get_all_results_for_test(suite_test):
+        function_name = result.test_metadata.function_name
+        assert function_name.startswith('test_')
+        assert '.' not in result.test_metadata.function_name
+        assert '(' not in result.test_metadata.function_name
 
 
 def test_module_name_not_none_or_empty_string(suite):
