@@ -4,6 +4,12 @@ from .conf import config
 from .utils.deprecation import deprecated
 
 
+def register(func):
+    """A shortcut for registering hook functions by their names
+    """
+    return gossip.register('slash.{0}'.format(func.__name__))(func)
+
+
 def _deprecated_to_gossip(func):
     return deprecated(since="0.6.0", message="Use gossip instead")(func)
 
