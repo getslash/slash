@@ -100,9 +100,8 @@ def _get_run_context_stack(test, test_iterator):
             return
 
         stack.enter_context(handling_exceptions())
-        stack.enter_context(_get_test_hooks_context())
+        stack.enter_context(_get_test_callbacks_context(test, test_iterator, run_state))
         stack.enter_context(_update_result_context())
-        stack.enter_context(_get_test_scope_context(test, test_iterator, run_state))
         stack.enter_context(handling_exceptions())
         yielded = True
         try:
@@ -126,15 +125,6 @@ def _check_test_requirements(test):
 
 
 @contextmanager
-def _get_test_scope_context(test, test_iterator, run_state):
-    context.session.scope_manager.begin_test(test)
-    try:
-        yield
-    finally:
-        context.session.scope_manager.end_test(test, next_test=test_iterator.peek_or_none(), exc_info=run_state['exc_info'])
-
-
-@contextmanager
 def _get_test_context(test, logging=True):
     ensure_test_metadata(test)
 
@@ -153,28 +143,38 @@ def _get_test_context(test, logging=True):
 
 
 @contextmanager
-def _get_test_hooks_context():
-    hooks.test_start()  # pylint: disable=no-member
+def _get_test_callbacks_context(test, test_iterator, run_state):
+
+    # we have to set up the cleanup stack first, so that start_test can register cleanups
+    context.session.scope_manager.begin_test(test)
     try:
-        yield
-    except SkipTest as skip_exception:
-        hooks.test_skip(reason=skip_exception.reason)  # pylint: disable=no-member
-    except FAILURE_EXCEPTION_TYPES:
-        hooks.test_failure()  # pylint: disable=no-member
-    except KeyboardInterrupt:
-        with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
-            hooks.test_interrupt()  # pylint: disable=no-member
-        raise
-    except:
-        hooks.test_error()  # pylint: disable=no-member
-    else:
-        res = context.session.results.get_result(context.test)
-        if res.is_success_finished():
-            hooks.test_success()  # pylint: disable=no-member
-        elif res.is_just_failure():
+        hooks.test_start()  # pylint: disable=no-member
+        try:
+            try:
+                yield
+            finally:
+                # This is NOT a mistake - we have to end the scope manager context *before* test_end, because cleanups
+                # must happen before test_end..
+                with handling_exceptions():
+                    context.session.scope_manager.end_test(test, next_test=test_iterator.peek_or_none(), exc_info=run_state['exc_info'])
+        except SkipTest as skip_exception:
+            hooks.test_skip(reason=skip_exception.reason)  # pylint: disable=no-member
+        except FAILURE_EXCEPTION_TYPES:
             hooks.test_failure()  # pylint: disable=no-member
-        else:
+        except KeyboardInterrupt:
+            with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
+                hooks.test_interrupt()  # pylint: disable=no-member
+            raise
+        except:
             hooks.test_error()  # pylint: disable=no-member
+        else:
+            res = context.session.results.get_result(context.test)
+            if res.is_success_finished():
+                hooks.test_success()  # pylint: disable=no-member
+            elif res.is_just_failure():
+                hooks.test_failure()  # pylint: disable=no-member
+            else:
+                hooks.test_error()  # pylint: disable=no-member
     finally:
         hooks.test_end()  # pylint: disable=no-member
 
