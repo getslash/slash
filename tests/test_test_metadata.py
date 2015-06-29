@@ -5,6 +5,17 @@ import os
 import slash
 
 
+def test_class_name(suite, suite_test, test_type):
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    if test_type == 'method':
+        assert result.test_metadata.class_name.startswith('Test')
+    elif test_type == 'function':
+        assert result.test_metadata.class_name is None
+    else:
+        raise NotImplementedError() # pragma: no cover
+
+
 def test_module_name_not_none_or_empty_string(suite):
     for result in suite.run().session.results:
         assert result.test_metadata.module_name

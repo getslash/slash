@@ -35,6 +35,12 @@ class Metadata(object):
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
 
     @property
+    def class_name(self):
+        if '.' in self.address_in_file:
+            return self.address_in_file.split('.', 1)[0]
+        return None
+
+    @property
     def test_index1(self):
         """Same as ``test_index0``, only 1-based
         """

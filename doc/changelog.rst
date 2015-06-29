@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`319` Add class_name metadata property for method tests
 * :release:`0.17.0 <29-06-2015>`
 * :feature:`314` Added :func:`Session.get_total_num_tests <slash.core.session.Session.get_total_num_tests>` for returning the number of tests expected to run in a session
 * :feature:`312` Add before_session_start hook
