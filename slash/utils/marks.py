@@ -12,13 +12,13 @@ def get_marks(obj):
         returned = returned.copy()
     return returned
 
-def try_get_mark(obj, mark_name):
+def try_get_mark(obj, mark_name, default=None):
     """Tries getting a specific mark by name from an object, returning None if no such mark is found
     """
     marks = get_marks(obj)
     if marks is None:
-        return None
-    return marks.get(mark_name, None)
+        return default
+    return marks.get(mark_name, default)
 
 def _get_marks(obj):
     return getattr(obj, _MARKS_CONTAINER_ATTR, None)

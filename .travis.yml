@@ -6,9 +6,10 @@ python:
   - "3.4"
   - "pypy"
 # command to run tests, e.g. python setup.py test
-install: pip install virtualenv
+install: 
+  - pip install virtualenv
 script: 
   - make env
   - .env/bin/python scripts/test_and_pylint.py
 after_success:
-  coveralls
+  - .env/bin/coveralls

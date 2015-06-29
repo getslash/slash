@@ -13,6 +13,14 @@ from xml.etree.ElementTree import (
 
 class Plugin(PluginInterface):
 
+    _xunit_elements = None
+
+    def _get_xunit_elements_list(self):
+        returned = self._xunit_elements
+        if returned is None:
+            returned = self._xunit_elements = []
+        return returned
+
     def get_name(self):
         return "xunit"
 
@@ -24,10 +32,10 @@ class Plugin(PluginInterface):
 
     def session_start(self):
         self._start_time = datetime.datetime.now()
-        self._xunit_elements = []
+
 
     def test_start(self):
-        self._xunit_elements.append(E("testcase", {
+        self._get_xunit_elements_list().append(E("testcase", {
             "name": str(context.test),
             "classname": type(context.test).__name__,
             "time": "0"
@@ -44,7 +52,7 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype):
         exc_type, exc_value, exc_tb = exc_info = sys.exc_info()
-        test_element = self._xunit_elements[-1]
+        test_element = self._get_xunit_elements_list()[-1]
         error_element = E(errortype, dict(type=exc_type.__name__, message=str(exc_value)))
         error_element.text = get_traceback_string(exc_info)
         test_element.append(error_element)
@@ -53,7 +61,7 @@ class Plugin(PluginInterface):
         return E('testcase', dict(name=str(test), classname="{}.{}".format(test.__class__.__module__, test.__class__.__name__), time="0"))
 
     def test_skip(self, reason):
-        test_element = self._xunit_elements[-1]
+        test_element = self._get_xunit_elements_list()[-1]
         test_element.append(E('skipped', type=reason))
 
     def result_summary(self):
@@ -67,7 +75,7 @@ class Plugin(PluginInterface):
             "failures": str(context.session.results.get_num_failures()),
             "skipped": str(context.session.results.get_num_skipped()),
         })
-        for element in self._xunit_elements:
+        for element in self._get_xunit_elements_list():
             e.append(element)
         with open(slash_config.root.plugins.xunit.filename, "wb") as outfile:
             outfile.write(xml_to_string(e))

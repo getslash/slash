@@ -27,17 +27,21 @@ def _distill_frames(frames, frame_correction=0):
     returned = DistilledTraceback()
     frames = frames[:len(frames)-frame_correction+1]
     for frame in frames:
+        if isinstance(frame, tuple):
+            frame, lineno = frame
+        else:
+            lineno = None
         if _is_frame_and_below_muted(frame):
             break
         if not _is_frame_muted(frame):
-            returned.frames.append(DistilledFrame(frame))
+            returned.frames.append(DistilledFrame(frame, lineno))
     return returned
 
 
 def _get_tb_frames(tb):
     returned = []
     while tb is not None:
-        returned.append(tb.tb_frame)
+        returned.append((tb.tb_frame, tb.tb_lineno))
         tb = tb.tb_next
     return returned
 
@@ -110,10 +114,12 @@ class DistilledTraceback(object):
 
 class DistilledFrame(object):
 
-    def __init__(self, frame):
+    def __init__(self, frame, lineno=None):
         super(DistilledFrame, self).__init__()
         self.filename = os.path.abspath(frame.f_code.co_filename)
-        self.lineno = frame.f_lineno
+        if lineno is None:
+            lineno = frame.f_lineno
+        self.lineno = lineno
         self.func_name = frame.f_code.co_name
         self.locals = self._capture_locals(frame)
         self.globals = self._capture_globals(frame)

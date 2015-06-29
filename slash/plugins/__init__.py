@@ -1,6 +1,7 @@
 import os
 
 from emport import import_file
+from sentinels import NOTHING
 
 import gossip
 import gossip.hooks
@@ -10,6 +11,7 @@ from .._compat import itervalues
 from ..conf import config
 from ..utils.marks import mark, try_get_mark
 from .interface import PluginInterface
+
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 
@@ -163,19 +165,26 @@ class PluginManager(object):
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
                 continue
-            if method_name.startswith("_"):
-                continue
+
             method = getattr(plugin, method_name)
 
             if not hasattr(method, '__call__'):
                 continue
 
-            hook_name = try_get_mark(method, "register_on")
+            hook_name = try_get_mark(method, 'register_on', NOTHING)
+
             if hook_name is None:
+                # asked not to register for nothing
+                continue
+
+            if hook_name is not NOTHING:
+                expect_exists = False
+            else:
+                if method_name.startswith('_'):
+                    continue
                 expect_exists = True
                 hook_name = "slash.{0}".format(method_name)
-            else:
-                expect_exists = False
+
             try:
                 if expect_exists:
                     hook = gossip.get_hook(hook_name)
@@ -197,6 +206,8 @@ manager = PluginManager()
 def registers_on(hook_name):
     """Marks the decorated plugin method to register on a custom hook, rather than
     the method name in the 'slash' group, which is the default behavior for plugins
+
+    Specifying ``registers_on(None)`` means that this is not a hook entry point at all.
     """
     return mark("register_on", hook_name)
 

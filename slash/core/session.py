@@ -71,8 +71,9 @@ class Session(Activatable):
         try:
             with handling_exceptions():
                 with notify_if_slow_context("Initializing session..."):
+                    hooks.before_session_start()  # pylint: disable=no-member
                     hooks.session_start()  # pylint: disable=no-member
-            hooks.after_session_start()  # pylint: disable=no-member
+                    hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield
         finally:
@@ -89,3 +90,13 @@ class Session(Activatable):
 
     def is_complete(self):
         return self._complete
+
+    _total_num_tests = 0
+
+    def get_total_num_tests(self):
+        """Returns the total number of tests expected to run in this session
+        """
+        return self._total_num_tests
+
+    def increment_total_num_tests(self, increment):
+        self._total_num_tests += increment

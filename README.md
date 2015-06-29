@@ -5,15 +5,17 @@ Slash
 |                       |                                                                                    |
 |-----------------------|------------------------------------------------------------------------------------|
 | Build Status          | ![Build Status] (https://secure.travis-ci.org/slash-testing/slash.png?branch=master,dev) |
-| Supported Versions    | ![Supported Versions] (https://pypip.in/py_versions/slash/badge.png?style=flat)    |
-| Downloads             | ![Downloads] (https://pypip.in/d/slash/badge.png?style=flat)                       |
-| Latest Version        | ![Latest Version] (https://pypip.in/v/slash/badge.png?style=flat)                  |
-| Test Coverage         | ![Coverage] (https://coveralls.io/repos/slash-testing/slash/badge.png?branch=dev)        |
+| Supported Versions    | ![Supported Versions] (https://img.shields.io/pypi/pyversions/slash.svg)    |
+| Downloads             | ![Downloads] (https://img.shields.io/pypi/dm/slash.svg)                       |
+| Latest Version        | ![Latest Version] (https://img.shields.io/pypi/v/slash.svg)                  |
+| Test Coverage         | ![Coverage Status] (https://img.shields.io/coveralls/slash-testing/slash/develop.svg)   |
+
+
 
 
 Slash is a testing framework written in Python for testing complex projects. 
 
-* [Homepage](http://vmalloc.github.io/slash)
+* [Homepage](http://slash-testing.github.io/slash/)
 
 * [Documentation](https://slash.readthedocs.org/en/latest/)
 

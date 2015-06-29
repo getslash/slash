@@ -9,6 +9,63 @@ from slash.plugins import IncompatiblePlugin, PluginInterface
 
 from .utils import CustomException, TestCase
 
+
+@pytest.fixture
+def restore_plugins_on_cleanup(request):
+    request.addfinalizer(plugins.manager.install_builtin_plugins)
+    request.addfinalizer(plugins.manager.uninstall_all)
+
+
+@pytest.fixture(autouse=True, scope="function")
+def reset_gossip(request):
+    @request.addfinalizer
+    def cleanup():
+        for group in list(gossip.get_groups()):
+            if group.name == 'slash':
+                continue
+            group.undefine()
+
+        for hook in gossip.get_all_hooks():
+            if hook.group.name != 'slash':
+                hook.undefine()
+            else:
+                hook.unregister_all()
+
+
+def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
+
+    @slash.plugins.active
+    class SamplePlugin(PluginInterface):
+
+        def get_name(self):
+            return 'sample'
+
+        @plugins.registers_on(None)
+        def some_method_here(self):
+            checkpoint()
+
+    gossip.trigger('slash.some_method_here')
+    assert not checkpoint.called
+
+
+
+def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
+
+    @slash.plugins.active
+    class SamplePlugin(PluginInterface):
+
+        def get_name(self):
+            return 'sample'
+
+        @plugins.registers_on('some_hook')
+        def _handler(self):
+            checkpoint()
+
+    assert not checkpoint.called
+    gossip.trigger('some_hook')
+    assert checkpoint.called
+
+
 def test_class_variables_allowed(restore_plugins_on_cleanup):
     @slash.plugins.active
     class SamplePlugin(PluginInterface):
@@ -81,6 +138,7 @@ def test_register_invalid_hook():
 
     assert list(plugins.manager.get_installed_plugins()) == initially_installed
 
+
 def test_register_custom_hooks_strict_group():
 
     initially_installed = list(plugins.manager.get_installed_plugins())
@@ -122,11 +180,13 @@ class BuiltinPluginsTest(TestCase):
                 continue
             self.assertIn(filename[:-3], installed)
 
+
 class PluginInstallationTest(TestCase):
 
     def test_cannot_install_incompatible_subclasses(self):
         plugins.manager.uninstall_all()
         self.addCleanup(plugins.manager.install_builtin_plugins)
+
         class Incompatible(object):
             pass
         for invalid in (Incompatible, Incompatible(), PluginInterface, object(), 1, "string"):
@@ -136,7 +196,9 @@ class PluginInstallationTest(TestCase):
 
     def test_install_uninstall(self):
         plugin_name = "some_plugin_name"
+
         class CustomPlugin(PluginInterface):
+
             def get_name(self):
                 return plugin_name
         with self.assertRaises(LookupError):
@@ -148,7 +210,9 @@ class PluginInstallationTest(TestCase):
         with self.assertRaises(LookupError):
             plugins.manager.get_plugin(plugin_name)
 
+
 class PluginDiscoveryTest(TestCase):
+
     def setUp(self):
         super(PluginDiscoveryTest, self).setUp()
         self.root_path = self.get_new_path()
@@ -158,7 +222,7 @@ class PluginDiscoveryTest(TestCase):
                 "a/b/p2.py",
                 "a/p3.py",
                 "a/b/c/p4.py",
-                ]):
+        ]):
             plugin_name = "auto_plugin_{0}".format(index)
             path = os.path.join(self.root_path, path)
             if not os.path.isdir(os.path.dirname(path)):
@@ -184,14 +248,16 @@ def install_plugins():
                 "a/junk1.p",
                 "a/b/junk2",
                 "a/b/c/junk3",
-                ]:
+        ]:
             with open(os.path.join(self.root_path, junk_file), "w") as f:
                 f.write("---JUNK----")
         self.override_config("plugins.search_paths", [self.root_path])
+
     def tearDown(self):
         plugins.manager.uninstall_all()
         plugins.manager.install_builtin_plugins()
         super(PluginDiscoveryTest, self).tearDown()
+
     def test_discovery(self):
         plugins.manager.uninstall_all()
         self.addCleanup(plugins.manager.install_builtin_plugins)
@@ -203,6 +269,7 @@ def install_plugins():
 
 
 class PluginActivationTest(TestCase):
+
     def setUp(self):
         super(PluginActivationTest, self).setUp()
         self.plugin = StartSessionPlugin()
@@ -214,7 +281,7 @@ class PluginActivationTest(TestCase):
         plugins.manager.activate(self.plugin)
         self.assertEquals(
             plugins.manager.get_active_plugins(),
-            {self.plugin.get_name() : self.plugin}
+            {self.plugin.get_name(): self.plugin}
         )
         plugins.manager.deactivate(self.plugin)
         self.assertEquals(plugins.manager.get_active_plugins(), {})
@@ -289,6 +356,7 @@ class PluginActivationTest(TestCase):
 
     def test_cannot_activate_uninstalled_plugin(self):
         class Plugin(PluginInterface):
+
             def get_name(self):
                 return "Test plugin"
         with self.assertRaisesRegexp(ValueError, ".*not installed.*"):
@@ -297,8 +365,10 @@ class PluginActivationTest(TestCase):
     def test_unknown_hook_names(self):
         "Make sure that plugins with unknown hook names get discarded"
         class Plugin(PluginInterface):
+
             def get_name(self):
                 return "Test plugin"
+
             def unknown_hook_1(self):
                 pass
 
@@ -311,8 +381,10 @@ class PluginActivationTest(TestCase):
     def test_custom_hook_names(self):
         "Make sure that plugins with unknown hook names get discarded"
         class Plugin(PluginInterface):
+
             def get_name(self):
                 return "Test plugin"
+
             def custom_hook(self):
                 pass
 
@@ -330,6 +402,7 @@ class PluginActivationTest(TestCase):
 class StartSessionPlugin(PluginInterface):
     _activate_called = False
     _deactivate_called = False
+
     def __init__(self):
         super(StartSessionPlugin, self).__init__()
         self.session_start_call_count = 0
@@ -345,8 +418,3 @@ class StartSessionPlugin(PluginInterface):
 
     def deactivate(self):
         self._deactivate_called = True
-
-@pytest.fixture
-def restore_plugins_on_cleanup(request):
-    request.addfinalizer(plugins.manager.install_builtin_plugins)
-    request.addfinalizer(plugins.manager.uninstall_all)

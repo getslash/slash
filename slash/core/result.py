@@ -9,7 +9,7 @@ from .._compat import itervalues, OrderedDict
 from ..ctx import context
 from .. import hooks
 from .error import Error
-from ..exceptions import TestFailed, SkipTest
+from ..exceptions import FAILURE_EXCEPTION_TYPES, SkipTest
 from ..utils.exception_mark import ExceptionMarker
 
 _logger = logbook.Logger(__name__)
@@ -44,7 +44,7 @@ class Result(object):
             return
 
         _ADDED_TO_RESULT.mark_exception(exc_value)
-        if issubclass(exc_class, (AssertionError, TestFailed)):
+        if isinstance(exc_value, FAILURE_EXCEPTION_TYPES):
             self.add_failure()
         elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
             self.add_error()
