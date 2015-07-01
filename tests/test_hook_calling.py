@@ -98,7 +98,6 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
     def raise_exc():
         raise exception_type()
 
-    request.addfinalizer(raise_exc.gossip.unregister)
     config_override("debug.enabled", debug_enabled)
 
     def test_something():
@@ -125,9 +124,6 @@ def test_before_cleanup_hook(request, forge):
     test_end_hook = forge.create_wildcard_function_stub(name='test_end')
     gossip.register(before_cleanup_hook, 'slash.before_test_cleanups')
     gossip.register(test_end_hook, 'slash.test_end')
-
-    request.addfinalizer(before_cleanup_hook.gossip.unregister)
-    request.addfinalizer(test_end_hook.gossip.unregister)
 
     before_cleanup_hook()
     cleanup()

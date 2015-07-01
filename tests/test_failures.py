@@ -10,8 +10,6 @@ def test_failures_call_test_failure_hook(request, suite, suite_test, checkpoint)
     def callback(*_, **__):
         checkpoint()
 
-    request.addfinalizer(callback.unregister)
-
     suite_test.expect_failure()
     summary = suite.run()
     assert checkpoint.called_count == 1
