@@ -39,6 +39,8 @@ class RunnableTestFactory(object):
         returned = self._filename
         if returned is None:
             returned = sys.modules[self._param.__module__].__file__
+        if returned.endswith('.pyc'):
+            returned = returned[:-1]
         assert returned
         return returned
 

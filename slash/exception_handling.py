@@ -50,8 +50,9 @@ def handling_exceptions(**kwargs):
     except passthrough_types:
         raise
     except:
-        handle_exception(sys.exc_info(), **kwargs)
-        if not swallow:
+        exc_info = _, exc_value, _ = sys.exc_info()
+        handle_exception(exc_info, **kwargs)
+        if not swallow or not isinstance(exc_value, Exception):
             raise
 
 def handle_exception(exc_info, context=None):

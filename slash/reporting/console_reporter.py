@@ -352,6 +352,12 @@ class ConsoleReporter(ReporterInterface):
         else:
             self._terminal.write('s', yellow=True)
 
+    def report_test_interrupted(self, test, result):
+        if self._verobsity_allows(VERBOSITIES.NOTICE):
+            self._terminal.write('Interrupted\n', yellow=True)
+        else:
+            self._terminal.write('I', yellow=True)
+
     def report_test_error_added(self, test, error):
         self._report_test_error_failure_added(test, error, 'E')
 

@@ -46,8 +46,13 @@ class Result(object):
         _ADDED_TO_RESULT.mark_exception(exc_value)
         if isinstance(exc_value, FAILURE_EXCEPTION_TYPES):
             self.add_failure()
-        elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
+        elif isinstance(exc_value, SkipTest):
+            self.add_skip(exc_value.reason)
+        elif issubclass(exc_class, Exception):
+            #skip keyboardinterrupt and system exit
             self.add_error()
+        else:
+            self.mark_interrupted()
 
     def has_errors_or_failures(self):
         return bool(self._failures or self._errors)

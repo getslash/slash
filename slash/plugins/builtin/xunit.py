@@ -44,11 +44,11 @@ class Plugin(PluginInterface):
     def test_success(self):
         pass
 
-    def test_error(self):
-        self._add_error("error")
-
-    def test_failure(self):
-        self._add_error("failure")
+    def error_added(self, result, error):
+        if error.is_failure():
+            self._add_error("failure")
+        else:
+            self._add_error("error")
 
     def _add_error(self, errortype):
         exc_type, exc_value, exc_tb = exc_info = sys.exc_info()

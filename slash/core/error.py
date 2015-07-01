@@ -4,6 +4,7 @@ import traceback
 
 from .._compat import string_types, StringIO, iteritems
 from ..exception_handling import is_exception_fatal
+from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.traceback_utils import distill_traceback, distill_call_stack
 from ..utils.formatter import Formatter
 
@@ -29,6 +30,9 @@ class Error(object):
 
     def is_fatal(self):
         return self.exception is not None and is_exception_fatal(self.exception)
+
+    def is_failure(self):
+        return isinstance(self.exception, FAILURE_EXCEPTION_TYPES)
 
     @classmethod
     def capture_exception(cls):

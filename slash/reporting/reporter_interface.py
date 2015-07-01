@@ -40,6 +40,8 @@ class ReporterInterface(object):
             self.report_test_skip(test, result)
         elif result.is_error():
             self.report_test_error(test, result)
+        elif result.is_interrupted():
+            self.report_test_interrupted(test, result)
         else:
             assert result.is_failure()
             self.report_test_failure(test, result)
@@ -54,6 +56,9 @@ class ReporterInterface(object):
         pass
 
     def report_test_failure(self, test, result):
+        pass
+
+    def report_test_interrupted(self, test, result):
         pass
 
     def report_test_error_added(self, test, error):

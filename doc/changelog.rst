@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`322 major` Fix behavior of skips thrown from cleanup callbacks
 * :bug:`320 major` Fix scope mechanism to allow cleanups to be added from test_start hooks
 * :feature:`319` Add class_name metadata property for method tests
 * :release:`0.17.0 <29-06-2015>`
