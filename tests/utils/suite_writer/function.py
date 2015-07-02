@@ -49,6 +49,7 @@ class Function(CodeElement):
             'decorator': decorator, 'event': event, 'extra_code': extra_code, 'adder': adder})
         return event
 
+
     @contextmanager
     def _body_context(self, code_formatter):
         self._write_decorators(code_formatter)

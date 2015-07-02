@@ -25,6 +25,24 @@ class BeforeTestCleanupException(Exception):
     pass
 
 
+@pytest.mark.parametrize('autouse', [True, False])
+def test_test_start_before_fixture_start(suite, suite_test, defined_fixture, autouse):
+    if autouse:
+        assert not defined_fixture.autouse # make sure we're not obsolete code and that that's still where it is
+        defined_fixture.autouse = True
+    else:
+        suite_test.depend_on_fixture(defined_fixture)
+    event_code = suite.slashconf.add_hook_event('test_start', extra_args=['slash.context.test.__slash__.id'])
+
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    test_id = result.test_metadata.id
+
+    event = summary.events[event_code, test_id]
+
+    assert summary.events['fixture_start', defined_fixture.id].timestamp > event.timestamp
+
+
 def test_hook__error_added_during_test(suite, request, checkpoint, suite_test):
 
     request.addfinalizer(

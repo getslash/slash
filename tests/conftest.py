@@ -157,3 +157,13 @@ def active_slash_session(request):
         returned.__exit__(None, None, None)
 
     return returned
+
+
+@pytest.fixture(params=["slashconf", "module"])
+def defined_fixture(request, suite, suite_test):
+    if request.param == 'slashconf':
+        return suite.slashconf.add_fixture()
+    elif request.param == 'module':
+        return suite_test.file.add_fixture()
+
+    raise NotImplementedError()  # pragma: no cover
