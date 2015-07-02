@@ -36,6 +36,18 @@ class Suite(object):
         self._num_method_tests = self._num_function_tests = 0
         self._slashconf = None
 
+    def iter_all_after(self, test, assert_has_more):
+        found = had_more = False
+        for t in self:
+            if t == test:
+                found = True
+            elif found:
+                had_more = True
+                yield t
+        if assert_has_more:
+            assert had_more
+        assert found
+
     @property
     def classes(self):
         return [cls for file in self._files for cls in file.classes]

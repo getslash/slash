@@ -68,6 +68,7 @@ class Session(Activatable):
     @contextmanager
     def get_started_context(self):
         self.start_time = time.time()
+        self.results.global_result.mark_started()
         try:
             with handling_exceptions():
                 with notify_if_slow_context("Initializing session..."):
@@ -78,6 +79,7 @@ class Session(Activatable):
             yield
         finally:
             self._started = False
+            self.results.global_result.mark_finished()
             self.end_time = time.time()
             self.duration = self.end_time - self.start_time
 

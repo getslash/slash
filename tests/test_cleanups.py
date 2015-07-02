@@ -8,6 +8,23 @@ from slash.loader import Loader
 from .utils import TestCase
 
 
+def test_fatal_exceptions_from_cleanup(suite, suite_test, is_last_test):
+
+    @suite_test.append_body
+    def __code__():
+        @slash.add_cleanup
+        def cleanup():
+            from slash.exception_handling import mark_exception_fatal
+            raise mark_exception_fatal(Exception())
+
+    suite_test.expect_error()
+
+    for t in suite.iter_all_after(suite_test, assert_has_more=not is_last_test):
+        t.expect_not_run()
+
+    suite.run()
+
+
 def test_add_skip_from_test_cleanup(suite, suite_test):
     cleanup = suite_test.add_deferred_event(decorator='slash.add_cleanup', extra_code=['slash.skip_test()'])
     suite_test.expect_skip()

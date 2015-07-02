@@ -12,6 +12,7 @@ from .utils import run_tests_assert_success
 @pytest.mark.parametrize('use_error', [True, False])
 def test_result_add_exception_multiple_times(result, use_error):
     second_result = type(result)()
+    second_result.mark_started()
     try:
         if use_error:
             1 / 0
@@ -46,6 +47,9 @@ def test_result_summary(suite):
 
 def test_result_not_run(suite, suite_test, is_last_test):
     suite_test.when_run.fail()
+
+    for test in suite.iter_all_after(suite_test, assert_has_more=not is_last_test):
+        test.expect_not_run()
 
     summary = suite.run(additional_args=['-x'])
 
@@ -100,6 +104,8 @@ class SessionResultTest(TestCase):
         self.results = [
             Result() for _ in range(10)
         ]
+        for r in self.results:
+            r.mark_started()
         # one result with both errors and failures
         try:
             1 / 0
