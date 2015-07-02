@@ -125,7 +125,7 @@ def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
             elif result.is_just_failure():
                 hooks.test_failure()  # pylint: disable=no-member
             elif result.is_skip():
-                hooks.test_skip(reason=result.get_skips()[0])
+                hooks.test_skip(reason=result.get_skips()[0]) # pylint: disable=no-member
             else:
                 hooks.test_error()  # pylint: disable=no-member
 
