@@ -25,6 +25,15 @@ class BeforeTestCleanupException(Exception):
     pass
 
 
+def test_test_skip_hook(suite, suite_test, checkpoint):
+    slash.hooks.test_skip.register(checkpoint)
+
+    suite_test.when_run.skip()
+
+    suite.run()
+    assert checkpoint.called_count == 1
+
+
 @pytest.mark.parametrize('autouse', [True, False])
 def test_test_start_before_fixture_start(suite, suite_test, defined_fixture, autouse):
     if autouse:
@@ -107,7 +116,7 @@ def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_
         ('slash.session_start', SessionStartException, True),
         ('slash.session_end', SessionEndException, True),
         ('slash.test_end', TestEndException, True),
-        ('slash.before_test_cleanups', BeforeTestCleanupException, True)])
+        ('slash.before_test_cleanups', BeforeTestCleanupException, False)])
 @pytest.mark.parametrize('debug_enabled', [True, False])
 def test_debugger_called_on_hooks(hook_exception, request, forge, config_override, checkpoint, debug_enabled):
     hook_name, exception_type, should_raise = hook_exception

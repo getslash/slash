@@ -9,7 +9,7 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession
+from .exceptions import NoActiveSession, SkipTest
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .utils.interactive import notify_if_slow_context
@@ -87,22 +87,27 @@ def _run_single_test(test, test_iterator):
 
             result.mark_started()
             try:
-                context.session.scope_manager.begin_test(test)
-                hooks.test_start() # pylint: disable=no-member
                 try:
                     with handling_exceptions(swallow=True):
+                        context.session.scope_manager.begin_test(test)
+                        hooks.test_start() # pylint: disable=no-member
                         try:
-                            test.run()
-                        except:
-                            run_state['exc_info'] = sys.exc_info()
-                            raise
-                finally:
-                    context.session.scope_manager.end_test(
-                        test,
-                        next_test=test_iterator.peek_or_none(),
-                        exc_info=run_state['exc_info'])
-
+                            with handling_exceptions(swallow=True):
+                                try:
+                                    test.run()
+                                except:
+                                    run_state['exc_info'] = sys.exc_info()
+                                    raise
+                        finally:
+                            context.session.scope_manager.end_test(
+                                test,
+                                next_test=test_iterator.peek_or_none(),
+                                exc_info=run_state['exc_info'])
+                except SkipTest:
+                    pass
                 _fire_test_summary_hooks(test, result)
+            except SkipTest:
+                pass
             except KeyboardInterrupt:
                 with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
                     hooks.test_interrupt() # pylint: disable=no-member
@@ -119,6 +124,8 @@ def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
                 hooks.test_success()  # pylint: disable=no-member
             elif result.is_just_failure():
                 hooks.test_failure()  # pylint: disable=no-member
+            elif result.is_skip():
+                hooks.test_skip(reason=result.get_skips()[0])
             else:
                 hooks.test_error()  # pylint: disable=no-member
 

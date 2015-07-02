@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`329 major` handling_exceptions(swallow=True) now does not swallow SkipTest exceptions
 * :bug:`322 major` Refactored a great deal of the test running logic for easier maintenance and better solve some corner cases
 * :bug:`322 major` Fix behavior of skips thrown from cleanup callbacks
 * :bug:`320 major` Fix scope mechanism to allow cleanups to be added from test_start hooks

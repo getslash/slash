@@ -10,6 +10,22 @@ from slash.utils import debug
 from .utils import CustomException, TestCase
 
 
+
+def test_handling_exceptions_swallow_skip_test(suite, suite_test):
+
+    @suite_test.append_body
+    def __code__():
+        from slash.exception_handling import handling_exceptions
+        with handling_exceptions(swallow=True):
+            slash.skip_test()
+        __ut__.events.add('NEVER')
+
+    suite_test.expect_skip()
+
+    summary = suite.run()
+    assert not summary.events.has_event('NEVER')
+
+
 def test_passthrough_types():
 
     value = CustomException()

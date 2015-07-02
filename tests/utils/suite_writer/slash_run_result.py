@@ -108,6 +108,10 @@ class Events(object):
 
     def __contains__(self, args):
         return self._normalize_key(args) in self._events_by_args
+        return self.has_event(*args)
+
+    def has_event(self, *args):
+        return args in self
 
     def _normalize_key(self, args):
         if not isinstance(args, tuple):
