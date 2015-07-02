@@ -111,6 +111,11 @@ html_theme_options = {
     'github_banner': True,
     'travis_button': 'slash-testing/slash',
     'analytics_id': 'UA-62537825-1',
+    'extra_nav_links': {
+        'Slash Website': 'http://slash-testing.github.io/slash',
+        'Slash@Github': 'https://github.com/slash-testing/slash',
+        'Slash@Pypi': 'https://pypi.python.org/pypi/slash',
+    }
 }
 html_sidebars = {
    '**': [
