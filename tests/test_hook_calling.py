@@ -107,7 +107,7 @@ def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_
         ('slash.session_start', SessionStartException, True),
         ('slash.session_end', SessionEndException, True),
         ('slash.test_end', TestEndException, True),
-        ('slash.before_test_cleanups', BeforeTestCleanupException, False)])
+        ('slash.before_test_cleanups', BeforeTestCleanupException, True)])
 @pytest.mark.parametrize('debug_enabled', [True, False])
 def test_debugger_called_on_hooks(hook_exception, request, forge, config_override, checkpoint, debug_enabled):
     hook_name, exception_type, should_raise = hook_exception
@@ -116,7 +116,6 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
     def raise_exc():
         raise exception_type()
 
-    request.addfinalizer(raise_exc.gossip.unregister)
     config_override("debug.enabled", debug_enabled)
 
     def test_something():
@@ -143,9 +142,6 @@ def test_before_cleanup_hook(request, forge):
     test_end_hook = forge.create_wildcard_function_stub(name='test_end')
     gossip.register(before_cleanup_hook, 'slash.before_test_cleanups')
     gossip.register(test_end_hook, 'slash.test_end')
-
-    request.addfinalizer(before_cleanup_hook.gossip.unregister)
-    request.addfinalizer(test_end_hook.gossip.unregister)
 
     before_cleanup_hook()
     cleanup()

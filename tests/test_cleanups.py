@@ -8,6 +8,24 @@ from slash.loader import Loader
 from .utils import TestCase
 
 
+def test_add_skip_from_test_cleanup(suite, suite_test):
+    cleanup = suite_test.add_deferred_event(decorator='slash.add_cleanup', extra_code=['slash.skip_test()'])
+    suite_test.expect_skip()
+    summary = suite.run()
+    assert summary.events[cleanup].timestamp
+
+
+@pytest.mark.parametrize('cleanup_mechanism', ['this', 'slash'])
+def test_add_skip_from_fixture_cleanup(suite, suite_test, cleanup_mechanism):
+    suite_test.expect_skip()
+    fixture = suite.slashconf.add_fixture()
+    suite_test.depend_on_fixture(fixture)
+    cleanup = fixture.add_deferred_event(decorator='{0}.add_cleanup'.format(cleanup_mechanism), extra_code=['slash.skip_test()'])
+    summary = suite.run()
+    assert summary.events[cleanup].timestamp
+
+
+
 def test_test_cleanups_happen_before_fixture_cleanups(suite, suite_test):
     fixture = suite.slashconf.add_fixture()
     suite_test.depend_on_fixture(fixture)

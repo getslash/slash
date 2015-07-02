@@ -1,6 +1,7 @@
 import collections
 
 from ..._compat import iteritems, itervalues, OrderedDict
+from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
 from .fixture import Fixture
@@ -115,7 +116,8 @@ class FixtureStore(object):
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
             if s <= scope:
                 for active_fixture in list(active_fixtures.values())[::-1]:
-                    self._deactivate_fixture(active_fixture.fixture)
+                    with handling_exceptions(swallow=True):
+                        self._deactivate_fixture(active_fixture.fixture)
                 assert not active_fixtures
 
     def ensure_known_parametrization(self, parametrization):
