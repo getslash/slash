@@ -8,6 +8,37 @@ from slash.loader import Loader
 from .utils import TestCase
 
 
+@pytest.mark.parametrize('other_error', ['error', 'failure', None])
+def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
+
+
+    if other_error == 'error':
+        suite_test.append_line('slash.add_error("error")')
+        suite_test.expect_error()
+    elif other_error == 'failure':
+        suite_test.append_line('slash.add_failure("failure")')
+        suite_test.expect_failure()
+    elif other_error is not None:
+        raise NotImplementedError() # pragma: no cover
+
+    @suite_test.append_body
+    def __code__():
+        def callback():
+            __ut__.events.add('success_only_cleanup_called')
+        slash.add_cleanup(callback, success_only=True)
+        slash.skip_test()
+
+
+    if other_error is None:
+        suite_test.expect_skip()
+
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    assert result.has_skips()
+    assert ('success_only_cleanup_called' in summary.events) == (other_error is None)
+
+
+
 def test_fatal_exceptions_from_cleanup(suite, suite_test, is_last_test):
 
     @suite_test.append_body
@@ -102,4 +133,3 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
     cleanup_error = result.get_errors()[-1]
     assert 'AttributeError' in str(cleanup_error)
     assert 'NoneType' in str(cleanup_error)
-
