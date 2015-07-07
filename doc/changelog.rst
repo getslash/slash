@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`240` Add support for test tags
 * :feature:`324` Add test for cleanups with fatal exceptions
 * :bug:`329 major` handling_exceptions(swallow=True) now does not swallow SkipTest exceptions
 * :bug:`322 major` Refactored a great deal of the test running logic for easier maintenance and better solve some corner cases

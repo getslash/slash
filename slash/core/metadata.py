@@ -1,5 +1,7 @@
 import sys
 
+from .tagging import get_tags
+
 class Metadata(object):
 
     """Class representing the metadata associated with a test object. Generally available
@@ -15,6 +17,7 @@ class Metadata(object):
         self.id = None
         #: Back reference to the test to which this metadata placeholder belongs
         self.test = test
+        self.tags = test.get_tags()
         if factory is not None:
         #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()

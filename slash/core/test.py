@@ -8,6 +8,7 @@ from .fixtures.parameters import bound_parametrizations_context
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
 from .requirements import get_requirements
+from .tagging import get_tags
 
 
 class TestTestFactory(RunnableTestFactory):
@@ -69,6 +70,9 @@ class Test(RunnableTest):
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
         self._fixture_variation = fixture_variation
+
+    def get_tags(self):
+        return get_tags(type(self)) + get_tags(getattr(type(self), self._test_method_name))
 
     __slash_skipped__ = False
     __slash_skipped_reason__ = None

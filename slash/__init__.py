@@ -4,6 +4,7 @@ from .conf import config
 from .ctx import context
 from .ctx import g, session, test
 from .core.session import Session
+from .core.tagging import tag
 # assertions
 from . import assertions
 should = assertions

@@ -4,6 +4,7 @@ from .fixtures.parameters import bound_parametrizations_context
 from .requirements import get_requirements
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
+from .tagging import get_tags
 
 
 class FunctionTest(RunnableTest):
@@ -14,6 +15,9 @@ class FunctionTest(RunnableTest):
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
         self._variation = variation
+
+    def get_tags(self):
+        return get_tags(self._func)
 
     def run(self):
         with bound_parametrizations_context(self._variation):
