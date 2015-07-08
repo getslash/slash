@@ -34,6 +34,7 @@ Table Of Contents
 
    writing_tests
    slash_run
+   tags
    fixtures
    customizing_slash
    configuration
