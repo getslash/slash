@@ -87,7 +87,7 @@ def _tag_class_and_method(taggable, tags):
     if not isinstance(taggable, MethodTest):
         return _simple_tagging_strategy(taggable, tags)
 
-    for (tag_name, tag_value), taggable in itertools.izip(tags, itertools.cycle([taggable.cls, taggable])):
+    for (tag_name, tag_value), taggable in zip(tags, itertools.cycle([taggable.cls, taggable])):
         taggable.add_decorator(_get_slash_tag_string(tag_name, tag_value))
 
 
