@@ -2,6 +2,8 @@ import functools
 
 from sentinels import NOTHING
 
+from .._compat import iteritems
+
 _TAGS_NAME = '__slash_tags__'
 
 
@@ -51,6 +53,17 @@ class Tags(object):
         new_tags.update(other._tags)
         return Tags(new_tags)
 
+    def matches_pattern(self, pattern):
+        if '=' in pattern:
+            key, predicate = pattern.split('=', 1)
+            value = self._tags.get(key, NOTHING)
+            return value is not NOTHING and str(value) == predicate
+
+        for key, value in iteritems(self._tags):
+            if pattern in key:
+                return True
+        return False
+
 
 class _NoTags(object):
 
@@ -61,5 +74,8 @@ class _NoTags(object):
         return other
 
     has_tag = __contains__
+
+    def matches_pattern(self, pattern):
+        return False
 
 NO_TAGS = _NoTags()

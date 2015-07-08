@@ -58,6 +58,7 @@ def test_metadata_tags(suite, suite_test, tagging_strategy, tags):
         assert result.test_metadata.tags.has_tag(tag_name)
         assert result.test_metadata.tags[tag_name] == tag_value
 
+# more tags in test_pattern_matching.py
 
 _tagging_strategies = []
 

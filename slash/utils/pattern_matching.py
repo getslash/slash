@@ -5,10 +5,21 @@ class Include(object):
 
     def __init__(self, t):
         super(Include, self).__init__()
+        self.only_tags = False
         self.pattern = t[0]
+        if self.pattern.startswith('tag:'):
+            self.only_tags = True
+            self.pattern = self.pattern.split(':', 1)[1]
 
-    def matches(self, s):
-        return self.pattern in s
+    def matches(self, metadata):
+        if metadata.tags.matches_pattern(self.pattern):
+            return True
+        if self.only_tags:
+            return False
+        return self.pattern in metadata.address
+
+    def __repr__(self):
+        return '<{0}{1}>'.format(self.pattern, ' (only tags)' if self.only_tags else '')
 
 
 class BinaryMatching(object):
@@ -19,8 +30,8 @@ class BinaryMatching(object):
         super(BinaryMatching, self).__init__()
         self.matchers = t[0][0::2]
 
-    def matches(self, s):
-        return self.aggregator(matcher.matches(s) for matcher in self.matchers)  # pylint: disable=not-callable
+    def matches(self, metadata):
+        return self.aggregator(matcher.matches(metadata) for matcher in self.matchers)  # pylint: disable=not-callable
 
 
 class AndMatching(BinaryMatching):
@@ -37,11 +48,11 @@ class Exclude(object):
         super(Exclude, self).__init__()
         self.matcher = t[0][1]
 
-    def matches(self, s):
-        return not self.matcher.matches(s)
+    def matches(self, metadata):
+        return not self.matcher.matches(metadata)
 
 
-matcher = Word(alphanums + '._,-=')
+matcher = Word(alphanums + '._,-=:')
 matcher.setParseAction(Include)
 
 boolExpr = infixNotation(matcher, [
@@ -55,13 +66,10 @@ class Matcher(object):
 
     def __init__(self, pattern):
         super(Matcher, self).__init__()
-        self._pattern = pattern
         self._matcher = boolExpr.parseString(pattern)[0]
 
     def __repr__(self):
-        return repr(self._pattern)
+        return repr(self._matcher)
 
-    def matches(self, s):
-        if self._pattern in s:
-            return True
-        return self._matcher.matches(s)
+    def matches(self, metadata):
+        return self._matcher.matches(metadata)
