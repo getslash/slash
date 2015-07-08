@@ -35,14 +35,14 @@ class Tags(object):
             tags = {}
         self._tags = tags
 
-    def __setitem__(self, tag, value):
-        self._tags[tag] = value
+    def __setitem__(self, tag_name, value):
+        self._tags[tag_name] = value
 
-    def __getitem__(self, tag):
-        return self._tags[tag]
+    def __getitem__(self, tag_name):
+        return self._tags[tag_name]
 
-    def __contains__(self, tag):
-        return tag in self._tags
+    def __contains__(self, tag_name):
+        return tag_name in self._tags
 
     has_tag = __contains__
 
@@ -50,7 +50,7 @@ class Tags(object):
         if other is NO_TAGS:
             return self
         new_tags = self._tags.copy()
-        new_tags.update(other._tags)
+        new_tags.update(other._tags) # pylint: disable=protected-access
         return Tags(new_tags)
 
     def matches_pattern(self, pattern):
@@ -67,7 +67,7 @@ class Tags(object):
 
 class _NoTags(object):
 
-    def __contains__(self, tag):
+    def __contains__(self, tag_name):
         return False
 
     def __add__(self, other):
@@ -75,7 +75,7 @@ class _NoTags(object):
 
     has_tag = __contains__
 
-    def matches_pattern(self, pattern):
+    def matches_pattern(self, pattern): # pylint: disable=unused-argument
         return False
 
 NO_TAGS = _NoTags()

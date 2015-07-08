@@ -1,6 +1,5 @@
 import sys
 
-from .tagging import get_tags
 
 class Metadata(object):
 
