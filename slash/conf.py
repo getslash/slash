@@ -35,7 +35,7 @@ config = Config({
         },
 
         "console_level": logbook.WARNING // Doc("console log level (can be repeated). Higher log level means quieter output.") // Cmdline(decrease="-v", increase="-q"),
-        "traceback_level": 4 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),
+        "traceback_level": 2 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),
         "truncate_console_lines": True // Doc("truncate long log lines on the console") // Cmdline(arg='--truncate-console-lines', metavar='yes/no'),
         "truncate_console_errors": False // Doc("If truncate_console_lines is set, also truncate long log lines, including and above the \"error\" level, on the console"),
         "root": None // Doc("Root directory for logs") // Cmdline(arg="-l", metavar="DIR"),
