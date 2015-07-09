@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`333` Allow customization of console colors
 * :feature:`332` Add ability to filter by test tags - you can now filter with ``-k tag:sometag``, ``-k sometag=2`` and ``-k "not sometag=3``
 * :feature:`240` Add support for test tags
 * :feature:`324` Add test for cleanups with fatal exceptions
