@@ -1,6 +1,8 @@
+import sys
+
 import collections
 
-from ..._compat import iteritems, itervalues, OrderedDict
+from ..._compat import iteritems, itervalues, OrderedDict, reraise
 from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
@@ -204,8 +206,9 @@ class FixtureStore(object):
         try:
             fixture_value = self._activate_fixture(fixture)
         except:
+            exc_info = sys.exc_info()
             self._deactivate_fixture(fixture)
-            raise
+            reraise(*exc_info)
         finally:
             self._computing.discard(fixture.info.id)
 
