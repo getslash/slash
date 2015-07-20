@@ -17,7 +17,7 @@ def _decrease(value):
     return value - 1
 
 class _Cmdline(object):
-    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False, append=None):
+    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False, append=None, increase_doc=None, decrease_doc=None):
         super(_Cmdline, self).__init__()
         dest = next(_dest_generator)
         self.callback_dest = dest + ":callbacks"
@@ -28,6 +28,8 @@ class _Cmdline(object):
         self.required = required
         self.increase = increase
         self.decrease = decrease
+        self.increase_doc = increase_doc
+        self.decrease_doc = decrease_doc
         self.metavar = metavar
         self.append = append
 
@@ -56,9 +58,9 @@ class _Cmdline(object):
         self._add_arg(parser, self.off, callback=_set_false,
                       description="Turn off " + description)
         self._add_arg(parser, self.increase, callback=_increase,
-                      description="Increase " + description)
+                      description=self.increase_doc or ("Increase " + description))
         self._add_arg(parser, self.decrease, callback=_decrease,
-                      description="Decrease " + description)
+                      description=self.decrease_doc or ("Decrease " + description))
 
     def _add_arg(self, parser, flag, callback, description):
         if flag is None:
