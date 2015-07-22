@@ -4,6 +4,14 @@ from slash.loader import Loader
 
 from .utils import make_runnable_tests
 
+
+def test_requirements_mismatch_session_success(suite, suite_test):
+    suite_test.add_decorator('slash.requires(False)')
+    suite_test.expect_skip()
+    summary = suite.run()
+    assert summary.session.results.is_success(allow_skips=True)
+
+
 @pytest.mark.parametrize('requirement_fullfilled', [True, False])
 @pytest.mark.parametrize('use_message', [True, False])
 @pytest.mark.parametrize('use_fixtures', [True, False])

@@ -91,7 +91,7 @@ class Result(object):
 
     def is_success(self, allow_skips=False):
         if not self.is_started():
-            return False
+            return allow_skips
         returned = not self._errors and not self._failures and not self._interrupted
         if not allow_skips:
             returned &= not self._skips

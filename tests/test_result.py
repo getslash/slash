@@ -29,6 +29,13 @@ def test_result_add_exception_multiple_times(result, use_error):
     assert second_result.is_success()
 
 
+def test_result_summary_some_not_run(suite):
+    suite[2].add_decorator('slash.requires(False)')
+    suite[2].expect_skip()
+    results = suite.run().session.results
+    assert results.is_success(allow_skips=True)
+
+
 def test_result_summary(suite):
 
     suite[2].when_run.fail()
