@@ -7,6 +7,23 @@ from slash.exceptions import NoActiveSession
 from slash.runner import run_tests
 
 
+@pytest.mark.parametrize('adder', ['add_failure', 'add_error'])
+def test_stop_on_error_with_error_and_skip(suite, adder):
+    suite_test = suite[2]
+    suite_test.append_line('slash.{0}("err")'.format(adder))
+    suite_test.append_line('slash.skip_test()')
+    suite_test.expect_skip()
+
+    for test in suite.iter_all_after(suite_test, assert_has_more=True):
+        test.expect_not_run()
+
+    summary = suite.run(additional_args=['-x'])
+    [result] = summary.get_all_results_for_test(suite_test)
+
+    assert result.has_skips()
+    assert result.has_errors_or_failures()
+
+
 def test_run_tests_fails_without_active_session():
     with pytest.raises(NoActiveSession):
         run_tests([])
