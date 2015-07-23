@@ -22,11 +22,11 @@ def parametrize(parameter_name, values):
             def new_func(*args, **kwargs):
                 # for better debugging. _current_variation gets set to None on context exit
                 variation = _current_variation
-                for fixture in params.get_parametrization_fixtures():
-                    if fixture.name not in kwargs:
+                for param in params.get_parametrization_fixtures():
+                    if param.name not in kwargs:
                         assert variation is not None, 'Not called in parametrization context'
-                        if variation.has_value_for_fixture_id(fixture.info.id):
-                            kwargs[fixture.name] = variation.get_fixture_value(fixture.info.id)
+                        if variation.has_value_for_parameter(param.info.id):
+                            kwargs[param.name] = variation.get_param_value(param.info.id)
                 return func(*args, **kwargs)
             setattr(new_func, _PARAM_INFO_ATTR_NAME, params)
             returned = new_func
