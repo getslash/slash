@@ -11,6 +11,8 @@ Testing Utilities
 
 .. autofunction:: slash.core.fixtures.parameters.toggle
 
+.. autofunction:: slash.core.fixtures.parameters.iterate
+
 .. autofunction:: slash.abstract_test_class
 
 

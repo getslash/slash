@@ -1,7 +1,7 @@
-Testing with Slash
-==================
+Wirlwind Tour of Slash
+======================
 
-.. _writing_tests:
+.. _tour:
 
 Writing Tests
 -------------
@@ -329,11 +329,8 @@ Slash maintains a set of globals for convenience. The most useful one is ``slash
 Test Parameters
 ---------------
 
-.. _parameters:
-
 Slash tests can be easily parametrized, iterating parameter values and creating separate cases for each value. This is true for both tests implemented as classes and for tests implemented as functions.
 
-Use the :func:`slash.parametrize` decorator to multiply a test function for different parameter values:
 
 .. code-block:: python
 
@@ -341,49 +338,8 @@ Use the :func:`slash.parametrize` decorator to multiply a test function for diff
    def test_something(x):
        # use x here
 
-The above example will yield 3 test cases, one for each value of ``x``. Slash also supports parametrizing the ``before`` and ``after`` methods of test classes, thus multiplying each case by several possible setups:
+.. seealso:: :ref:`parameters`
 
-.. code-block:: python
-
-    class SomeTest(Test):
-        @slash.parametrize('x', [1, 2, 3])
-	def before(self, x):
-            # ...
-
-        @slash.parametrize('y', [4, 5, 6])
-	def test(self, y):
-            # ...
-
-        @slash.parametrize('z', [7, 8, 9])
-	def after(self, z):
-            # ...
-
-The above will yield 27 different runnable tests, one for each cartesian product of the ``before``, ``test`` and ``after`` possible parameter values.
-
-This also works across inheritence. Each base class can parametrize its `before` or `after` methods, multiplying the number of variations actually run accordingly. Calls to `super` are handled automatically in this case:
-
-.. code-block:: python
-
-    class BaseTest(Test):
-
-        @slash.parametrize('base_parameter', [1, 2, 3])
-        def before(self, base_parameter):
-            # ....
-
-    class DerivedTest(BaseTest):
-        
-        @slash.parametrize('derived_parameter', [4, 5, 6])
-        def before(self, derived_parameter):
-            super(DerivedTest, self).before() # note that base parameters aren't specified here
-            # .....
-
-Slash also supports :func:`slash.parameters.toggle <slash.core.fixtures.parameters.toggle>` as a shortcut for toggling a boolean flag in two separate cases:
-
-.. code-block:: python
-
-		@slash.parameters.toggle('with_safety_switch')
-		def test_operation(with_safety_switch):
-		    ...
 
 Abstract Base Tests
 -------------------

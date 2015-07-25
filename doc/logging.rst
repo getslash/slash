@@ -3,7 +3,7 @@
 Logging
 =======
 
-As mentioned in :ref:`the introductory section <writing_tests>`, logging in Slash is done by Logbook. The path to which logs are written is controlled with the ``-l`` flag and console verbosity is controlled with ``-v``/``-q``. Below are some more advanced topics which may be relevant for extending Slash's behavior.
+As mentioned in :ref:`the introductory section <tour>`, logging in Slash is done by Logbook. The path to which logs are written is controlled with the ``-l`` flag and console verbosity is controlled with ``-v``/``-q``. Below are some more advanced topics which may be relevant for extending Slash's behavior.
 
 Controlling Console Colors
 --------------------------

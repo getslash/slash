@@ -19,7 +19,7 @@ Diving in
 As a Test Author
 ~~~~~~~~~~~~~~~~
 
-If you only want to write tests for running with Slash, you should head first to the :ref:`writing_tests` section which should help you get started.
+If you only want to write tests for running with Slash, you should head first to the :ref:`tour` section which should help you get started.
 
 As a Framework Developer
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,8 +32,9 @@ Table Of Contents
 .. toctree::
    :maxdepth: 2
 
-   writing_tests
+   tour
    slash_run
+   parameters
    tags
    fixtures
    customizing_slash
