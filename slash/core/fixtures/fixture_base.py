@@ -3,6 +3,7 @@ class FixtureBase(object):
     info = None
     fixture_kwargs = None
     parametrization_ids = None
+    names = None
 
     def __init__(self):
         super(FixtureBase, self).__init__()

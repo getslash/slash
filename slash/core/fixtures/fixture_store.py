@@ -8,7 +8,7 @@ from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
 from .fixture import Fixture
 from .namespace import Namespace
-from .parameters import Parametrization, get_parametrization_fixtures
+from .parameters import Parametrization, get_parametrizations
 from .utils import get_scope_by_name, nofixtures
 from .variation import VariationFactory
 from .active_fixture import ActiveFixture
@@ -39,7 +39,7 @@ class FixtureStore(object):
         return test_func(**kwargs)
 
     def get_required_fixture_names(self, test_func, is_method):
-        skip_names = set(p.name for p in get_parametrization_fixtures(test_func))
+        skip_names = set(name for p in get_parametrizations(test_func) for name in p.names)
         arg_names = [name for name in getargspec(test_func).args if name not in skip_names]
         if is_method:
             arg_names = arg_names[1:]

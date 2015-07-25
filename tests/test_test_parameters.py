@@ -107,6 +107,42 @@ def test_before_parameters_inheritence(cartesian, with_override):
     cartesian.check(result.data for result in session.results)
 
 
+def test_parametrization_tuples():
+
+    @slash.parametrize(('a', 'b'), [(1, 2), (11, 22)])
+    @slash.parametrize('c', [3, 33])
+    def test_something(a, b, c):
+        _set("params", (a, b, c))
+
+    session = run_tests_assert_success(test_something)
+    results = [result.data['params'] for result in session.results.iter_test_results()]
+    expected = set([
+        (1, 2, 3), (1, 2, 33), (11, 22, 3), (11, 22, 33)
+        ])
+    assert len(expected) == len(results)
+    assert expected == set(results)
+
+def test_parametrization_tuples_invalid_length():
+
+    with pytest.raises(RuntimeError) as caught:
+        @slash.parametrize(('a', 'b'), [(1, 2), (1,), (11, 22)])
+        def test_something(a, b, c):
+            pass
+    assert 'Invalid parametrization value' in str(caught.value)
+    assert 'invalid length' in str(caught.value)
+
+
+def test_parametrization_tuples_invalid_type():
+
+    with pytest.raises(RuntimeError) as caught:
+        @slash.parametrize(('a', 'b'), [(1, 2), 200, (11, 22)])
+        def test_something(a, b, c):
+            pass
+    assert 'Invalid parametrization value' in str(caught.value)
+    assert 'expected sequence' in str(caught.value)
+
+
+
 def _set(param, value):
     data = slash.session.results.current.data
     assert param not in data

@@ -5,7 +5,7 @@ from uuid import uuid1
 import pytest
 import slash
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
-from slash.core.fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
+from slash.core.fixtures.parameters import bound_parametrizations_context, get_parametrizations
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
@@ -243,7 +243,7 @@ def test_get_all_needed_parametrization_ids_of_parametrization(store):
         pass
 
     fixtureobj = store.get_fixture_by_id(fixture1.__slash_fixture__.id)
-    [param_fixtureobj] = get_parametrization_fixtures(fixture1)
+    [param_fixtureobj] = get_parametrizations(fixture1)
 
     with pytest.raises(UnresolvedFixtureStore):
         store.get_all_needed_parametrization_ids(fixtureobj)

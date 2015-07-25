@@ -4,7 +4,7 @@ from numbers import Number
 
 from ..._compat import iteritems, OrderedDict, string_types, imap, izip, reduce, xrange
 from ...utils.python import getargspec
-from .parameters import Parametrization, get_parametrization_fixtures
+from .parameters import Parametrization, get_parametrizations
 from .utils import nofixtures
 
 _PRINTABLE_TYPES = (Number,) + string_types
@@ -44,10 +44,11 @@ class VariationFactory(object):
         arg_names = getargspec(func).args[1 if is_method else 0:]
 
         parametrizations = {}
-        for param in get_parametrization_fixtures(func):
+        for param in get_parametrizations(func):
             # make sure the parametrization is in the store
             self._store.ensure_known_parametrization(param)
-            parametrizations[param.name] = param
+            for name in param.names:
+                parametrizations[name] = param
 
         for arg_name in arg_names:
             fixture = parametrizations.get(arg_name, None)

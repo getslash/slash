@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from ..._compat import itervalues, iteritems
+from ..._compat import itervalues, iteritems, string_types
 from .fixture_base import FixtureBase
 from .utils import FixtureInfo, get_scope_by_name
 from ...utils.python import wraps
@@ -23,10 +23,11 @@ def parametrize(parameter_name, values):
                 # for better debugging. _current_variation gets set to None on context exit
                 variation = _current_variation
                 for param in params.get_parametrization_fixtures():
-                    if param.name not in kwargs:
+                    if not param.is_in_kwargs(kwargs):
                         assert variation is not None, 'Not called in parametrization context'
                         if variation.has_value_for_parameter(param.info.id):
-                            kwargs[param.name] = variation.get_param_value(param.info.id)
+                            param.assign_to_kwargs_from_variation(kwargs, variation)
+
                 return func(*args, **kwargs)
             setattr(new_func, _PARAM_INFO_ATTR_NAME, params)
             returned = new_func
@@ -69,7 +70,7 @@ def bound_parametrizations_context(variation):
         _current_variation = None
 
 
-def get_parametrization_fixtures(func):
+def get_parametrizations(func):
     param_info = getattr(func, _PARAM_INFO_ATTR_NAME, None)
     if param_info is None:
         return []
@@ -97,10 +98,20 @@ class Parametrization(FixtureBase):
 
     def __init__(self, name, values):
         super(Parametrization, self).__init__()
-        self.name = name
-        self.info = FixtureInfo(name=name)
-        self.scope = get_scope_by_name('test')
         self.values = list(values)
+        if isinstance(name, string_types):
+            self.names = (name,)
+            self.unpack = False
+        else:
+            self.names = name
+            self.unpack = True
+            for option in self.values:
+                if not isinstance(option, (tuple, list)):
+                    raise RuntimeError('Invalid parametrization value (expected sequence): {0!r}'.format(option))
+                if len(option) != len(self.names):
+                    raise RuntimeError('Invalid parametrization value (invalid length): {0!r}'.format(option))
+        self.info = FixtureInfo()
+        self.scope = get_scope_by_name('test')
 
     def get_value(self, kwargs, active_fixture):
         raise NotImplementedError()  # pragma: no cover
@@ -110,3 +121,15 @@ class Parametrization(FixtureBase):
 
     def _resolve(self, store):
         return {}
+
+    def is_in_kwargs(self, kwargs):
+        return all(name in kwargs for name in self.names)
+
+    def assign_to_kwargs_from_variation(self, kwargs, variation):
+        value = variation.get_param_value(self.info.id)
+        if self.unpack:
+            for name, value in zip(self.names, value):
+                kwargs[name] = value
+        else:
+            assert len(self.names) == 1
+            kwargs[self.names[0]] = value
