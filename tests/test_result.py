@@ -131,6 +131,14 @@ def test_result_test_garbage_collected(gc_marker):
         assert mark.destroyed
 
 
+def test_add_error_traceback_for_manually_added_errors(suite, suite_test):
+    suite_test.append_line('slash.add_error("msg")')
+    suite_test.expect_error()
+
+    [result] = suite.run().get_all_results_for_test(suite_test)
+    [err] = result.get_errors()
+    assert err.traceback
+
 
 class SessionResultTest(TestCase):
 

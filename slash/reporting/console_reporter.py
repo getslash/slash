@@ -229,6 +229,10 @@ class ConsoleReporter(ReporterInterface):
             itertools.chain(izip(itertools.repeat("E"), test_result.get_errors()),
                             izip(itertools.repeat("F"), test_result.get_failures())))
         for index, (err_type, err) in enumerate(all_errs):
+            if err.exception_type is None and not config.root.log.show_manual_errors_tb:
+                self._terminal.write(err.message, **theme('tb-error'))
+                self._terminal.write('\n')
+                continue
             err_header = ' - {0}/{1} {2} ({3:YYYY-MM-DD HH:mm:ss ZZ}): {4}'.format(
                 index + 1,
                 len(all_errs),

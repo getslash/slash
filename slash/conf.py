@@ -49,6 +49,7 @@ config = Config({
         "last_session_dir_symlink": None // Doc("If set, specifies a symlink path to the last session log directory"),
         "last_test_symlink": None // Doc("If set, specifies a symlink path to the last test log file in each run"),
         "last_failed_symlink": None // Doc("If set, specifies a symlink path to the last failed test log file"),
+        "show_manual_errors_tb": True // Doc("Show tracebacks for errors added via slash.add_error"),
         "silence_loggers": [] // Doc("Logger names to silence"),
         "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
         "console_format": None // Doc("Optional format to be used for console output. Defaults to the regular format"),
