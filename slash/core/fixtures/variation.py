@@ -3,6 +3,7 @@ import itertools
 from numbers import Number
 
 from ..._compat import iteritems, OrderedDict, string_types, imap, izip, reduce, xrange
+from ...exceptions import FixtureException
 from ...utils.python import getargspec
 from .parameters import Parametrization, get_parametrizations
 from .utils import nofixtures
@@ -53,7 +54,11 @@ class VariationFactory(object):
         for arg_name in arg_names:
             fixture = parametrizations.get(arg_name, None)
             if fixture is None:
-                fixture = self._store.get_fixture_by_name(arg_name)
+                try:
+                    fixture = self._store.get_fixture_by_name(arg_name)
+                except FixtureException as e:
+                    raise type(e)('Loading {0.__code__.co_filename}:{0.__name__}: {1}'.format(func, e))
+
 
             self._needed_fixtures.append(fixture)
             if namespace is not None:

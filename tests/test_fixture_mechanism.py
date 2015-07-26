@@ -49,7 +49,7 @@ def test_fixture_id_remains_even_when_context_popped(store):
 
     store.pop_namespace()
 
-    with pytest.raises(LookupError):
+    with pytest.raises(UnknownFixtures):
         store.get_fixture_by_name('fixture0')
 
     assert store.get_fixture_by_id(fixture_id) is fixture_obj
@@ -261,7 +261,7 @@ def test_fixture_store_iter_parametrization_variations_missing_fixtures(store):
     def test_func(needed_fixture):
         pass
 
-    with pytest.raises(LookupError):
+    with pytest.raises(UnknownFixtures):
         list(store.iter_parametrization_variations(funcs=[test_func]))
 
 
@@ -337,7 +337,7 @@ def test_nested_store_resolution_activation(store):
 
     store.pop_namespace()
 
-    with pytest.raises(LookupError):
+    with pytest.raises(UnknownFixtures):
         store.get_fixture_dict(['fixture2'])
 
 

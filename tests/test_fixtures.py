@@ -63,4 +63,3 @@ def test_fixture_dependency_both_directly_and_indirectly(suite, suite_test):
     results = summary.get_all_results_for_test(suite_test)
     assert len(results) == num_values1 * num_values2
 
-
