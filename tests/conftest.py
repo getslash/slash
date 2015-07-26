@@ -14,6 +14,7 @@ from slash.loader import Loader
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
+from .utils.garbage_collection import GarbageCollectionMarker
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -167,3 +168,8 @@ def defined_fixture(request, suite, suite_test):
         return suite_test.file.add_fixture()
 
     raise NotImplementedError()  # pragma: no cover
+
+
+@pytest.fixture
+def gc_marker():
+    return GarbageCollectionMarker()

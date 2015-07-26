@@ -1,3 +1,5 @@
+import gc
+
 import slash
 import pytest
 
@@ -7,6 +9,7 @@ from slash.core.result import Result
 from slash.core.result import SessionResults, GlobalResult
 
 from .utils import run_tests_assert_success
+
 
 
 @pytest.mark.parametrize('use_error', [True, False])
@@ -102,6 +105,31 @@ def test_result_data_is_unique():
     session = run_tests_assert_success(SampleTest)
     [result1, result2] = session.results
     assert result1.data is not result2.data
+
+
+def test_result_test_garbage_collected(gc_marker):
+
+    class SomeTest(slash.Test):
+        def test_something(self):
+            pass
+
+    # we have to run another test at the end to make sure Slash's internal _last_test
+    # doesn't refer to our test
+    class OtherTest(slash.Test):
+        def test_something(self):
+            pass
+
+    with slash.Session() as s:
+        loader = slash.loader.Loader()
+        tests = loader.get_runnables(SomeTest)
+        # we use list(genexp) to prevent 't' from leaking
+        marks = list(gc_marker.mark(t) for t in tests)
+        session = run_tests_assert_success(tests + loader.get_runnables(OtherTest))
+        del tests
+    gc.collect()
+    for mark in marks:
+        assert mark.destroyed
+
 
 
 class SessionResultTest(TestCase):

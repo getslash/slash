@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`341 major` Make sure tests are garbage collected after running
 * :feature:`233` slash.parametrize: allow argument tuples to be specified
 * :feature:`337` Set tb level to 2 by default
 * :feature:`333` Allow customization of console colors

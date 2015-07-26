@@ -14,8 +14,6 @@ class Metadata(object):
         super(Metadata, self).__init__()
         #: The test's unique id
         self.id = None
-        #: Back reference to the test to which this metadata placeholder belongs
-        self.test = test
         self.tags = test.get_tags()
         if factory is not None:
         #: The path to the file from which this test was loaded
