@@ -8,6 +8,7 @@ import types
 from contextlib import contextmanager
 
 from slash._compat import StringIO
+from slash.exceptions import TerminatedException
 from slash.frontend.slash_run import slash_run
 
 from ..code_formatter import CodeFormatter
@@ -36,7 +37,7 @@ class Suite(object):
         self._num_method_tests = self._num_function_tests = 0
         self._slashconf = None
 
-    def iter_all_after(self, test, assert_has_more):
+    def iter_all_after(self, test, assert_has_more=False):
         found = had_more = False
         for t in self:
             if t == test:
@@ -120,7 +121,7 @@ class Suite(object):
                           app_callback=captured.append,
                           test_sort_key=self._get_test_id_from_runnable
                           )
-            except (KeyboardInterrupt, SystemExit) as e:
+            except (KeyboardInterrupt, SystemExit, TerminatedException) as e:
                 if isinstance(e, KeyboardInterrupt):
                     assert expect_interruption, 'KeyboardInterrupt unexpectedly raised'
                 returned.exit_code = -1

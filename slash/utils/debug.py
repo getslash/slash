@@ -4,7 +4,7 @@ import sys
 import traceback
 
 from ..conf import config
-from ..exceptions import SkipTest
+from ..exceptions import SkipTest, INTERRUPTION_EXCEPTIONS
 from ..ctx import context
 
 
@@ -52,7 +52,7 @@ def debug_if_needed(exc_info=None):
         exc_info = sys.exc_info()
     if exc_info[0] is SkipTest and not config.root.debug.debug_skips:
         return
-    if isinstance(exc_info[1], (SystemExit, KeyboardInterrupt)):
+    if isinstance(exc_info[1], (SystemExit,) + INTERRUPTION_EXCEPTIONS):
         return
 
     launch_debugger(exc_info)

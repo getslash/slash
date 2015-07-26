@@ -2,6 +2,7 @@ import sys
 
 import pytest
 
+from slash.exceptions import INTERRUPTION_EXCEPTIONS
 from slash.utils import debug
 
 
@@ -19,7 +20,7 @@ def debug_enabled(config_override):
     config_override('debug.enabled', True)
 
 
-@pytest.fixture(params=[SystemExit, KeyboardInterrupt])
+@pytest.fixture(params=(SystemExit,) + INTERRUPTION_EXCEPTIONS)
 def skipped_exc_info(request):
     try:
         raise request.param()

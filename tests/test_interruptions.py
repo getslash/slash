@@ -39,6 +39,14 @@ def test_non_critical_cleanups_not_called(interrupted_suite, interrupted_test):
     assert cleanup not in summary.events
 
 
+def test_sigterm_interrupt(suite, suite_test):
+    suite_test.append_line('raise slash.exceptions.TerminatedException()')
+    suite_test.expect_interruption()
+    for test in suite.iter_all_after(suite_test):
+        test.expect_deselect()
+    suite.run(expect_interruption=True)
+
+
 @pytest.fixture
 def interrupted_suite(suite, interrupted_index):
     for index, test in enumerate(suite):

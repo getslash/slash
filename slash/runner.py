@@ -9,7 +9,7 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, SkipTest
+from .exceptions import NoActiveSession, SkipTest, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .utils.interactive import notify_if_slow_context
@@ -108,7 +108,7 @@ def _run_single_test(test, test_iterator):
                 _fire_test_summary_hooks(test, result)
             except SkipTest:
                 pass
-            except KeyboardInterrupt:
+            except INTERRUPTION_EXCEPTIONS:
                 with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
                     hooks.test_interrupt() # pylint: disable=no-member
                 raise

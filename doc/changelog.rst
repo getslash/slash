@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`295` SIGTERM handling for stopping sessions gracefully
 * :feature:`279` Add option to silence manual add_error tracebacks (``-o show_manual_errors_tb=no``)
 * :bug:`341 major` Make sure tests are garbage collected after running
 * :feature:`233` slash.parametrize: allow argument tuples to be specified
