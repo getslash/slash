@@ -120,12 +120,12 @@ def _run_single_test(test, test_iterator):
 def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
     with handling_exceptions():
         try:
-            if result.is_success_finished():
-                hooks.test_success()  # pylint: disable=no-member
-            elif result.is_just_failure():
+            if result.is_just_failure():
                 hooks.test_failure()  # pylint: disable=no-member
             elif result.is_skip():
                 hooks.test_skip(reason=result.get_skips()[0]) # pylint: disable=no-member
+            elif result.is_success():
+                hooks.test_success()  # pylint: disable=no-member
             else:
                 _logger.debug('Firing test_error hook for {0} (result: {1})', test, result)
                 hooks.test_error()  # pylint: disable=no-member

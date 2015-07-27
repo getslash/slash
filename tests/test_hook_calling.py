@@ -52,6 +52,17 @@ def test_test_start_before_fixture_start(suite, suite_test, defined_fixture, aut
     assert summary.events['fixture_start', defined_fixture.id].timestamp > event.timestamp
 
 
+def test_no_error_hooks_called_on_success(suite):
+
+    called = []
+
+    for hook_name in ['test_error', 'test_failure', 'test_skip', 'error_added']:
+        gossip.register(lambda name=hook_name, **kw: called.append(name), 'slash.{0}'.format(hook_name))
+
+    suite.run()
+    assert not called
+
+
 def test_hook__error_added_during_test(suite, request, checkpoint, suite_test):
 
     request.addfinalizer(
