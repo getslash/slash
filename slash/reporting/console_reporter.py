@@ -82,7 +82,7 @@ class TerminalWriterWrapper(object):
     def write(self, line, **kw):
         line = str(line)
         self._do_write(line, **kw)
-        self._line = self._get_line_remainder(line)
+        self._line = self._get_line_remainder(self._line + line)
 
     def _get_line_remainder(self, line):
         return line.rsplit('\r', 1)[-1].rsplit('\n', 1)[-1]
