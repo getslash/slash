@@ -66,3 +66,12 @@ The ``-o`` flag enables us to override specific paths in the configuration, prop
 .. seealso:: configuration
 
 
+Resuming Previous Sessions
+--------------------------
+
+When you run a session that fails, Slash automatically saves the tests intended to be run for later reference. For quickly retrying a previously failed session, skipping tests which had already passed, you can use ``slash resume``::
+
+  $ slash resume -vv <session id>
+
+This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for resuming.
+
