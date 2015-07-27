@@ -1,4 +1,4 @@
-Wirlwind Tour of Slash
+Whirlwind Tour of Slash
 ======================
 
 .. _tour:
