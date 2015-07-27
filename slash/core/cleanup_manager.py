@@ -47,7 +47,7 @@ class CleanupManager(object):
         new_args = list(kwargs.pop('args', ()))
         if args or kwargs:
             _logger.warning(
-                'Passing *args/**kwargs to slash.add_cleanup is deprecated')
+                'Passing *args/**kwargs to slash.add_cleanup is deprecated', frame_correction=+2)
             new_args.extend(args)
             new_kwargs.update(kwargs)
 
