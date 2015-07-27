@@ -42,6 +42,8 @@ def add_error(msg=None, frame_correction=0):
     Adds an error to the current test result
 
     :param msg: can be either an object or a string representing a message
+    :param frame_correction: when delegating add_error from another function, specifies
+      the amount of frames to skip to reach the actual cause of the added error
     """
     if context.session is not None:
         return context.session.results.current.add_error(msg, frame_correction=frame_correction+1)
@@ -52,6 +54,8 @@ def add_failure(msg=None, frame_correction=0):
     Adds a failure to the current test result
 
     :param msg: can be either an object or a string representing a message
+    :param frame_correction: when delegating add_failure from another function, specifies
+      the amount of frames to skip to reach the actual cause of the added failure
     """
     if context.session is not None:
         return context.session.results.current.add_failure(msg, frame_correction=frame_correction+1)
