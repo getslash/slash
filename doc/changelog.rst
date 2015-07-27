@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`321` add Error.mark_fatal() to enable calls to mark_fatal right after add_error
 * :feature:`295` SIGTERM handling for stopping sessions gracefully
 * :feature:`279` Add option to silence manual add_error tracebacks (``-o show_manual_errors_tb=no``)
 * :bug:`341 major` Make sure tests are garbage collected after running

@@ -37,12 +37,12 @@ Table Of Contents
    parameters
    tags
    fixtures
+   errors
    customizing_slash
    configuration
    logging
    hooks
    plugins
-   exceptions
    internals
    features
    advanced_usage

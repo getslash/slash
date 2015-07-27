@@ -43,68 +43,64 @@ def test_iter_results_ordering(suite):
         assert result.data['index'] == index
 
 
-def test_failed(suite, test):
-    test.when_run.fail()
-    result = suite.run()[test]
+def test_failed(suite, suite_test):
+    suite_test.when_run.fail()
+    result = suite.run()[suite_test]
     assert result.is_failure()
     assert not result.is_error()
     assert not result.is_success()
 
 
-def test_error(suite, test):
-    test.when_run.error()
-    result = suite.run()[test]
+def test_error(suite, suite_test):
+    suite_test.when_run.error()
+    result = suite.run()[suite_test]
     assert result.is_error()
     assert not result.is_failure()
     assert not result.is_success()
 
 
-def test_skip(suite, test):
-    test.when_run.skip()
-    result = suite.run()[test]
+def test_skip(suite, suite_test):
+    suite_test.when_run.skip()
+    result = suite.run()[suite_test]
     assert result.is_skip()
     assert not result.is_error()
     assert not result.is_failure()
     assert not result.is_success()
 
 
-@pytest.mark.parametrize('failure_type', ['failure', 'error'])
-def test_stop_on_fatal_exception(suite, test, remaining_tests, failure_type):
-    test.append_line(
-        'from slash.exception_handling import mark_exception_fatal')
-    test.append_line('raise mark_exception_fatal({0}())'.format('AssertionError' if failure_type == 'failure' else 'Exception'))
-    getattr(test, 'expect_{0}'.format(failure_type))()
-    for remaining_test in remaining_tests:
+def test_stop_on_fatal_exception(suite, suite_test, fatal_error_adder):
+    fatal_error_adder(suite_test)
+    for remaining_test in suite.iter_all_after(suite_test):
         remaining_test.expect_not_run()
 
     suite.run()
 
 
-@pytest.mark.parametrize('failure_type', ['error', 'failure'])
-def test_stop_on_error(suite, test, test_index, failure_type):
+def test_stop_on_error(suite, suite_test, failure_type):
     if failure_type == 'error':
-        test.when_run.error()
+        suite_test.when_run.error()
     elif failure_type == 'failure':
-        test.when_run.fail()
+        suite_test.when_run.fail()
     else:
         raise NotImplementedError()  # pragma: no cover
 
-    for index, test in enumerate(suite):
-        if index > test_index:
-            test.expect_not_run()
+    for test in suite.iter_all_after(suite_test):
+        test.expect_not_run()
 
     suite.run(additional_args=['-x'])
 
 
-def test_stop_on_error_unaffected_by_skips(suite, test):
-    assert test is not suite[-1]
-    test.when_run.skip()
-    results = suite.run(additional_args=['-x'])
-    assert results[suite[-1]].is_success()
+def test_stop_on_error_unaffected_by_skips(suite, suite_test):
+    suite_test.when_run.skip()
+    summary = suite.run(additional_args=['-x'])
+    for test in suite.iter_all_after(suite_test):
+        for res in summary.get_all_results_for_test(test):
+            assert res.is_success()
 
 
-def test_debug_if_needed(request, config_override, suite, test):
-    test.when_run.fail()
+
+def test_debug_if_needed(request, config_override, suite, suite_test):
+    suite_test.when_run.fail()
 
     debugged = {'value': False}
 
@@ -121,17 +117,23 @@ def test_debug_if_needed(request, config_override, suite, test):
 
     assert debugged['value']
 
+@pytest.fixture(params=['raising', 'adding'])
+def fatal_error_adder(request, failure_type):
 
-@pytest.fixture
-def test(suite, test_index):
-    return suite[test_index]
+    def adder(test):
+        if request.param == 'raising':
+            test.append_line(
+                'from slash.exception_handling import mark_exception_fatal')
+            test.append_line('raise mark_exception_fatal({0}())'.format('AssertionError' if failure_type == 'failure' else 'Exception'))
+        elif request.param == 'adding':
+            test.append_line('slash.add_{0}("msg").mark_fatal()'.format(failure_type))
+        else:
+            raise NotImplementedError() # pragma: no cover
+
+        getattr(test, 'expect_{0}'.format(failure_type))()
+    return adder
 
 
-@pytest.fixture
-def test_index(suite):
-    return int(len(suite) // 2)
-
-
-@pytest.fixture
-def remaining_tests(suite, test_index):
-    return suite[test_index + 1:]
+@pytest.fixture(params=['failure', 'error'])
+def failure_type(request):
+    return request.param

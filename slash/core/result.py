@@ -115,10 +115,12 @@ class Result(object):
     def add_error(self, e=None, frame_correction=0):
         err = self._add_error(self._errors, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_error_added(context.test, err)
+        return err
 
     def add_failure(self, e=None, frame_correction=0):
         err = self._add_error(self._failures, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_failure_added(context.test, err)
+        return err
 
     def set_test_detail(self, key, value):
         self._details[key] = value

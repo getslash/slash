@@ -44,7 +44,7 @@ def add_error(msg=None, frame_correction=0):
     :param msg: can be either an object or a string representing a message
     """
     if context.session is not None:
-        context.session.results.current.add_error(msg, frame_correction=frame_correction+1)
+        return context.session.results.current.add_error(msg, frame_correction=frame_correction+1)
 
 
 def add_failure(msg=None, frame_correction=0):
@@ -54,7 +54,7 @@ def add_failure(msg=None, frame_correction=0):
     :param msg: can be either an object or a string representing a message
     """
     if context.session is not None:
-        context.session.results.current.add_failure(msg, frame_correction=frame_correction+1)
+        return context.session.results.current.add_failure(msg, frame_correction=frame_correction+1)
 
 
 def set_test_detail(key, value):

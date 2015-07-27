@@ -16,6 +16,7 @@ class Error(object):
     def __init__(self, msg=None, exc_info=None, frame_correction=0):
         super(Error, self).__init__()
         self.time = arrow.utcnow()
+        self._fatal = False
         if msg is None and exc_info is not None:
             msg = traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()
         if not isinstance(msg, string_types):
@@ -29,7 +30,13 @@ class Error(object):
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
 
     def is_fatal(self):
+        if self._fatal:
+            return True
         return self.exception is not None and is_exception_fatal(self.exception)
+
+    def mark_fatal(self):
+        self._fatal = True
+        return self
 
     def is_failure(self):
         return isinstance(self.exception, FAILURE_EXCEPTION_TYPES)
