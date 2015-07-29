@@ -9,7 +9,7 @@ Changelog
 * :feature:`233` slash.parametrize: allow argument tuples to be specified
 * :feature:`337` Set tb level to 2 by default
 * :feature:`333` Allow customization of console colors
-* :feature:`332` Add ability to filter by test tags - you can now filter with ``-k tag:sometag``, ``-k sometag=2`` and ``-k "not sometag=3``
+* :feature:`332` Add ability to filter by test tags - you can now filter with ``-k tag:sometag``, ``-k sometag=2`` and ``-k "not sometag=3"``
 * :feature:`240` Add support for test tags
 * :feature:`324` Add test for cleanups with fatal exceptions
 * :bug:`329 major` handling_exceptions(swallow=True) now does not swallow SkipTest exceptions
