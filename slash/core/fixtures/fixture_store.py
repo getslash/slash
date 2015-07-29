@@ -3,6 +3,7 @@ import sys
 import collections
 
 from ..._compat import iteritems, itervalues, OrderedDict, reraise
+from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
@@ -229,7 +230,12 @@ class FixtureStore(object):
 
         assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]
         self._active_fixtures_by_scope[fixture.info.scope][fixture.info.id] = active_fixture
-        returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
+        prev_context_fixture = slash_context.fixture
+        slash_context.fixture = active_fixture
+        try:
+            returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
+        finally:
+            slash_context.fixture = prev_context_fixture
         return returned
 
     def _deactivate_fixture(self, fixture):

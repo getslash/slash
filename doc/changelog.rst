@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`347` Add slash.context.fixture to point at the 'this' variable of the currently computing fixture
 * :feature:`335` Add 'needs' and 'provides' to plugins, to provide fine-grained flow control over plugin calling
 * :feature:`321` add Error.mark_fatal() to enable calls to mark_fatal right after add_error
 * :feature:`295` SIGTERM handling for stopping sessions gracefully

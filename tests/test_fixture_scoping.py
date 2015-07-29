@@ -187,3 +187,8 @@ class FixtureTree(object):
         globs = {'tree': self}
         exec(buff.getvalue(), globs)
         return slash.fixture(scope=scope)(globs[name])
+
+@pytest.fixture(autouse=True)
+def non_null_ctx(request):
+    slash.ctx.push_context()
+    request.addfinalizer(slash.ctx.pop_context)

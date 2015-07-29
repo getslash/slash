@@ -63,3 +63,12 @@ def test_fixture_dependency_both_directly_and_indirectly(suite, suite_test):
     results = summary.get_all_results_for_test(suite_test)
     assert len(results) == num_values1 * num_values2
 
+
+def test_fixture_context(suite, suite_test):
+    fixture1 = suite.slashconf.add_fixture()
+    fixture1.append_line('assert this == slash.context.fixture')
+    fixture2 = suite.slashconf.add_fixture()
+    fixture2.append_line('assert this == slash.context.fixture')
+    fixture2.depend_on_fixture(fixture1)
+    suite_test.depend_on_fixture(fixture1)
+    suite.run()

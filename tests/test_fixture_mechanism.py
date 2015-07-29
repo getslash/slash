@@ -442,6 +442,12 @@ def fixture_func_name():
 def store():
     return FixtureStore()
 
+@pytest.fixture(autouse=True)
+def non_null_ctx(request):
+    slash.ctx.push_context()
+    request.addfinalizer(slash.ctx.pop_context)
+
+
 
 @pytest.fixture
 def cleanup_map():
