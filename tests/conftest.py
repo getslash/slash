@@ -78,9 +78,18 @@ def cleanup_hook_registrations(request):
         assert not gossip.get_group("slash").get_subgroups()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def checkpoint():
     return Checkpoint()
+
+@pytest.fixture
+def checkpoint1():
+    return Checkpoint()
+
+@pytest.fixture
+def checkpoint2():
+    return Checkpoint()
+
 
 _timestamp = itertools.count(1000000)
 
@@ -173,3 +182,4 @@ def defined_fixture(request, suite, suite_test):
 @pytest.fixture
 def gc_marker():
     return GarbageCollectionMarker()
+

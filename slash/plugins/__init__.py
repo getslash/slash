@@ -117,8 +117,8 @@ class PluginManager(object):
         plugin_name = plugin.get_name()
         self._configure(plugin)
         plugin.activate()
-        for hook, callback in self._get_plugin_registrations(plugin):
-            hook.register(callback, token=self._get_token(plugin_name))
+        for hook, callback, plugin_needs, plugin_provides in self._get_plugin_registrations(plugin):
+            hook.register(callback, token=self._get_token(plugin_name), needs=plugin_needs, provides=plugin_provides)
         self._active.add(plugin_name)
 
     def deactivate(self, plugin):
@@ -162,6 +162,8 @@ class PluginManager(object):
     def _get_plugin_registrations(self, plugin):
         returned = []
         unknown = []
+        global_needs = try_get_mark(plugin, 'plugin_needs', [])
+        global_provides = try_get_mark(plugin, 'plugin_provides', [])
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
                 continue
@@ -185,6 +187,9 @@ class PluginManager(object):
                 expect_exists = True
                 hook_name = "slash.{0}".format(method_name)
 
+            plugin_needs = try_get_mark(method, 'plugin_needs', []) + global_needs
+            plugin_provides = try_get_mark(method, 'plugin_provides', []) + global_provides
+
             try:
                 if expect_exists:
                     hook = gossip.get_hook(hook_name)
@@ -196,7 +201,7 @@ class PluginManager(object):
                 unknown.append(hook_name)
                 continue
             assert hook is not None
-            returned.append((hook, method))
+            returned.append((hook, method, plugin_needs, plugin_provides))
         if unknown:
             raise IncompatiblePlugin("Unknown hooks: {0}".format(", ".join(unknown)))
         return returned
@@ -219,3 +224,10 @@ def active(plugin_class):
     manager.activate(plugin)
 
     return plugin_class
+
+def needs(what):
+    return mark("plugin_needs", what, append=True)
+
+
+def provides(what):
+    return mark("plugin_provides", what, append=True)

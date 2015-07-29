@@ -1,10 +1,10 @@
 import functools
 
 
-def mark(name, value):
+def mark(name, value, append=False):
     """Marks an object with a given mark (name/value pair)
     """
-    return functools.partial(_mark, name=name, value=value)
+    return functools.partial(_mark, name=name, value=value, append=append)
 
 def get_marks(obj):
     returned = _get_marks(obj)
@@ -27,11 +27,14 @@ def _set_marks(obj, marks):
     setattr(obj, _MARKS_CONTAINER_ATTR, marks)
     return marks
 
-def _mark(obj, name, value):
+def _mark(obj, name, value, append):
     marks = _get_marks(obj)
     if marks is None:
         marks = _set_marks(obj, {})
-    marks[name] = value
+    if append:
+        marks.setdefault(name, []).append(value)
+    else:
+        marks[name] = value
     return obj
 
 _MARKS_CONTAINER_ATTR = "__slashmarks__"

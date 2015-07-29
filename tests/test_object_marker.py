@@ -24,6 +24,15 @@ def test_try_get_mark_fail_with_default(marked_obj):
     _default = object()
     assert try_get_mark(marked_obj, "nonexistent", _default) is _default
 
+def test_mark_append():
+
+    class Obj(object):
+        pass
+
+    mark_name = 'some_mark'
+    assert try_get_mark(Obj, mark_name) is None
+    assert mark(mark_name, 'mark_value', append=True)(Obj) is Obj
+    assert get_marks(Obj) == {mark_name: ['mark_value']}
 
 @pytest.mark.parametrize('obj', [1, None, object(), type, "string"])
 def test_try_get_mark_fail_non_marked(obj):

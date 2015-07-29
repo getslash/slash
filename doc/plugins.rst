@@ -107,3 +107,28 @@ As more logic is added into plugins it becomes more likely for exceptions to occ
    * :ref:`exception swallowing <exception_swallowing>`
    * :ref:`hooks documentation <hooks>`
 
+
+Plugin Dependencies
+-------------------
+
+You can manage plugin dependencies through the `gossip dependency mechanism <http://gossip.readthedocs.org/en/latest/hook_dependencies.html>`_. The easiest way is using the needs/provides model, also supported by Slash plugins.
+
+The idea is to have plugins specify what they need and what they provide in terms of tokens (basically arbitrary strings that have a meaning to the reader). Slash, by using *gossip* will take care of the invocation order to preserve the constraint:
+
+
+.. code-block:: python
+       
+       class TestIdentificationPlugin(PluginInterface):
+
+           @slash.plugins.provides('awesome_test_id')
+           def test_start(self):
+	       slash.context.test.awesome_test_id = awesome_id_allocation_service()
+
+       class TestIdentificationLoggingPlugin(PluginInterface):
+
+           @slash.plugins.needs('awesome_test_id')
+           def test_start(self):
+	       slash.logger.debug('Test has started with the awesome id of {!r}', slash.context.test.awesome_id)
+
+
+.. note:: The ``@slash.plugins.needs`` / ``@slash.plugins.provides`` decorators can also be specified on the plugin class itself, automatically marking all hook methods
