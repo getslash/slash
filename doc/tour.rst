@@ -121,9 +121,6 @@ By default logs above **WARNING** get emitted to the console when ``slash run`` 
 Saving Logs to Files
 ~~~~~~~~~~~~~~~~~~~~
 
-Logging To Files
-----------------
-
 By default logs are not saved anywhere. This is easily changed with the *-l* flag to ``slash run``. Point this flag to a directory, and Slash will organize logs inside, in subdirectories according to the session and test run (e.g. ``/path/to/logdir/<session id>/<test id>/debug.log``). See :ref:`logging` for more details.
 
 
