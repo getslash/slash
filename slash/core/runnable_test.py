@@ -1,3 +1,5 @@
+from .tagging import NO_TAGS
+
 class RunnableTest(object):
 
     """
@@ -12,6 +14,9 @@ class RunnableTest(object):
         perform the test logic
         """
         raise NotImplementedError()  # pragma: no cover
+
+    def get_tags(self):
+        return NO_TAGS
 
     def get_unmet_requirements(self):
         return [r for r in self.get_requirements() if not r.is_met()]

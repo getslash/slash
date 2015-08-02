@@ -8,7 +8,7 @@ class GlobalStorage(object):
 
 
 class Context(object):
-    session = test = test_id = result = None
+    session = test = test_id = result = fixture = None
 
     def __init__(self):
         super(Context, self).__init__()
@@ -50,7 +50,7 @@ class NullContext(object):
         pass
 
     session = test = test_id = g = internal_globals = \
-        test_filename = test_classname = test_methodname = result = _always_none
+        test_filename = test_classname = test_methodname = result = fixture = _always_none
 
     reporter = NullReporter()
 

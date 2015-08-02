@@ -9,12 +9,11 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, SkipTest, FAILURE_EXCEPTION_TYPES
+from .exceptions import NoActiveSession, SkipTest, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
-from .utils.iteration import PeekableIterator
 from .utils.interactive import notify_if_slow_context
-from .core.error import Error
+from .utils.iteration import PeekableIterator
 
 
 _logger = logbook.Logger(__name__)
@@ -45,9 +44,8 @@ def run_tests(iterable, stop_on_error=None):
             context.session.reporter.report_test_start(test)
             _logger.notice("{0}", test.__slash__.address)
 
-            with _get_run_context_stack(test, test_iterator) as should_run:
-                if should_run:
-                    test.run()
+            _run_single_test(test, test_iterator)
+
 
             result = context.session.results[test]
             context.session.reporter.report_test_end(test, result)
@@ -56,7 +54,7 @@ def run_tests(iterable, stop_on_error=None):
             if result.has_fatal_exception():
                 _logger.debug("Stopping on fatal exception")
                 break
-            if not result.is_success() and not result.is_skip() and stop_on_error:
+            if not result.is_success(allow_skips=True) and stop_on_error:
                 _logger.debug("Stopping (run.stop_on_error==True)")
                 break
         else:
@@ -74,6 +72,68 @@ def run_tests(iterable, stop_on_error=None):
                   context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
 
 
+def _run_single_test(test, test_iterator):
+    run_state = {'exc_info': (None, None, None)}
+    with ExitStack() as exit_stack:
+
+        # sets the current result, test id etc.
+        result = exit_stack.enter_context(_get_test_context(test))
+
+        with handling_exceptions():
+
+            if not _check_test_requirements(test):
+                _logger.debug('Requirements not met for {0}. Not running', test)
+                return
+
+            result.mark_started()
+            try:
+                try:
+                    with handling_exceptions(swallow=True):
+                        context.session.scope_manager.begin_test(test)
+                        hooks.test_start() # pylint: disable=no-member
+                        try:
+                            with handling_exceptions(swallow=True):
+                                try:
+                                    test.run()
+                                except:
+                                    run_state['exc_info'] = sys.exc_info()
+                                    raise
+                        finally:
+                            context.session.scope_manager.end_test(
+                                test,
+                                next_test=test_iterator.peek_or_none(),
+                                exc_info=run_state['exc_info'])
+                except SkipTest:
+                    pass
+                _fire_test_summary_hooks(test, result)
+            except SkipTest:
+                pass
+            except INTERRUPTION_EXCEPTIONS:
+                with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
+                    hooks.test_interrupt() # pylint: disable=no-member
+                raise
+            finally:
+                result.mark_finished()
+
+
+
+def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
+    with handling_exceptions():
+        try:
+            if result.is_just_failure():
+                hooks.test_failure()  # pylint: disable=no-member
+            elif result.is_skip():
+                hooks.test_skip(reason=result.get_skips()[0]) # pylint: disable=no-member
+            elif result.is_success():
+                hooks.test_success()  # pylint: disable=no-member
+            else:
+                _logger.debug('Firing test_error hook for {0} (result: {1})', test, result)
+                hooks.test_error()  # pylint: disable=no-member
+
+        finally:
+            hooks.test_end()  # pylint: disable=no-member
+
+
 def _set_test_metadata(test):
     ensure_test_metadata(test)
     assert test.__slash__.test_index0 is None
@@ -87,51 +147,12 @@ def _mark_unrun_tests(test_iterator):
             pass
 
 
-@contextmanager
-def _get_run_context_stack(test, test_iterator):
-    yielded = False
-    # run_state is needed to support Python 2.6, where exc_info() disappears in some cases when using finally
-    run_state = {'exc_info': (None, None, None)}
-    with ExitStack() as stack:
-        stack.enter_context(_get_test_context(test))
-
-        if not _check_test_requirements(test):
-            yield False
-            return
-
-        stack.enter_context(handling_exceptions())
-        stack.enter_context(_get_test_hooks_context())
-        stack.enter_context(_update_result_context())
-        stack.enter_context(_get_test_scope_context(test, test_iterator, run_state))
-        stack.enter_context(handling_exceptions())
-        yielded = True
-        try:
-            yield True
-        except:
-            run_state['exc_info'] = sys.exc_info()
-            raise
-
-    # if some of the context entries throw SkipTest, the yield result above will not be reached.
-    # we have to make sure that yield happens or else the context manager will raise on __exit__...
-    if not yielded:
-        yield False
-
-
 def _check_test_requirements(test):
     unmet_reqs = test.get_unmet_requirements()
     if unmet_reqs:
         context.result.add_skip('Unmet requirements: {0}'.format(unmet_reqs))
         return False
     return True
-
-
-@contextmanager
-def _get_test_scope_context(test, test_iterator, run_state):
-    context.session.scope_manager.begin_test(test)
-    try:
-        yield
-    finally:
-        context.session.scope_manager.end_test(test, next_test=test_iterator.peek_or_none(), exc_info=run_state['exc_info'])
 
 
 @contextmanager
@@ -147,37 +168,9 @@ def _get_test_context(test, logging=True):
         try:
             with (context.session.logging.get_test_logging_context() if logging else ExitStack()):
                 _logger.debug("Started test: {0}", test)
-                yield
+                yield result
         finally:
             context.result = prev_result
-
-
-@contextmanager
-def _get_test_hooks_context():
-    hooks.test_start()  # pylint: disable=no-member
-    try:
-        yield
-    except SkipTest as skip_exception:
-        hooks.test_skip(reason=skip_exception.reason)  # pylint: disable=no-member
-    except FAILURE_EXCEPTION_TYPES:
-        hooks.test_failure()  # pylint: disable=no-member
-    except KeyboardInterrupt:
-        with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
-            hooks.test_interrupt()  # pylint: disable=no-member
-        raise
-    except:
-        hooks.test_error()  # pylint: disable=no-member
-    else:
-        res = context.session.results.get_result(context.test)
-        if res.is_success_finished():
-            hooks.test_success()  # pylint: disable=no-member
-        elif res.is_just_failure():
-            hooks.test_failure()  # pylint: disable=no-member
-        else:
-            hooks.test_error()  # pylint: disable=no-member
-    finally:
-        hooks.test_end()  # pylint: disable=no-member
-
 
 @contextmanager
 def _set_current_test_context(test):
@@ -197,24 +190,3 @@ def _set_current_test_context(test):
     finally:
         context.test = prev_test
         context.test_id = prev_test_id
-
-
-@contextmanager
-def _update_result_context():
-    result = context.result
-    assert result
-    result.mark_started()
-    try:
-        with handling_exceptions():
-            yield result
-    except SkipTest as e:
-        result.add_skip(e.reason)
-        raise
-    except KeyboardInterrupt:
-        result.mark_interrupted()
-        raise
-    except Exception as e:
-        _logger.debug("Exception escaped test:\n{0}", Error.capture_exception().get_detailed_str())
-        raise
-    finally:
-        result.mark_finished()

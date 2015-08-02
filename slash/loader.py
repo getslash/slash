@@ -149,7 +149,7 @@ class Loader(object):
     def _is_excluded(self, test):
         if self._matcher is None:
             return False
-        return not self._matcher.matches(test.__slash__.address)
+        return not self._matcher.matches(test.__slash__)
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")

@@ -46,8 +46,13 @@ class Result(object):
         _ADDED_TO_RESULT.mark_exception(exc_value)
         if isinstance(exc_value, FAILURE_EXCEPTION_TYPES):
             self.add_failure()
-        elif issubclass(exc_class, Exception) and not issubclass(exc_class, SkipTest):
+        elif isinstance(exc_value, SkipTest):
+            self.add_skip(exc_value.reason)
+        elif issubclass(exc_class, Exception):
+            #skip keyboardinterrupt and system exit
             self.add_error()
+        else:
+            self.mark_interrupted()
 
     def has_errors_or_failures(self):
         return bool(self._failures or self._errors)
@@ -85,6 +90,8 @@ class Result(object):
         return bool(self._skips)
 
     def is_success(self, allow_skips=False):
+        if not self.is_started():
+            return allow_skips
         returned = not self._errors and not self._failures and not self._interrupted
         if not allow_skips:
             returned &= not self._skips
@@ -108,10 +115,12 @@ class Result(object):
     def add_error(self, e=None, frame_correction=0):
         err = self._add_error(self._errors, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_error_added(context.test, err)
+        return err
 
     def add_failure(self, e=None, frame_correction=0):
         err = self._add_error(self._failures, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_failure_added(context.test, err)
+        return err
 
     def set_test_detail(self, key, value):
         self._details[key] = value

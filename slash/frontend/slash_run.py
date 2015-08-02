@@ -37,6 +37,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, test_so
                     collected = itertools.chain([generate_interactive_test()], collected)
             with app.session.get_started_context():
                 run_tests(collected)
+
         except SlashException as e:
             logbook.error(str(e))
             return -1

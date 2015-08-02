@@ -6,6 +6,12 @@ class SlashException(Exception):
         raise cls(*args, **kwargs)
 
 
+class TerminatedException(BaseException):
+    pass
+
+INTERRUPTION_EXCEPTIONS = (KeyboardInterrupt, TerminatedException)
+
+
 class NoActiveSession(SlashException):
     pass
 

@@ -161,24 +161,19 @@ def test_register_custom_hooks_strict_group():
     assert list(plugins.manager.get_installed_plugins()) == initially_installed
 
 
-class BuiltinPluginsTest(TestCase):
+def test_builtin_plugins_hooks_start_condition():
+    "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
+    for hook_name, hook in hooks.get_all_hooks():
+        for registration in hook.get_registrations():
+            assert registration.token.startswith('slash.'), 'Callback {0}.{1} is not a builtin!'.format(hook_name, identifier)
 
-    def test_hooks_start_condition(self):
-        "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
-        for hook_name, hook in hooks.get_all_hooks():
-            for registration in hook.get_registrations():
-                self.assertTrue(
-                    registration.token.startswith("slash."),
-                    "Callback {0}.{1} is not a builtin!".format(hook_name, identifier)
-                )
-
-    def test_builtin_plugins_are_installed(self):
-        installed = plugins.manager.get_installed_plugins()
-        self.assertNotEquals(installed, {})
-        for filename in os.listdir(os.path.join(os.path.dirname(plugins.__file__), "builtin")):
-            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
-                continue
-            self.assertIn(filename[:-3], installed)
+def test_builtin_plugins_are_installed():
+    installed = plugins.manager.get_installed_plugins()
+    assert installed
+    for filename in os.listdir(os.path.join(os.path.dirname(plugins.__file__), "builtin")):
+        if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
+            continue
+        assert filename[:(-3)] in installed
 
 
 class PluginInstallationTest(TestCase):

@@ -8,6 +8,72 @@ from slash.loader import Loader
 from .utils import TestCase
 
 
+@pytest.mark.parametrize('other_error', ['error', 'failure', None])
+def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
+
+
+    if other_error == 'error':
+        suite_test.append_line('slash.add_error("error")')
+        suite_test.expect_error()
+    elif other_error == 'failure':
+        suite_test.append_line('slash.add_failure("failure")')
+        suite_test.expect_failure()
+    elif other_error is not None:
+        raise NotImplementedError() # pragma: no cover
+
+    @suite_test.append_body
+    def __code__():
+        def callback():
+            __ut__.events.add('success_only_cleanup_called')
+        slash.add_cleanup(callback, success_only=True)
+        slash.skip_test()
+
+
+    if other_error is None:
+        suite_test.expect_skip()
+
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    assert result.has_skips()
+    assert ('success_only_cleanup_called' in summary.events) == (other_error is None)
+
+
+
+def test_fatal_exceptions_from_cleanup(suite, suite_test, is_last_test):
+
+    @suite_test.append_body
+    def __code__():
+        @slash.add_cleanup
+        def cleanup():
+            from slash.exception_handling import mark_exception_fatal
+            raise mark_exception_fatal(Exception())
+
+    suite_test.expect_error()
+
+    for t in suite.iter_all_after(suite_test, assert_has_more=not is_last_test):
+        t.expect_not_run()
+
+    suite.run()
+
+
+def test_add_skip_from_test_cleanup(suite, suite_test):
+    cleanup = suite_test.add_deferred_event(decorator='slash.add_cleanup', extra_code=['slash.skip_test()'])
+    suite_test.expect_skip()
+    summary = suite.run()
+    assert summary.events[cleanup].timestamp
+
+
+@pytest.mark.parametrize('cleanup_mechanism', ['this', 'slash'])
+def test_add_skip_from_fixture_cleanup(suite, suite_test, cleanup_mechanism):
+    suite_test.expect_skip()
+    fixture = suite.slashconf.add_fixture()
+    suite_test.depend_on_fixture(fixture)
+    cleanup = fixture.add_deferred_event(decorator='{0}.add_cleanup'.format(cleanup_mechanism), extra_code=['slash.skip_test()'])
+    summary = suite.run()
+    assert summary.events[cleanup].timestamp
+
+
+
 def test_test_cleanups_happen_before_fixture_cleanups(suite, suite_test):
     fixture = suite.slashconf.add_fixture()
     suite_test.depend_on_fixture(fixture)
@@ -67,4 +133,3 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
     cleanup_error = result.get_errors()[-1]
     assert 'AttributeError' in str(cleanup_error)
     assert 'NoneType' in str(cleanup_error)
-

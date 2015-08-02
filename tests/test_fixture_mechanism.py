@@ -5,7 +5,7 @@ from uuid import uuid1
 import pytest
 import slash
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
-from slash.core.fixtures.parameters import bound_parametrizations_context, get_parametrization_fixtures
+from slash.core.fixtures.parameters import bound_parametrizations_context, get_parametrizations
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
@@ -49,7 +49,7 @@ def test_fixture_id_remains_even_when_context_popped(store):
 
     store.pop_namespace()
 
-    with pytest.raises(LookupError):
+    with pytest.raises(UnknownFixtures):
         store.get_fixture_by_name('fixture0')
 
     assert store.get_fixture_by_id(fixture_id) is fixture_obj
@@ -243,7 +243,7 @@ def test_get_all_needed_parametrization_ids_of_parametrization(store):
         pass
 
     fixtureobj = store.get_fixture_by_id(fixture1.__slash_fixture__.id)
-    [param_fixtureobj] = get_parametrization_fixtures(fixture1)
+    [param_fixtureobj] = get_parametrizations(fixture1)
 
     with pytest.raises(UnresolvedFixtureStore):
         store.get_all_needed_parametrization_ids(fixtureobj)
@@ -261,7 +261,7 @@ def test_fixture_store_iter_parametrization_variations_missing_fixtures(store):
     def test_func(needed_fixture):
         pass
 
-    with pytest.raises(LookupError):
+    with pytest.raises(UnknownFixtures):
         list(store.iter_parametrization_variations(funcs=[test_func]))
 
 
@@ -337,7 +337,7 @@ def test_nested_store_resolution_activation(store):
 
     store.pop_namespace()
 
-    with pytest.raises(LookupError):
+    with pytest.raises(UnknownFixtures):
         store.get_fixture_dict(['fixture2'])
 
 
@@ -441,6 +441,12 @@ def fixture_func_name():
 @pytest.fixture
 def store():
     return FixtureStore()
+
+@pytest.fixture(autouse=True)
+def non_null_ctx(request):
+    slash.ctx.push_context()
+    request.addfinalizer(slash.ctx.pop_context)
+
 
 
 @pytest.fixture

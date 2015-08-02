@@ -1,6 +1,24 @@
 Changelog
 =========
 
+* :release:`0.18.0 <02-08-2015>`
+* :feature:`347` Add slash.context.fixture to point at the 'this' variable of the currently computing fixture
+* :feature:`335` Add 'needs' and 'provides' to plugins, to provide fine-grained flow control over plugin calling
+* :feature:`321` add Error.mark_fatal() to enable calls to mark_fatal right after add_error
+* :feature:`295` SIGTERM handling for stopping sessions gracefully
+* :feature:`279` Add option to silence manual add_error tracebacks (``-o show_manual_errors_tb=no``)
+* :bug:`341 major` Make sure tests are garbage collected after running
+* :feature:`233` slash.parametrize: allow argument tuples to be specified
+* :feature:`337` Set tb level to 2 by default
+* :feature:`333` Allow customization of console colors
+* :feature:`332` Add ability to filter by test tags - you can now filter with ``-k tag:sometag``, ``-k sometag=2`` and ``-k "not sometag=3"``
+* :feature:`240` Add support for test tags
+* :feature:`324` Add test for cleanups with fatal exceptions
+* :bug:`329 major` handling_exceptions(swallow=True) now does not swallow SkipTest exceptions
+* :bug:`322 major` Refactored a great deal of the test running logic for easier maintenance and better solve some corner cases
+* :bug:`322 major` Fix behavior of skips thrown from cleanup callbacks
+* :bug:`320 major` Fix scope mechanism to allow cleanups to be added from test_start hooks
+* :feature:`319` Add class_name metadata property for method tests
 * :release:`0.17.0 <29-06-2015>`
 * :feature:`314` Added :func:`Session.get_total_num_tests <slash.core.session.Session.get_total_num_tests>` for returning the number of tests expected to run in a session
 * :feature:`312` Add before_session_start hook

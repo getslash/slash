@@ -19,6 +19,9 @@ NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH
     5)
 
 
+def theme(name):
+    return dict((x, True) for x in config['log']['console_theme'][name].split('/'))
+
 def from_verbosity(level):
     def decorator(func):
         @wraps(func)
@@ -79,7 +82,7 @@ class TerminalWriterWrapper(object):
     def write(self, line, **kw):
         line = str(line)
         self._do_write(line, **kw)
-        self._line = self._get_line_remainder(line)
+        self._line = self._get_line_remainder(self._line + line)
 
     def _get_line_remainder(self, line):
         return line.rsplit('\r', 1)[-1].rsplit('\n', 1)[-1]
@@ -122,7 +125,7 @@ class ConsoleReporter(ReporterInterface):
     def report_before_debugger(self, exc_info):
         self.notify_before_console_output()
         self._terminal.write('Exception caught in debugger: {0} {1}\n'.format(
-            exc_info[0], exc_info[1]), red=True)
+            exc_info[0], exc_info[1]), **theme('inline-error'))
         self.notify_after_console_output()
 
     def report_collection_start(self):
@@ -179,12 +182,9 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.sep('=', msg, **header_format)
 
     def _get_session_summary_header_format(self, session):
-        returned = {'bold': True}
         if session.results.is_success(allow_skips=True):
-            returned.update(green=True)
-        else:
-            returned.update(red=True)
-        return returned
+            return theme('session-summary-success')
+        return theme('session-summary-failure')
 
     def _iter_reported_results(self, session):
         for test_index, test_result in enumerate(session.results.iter_test_results()):
@@ -195,7 +195,7 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_test_summary_header(self, index, test_result):
         self._terminal.lsep(
-            "=", '== #{0}: {1}'.format(index + 1, test_result.test_metadata.address))
+            "=", '== #{0}: {1}'.format(index + 1, test_result.test_metadata.address), **theme('test-error-header'))
 
     def _get_result_info_generators(self, test_result):
         returned = []
@@ -229,13 +229,17 @@ class ConsoleReporter(ReporterInterface):
             itertools.chain(izip(itertools.repeat("E"), test_result.get_errors()),
                             izip(itertools.repeat("F"), test_result.get_failures())))
         for index, (err_type, err) in enumerate(all_errs):
+            if err.exception_type is None and not config.root.log.show_manual_errors_tb:
+                self._terminal.write(err.message, **theme('tb-error'))
+                self._terminal.write('\n')
+                continue
             err_header = ' - {0}/{1} {2} ({3:YYYY-MM-DD HH:mm:ss ZZ}): {4}'.format(
                 index + 1,
                 len(all_errs),
                 err_type,
                 err.time.to('local'),
                 ' - {0}'.format(err.message) if not err.traceback else '')
-            self._terminal.lsep(' -', err_header, red=True)
+            self._terminal.lsep(' -', err_header, **theme('error-separator-dash'))
             self._report_traceback(err_type, err)
 
     def _report_traceback(self, err_type, err):
@@ -252,7 +256,7 @@ class ConsoleReporter(ReporterInterface):
                 if not frame_iteration.first:
                     self._terminal.sep('- ')
             self._terminal.write(
-                ' {0}:{1}\n'.format(frame.filename, frame.lineno), white=True, bold=True)
+                ' {0}:{1}\n'.format(frame.filename, frame.lineno), **theme('tb-frame-location'))
 
             if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
@@ -260,9 +264,9 @@ class ConsoleReporter(ReporterInterface):
             code_lines = self._write_frame_code(
                 frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
-                self._terminal.write(err_type, red=True, bold=True)
+                self._terminal.write(err_type, **theme('tb-error'))
                 self._terminal.write(
-                    self._indent_with(err.message, 4), red=True, bold=True)
+                    self._indent_with(err.message, 4), **theme('tb-error'))
                 self._terminal.write('\n')
 
 
@@ -277,8 +281,8 @@ class ConsoleReporter(ReporterInterface):
 
         for index, (key, value) in enumerate(detail_items):
             if index == 0:
-                self._terminal.write(' - Additional Details:\n', black=True, bold=True)
-            self._terminal.write('    > {0}: {1!r}\n'.format(key, value), black=True, bold=True)
+                self._terminal.write(' - Additional Details:\n', **theme('test-additional-details-header'))
+            self._terminal.write('    > {0}: {1!r}\n'.format(key, value), **theme('test-additional-details'))
 
     def _indent_with(self, text, indent):
         if isinstance(indent, int):
@@ -292,7 +296,7 @@ class ConsoleReporter(ReporterInterface):
             msg += ' ({0})'.format(skip_reason)
         msg += '\n'
 
-        self._terminal.write(msg, yellow=True)
+        self._terminal.write(msg, **theme('test-skip-message'))
 
     def _write_frame_locals(self, frame):
         if not frame.locals and not frame.globals:
@@ -301,7 +305,7 @@ class ConsoleReporter(ReporterInterface):
             if index > 0:
                 self._terminal.write(', ')
             self._terminal.write(
-                '    {0}: '.format(name), yellow=True, bold=True)
+                '    {0}: '.format(name), **theme('frame-local-varname'))
             self._terminal.write(value['value'])
         self._terminal.write('\n\n')
 
@@ -314,10 +318,10 @@ class ConsoleReporter(ReporterInterface):
             line = ''
             for line_iteration, line in iteration(code_lines):
                 if line_iteration.last:
-                    self._terminal.write('>', white=True, bold=True)
+                    self._terminal.write('>', **theme('error-cause-marker'))
                 else:
                     self._terminal.write(' ')
-                self._terminal.write(line, black=not line_iteration.last, bold=not line_iteration.last)
+                self._terminal.write(line, **theme('tb-line-cause' if line_iteration.last else 'tb-line'))
                 self._terminal.write('\n')
             return code_lines
 
@@ -335,11 +339,11 @@ class ConsoleReporter(ReporterInterface):
             return
         self._terminal.write('  ')
         if self._file_failed:
-            self._terminal.line('FAIL', red=True)
+            self._terminal.line('FAIL', **theme('inline-file-end-fail'))
         elif self._file_has_skips:
-            self._terminal.line('PASS', yellow=True)
+            self._terminal.line('PASS', **theme('inline-file-end-skip'))
         else:
-            self._terminal.line('PASS', green=True)
+            self._terminal.line('PASS', **theme('inline-file-end-success'))
 
     def report_test_success(self, test, result):
         if not self._verobsity_allows(VERBOSITIES.NOTICE):
@@ -348,9 +352,15 @@ class ConsoleReporter(ReporterInterface):
     def report_test_skip_added(self, test, reason):
         self._file_has_skips = True
         if self._verobsity_allows(VERBOSITIES.NOTICE):
-            self._terminal.write('Skipped: {0}\n'.format(reason), yellow=True)
+            self._terminal.write('Skipped: {0}\n'.format(reason), **theme('test-skip-message'))
         else:
             self._terminal.write('s', yellow=True)
+
+    def report_test_interrupted(self, test, result):
+        if self._verobsity_allows(VERBOSITIES.NOTICE):
+            self._terminal.write('Interrupted\n', **theme('inline-test-interrupted'))
+        else:
+            self._terminal.write('I', **theme('inline-test-interrupted'))
 
     def report_test_error_added(self, test, error):
         self._report_test_error_failure_added(test, error, 'E')
@@ -363,11 +373,11 @@ class ConsoleReporter(ReporterInterface):
         if not self._verobsity_allows(VERBOSITIES.NOTICE):
             self._terminal.write(errtype, red=True)
         else:
-            self._terminal.write('{0}: {1}\n'.format(errtype, e), red=True)
+            self._terminal.write('{0}: {1}\n'.format(errtype, e), **theme('inline-error'))
 
     def report_fancy_message(self, headline, message):
         if self._verobsity_allows(VERBOSITIES.INFO):
-            self._terminal.write_box(headline, message, bold=True, yellow=True)
+            self._terminal.write_box(headline, message, **theme('fancy-message'))
 
     def report_message(self, message):
         self.notify_before_console_output()

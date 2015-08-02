@@ -4,6 +4,7 @@ from .utils.exception_mark import mark_exception, get_exception_mark
 from . import hooks as trigger_hook
 from .ctx import context as slash_context
 from .conf import config
+from .exceptions import SkipTest
 import functools
 import logbook
 try:
@@ -42,6 +43,9 @@ def handling_exceptions(**kwargs):
     """Context manager handling exceptions that are raised within it
 
     :param passthrough_types: a tuple specifying exception types to avoid handling, raising them immediately onward
+    :param swallow: causes this context to swallow exceptions
+
+    .. note:: certain exceptions are never swallowed - most notably KeyboardInterrupt, SystemExit, and SkipTest
     """
     swallow = kwargs.pop("swallow", False)
     passthrough_types = kwargs.pop('passthrough_types', ())
@@ -50,8 +54,11 @@ def handling_exceptions(**kwargs):
     except passthrough_types:
         raise
     except:
-        handle_exception(sys.exc_info(), **kwargs)
-        if not swallow:
+        exc_info = _, exc_value, _ = sys.exc_info()
+        handle_exception(exc_info, **kwargs)
+        if isinstance(exc_value, SkipTest):
+            raise
+        if not swallow or not isinstance(exc_value, Exception):
             raise
 
 def handle_exception(exc_info, context=None):
@@ -60,7 +67,8 @@ def handle_exception(exc_info, context=None):
 
     This makes sure that the exception can be handled as close as possible to its originating point.
 
-    .. note:: this *DOES NOT* take care of adding the error to the session or test results!
+    It also adds the exception to its correct place in the current result, be it a failure, an error or a skip
+
     """
     already_handled = is_exception_handled(exc_info[1])
     msg = "Handling exception"

@@ -25,6 +25,44 @@ class BeforeTestCleanupException(Exception):
     pass
 
 
+def test_test_skip_hook(suite, suite_test, checkpoint):
+    slash.hooks.test_skip.register(checkpoint)
+
+    suite_test.when_run.skip()
+
+    suite.run()
+    assert checkpoint.called_count == 1
+
+
+@pytest.mark.parametrize('autouse', [True, False])
+def test_test_start_before_fixture_start(suite, suite_test, defined_fixture, autouse):
+    if autouse:
+        assert not defined_fixture.autouse # make sure we're not obsolete code and that that's still where it is
+        defined_fixture.autouse = True
+    else:
+        suite_test.depend_on_fixture(defined_fixture)
+    event_code = suite.slashconf.add_hook_event('test_start', extra_args=['slash.context.test.__slash__.id'])
+
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    test_id = result.test_metadata.id
+
+    event = summary.events[event_code, test_id]
+
+    assert summary.events['fixture_start', defined_fixture.id].timestamp > event.timestamp
+
+
+def test_no_error_hooks_called_on_success(suite):
+
+    called = []
+
+    for hook_name in ['test_error', 'test_failure', 'test_skip', 'error_added']:
+        gossip.register(lambda name=hook_name, **kw: called.append(name), 'slash.{0}'.format(hook_name))
+
+    suite.run()
+    assert not called
+
+
 def test_hook__error_added_during_test(suite, request, checkpoint, suite_test):
 
     request.addfinalizer(
@@ -98,7 +136,6 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
     def raise_exc():
         raise exception_type()
 
-    request.addfinalizer(raise_exc.gossip.unregister)
     config_override("debug.enabled", debug_enabled)
 
     def test_something():
@@ -125,9 +162,6 @@ def test_before_cleanup_hook(request, forge):
     test_end_hook = forge.create_wildcard_function_stub(name='test_end')
     gossip.register(before_cleanup_hook, 'slash.before_test_cleanups')
     gossip.register(test_end_hook, 'slash.test_end')
-
-    request.addfinalizer(before_cleanup_hook.gossip.unregister)
-    request.addfinalizer(test_end_hook.gossip.unregister)
 
     before_cleanup_hook()
     cleanup()

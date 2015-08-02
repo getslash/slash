@@ -1,11 +1,15 @@
+import sys
+
 import collections
 
-from ..._compat import iteritems, itervalues, OrderedDict
+from ..._compat import iteritems, itervalues, OrderedDict, reraise
+from ...ctx import context as slash_context
+from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
 from .fixture import Fixture
 from .namespace import Namespace
-from .parameters import Parametrization, get_parametrization_fixtures
+from .parameters import Parametrization, get_parametrizations
 from .utils import get_scope_by_name, nofixtures
 from .variation import VariationFactory
 from .active_fixture import ActiveFixture
@@ -36,7 +40,7 @@ class FixtureStore(object):
         return test_func(**kwargs)
 
     def get_required_fixture_names(self, test_func, is_method):
-        skip_names = set(p.name for p in get_parametrization_fixtures(test_func))
+        skip_names = set(name for p in get_parametrizations(test_func) for name in p.names)
         arg_names = [name for name in getargspec(test_func).args if name not in skip_names]
         if is_method:
             arg_names = arg_names[1:]
@@ -115,7 +119,8 @@ class FixtureStore(object):
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
             if s <= scope:
                 for active_fixture in list(active_fixtures.values())[::-1]:
-                    self._deactivate_fixture(active_fixture.fixture)
+                    with handling_exceptions(swallow=True):
+                        self._deactivate_fixture(active_fixture.fixture)
                 assert not active_fixtures
 
     def ensure_known_parametrization(self, parametrization):
@@ -202,8 +207,9 @@ class FixtureStore(object):
         try:
             fixture_value = self._activate_fixture(fixture)
         except:
+            exc_info = sys.exc_info()
             self._deactivate_fixture(fixture)
-            raise
+            reraise(*exc_info)
         finally:
             self._computing.discard(fixture.info.id)
 
@@ -224,7 +230,12 @@ class FixtureStore(object):
 
         assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]
         self._active_fixtures_by_scope[fixture.info.scope][fixture.info.id] = active_fixture
-        returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
+        prev_context_fixture = slash_context.fixture
+        slash_context.fixture = active_fixture
+        try:
+            returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
+        finally:
+            slash_context.fixture = prev_context_fixture
         return returned
 
     def _deactivate_fixture(self, fixture):

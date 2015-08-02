@@ -2,6 +2,7 @@ from sentinels import NOTHING
 from numbers import Number
 
 from ..._compat import itervalues
+from ...exceptions import UnknownFixtures
 
 
 class Namespace(object):
@@ -34,7 +35,7 @@ class Namespace(object):
                 self = self._parent
                 continue
             return self._store.get_fixture_by_id(fixture_id)
-        raise LookupError('Fixture {0} not found!'.format(name))
+        raise UnknownFixtures('Fixture {0!r} not found!'.format(name))
 
     def add_name(self, name, fixture_id):
         assert isinstance(fixture_id, Number)

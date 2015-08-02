@@ -1,10 +1,40 @@
 import pytest
 
+
+
 import slash
 
 from .utils.suite_writer import Suite
 
 _MODULE_SCOPE_ADDER = 'slash.add_cleanup({0}, scope="module")'
+
+
+def test_cleanups_from_test_start(suite):
+
+    num_tests = 5
+    for i in range(num_tests):
+        suite.add_test()
+
+    events = []
+    test_ids = []
+
+    @slash.hooks.register
+    def test_start():
+        test_id = slash.context.test.__slash__.id
+        test_ids.append(test_id)
+        events.append(('test_start', test_id))
+        @slash.add_cleanup
+        def cleanup():
+            events.append(('test_cleanup', test_id))
+
+    suite.run()
+
+    assert len(events) == len(suite) * 2 == num_tests * 2
+    expected = []
+    for test_id in test_ids:
+        expected.append(('test_start', test_id))
+        expected.append(('test_cleanup', test_id))
+    assert events == expected
 
 
 def test_module_scope(scoped_suite, file1_tests, file2_tests):

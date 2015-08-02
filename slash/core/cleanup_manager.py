@@ -1,4 +1,3 @@
-import sys
 from contextlib import contextmanager
 import logbook
 
@@ -48,7 +47,7 @@ class CleanupManager(object):
         new_args = list(kwargs.pop('args', ()))
         if args or kwargs:
             _logger.warning(
-                'Passing *args/**kwargs to slash.add_cleanup is deprecated')
+                'Passing *args/**kwargs to slash.add_cleanup is deprecated', frame_correction=+2)
             new_args.extend(args)
             new_kwargs.update(kwargs)
 
@@ -64,12 +63,16 @@ class CleanupManager(object):
         finally:
             self.pop_scope(scope)
 
+    @property
+    def latest_scope(self):
+        return self._scope_stack[-1]
+
     def push_scope(self, scope_name):
         scope = _Scope(scope_name)
         self._scope_stack.append(scope)
         self._scopes_by_name.setdefault(scope_name, []).append(scope)
 
-    def pop_scope(self, scope_name, in_failure=_DEDUCE, in_interruption=_DEDUCE):
+    def pop_scope(self, scope_name, in_failure=None, in_interruption=None):
         scope = self._scope_stack[-1]
         assert scope.name == scope_name # pylint: disable=no-member
         self._scope_stack.pop()
@@ -79,20 +82,13 @@ class CleanupManager(object):
             scope=scope,
             in_failure=in_failure, in_interruption=in_interruption)
 
-    def call_cleanups(self, scope=_LAST_SCOPE, in_failure=_DEDUCE, in_interruption=_DEDUCE):
+    def call_cleanups(self, scope=_LAST_SCOPE, in_failure=False, in_interruption=False):
 
-        exc_type = sys.exc_info()[0]
-        if in_failure is _DEDUCE:
-            in_failure = exc_type is not None
-        if in_interruption is _DEDUCE:
-            in_interruption = exc_type is KeyboardInterrupt
+        _logger.debug('Calling cleanups of scope {0.name!r} (failure={1}, interrupt={2})', scope, in_failure, in_interruption)
 
         if scope is _LAST_SCOPE:
             scope = self._scope_stack[-1]
             _logger.debug('Deducing last scope={0.name!r}', scope)
-
-
-        _logger.debug('Calling cleanups of scope {0.name!r} (failure={1}, interrupt={2})', scope, in_failure, in_interruption)
 
         if scope.name == 'test': # pylint: disable=no-member
             with handling_exceptions():

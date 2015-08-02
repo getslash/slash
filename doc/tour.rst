@@ -1,7 +1,7 @@
-Testing with Slash
-==================
+Whirlwind Tour of Slash
+======================
 
-.. _writing_tests:
+.. _tour:
 
 Writing Tests
 -------------
@@ -42,8 +42,8 @@ You can debug failing tests using the ``--pdb`` flag, which automatically runs t
 .. seealso:: :ref:`exceptions`
 
 
-Assertions
-----------
+Assertions and Errors
+---------------------
 
 Tests don't do much without making sure things are like they expect. Slash borrows the awesome technology behind ``py.test``, allowing us to just write assert statements where we want to test conditions of all sorts:
 
@@ -51,50 +51,13 @@ Tests don't do much without making sure things are like they expect. Slash borro
 
 		# test_addition.py
 
-		import slash
+		def test_addition(self):
+		    assert 2 + 2 == 4
 
-		class AdditionTest(slash.Test):
-		    
-		    def test_addition(self):
-		        assert 2 + 2 == 4
+Slash also analyzes assertions using assertion rewriting borrowed from the `pytest project <http://pytest.org>`_, so you can get more details as for what exactly failed.
 
-When assertions fail, the assertion rewriting code Slash uses will help you understand what exactly happened. This also applies for much more complex expressions:
+.. seealso:: errors
 
-.. code-block:: python
-
-		...
-		assert f(g(x))  == g(f(x + 1))
-		...
-
-When the above assertion fails, for instance, you can expect an elaborate output like the following::
-
-        >        assert f(g(x)) == g(f(x + 1))
-        F        AssertionError: assert 1 == 2
-                 +  where 1 = <function f at 0x10b10f848>(1)
-                 +    where 1 = <function g at 0x10b10f8c0>(1)
-                 +  and   2 = <function g at 0x10b10f8c0>(2)
-                 +    where 2 = <function f at 0x10b10f848>((1 + 1))
-
-
-.. note:: The assertion rewriting code is provided by `dessert <https://github.com/vmalloc/dessert>`_, which is a direct port of the code that powers `pytest <http://pytest.org>`_. All credit goes to Holger Krekel and his fellow devs for this masterpiece.
-
-More Assertion Utilities
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-One case that is not easily covered by the assert statement is asserting Exception raises. This is easily done with :func:`slash.assert_raises`:
-
-.. code:: python
-
-	  with slash.assert_raises(SomeException) as caught:
-	      some_func()
-
-	  assert caught.exception.param == 'some_value'
-
-You also have :func:`slash.assert_almost_equal` to test for near equality:
-
-.. code:: python
-
-	  slash.assert_almost_equal(1.001, 1, max_delta=0.1)
 
 Test Setups and Teardowns
 -------------------------
@@ -157,9 +120,6 @@ By default logs above **WARNING** get emitted to the console when ``slash run`` 
 
 Saving Logs to Files
 ~~~~~~~~~~~~~~~~~~~~
-
-Logging To Files
-----------------
 
 By default logs are not saved anywhere. This is easily changed with the *-l* flag to ``slash run``. Point this flag to a directory, and Slash will organize logs inside, in subdirectories according to the session and test run (e.g. ``/path/to/logdir/<session id>/<test id>/debug.log``). See :ref:`logging` for more details.
 
@@ -273,28 +233,6 @@ In many cases test executions succeed, but warnings are emitted. These warnings 
 Slash collects warnings emitted through loggers in the ``session.warnings`` (instance of :class:`.warnings.SessionWarnings`)
 
 
-Explicitly Adding Errors
-------------------------
-
-Sometimes you would like to report errors and failures in mid-test without failing it immediately (letting it run to the end). This is good when you want to collect all possible failures before officially quitting, and this is more helpful for reporting.
-
-This is possible using the :func:`slash.add_error` and :func:`slash.add_failure` methods. They can accept strings (messages) or actual objects to be kept for reporting. It is also possible to add more than one failure or error for each test.
-
-.. code-block:: python
-
- class MyTest(slash.Test):
-     
-    def test(self):
-        if not some_condition():
-            slash.add_error("Some condition is not met!")
-
-	# code keeps running here...
-
-.. autofunction:: slash.add_error
-
-.. autofunction:: slash.add_failure
-
-
 Storing Additional Test Details
 -------------------------------
 
@@ -329,11 +267,8 @@ Slash maintains a set of globals for convenience. The most useful one is ``slash
 Test Parameters
 ---------------
 
-.. _parameters:
-
 Slash tests can be easily parametrized, iterating parameter values and creating separate cases for each value. This is true for both tests implemented as classes and for tests implemented as functions.
 
-Use the :func:`slash.parametrize` decorator to multiply a test function for different parameter values:
 
 .. code-block:: python
 
@@ -341,49 +276,8 @@ Use the :func:`slash.parametrize` decorator to multiply a test function for diff
    def test_something(x):
        # use x here
 
-The above example will yield 3 test cases, one for each value of ``x``. Slash also supports parametrizing the ``before`` and ``after`` methods of test classes, thus multiplying each case by several possible setups:
+.. seealso:: :ref:`parameters`
 
-.. code-block:: python
-
-    class SomeTest(Test):
-        @slash.parametrize('x', [1, 2, 3])
-	def before(self, x):
-            # ...
-
-        @slash.parametrize('y', [4, 5, 6])
-	def test(self, y):
-            # ...
-
-        @slash.parametrize('z', [7, 8, 9])
-	def after(self, z):
-            # ...
-
-The above will yield 27 different runnable tests, one for each cartesian product of the ``before``, ``test`` and ``after`` possible parameter values.
-
-This also works across inheritence. Each base class can parametrize its `before` or `after` methods, multiplying the number of variations actually run accordingly. Calls to `super` are handled automatically in this case:
-
-.. code-block:: python
-
-    class BaseTest(Test):
-
-        @slash.parametrize('base_parameter', [1, 2, 3])
-        def before(self, base_parameter):
-            # ....
-
-    class DerivedTest(BaseTest):
-        
-        @slash.parametrize('derived_parameter', [4, 5, 6])
-        def before(self, derived_parameter):
-            super(DerivedTest, self).before() # note that base parameters aren't specified here
-            # .....
-
-Slash also supports :func:`slash.parameters.toggle <slash.core.fixtures.parameters.toggle>` as a shortcut for toggling a boolean flag in two separate cases:
-
-.. code-block:: python
-
-		@slash.parameters.toggle('with_safety_switch')
-		def test_operation(with_safety_switch):
-		    ...
 
 Abstract Base Tests
 -------------------

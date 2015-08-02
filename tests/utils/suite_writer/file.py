@@ -1,3 +1,4 @@
+from uuid import uuid4
 import itertools
 from contextlib import contextmanager
 
@@ -19,6 +20,14 @@ class File(TestContainer, CodeElement):
         if relpath is None:
             relpath = 'test_{0}.py'.format(self.id)
         self._relpath = relpath
+
+    def add_hook_event(self, hook_name, extra_args=(), evt_name='evt'):
+        self.append_line('@slash.hooks.{0}.register'.format(hook_name))
+        event_code = '{0}_{1}'.format(evt_name, uuid4())
+        self.append_line('def _hook():')
+        self.append_line('    __ut__.events.add({0!r}, {1})'.format(
+            event_code, ', '.join(extra_args)))
+        return event_code
 
     @property
     def classes(self):

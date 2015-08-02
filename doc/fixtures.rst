@@ -46,7 +46,7 @@ In addition to the test file itself, you can also put your fixtures in a file ca
 Fixture Cleanups
 ----------------
 
-You can control what happens when the lifetime of your fixture ends. By default, this happens at the end of each test that requested your fixture. To do this, add an argument for your fixture called `this`, and call its `add_cleanup` method with your cleanup callback:
+You can control what happens when the lifetime of your fixture ends. By default, this happens at the end of each test that requested your fixture. To do this, add an argument for your fixture called ``this``, and call its ``add_cleanup`` method with your cleanup callback:
 
 .. code-block:: python
 
@@ -55,6 +55,8 @@ You can control what happens when the lifetime of your fixture ends. By default,
 		    returned = Microwave()
 		    this.add_cleanup(returned.turn_off)
 		    return returned
+
+.. note:: Ths ``this`` variable is also available globally while computing each fixture as the ``slash.context.fixture`` global variable.
 
 Opting Out of Fixtures
 ----------------------

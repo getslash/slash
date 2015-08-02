@@ -2,7 +2,9 @@ import functools
 
 import logbook
 
+from ..ctx import context
 from ..utils.python import call_all_raise_first
+from ..exceptions import SkipTest, INTERRUPTION_EXCEPTIONS
 
 _logger = logbook.Logger(__name__)
 
@@ -36,7 +38,10 @@ class ScopeManager(object):
         assert test == self._last_test
 
         exc_type = exc_info[0]
-        kw = {'in_failure': exc_type is not None, 'in_interruption': exc_type is KeyboardInterrupt}
+        in_failure = exc_type is not None and not issubclass(exc_type, SkipTest)
+        if context.result is not None:
+            in_failure = in_failure or context.result.is_error() or context.result.is_failure()
+        kw = {'in_failure': in_failure, 'in_interruption': exc_type in INTERRUPTION_EXCEPTIONS}
 
         self._pop_scope('test', **kw)
 

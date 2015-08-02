@@ -4,6 +4,7 @@ import slash
 from slash.core.function_test import FunctionTestFactory
 from slash.core.test import TestTestFactory
 
+
 def test_factory_name(factory, expected_factory_name):
     assert factory.get_factory_name() == expected_factory_name
 

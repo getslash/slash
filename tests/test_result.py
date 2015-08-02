@@ -1,3 +1,5 @@
+import gc
+
 import slash
 import pytest
 
@@ -9,9 +11,11 @@ from slash.core.result import SessionResults, GlobalResult
 from .utils import run_tests_assert_success
 
 
+
 @pytest.mark.parametrize('use_error', [True, False])
 def test_result_add_exception_multiple_times(result, use_error):
     second_result = type(result)()
+    second_result.mark_started()
     try:
         if use_error:
             1 / 0
@@ -26,6 +30,13 @@ def test_result_add_exception_multiple_times(result, use_error):
     assert result.is_failure() == (not use_error)
     assert len(result.get_errors() if use_error else result.get_failures()) == 1
     assert second_result.is_success()
+
+
+def test_result_summary_some_not_run(suite):
+    suite[2].add_decorator('slash.requires(False)')
+    suite[2].expect_skip()
+    results = suite.run().session.results
+    assert results.is_success(allow_skips=True)
 
 
 def test_result_summary(suite):
@@ -46,6 +57,9 @@ def test_result_summary(suite):
 
 def test_result_not_run(suite, suite_test, is_last_test):
     suite_test.when_run.fail()
+
+    for test in suite.iter_all_after(suite_test, assert_has_more=not is_last_test):
+        test.expect_not_run()
 
     summary = suite.run(additional_args=['-x'])
 
@@ -93,6 +107,39 @@ def test_result_data_is_unique():
     assert result1.data is not result2.data
 
 
+def test_result_test_garbage_collected(gc_marker):
+
+    class SomeTest(slash.Test):
+        def test_something(self):
+            pass
+
+    # we have to run another test at the end to make sure Slash's internal _last_test
+    # doesn't refer to our test
+    class OtherTest(slash.Test):
+        def test_something(self):
+            pass
+
+    with slash.Session() as s:
+        loader = slash.loader.Loader()
+        tests = loader.get_runnables(SomeTest)
+        # we use list(genexp) to prevent 't' from leaking
+        marks = list(gc_marker.mark(t) for t in tests)
+        session = run_tests_assert_success(tests + loader.get_runnables(OtherTest))
+        del tests
+    gc.collect()
+    for mark in marks:
+        assert mark.destroyed
+
+
+def test_add_error_traceback_for_manually_added_errors(suite, suite_test):
+    suite_test.append_line('slash.add_error("msg")')
+    suite_test.expect_error()
+
+    [result] = suite.run().get_all_results_for_test(suite_test)
+    [err] = result.get_errors()
+    assert err.traceback
+
+
 class SessionResultTest(TestCase):
 
     def setUp(self):
@@ -100,6 +147,8 @@ class SessionResultTest(TestCase):
         self.results = [
             Result() for _ in range(10)
         ]
+        for r in self.results:
+            r.mark_started()
         # one result with both errors and failures
         try:
             1 / 0

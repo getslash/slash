@@ -64,14 +64,11 @@ def test_fixture_dependency_both_directly_and_indirectly(suite, suite_test):
     assert len(results) == num_values1 * num_values2
 
 
-
-# Support fixtures
-
-@pytest.fixture(params=["slashconf", "module"])
-def defined_fixture(request, suite, suite_test):
-    if request.param == 'slashconf':
-        return suite.slashconf.add_fixture()
-    elif request.param == 'module':
-        return suite_test.file.add_fixture()
-
-    raise NotImplementedError()  # pragma: no cover
+def test_fixture_context(suite, suite_test):
+    fixture1 = suite.slashconf.add_fixture()
+    fixture1.append_line('assert this == slash.context.fixture')
+    fixture2 = suite.slashconf.add_fixture()
+    fixture2.append_line('assert this == slash.context.fixture')
+    fixture2.depend_on_fixture(fixture1)
+    suite_test.depend_on_fixture(fixture1)
+    suite.run()

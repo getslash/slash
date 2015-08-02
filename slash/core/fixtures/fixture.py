@@ -3,7 +3,7 @@ import itertools
 from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
 from .namespace import Namespace
-from .parameters import get_parametrization_fixtures
+from .parameters import get_parametrizations
 from .fixture_base import FixtureBase
 
 
@@ -38,10 +38,10 @@ class Fixture(FixtureBase):
         kwargs = {}
         parametrized = set()
 
-        for parametrization_fixture in get_parametrization_fixtures(self.fixture_func):
-            store.register_fixture_id(parametrization_fixture)
-            parametrized.add(parametrization_fixture.name)
-            self.parametrization_ids.append(parametrization_fixture.info.id)
+        for param in get_parametrizations(self.fixture_func):
+            store.register_fixture_id(param)
+            parametrized.update(param.names)
+            self.parametrization_ids.append(param.info.id)
 
         for name in self.info.required_args:
             if name in parametrized:

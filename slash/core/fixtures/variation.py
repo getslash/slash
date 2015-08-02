@@ -3,8 +3,9 @@ import itertools
 from numbers import Number
 
 from ..._compat import iteritems, OrderedDict, string_types, imap, izip, reduce, xrange
+from ...exceptions import FixtureException
 from ...utils.python import getargspec
-from .parameters import Parametrization, get_parametrization_fixtures
+from .parameters import Parametrization, get_parametrizations
 from .utils import nofixtures
 
 _PRINTABLE_TYPES = (Number,) + string_types
@@ -44,15 +45,20 @@ class VariationFactory(object):
         arg_names = getargspec(func).args[1 if is_method else 0:]
 
         parametrizations = {}
-        for param in get_parametrization_fixtures(func):
+        for param in get_parametrizations(func):
             # make sure the parametrization is in the store
             self._store.ensure_known_parametrization(param)
-            parametrizations[param.name] = param
+            for name in param.names:
+                parametrizations[name] = param
 
         for arg_name in arg_names:
             fixture = parametrizations.get(arg_name, None)
             if fixture is None:
-                fixture = self._store.get_fixture_by_name(arg_name)
+                try:
+                    fixture = self._store.get_fixture_by_name(arg_name)
+                except FixtureException as e:
+                    raise type(e)('Loading {0.__code__.co_filename}:{0.__name__}: {1}'.format(func, e))
+
 
             self._needed_fixtures.append(fixture)
             if namespace is not None:
@@ -103,7 +109,7 @@ class VariationFactory(object):
 
 class Variation(object):
 
-    """Represents a single variation of fixtures. A variation is merely a mapping of fixture ids to their values.
+    """Represents a single variation of parameter points. A variation is merely a mapping of fixture ids to their values.
     This mostly applies for parametrization fixtures. The other fixtures follow since they are either constant
     or indirectly depend on parametrization"""
 
@@ -115,11 +121,11 @@ class Variation(object):
         self.param_value_indices = param_value_indices
         self.representation = representation
 
-    def has_value_for_fixture_id(self, fixture_id):
-        return fixture_id in self.param_value_indices
+    def has_value_for_parameter(self, param_id):
+        return param_id in self.param_value_indices
 
-    def get_fixture_value(self, fixture_id):
-        return self._store.get_fixture_by_id(fixture_id).values[self.param_value_indices[fixture_id]]
+    def get_param_value(self, param_id):
+        return self._store.get_fixture_by_id(param_id).values[self.param_value_indices[param_id]]
 
     def __eq__(self, other):
         if isinstance(other, Variation):

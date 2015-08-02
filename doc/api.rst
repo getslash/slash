@@ -11,6 +11,8 @@ Testing Utilities
 
 .. autofunction:: slash.core.fixtures.parameters.toggle
 
+.. autofunction:: slash.core.fixtures.parameters.iterate
+
 .. autofunction:: slash.abstract_test_class
 
 
@@ -38,6 +40,11 @@ Skips
 .. autofunction:: slash.skipped
 
 .. autofunction:: slash.skip_test
+
+Tags
+----
+
+.. autofunction:: slash.tag
 
 Fixtures
 --------
@@ -94,7 +101,6 @@ Exceptions
 
 .. autofunction:: slash.exception_handling.handling_exceptions
 
-.. autofunction:: slash.exception_handling.is_exception_marked
 .. autofunction:: slash.exception_handling.mark_exception
 .. autofunction:: slash.exception_handling.get_exception_mark
 

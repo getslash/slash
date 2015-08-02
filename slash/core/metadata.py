@@ -1,5 +1,6 @@
 import sys
 
+
 class Metadata(object):
 
     """Class representing the metadata associated with a test object. Generally available
@@ -13,8 +14,7 @@ class Metadata(object):
         super(Metadata, self).__init__()
         #: The test's unique id
         self.id = None
-        #: Back reference to the test to which this metadata placeholder belongs
-        self.test = test
+        self.tags = test.get_tags()
         if factory is not None:
         #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
@@ -33,6 +33,19 @@ class Metadata(object):
         #: String identifying the test, to be used when logging or displaying results in the console
         #: generally it is composed of the file path and the address inside the file
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
+
+    @property
+    def class_name(self):
+        if '.' in self.address_in_file:
+            return self.address_in_file.split('.', 1)[0]
+        return None
+
+    @property
+    def function_name(self):
+        returned = self.address_in_file
+        if '.' in returned:
+            returned = returned.rsplit('.', 1)[-1]
+        return returned.split('(', 1)[0]
 
     @property
     def test_index1(self):
