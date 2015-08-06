@@ -92,7 +92,7 @@ When writing tests as classes, you can control the setup and teardown code for e
 Logging
 -------
 
-Slash is built with product tests. This means you may not have a second chance to reproduce an issue, and more emphasis is put on logging.
+Testing complete products usually means you may not have a second chance to reproduce an issue. This is why Slash puts a strong emphasis on logging, managing log files and directories, and fine tuning your logging setup.
 
 Slash uses `Logbook <http://logbook.pocoo.org>`_ for logging. It has many advantages over Python's own ``logging`` package, and is much more flexible.
 
@@ -121,7 +121,9 @@ By default logs above **WARNING** get emitted to the console when ``slash run`` 
 Saving Logs to Files
 ~~~~~~~~~~~~~~~~~~~~
 
-By default logs are not saved anywhere. This is easily changed with the *-l* flag to ``slash run``. Point this flag to a directory, and Slash will organize logs inside, in subdirectories according to the session and test run (e.g. ``/path/to/logdir/<session id>/<test id>/debug.log``). See :ref:`logging` for more details.
+By default logs are not saved anywhere. This is easily changed with the *-l* flag to ``slash run``. Point this flag to a directory, and Slash will organize logs inside, in subdirectories according to the session and test run (e.g. ``/path/to/logdir/<session id>/<test id>/debug.log``). 
+
+.. seealso:: :ref:`logging`
 
 
 .. _cleanups:

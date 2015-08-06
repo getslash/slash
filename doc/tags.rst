@@ -55,4 +55,4 @@ Filtering by value is also supported::
 
 Or::
 
-  $ slash run test -k covers=tag:requirement_1294
+  $ slash run test -k tag:covers=requirement_1294
