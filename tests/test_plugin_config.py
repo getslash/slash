@@ -14,7 +14,6 @@ def test_plugin_config():
     assert 'sample' not in slash.config['plugin_config']
     value = object()
 
-    @slash.plugins.active
     class Plugin(PluginInterface):
 
         def get_name(self):
@@ -25,6 +24,8 @@ def test_plugin_config():
                 'values': {
                     'value_1': value,
                 }}
+
+    slash.plugins.manager.install(Plugin())
 
     assert slash.config.root.plugin_config.sample.values.value_1 is value
 

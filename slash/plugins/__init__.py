@@ -70,6 +70,7 @@ class PluginManager(object):
         if not isinstance(plugin, PluginInterface):
             raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))
         plugin_name = plugin.get_name()
+        self._configure(plugin)
         self._installed[plugin_name] = plugin
         if activate:
             self.activate(plugin_name)
@@ -98,6 +99,7 @@ class PluginManager(object):
             self.deactivate(plugin)
         except IncompatiblePlugin:
             pass
+        self._unconfigure(plugin)
         self._installed.pop(plugin.get_name())
 
     def uninstall_all(self):
@@ -115,7 +117,6 @@ class PluginManager(object):
         """
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
-        self._configure(plugin)
         plugin.activate()
         for hook, callback, plugin_needs, plugin_provides in self._get_plugin_registrations(plugin):
             hook.register(callback, token=self._get_token(plugin_name), needs=plugin_needs, provides=plugin_provides)
@@ -134,7 +135,6 @@ class PluginManager(object):
             gossip.get_global_group().unregister_token(self._get_token(plugin_name))
             self._active.discard(plugin_name)
             plugin.deactivate()
-        self._unconfigure(plugin)
 
     def _configure(self, plugin):
         cfg = plugin.get_config()
