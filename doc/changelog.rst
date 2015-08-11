@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.18.1 <11-08-2015>`
 * :bug:`350` Fixed scope mismatch bug when hooks raise exceptions
 * :release:`0.18.0 <02-08-2015>`
 * :feature:`347` Add slash.context.fixture to point at the 'this' variable of the currently computing fixture
