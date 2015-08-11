@@ -5,8 +5,6 @@ import slash.runner
 from slash import exception_handling, Session
 from slash.loader import Loader
 
-from .utils import TestCase
-
 
 @pytest.mark.parametrize('other_error', ['error', 'failure', None])
 def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
@@ -133,3 +131,5 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
     cleanup_error = result.get_errors()[-1]
     assert 'AttributeError' in str(cleanup_error)
     assert 'NoneType' in str(cleanup_error)
+
+
