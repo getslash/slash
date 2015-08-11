@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`350` Fixed scope mismatch bug when hooks raise exceptions
 * :release:`0.18.0 <02-08-2015>`
 * :feature:`347` Add slash.context.fixture to point at the 'this' variable of the currently computing fixture
 * :feature:`335` Add 'needs' and 'provides' to plugins, to provide fine-grained flow control over plugin calling

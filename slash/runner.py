@@ -90,8 +90,8 @@ def _run_single_test(test, test_iterator):
                 try:
                     with handling_exceptions(swallow=True):
                         context.session.scope_manager.begin_test(test)
-                        hooks.test_start() # pylint: disable=no-member
                         try:
+                            hooks.test_start() # pylint: disable=no-member
                             with handling_exceptions(swallow=True):
                                 try:
                                     test.run()
