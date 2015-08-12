@@ -2,6 +2,7 @@ from ..interface import PluginInterface
 from ...conf import config
 from ...ctx import session
 from functools import partial
+import time
 import socket
 import requests
 
@@ -33,9 +34,16 @@ class Plugin(PluginInterface):
             "prowl_api_key" : None,
             "nma_api_key" : None,
             "pushbullet_api_key": None,
+            "notification_threshold": 5,
         }
 
+    def session_start(self):
+        self._session_start_time = time.time() #pylint: disable=W0201
+
     def session_end(self):
+        if time.time() - self._session_start_time < config.root.plugin_config.notifications.notification_threshold:
+            return
+
         result = "successfully" if session.results.is_success() else "unsuccessfully"
         hostname = socket.gethostname().split(".")[0]
         body = "{0}\n\n{1}".format(session.results, session.id)
