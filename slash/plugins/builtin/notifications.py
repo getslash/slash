@@ -5,6 +5,7 @@ from functools import partial
 import time
 import socket
 import requests
+import gossip
 
 
 def _post_notification(url, api_key, title, message):
@@ -23,6 +24,12 @@ def _pushbullet_notification(api_key, title, message):
         data=data,
         auth=(api_key, ""))
     response.raise_for_status()
+
+
+class Message(object):
+    def __init__(self, title, body):
+        self.title = title
+        self.body = body
 
 
 class Plugin(PluginInterface):
@@ -48,7 +55,10 @@ class Plugin(PluginInterface):
         hostname = socket.gethostname().split(".")[0]
         body = "{0}\n\n{1}".format(session.results, session.id)
 
-        self._notify("Slash session in {0} ended {1}".format(hostname, result), body)
+        message = Message("Slash session in {0} ended {1}".format(hostname, result), body)
+        gossip.trigger("slash-gossip.prepare_notification", message=message)
+
+        self._notify(message.title, message.body)
 
     def _notify(self, title, message):
         for func, api_key in [
