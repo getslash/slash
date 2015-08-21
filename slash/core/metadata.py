@@ -33,6 +33,13 @@ class Metadata(object):
         #: String identifying the test, to be used when logging or displaying results in the console
         #: generally it is composed of the file path and the address inside the file
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
+        self._interactive = False
+
+    def is_interactive(self):
+        return self._interactive
+
+    def mark_interactive(self):
+        self._interactive = True
 
     @property
     def class_name(self):

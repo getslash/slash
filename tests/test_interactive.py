@@ -11,6 +11,7 @@ def test_interactive_test(forge, suite, checkpoint):
 
     def _interact(*_, **__):
         assert slash.context.session.scope_manager.get_current_stack() == ['session', 'module', 'test']
+        assert slash.context.test.__slash__.is_interactive()
         checkpoint()
 
     forge.replace_with(interactive, '_interact', _interact)
