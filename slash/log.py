@@ -1,15 +1,16 @@
+import numbers
+import os
 import sys
+from contextlib import contextmanager
+
+import logbook  # pylint: disable=F0401
+import logbook.more
 
 from . import context
+from ._compat import ExitStack
 from .conf import config
 from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
-from contextlib import contextmanager
-import logbook  # pylint: disable=F0401
-import logbook.more
-from ._compat import ExitStack
-import os
-import numbers
 
 _logger = logbook.Logger(__name__)
 
@@ -156,7 +157,7 @@ class SessionLogging(object):
             for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler.applicationbound())
             if config.root.log.unified_session_log and self.session_log_handler is not None:
-                stack.enter_context(self.session_log_handler)
+                stack.enter_context(_make_bubbling_handler(self.session_log_handler))
 
             yield handler, path
 
@@ -237,3 +238,15 @@ class VERBOSITIES(object):
     WARNING = logbook.WARNING
     ERROR = logbook.ERROR
     CRITICAL = logbook.CRITICAL
+
+
+def _make_bubbling_handler(handler):
+    return _BubblingWrapper(handler)
+
+class _BubblingWrapper(logbook.Handler):
+
+    def __init__(self, handler):
+        super(_BubblingWrapper, self).__init__(bubble=True)
+        self._handler = handler
+        self.should_handle = self._handler.should_handle
+        self.handle = self._handler.handle

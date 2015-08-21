@@ -127,17 +127,6 @@ def test_last_failed(suite, links_dir):
     assert links_dir.join('last-failed').readlink() == fail_log
 
 
-def test_unified_session_log(suite, suite_test, config_override, tmpdir):
-    marker = 'some_marker_here'
-    config_override('log.unified_session_log', True)
-    config_override('log.root', str(tmpdir))
-    config_override('log.session_subpath', 'session.log')
-    suite_test.append_line('slash.logger.info({0!r})'.format(marker))
-    summary = suite.run()
-    with tmpdir.join('session.log').open() as f:
-        assert marker in f.read()
-
-
 @pytest.fixture
 def session():
     session = run_tests_assert_success(SampleTest)
