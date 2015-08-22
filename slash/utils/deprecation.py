@@ -28,7 +28,7 @@ def get_no_deprecations_context():
         _local.enabled = prev_enabled
 
 
-def deprecated(func=None, message=None, since=None):
+def deprecated(func=None, message=None, since=None, what=None):
     """Marks the specified function as deprecated, and emits a warning when it's called
     """
     if isinstance(func, string_types):
@@ -37,19 +37,22 @@ def deprecated(func=None, message=None, since=None):
         func = None
 
     if func is None:
-        return functools.partial(deprecated, message=message, since=since)
+        return functools.partial(deprecated, message=message, since=since, what=what)
 
     if not since:
         raise ValueError(
             "Must provide deprecation version via the 'since' parameter")
+
+    if what is None:
+        what = '{func.__module__}.{func.__name__}'.format(func=func)
 
     @functools.wraps(func)
     def new_func(*args, **kwargs):
         if _local.enabled:
             caller_location = _get_caller_location()
             if caller_location not in _deprecation_locations:
-                warning = "{func.__module__}.{func.__name__} is deprecated.".format(
-                    func=func)
+                warning = "{what} is deprecated.".format(
+                    what=what)
                 if message is not None:
                     warning += " {0}".format(message)
                 _deprecation_logger.warning(warning)

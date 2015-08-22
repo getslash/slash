@@ -1,10 +1,15 @@
 from .exceptions import TestFailed
 from .utils import operator_information
+from .utils.deprecation import deprecated
 from contextlib import contextmanager
 import operator
 import sys
 
 sys.modules["slash.should"] = sys.modules[__name__]
+
+def _deprecated(func, message=None):
+    return deprecated(since='0.19.0', what='slash.should.{0.__name__}'.format(func),
+                      message=message or 'Use plain assertions instead')(func)
 
 
 def _binary_assertion(name, operator_func):
@@ -18,6 +23,7 @@ def _binary_assertion(name, operator_func):
     _assertion.__name__ = name
     _assertion.__doc__ = "Asserts **{0}**".format(
         op.to_expression("ARG1", "ARG2"))
+    _assertion = _deprecated(_assertion)
     return _assertion
 
 
@@ -31,6 +37,7 @@ def _unary_assertion(name, operator_func):
             raise TestFailed(msg)
     _assertion.__name__ = name
     _assertion.__doc__ = "Asserts **{0}**".format(op.to_expression("ARG"))
+    _assertion = _deprecated(_assertion)
     return _assertion
 
 
@@ -102,6 +109,7 @@ assert_not_in = not_be_in
 
 
 @contextmanager
+@deprecated(since='0.19.0', what='slash.should.raise_exception', message='Use slash.assert_raises instead')
 def raise_exception(exception_class, msg=None):
     """
     Ensures a subclass of **ARG1** leaves the wrapped context:
