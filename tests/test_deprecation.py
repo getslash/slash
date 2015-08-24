@@ -1,3 +1,4 @@
+import sys
 import logbook
 
 import pytest
@@ -14,6 +15,14 @@ def test_deprecation_message(capture):
     [record] = capture.records
     assert 'deprecated' in record.message
     assert 'deprecated_func' in record.message
+
+def test_deprecation_lineno(capture):
+    expected_lineno = test_deprecation_lineno.__code__.co_firstlineno + 2
+    deprecated_func(1, 2)
+    [record] = capture.records
+    assert record.filename == __file__
+    assert record.lineno == expected_lineno
+
 
 
 def test_deprecation_with_message(capture):
@@ -83,13 +92,23 @@ def test_deprecatd_docstring():
 
 @pytest.fixture
 def capture(request):
-    handler = logbook.TestHandler(level=logbook.WARNING)
+    handler = _WarningsHandler()
     handler.push_application()
 
     @request.addfinalizer
     def pop():
         handler.pop_application()
     return handler
+
+class _WarningsHandler(logbook.TestHandler):
+
+    def __init__(self):
+        super(_WarningsHandler, self).__init__(level=logbook.WARNING)
+
+    def emit(self, record):
+        # make sure lineno is cached
+        unused = record.lineno
+        return super(_WarningsHandler, self).emit(record)
 
 
 @deprecated(since='1.0.0')

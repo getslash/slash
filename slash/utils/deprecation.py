@@ -28,7 +28,7 @@ def get_no_deprecations_context():
         _local.enabled = prev_enabled
 
 
-def deprecated(func=None, message=None, since=None, what=None):
+def deprecated(func=None, message=None, since=None, what=None, frame_correction=0):
     """Marks the specified function as deprecated, and emits a warning when it's called
     """
     if isinstance(func, string_types):
@@ -37,7 +37,10 @@ def deprecated(func=None, message=None, since=None, what=None):
         func = None
 
     if func is None:
-        return functools.partial(deprecated, message=message, since=since, what=what)
+        return functools.partial(
+            deprecated,
+            message=message, since=since, what=what,
+            frame_correction=frame_correction)
 
     if not since:
         raise ValueError(
@@ -55,7 +58,7 @@ def deprecated(func=None, message=None, since=None, what=None):
                     what=what)
                 if message is not None:
                     warning += " {0}".format(message)
-                _deprecation_logger.warning(warning)
+                _deprecation_logger.warning(warning, frame_correction=frame_correction+1)
                 _deprecation_locations.add(caller_location)
         return func(*args, **kwargs)
 
