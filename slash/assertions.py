@@ -109,12 +109,11 @@ assert_not_in = not_be_in
 
 
 @contextmanager
-@deprecated(since='0.19.0', what='slash.should.raise_exception', message='Use slash.assert_raises instead')
-def raise_exception(exception_class, msg=None):
+def assert_raises(exception_class, msg=None):
     """
     Ensures a subclass of **ARG1** leaves the wrapped context:
 
-    >>> with raise_exception(AttributeError):
+    >>> with assert_raises(AttributeError):
     ...     raise AttributeError()
     """
     caught = _CaughtException()
@@ -131,10 +130,11 @@ def raise_exception(exception_class, msg=None):
         raise TestFailed(msg)
 
 
-def assert_raises(exception_class, msg=None):
-    return raise_exception(exception_class, msg=msg)
-assert_raises.__doc__ = raise_exception.__doc__.replace(
-    "raise_exception", "assert_raises")
+@deprecated(since='0.19.0', what='slash.should.raise_exception', message='Use slash.assert_raises instead')
+def raise_exception(exception_class, msg=None):
+    return assert_raises(exception_class, msg=msg)
+
+raise_exception.__doc__ = assert_raises.__doc__.replace("assert_raises", "raise_exception")
 
 
 def assert_almost_equal(a, b, delta=0.00000001):
