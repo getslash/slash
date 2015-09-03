@@ -31,7 +31,7 @@ def skipped(thing=NOTHING, reason=None, condition=True):
     if isinstance(thing, str):
         return functools.partial(skipped, reason=thing, condition=condition)
     if isinstance(thing, type) and issubclass(thing, Test):
-        thing.skip_all(reason)
+        thing.skip_all(reason)  # pylint: disable=no-member
         return thing
 
     @functools.wraps(thing)
