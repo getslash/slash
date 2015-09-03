@@ -30,15 +30,18 @@ def skipped(thing=NOTHING, reason=None, condition=True):
         return functools.partial(skipped, reason=reason, condition=condition)
     if isinstance(thing, str):
         return functools.partial(skipped, reason=thing, condition=condition)
-    if isinstance(thing, type) and issubclass(thing, Test):
-        thing.skip_all(reason)  # pylint: disable=no-member
-        return thing
 
-    @functools.wraps(thing)
-    def new_func(*_, **__):  # pylint: disable=unused-argument
-        if condition:
+    if condition:
+        if isinstance(thing, type) and issubclass(thing, Test):
+            thing.skip_all(reason)  # pylint: disable=no-member
+            return thing
+
+        @functools.wraps(thing)
+        def new_func(*_, **__):  # pylint: disable=unused-argument
             skip_test(reason)
-    return new_func
+        return new_func
+    else:
+        return thing
 
 
 def add_error(msg=None, frame_correction=0):
