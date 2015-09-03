@@ -26,7 +26,7 @@ def skipped(thing=NOTHING, reason=None, condition=True):
     """
     from ..core.test import Test
 
-    if thing == NOTHING:
+    if thing is NOTHING:
         return functools.partial(skipped, reason=reason, condition=condition)
     if isinstance(thing, str):
         return functools.partial(skipped, reason=thing, condition=condition)
