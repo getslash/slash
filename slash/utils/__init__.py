@@ -1,4 +1,5 @@
 import functools
+from sentinels import NOTHING
 
 from ..ctx import context
 from ..core.markers import repeat as repeat_marker
@@ -19,22 +20,28 @@ def repeat(num_repetitions):
     return repeat_marker(num_repetitions)
 
 
-def skipped(thing, reason=None):
+def skipped(thing=NOTHING, reason=None, condition=True):
     """
     A decorator for skipping methods and classes
     """
     from ..core.test import Test
 
+    if thing is NOTHING:
+        return functools.partial(skipped, reason=reason, condition=condition)
     if isinstance(thing, str):
-        return functools.partial(skipped, reason=thing)
-    if isinstance(thing, type) and issubclass(thing, Test):
-        thing.skip_all(reason)
-        return thing
+        return functools.partial(skipped, reason=thing, condition=condition)
 
-    @functools.wraps(thing)
-    def new_func(*_, **__):  # pylint: disable=unused-argument
-        skip_test(reason)
-    return new_func
+    if condition:
+        if isinstance(thing, type) and issubclass(thing, Test):
+            thing.skip_all(reason)  # pylint: disable=no-member
+            return thing
+
+        @functools.wraps(thing)
+        def new_func(*_, **__):  # pylint: disable=unused-argument
+            skip_test(reason)
+        return new_func
+    else:
+        return thing
 
 
 def add_error(msg=None, frame_correction=0):

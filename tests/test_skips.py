@@ -47,6 +47,26 @@ def test_method_with_reason():
     _assert_skips(Test, "reason")
 
 
+def test_method_with_condition_true():
+    "Make sure test skipped if condition is true"
+    class Test(slash.Test):
+
+        @slash.skipped(condition=True)
+        def test(self):
+            pass
+    _assert_skips(Test)
+
+
+def test_method_with_condition_false():
+    "Make sure test ran if condition is false"
+    class Test(slash.Test):
+
+        @slash.skipped(condition=False)
+        def test(self):
+            pass
+    _assert_not_skips(Test)
+
+
 def test_class_decorator(suite):
 
     cls = suite.classes[1]
@@ -72,3 +92,12 @@ def _assert_skips(thing, reason=None):
     with pytest.raises(slash.exceptions.SkipTest) as caught:
         thing()
     assert caught.value.reason == reason
+
+
+def _assert_not_skips(thing, reason=None):
+    with slash.Session():
+        if isinstance(thing, type) and issubclass(thing, slash.Test):
+            [thing] = make_runnable_tests(thing)
+            thing = thing.run
+
+    thing()
