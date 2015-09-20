@@ -3,6 +3,7 @@ import collections
 import logbook
 
 from .ctx import context
+from . import hooks
 
 
 class SessionWarnings(object):
@@ -43,7 +44,9 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
         return record.level == self.level
 
     def emit(self, record):
-        self.records.append(Warning(record, self.format(record)))
+        warning = Warning(record, self.format(record))
+        self.records.append(warning)
+        hooks.warning_added(warning=warning)
 
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
@@ -56,6 +59,15 @@ class Warning(object):
         self.details['test_id'] = context.test_id
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
         self._repr = message
+
+    @property
+    def message(self):
+        return self.details.get('message')
+
+    @property
+    def lineno(self):
+        return self.details.get('lineno')
+
 
     def to_dict(self):
         return self.details.copy()

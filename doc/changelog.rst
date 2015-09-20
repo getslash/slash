@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`371` Add warning_added hook
 * :feature:`349` Plugin configuration is now installed in the installation phase, not activation phase
 * :release:`0.18.1 <11-08-2015>`
 * :bug:`350` Fixed scope mismatch bug when hooks raise exceptions

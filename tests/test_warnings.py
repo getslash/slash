@@ -14,6 +14,20 @@ def test_location(warning):
 def test_to_dict(warning):
     assert isinstance(warning.to_dict(), dict)
 
+def test_warning_added_hook(suite, suite_test):
+
+    captured = []
+    @slash.hooks.register
+    def warning_added(warning):
+        captured.append(warning)
+
+    suite_test.append_line('slash.logger.warning("message here")')
+    suite.run()
+    assert captured
+    [w] = captured
+    assert w.message == 'message here'
+    assert isinstance(w.lineno, int)
+
 @pytest.fixture
 def warning():
     class SampleTest(slash.Test):
