@@ -46,7 +46,7 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     def emit(self, record):
         warning = Warning(record, self.format(record))
         self.records.append(warning)
-        hooks.warning_added(warning=warning)
+        hooks.warning_added(warning=warning) # pylint: disable=no-member
 
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
