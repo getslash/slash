@@ -27,6 +27,9 @@ def test_warning_added_hook(suite, suite_test):
     [w] = captured
     assert w.message == 'message here'
     assert isinstance(w.lineno, int)
+    assert isinstance(w.filename, str)
+    assert w.lineno
+    assert w.filename
 
 @pytest.fixture
 def warning():

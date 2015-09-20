@@ -68,6 +68,10 @@ class Warning(object):
     def lineno(self):
         return self.details.get('lineno')
 
+    @property
+    def filename(self):
+        return self.details.get('filename')
+
 
     def to_dict(self):
         return self.details.copy()
