@@ -8,6 +8,7 @@ import types
 from contextlib import contextmanager
 
 from slash._compat import StringIO
+from slash.conf import config
 from slash.exceptions import TerminatedException
 from slash.frontend.slash_run import slash_run
 
@@ -23,6 +24,7 @@ class Suite(object):
     def __init__(self, strategy=BalancedStrategy(), path=None, debug_info=True):
         super(Suite, self).__init__()
         self._path = path
+        self._last_committed_path = None
         self.strategy = strategy
         self.debug_info = debug_info
         self.clear()
@@ -35,7 +37,7 @@ class Suite(object):
         self._files = []
         self._notified = []
         self._num_method_tests = self._num_function_tests = 0
-        self._slashconf = None
+        self._slashconf = self._slashrc = None
 
     def iter_all_after(self, test, assert_has_more=False):
         found = had_more = False
@@ -62,6 +64,12 @@ class Suite(object):
         if self._slashconf is None:
             self._slashconf = File(self, relpath='slashconf.py')
         return self._slashconf
+
+    @property
+    def slashrc(self):
+        if self._slashrc is None:
+            self._slashrc = File(self, relpath='.slashrc')
+        return self._slashrc
 
     def add_test(self, type=None, file=None):
         if type is None:
@@ -108,7 +116,9 @@ class Suite(object):
 
     def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True):
         if commit:
-            path = self.commit()
+            self.commit()
+        path = self._last_committed_path
+        assert path is not None
         report_stream = StringIO()
         returned = SlashRunResult(report_stream=report_stream)
         captured = []
@@ -117,10 +127,12 @@ class Suite(object):
                 args = [path]
             args.extend(additional_args)
             try:
-                returned.exit_code = slash_run(args, report_stream=report_stream,
-                          app_callback=captured.append,
-                          test_sort_key=self._get_test_id_from_runnable
-                          )
+                with self._custom_slashrc(path):
+                    returned.exit_code = slash_run(
+                        args, report_stream=report_stream,
+                        app_callback=captured.append,
+                        test_sort_key=self._get_test_id_from_runnable
+                    )
             except (KeyboardInterrupt, SystemExit, TerminatedException) as e:
                 if isinstance(e, KeyboardInterrupt):
                     assert expect_interruption, 'KeyboardInterrupt unexpectedly raised'
@@ -141,6 +153,18 @@ class Suite(object):
         return get_test_id_from_test_address(test.__slash__.address)
 
     @contextmanager
+    def _custom_slashrc(self, path):
+        if self._slashrc is None:
+            yield
+            return
+        prev = config.root.run.user_customization_file_path
+        config.root.run.user_customization_file_path = os.path.join(path, self._slashrc.get_relative_path())
+        try:
+            yield
+        finally:
+            config.root.run.user_customization_file_path = prev
+
+    @contextmanager
     def _capture_events(self, summary):
 
         sys.modules['__ut__'] = summary.tracker
@@ -159,6 +183,9 @@ class Suite(object):
         files = self._files
         if self._slashconf is not None:
             files = itertools.chain(files, [self._slashconf])
+        if self._slashrc is not None:
+            files = itertools.chain(files, [self._slashrc])
+
 
         # TODO: clean up paths
         for file in files:
@@ -166,6 +193,7 @@ class Suite(object):
                 formatter = CodeFormatter(f)
                 file.write(formatter)
 
+        self._last_committed_path = path
         return path
 
     # Shortcuts

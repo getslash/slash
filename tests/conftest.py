@@ -151,7 +151,6 @@ def suite():
 def slash_session():
     return slash.Session()
 
-
 @pytest.fixture
 def test_loader():
     return Loader()

@@ -40,6 +40,8 @@ class CodeElement(Element):
         for line in str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines():
             self._body.append(line)
 
+    include = append_body
+
     @contextmanager
     def _body_context(self, code_formatter):
         yield

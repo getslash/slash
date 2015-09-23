@@ -17,7 +17,7 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), po
         _populate_extra_args(parser, extra_args)
     argv = list(argv) # copy the arguments, as we'll be gradually removing known arguments
     with _get_active_plugins_context(argv):
-        _configure_parser_by_active_plugins(parser)
+        _configure_parser_by_plugins(parser)
         _configure_parser_by_config(parser, config)
         if positionals_metavar is not None:
             parsed_args, positionals = parser.parse_known_args(argv)
@@ -72,9 +72,10 @@ def _get_new_active_plugins_from_args(argv):
             returned_argv.append(arg)
     return new_active, returned_argv
 
-def _configure_parser_by_active_plugins(parser):
-    for plugin in itervalues(plugins.manager.get_active_plugins()):
-        plugin.configure_argument_parser(parser)
+def _configure_parser_by_plugins(parser):
+    for plugin in itervalues(plugins.manager.get_installed_plugins()):
+        group = parser.add_argument_group('Options for --with-{0}'.format(plugin.get_name()))
+        plugin.configure_argument_parser(group)
 
 def _configure_plugins_from_args(args):
     for plugin in itervalues(plugins.manager.get_active_plugins()):
@@ -127,24 +128,13 @@ class SlashArgumentParser(argparse.ArgumentParser):
         super(SlashArgumentParser, self).__init__(*args, **kwargs)
         self._positionals_metavar = positionals_metavar
 
+
     def format_help(self):
         returned = cStringIO()
         helpstring = super(SlashArgumentParser, self).format_help()
         helpstring = self._tweak_usage_positional_metavars(helpstring)
         returned.write(helpstring)
         f = Formatter(returned)
-        for index, (plugin_name, plugin) in enumerate(self._iter_available_plugins()):
-            if index == 0:
-                f.writeln()
-                f.writeln("Available (inactive) plugins:")
-                f.indent()
-            f.write(_PLUGIN_ACTIVATION_PREFIX + plugin_name)
-            description = plugin.get_description()
-            if description is not None:
-                f.writeln()
-                with f.indented(2):
-                    f.write(description)
-            f.writeln()
         return returned.getvalue()
 
     def _tweak_usage_positional_metavars(self, usage):
