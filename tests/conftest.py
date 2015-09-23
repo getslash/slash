@@ -9,6 +9,7 @@ from forge import Forge
 import gossip
 import pytest
 import slash
+import slash.plugins
 from slash import resuming
 from slash.loader import Loader
 
@@ -36,6 +37,14 @@ def no_user_config(request):
     @request.addfinalizer
     def cleanup():
         os.rmdir(tmpdir)
+
+@pytest.fixture
+def no_plugins(request):
+    slash.plugins.manager.uninstall_all()
+    @request.addfinalizer
+    def cleanup():
+        slash.plugins.manager.uninstall_all()
+        slash.plugins.manager.install_builtin_plugins()
 
 
 @pytest.fixture
