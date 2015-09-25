@@ -18,10 +18,15 @@ _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 class IncompatiblePlugin(ValueError):
     pass
 
+class UnknownPlugin(ValueError):
+    pass
+
 class PluginManager(object):
     def __init__(self):
         super(PluginManager, self).__init__()
         self._installed = {}
+        self._pending_activation = set()
+        self._pending_deactivation = set()
         self._active = set()
         self.install_builtin_plugins()
 
@@ -62,7 +67,7 @@ class PluginManager(object):
         """
         return self._installed[plugin_name]
 
-    def install(self, plugin, activate=False):
+    def install(self, plugin, activate=False, activate_later=False):
         """
         Installs a plugin object to the plugin mechanism. ``plugin`` must be an object deriving from
         :class:`slash.plugins.PluginInterface`.
@@ -74,6 +79,8 @@ class PluginManager(object):
         self._installed[plugin_name] = plugin
         if activate:
             self.activate(plugin_name)
+        if activate_later:
+            self.activate_later(plugin_name)
 
     def install_builtin_plugins(self):
         for builtin_plugin_module in self._iter_builtin_plugin_modules():
@@ -122,6 +129,37 @@ class PluginManager(object):
             hook.register(callback, token=self._get_token(plugin_name), needs=plugin_needs, provides=plugin_provides)
         self._active.add(plugin_name)
 
+    def activate_later(self, plugin):
+        """
+        Adds a plugin to the set of plugins pending activation. It can be remvoed from the queue with :func:`.deactivate_later`
+
+        .. seealso:: :func:`.activate_pending_plugins`
+        """
+        self._pending_activation.add(self._get_installed_plugin(plugin).get_name())
+
+    def deactivate_later(self, plugin):
+        """
+        Removes a plugin from the set of plugins pending activation.
+
+        .. seealso:: :func:`.activate_pending_plugins`
+        """
+
+        self._pending_deactivation.add(self._get_installed_plugin(plugin).get_name())
+
+    def activate_pending_plugins(self):
+        """
+        Activates all plugins queued with :func:`.activate_later`
+        """
+        while self._pending_activation:
+            plugin_name = self._pending_activation.pop()
+            if plugin_name not in self._pending_deactivation:
+                self.activate(plugin_name)
+
+        while self._pending_deactivation:
+            plugin_name = self._pending_deactivation.pop()
+            if plugin_name in self._active:
+                self.deactivate(plugin_name)
+
     def deactivate(self, plugin):
         """
         Deactivates a plugin, unregistering all of its hook callbacks
@@ -152,11 +190,11 @@ class PluginManager(object):
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):
             plugin_name = plugin
-            plugin = self._installed[plugin_name]
+            plugin = self._installed.get(plugin_name)
         else:
             plugin_name = plugin.get_name()
-        if self._installed.get(plugin_name) is not plugin:
-            raise ValueError("Specified plugin is not installed!")
+        if plugin is None or self._installed.get(plugin_name) is not plugin:
+            raise UnknownPlugin("Unknown plugin: {0}".format(plugin_name))
         return plugin
 
     def _get_plugin_registrations(self, plugin):

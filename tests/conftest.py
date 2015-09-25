@@ -191,3 +191,43 @@ def defined_fixture(request, suite, suite_test):
 def gc_marker():
     return GarbageCollectionMarker()
 
+
+@pytest.fixture(autouse=True, scope="function")
+def reset_gossip(request):
+    @request.addfinalizer
+    def cleanup():
+        for group in list(gossip.get_groups()):
+            if group.name == 'slash':
+                continue
+            group.undefine()
+
+        for hook in gossip.get_all_hooks():
+            if hook.group.name != 'slash':
+                hook.undefine()
+            else:
+                hook.unregister_all()
+
+
+@pytest.fixture
+def plugin(no_plugins):
+
+    class StartSessionPlugin(slash.plugins.PluginInterface):
+        _activate_called = False
+        _deactivate_called = False
+
+        def __init__(self):
+            super(StartSessionPlugin, self).__init__()
+            self.session_start_call_count = 0
+
+        def get_name(self):
+            return "start-session"
+
+        def session_start(self):
+            self.session_start_call_count += 1
+
+        def activate(self):
+            self._activate_called = True
+
+        def deactivate(self):
+            self._deactivate_called = True
+    return StartSessionPlugin()

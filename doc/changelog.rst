@@ -1,6 +1,9 @@
 Changelog
 =========
 
+* :feature:`366` Added ``activate_later`` and ``deactivate_later`` to the plugin manager, allowing plugins to be collected into a 'pending activation' set, later activated with ``activate_pending_plugins``
+* :feature:`366` ``--with-X`` and ``--without-X`` don't immediately activate plugins, but rather use ``activate_later`` / ``deactivate_later``
+* :feature:`366` Added ``configure`` hook which is called after command-line processing but before plugin activation
 * :feature:`371` Add warning_added hook
 * :feature:`349` Plugin configuration is now installed in the installation phase, not activation phase
 * :release:`0.18.1 <11-08-2015>`

@@ -4,7 +4,7 @@ import pytest
 
 from slash import plugins
 from slash import hooks
-from slash.plugins import PluginInterface, IncompatiblePlugin
+from slash.plugins import PluginInterface, IncompatiblePlugin, UnknownPlugin
 from .utils import CustomException
 
 
@@ -95,7 +95,7 @@ def test_cannot_activate_uninstalled_plugin():
             return "Test plugin"
     with pytest.raises(ValueError) as caught:
         plugins.manager.activate(Plugin())
-    assert re.search(r".*not installed.*", str(caught.value))
+    assert re.search(r".*Unknown plugin: Test plugin.*", str(caught.value))
 
 
 def test_unknown_hook_names(request):
@@ -110,6 +110,7 @@ def test_unknown_hook_names(request):
 
     plugin = Plugin()
     plugins.manager.install(plugin)
+
     @request.addfinalizer
     def cleanup():
         plugins.manager.uninstall(plugin)
@@ -131,6 +132,7 @@ def test_custom_hook_names(request):
             pass
 
     hooks.add_custom_hook("custom_hook")
+
     @request.addfinalizer
     def cleanup():
         hooks.remove_custom_hook("custom_hook")
@@ -139,31 +141,59 @@ def test_custom_hook_names(request):
     plugins.manager.uninstall(plugin)
 
 
+def test_pending_activation(plugin):
+    plugins.manager.install(plugin)
+    assert not plugins.manager.get_active_plugins()
+    plugins.manager.activate_later(plugin)
+    assert not plugins.manager.get_active_plugins()
+    plugins.manager.activate_pending_plugins()
+    assert plugin.get_name() in plugins.manager.get_active_plugins()
+    assert plugin._activate_called
+
+
+def test_pending_activation_deactivation(plugin):
+    plugins.manager.install(plugin)
+    plugins.manager.activate_later(plugin)
+    plugins.manager.deactivate_later(plugin)
+    assert plugin.get_name() in plugins.manager._pending_activation
+    assert plugin.get_name() in plugins.manager._pending_deactivation
+    plugins.manager.activate_pending_plugins()
+    assert not plugin._activate_called
+
+
+def test_install_activate_later(plugin):
+    plugins.manager.install(plugin, activate_later=True)
+    assert plugin.get_name() in plugins.manager._pending_activation
+
+
+@pytest.mark.parametrize('activate_later_first', [True, False])
+def test_deactivate_later_already_activated(plugin, activate_later_first):
+    plugins.manager.install(plugin, activate=True)
+    if activate_later_first:
+        plugins.manager.activate_later(plugin)
+    plugins.manager.deactivate_later(plugin)
+    plugins.manager.activate_pending_plugins()
+    assert plugin.get_name() not in plugins.manager.get_active_plugins()
+    assert plugin._activate_called
+    assert plugin._deactivate_called
+
+def test_pending_activation_not_exists(plugin):
+    with pytest.raises(UnknownPlugin):
+        plugins.manager.activate_later(plugin)
+    with pytest.raises(UnknownPlugin):
+        plugins.manager.activate_later(plugin.get_name())
+
+
+
+def test_pending_deactivation_not_exists(plugin):
+    with pytest.raises(UnknownPlugin):
+        plugins.manager.deactivate_later(plugin)
+    with pytest.raises(UnknownPlugin):
+        plugins.manager.deactivate_later(plugin.get_name())
+
+
+
 def _assert_hooks_not_registered(plugin):
     hooks.session_start()
     assert plugin.session_start_call_count == 0, 'Hook unexpectedly registered!'
 
-
-@pytest.fixture
-def plugin(no_plugins):
-
-    class StartSessionPlugin(PluginInterface):
-        _activate_called = False
-        _deactivate_called = False
-
-        def __init__(self):
-            super(StartSessionPlugin, self).__init__()
-            self.session_start_call_count = 0
-
-        def get_name(self):
-            return "start-session"
-
-        def session_start(self):
-            self.session_start_call_count += 1
-
-        def activate(self):
-            self._activate_called = True
-
-        def deactivate(self):
-            self._deactivate_called = True
-    return StartSessionPlugin()

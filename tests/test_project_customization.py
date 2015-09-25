@@ -11,6 +11,30 @@ def test_plugin_activation_forcing_via_activate(customized_suite, suite_test):
     assert result.data['customized']
 
 
+def test_plugin_activation_deactivate_via_commandline(customized_suite, suite_test):
+
+    @customized_suite.slashrc.include
+    def __code__():
+        slash.plugins.manager.activate_later('custom')
+
+    result = customized_suite.run(additional_args=['--without-custom']).session.results.global_result
+    assert 'customized' not in result.data
+
+
+def test_plugin_deactivation_override_configure_hook(customized_suite, suite_test):
+
+    @customized_suite.slashrc.include
+    def __code__():
+        @slash.hooks.configure.register
+        def configure_hook():
+            slash.plugins.manager.activate_later('custom')
+
+
+    result = customized_suite.run(additional_args=['--without-custom']).session.results.global_result
+    assert 'customized' not in result.data
+
+
+
 @pytest.fixture
 def customized_suite(suite):
 

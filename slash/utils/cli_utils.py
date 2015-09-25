@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 from .. import conf, plugins
 from .._compat import cStringIO, iteritems, itervalues
-from .formatter import Formatter
+from ..plugins import UnknownPlugin
 
 
 @contextmanager
@@ -15,19 +15,25 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), po
     parser = SlashArgumentParser(prog=_deduce_program_name(), positionals_metavar=positionals_metavar)
     if extra_args:
         _populate_extra_args(parser, extra_args)
-    argv = list(argv) # copy the arguments, as we'll be gradually removing known arguments
-    with _get_active_plugins_context(argv):
-        _configure_parser_by_plugins(parser)
-        _configure_parser_by_config(parser, config)
-        if positionals_metavar is not None:
-            parsed_args, positionals = parser.parse_known_args(argv)
-        else:
-            parsed_args = parser.parse_args(argv)
-            positionals = []
-        parsed_args.positionals = positionals
-        _configure_plugins_from_args(parsed_args)
-        with _get_modified_configuration_from_args_context(parser, config, parsed_args):
-            yield parser, parsed_args
+    _configure_parser_by_plugins(parser)
+    _configure_parser_by_config(parser, config)
+
+    try:
+        argv = _add_pending_plugins_from_commandline(argv)
+    except UnknownPlugin as e:
+        parser.error(str(e))
+
+    if positionals_metavar is not None:
+        parsed_args, positionals = parser.parse_known_args(argv)
+    else:
+        parsed_args = parser.parse_args(argv)
+        positionals = []
+
+    plugins.manager.activate_pending_plugins()
+    parsed_args.positionals = positionals
+    _configure_plugins_from_args(parsed_args)
+    with _get_modified_configuration_from_args_context(parser, config, parsed_args):
+        yield parser, parsed_args
 
 def _deduce_program_name():
     returned = os.path.basename(sys.argv[0])
@@ -39,38 +45,20 @@ def _populate_extra_args(parser, extra_args):
     for argument in extra_args:
         parser.add_argument(*argument.args, **argument.kwargs)
 
-@contextmanager
-def _get_active_plugins_context(argv):
-    cleanups = []
-    prev_active = set(plugins.manager.get_active_plugins())
-    try:
-        new_active, new_argv = _get_new_active_plugins_from_args(argv)
-        for plugin_name in new_active - prev_active:
-            plugins.manager.activate(plugin_name)
-            cleanups.append((plugins.manager.deactivate, plugin_name))
-        for plugin_name in prev_active - new_active:
-            plugins.manager.deactivate(plugin_name)
-            cleanups.append((plugins.manager.activate, plugin_name))
-        del argv[:]
-        argv.extend(new_argv)
-        yield
-    finally:
-        for cleanup_func, plugin_name in reversed(cleanups):
-            cleanup_func(plugin_name)
-
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
 _PLUGIN_DEACTIVATION_PREFIX = "--without-"
-def _get_new_active_plugins_from_args(argv):
-    new_active = set(plugins.manager.get_active_plugins())
+def _add_pending_plugins_from_commandline(argv):
     returned_argv = []
     for arg in argv:
         if arg.startswith(_PLUGIN_DEACTIVATION_PREFIX):
-            new_active.discard(arg[len(_PLUGIN_DEACTIVATION_PREFIX):])
+            plugin_name = arg[len(_PLUGIN_DEACTIVATION_PREFIX):]
+            plugins.manager.deactivate_later(plugin_name)
         elif arg.startswith(_PLUGIN_ACTIVATION_PREFIX):
-            new_active.add(arg[len(_PLUGIN_ACTIVATION_PREFIX):])
+            plugin_name = arg[len(_PLUGIN_ACTIVATION_PREFIX):]
+            plugins.manager.activate_later(plugin_name)
         else:
             returned_argv.append(arg)
-    return new_active, returned_argv
+    return returned_argv
 
 def _configure_parser_by_plugins(parser):
     for plugin in itervalues(plugins.manager.get_installed_plugins()):
@@ -134,7 +122,6 @@ class SlashArgumentParser(argparse.ArgumentParser):
         helpstring = super(SlashArgumentParser, self).format_help()
         helpstring = self._tweak_usage_positional_metavars(helpstring)
         returned.write(helpstring)
-        f = Formatter(returned)
         return returned.getvalue()
 
     def _tweak_usage_positional_metavars(self, usage):

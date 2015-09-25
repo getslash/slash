@@ -10,6 +10,7 @@ from .utils import TestCase
 
 
 class OutputCaptureTest(TestCase):
+
     def setUp(self):
         super(OutputCaptureTest, self).setUp()
         self.stderr = cStringIO()
@@ -17,17 +18,19 @@ class OutputCaptureTest(TestCase):
         self.stdout = cStringIO()
         self.forge.replace_with(sys, "stdout", self.stdout)
 
+
 class ArgumentParsingTest(OutputCaptureTest):
+
     def setUp(self):
         super(ArgumentParsingTest, self).setUp()
         self.config = Config({
             "a": {"a1": {"flag1": True // conf_utils.Cmdline(off="--no-flag1")}},
             "b": {"b1": {"flag2": False // conf_utils.Cmdline(on="--flag2")}},
-            "string_value" : "",
-            "int_value" : 0 // conf_utils.Cmdline(increase="--increase", decrease="--decrease"),
+            "string_value": "",
+            "int_value": 0 // conf_utils.Cmdline(increase="--increase", decrease="--decrease"),
             "arg_value": "" // conf_utils.Cmdline(arg="--arg-value"),
             "list": ["existing_item"] // conf_utils.Cmdline(append="--append"),
-            })
+        })
 
     def _cli(self, argv):
         return cli_utils.get_cli_environment_context(argv=argv, config=self.config)
@@ -43,7 +46,6 @@ class ArgumentParsingTest(OutputCaptureTest):
     def test_config_decrease(self):
         with self._cli(["--decrease"]):
             self.assertEquals(self.config["int_value"], -1)
-
 
     def test_config_off_flag(self):
         with self._cli(["--no-flag1"]):
@@ -73,17 +75,21 @@ class ArgumentParsingTest(OutputCaptureTest):
         self.assertEquals(self.config.root.int_value, 0)
         self.assertEquals(self.config.root.string_value, "")
 
+
 class PluginCommandLineArgumentsTest(OutputCaptureTest):
+
     def setUp(self):
         super(PluginCommandLineArgumentsTest, self).setUp()
         self.plugin = SampleCommandLinePlugin()
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
+
     def test_arguments_are_not_parsed_if_not_activated(self):
         args = ["--start-session-option", "2"]
         with self.assertRaises(SystemExit):
             with cli_utils.get_cli_environment_context(argv=args):
                 pass
+
     def test_activation(self):
         with cli_utils.get_cli_environment_context(argv=["--with-sample-plugin"]):
             self.assertIn(self.plugin.get_name(), plugins.manager.get_active_plugins(), "plugin was not activated")
@@ -92,7 +98,7 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
         plugins.manager.activate(self.plugin)
         with cli_utils.get_cli_environment_context(argv=["--without-sample-plugin"]):
             self.assertNotIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
-        self.assertIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
+        self.assertNotIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
 
     def test_argument_passing(self):
         with cli_utils.get_cli_environment_context(argv=["--with-sample-plugin", "--plugin-option", "value"]):
@@ -105,10 +111,14 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
         output = self.stdout.getvalue()
         self.assertIn("--with-sample-plugin", output)
 
+
 class SampleCommandLinePlugin(PluginInterface):
+
     def get_name(self):
         return "sample-plugin"
+
     def configure_argument_parser(self, parser):
         parser.add_argument("--plugin-option")
+
     def configure_from_parsed_args(self, args):
         self.cmdline_param = args.plugin_option

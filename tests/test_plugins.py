@@ -16,22 +16,6 @@ def restore_plugins_on_cleanup(request):
     request.addfinalizer(plugins.manager.uninstall_all)
 
 
-@pytest.fixture(autouse=True, scope="function")
-def reset_gossip(request):
-    @request.addfinalizer
-    def cleanup():
-        for group in list(gossip.get_groups()):
-            if group.name == 'slash':
-                continue
-            group.undefine()
-
-        for hook in gossip.get_all_hooks():
-            if hook.group.name != 'slash':
-                hook.undefine()
-            else:
-                hook.unregister_all()
-
-
 def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
 
     @slash.plugins.active
