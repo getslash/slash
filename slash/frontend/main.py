@@ -12,6 +12,7 @@ _COMMANDS = {
     "resume": "slash.frontend.slash_run:slash_resume",
     "version": "slash.frontend.main:slash_version",
     "list": "slash.frontend.slash_list:slash_list",
+    "list-config": "slash.frontend.list_config:list_config",
 }
 
 

@@ -8,20 +8,14 @@ from functools import partial
 
 import colorama
 import slash
+from slash.utils.cli_utils import make_styler, UNDERLINED
 from slash.utils.python import get_underlying_func
 
-_COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member
 
-
-def _styler(style):
-    return lambda s: '{0}{1}{2}'.format(style, s, _COLOR_RESET)
-
-UNDERLINED = '\x1b[4m'
-
-_heading_style = _styler(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + UNDERLINED)  # pylint: disable=no-member
-_title_style = _styler(colorama.Fore.WHITE + colorama.Style.BRIGHT)  # pylint: disable=no-member
-_unused_style = _styler(colorama.Fore.YELLOW)  # pylint: disable=no-member
-_doc_style = _styler(colorama.Fore.GREEN + colorama.Style.BRIGHT)  # pylint: disable=no-member
+_heading_style = make_styler(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + UNDERLINED)  # pylint: disable=no-member
+_title_style = make_styler(colorama.Fore.WHITE + colorama.Style.BRIGHT)  # pylint: disable=no-member
+_unused_style = make_styler(colorama.Fore.YELLOW)  # pylint: disable=no-member
+_doc_style = make_styler(colorama.Fore.GREEN + colorama.Style.BRIGHT)  # pylint: disable=no-member
 
 
 def _parse_args(args):

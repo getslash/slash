@@ -3,6 +3,8 @@ import os
 import sys
 from contextlib import contextmanager
 
+import colorama
+
 from .. import conf, plugins, hooks
 from .._compat import cStringIO, iteritems, itervalues
 from ..plugins import UnknownPlugin
@@ -154,3 +156,11 @@ class Argument(object):
         super(Argument, self).__init__()
         self.args = args
         self.kwargs = kwargs
+
+COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member
+
+
+def make_styler(style):
+    return lambda s: '{0}{1}{2}'.format(style, s, COLOR_RESET)
+
+UNDERLINED = '\x1b[4m'
