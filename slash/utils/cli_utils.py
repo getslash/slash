@@ -29,7 +29,7 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), po
         parsed_args = parser.parse_args(argv)
         positionals = []
 
-    hooks.configure()
+    hooks.configure() # pylint: disable=no-member
     plugins.manager.activate_pending_plugins()
     parsed_args.positionals = positionals
     _configure_plugins_from_args(parsed_args)
