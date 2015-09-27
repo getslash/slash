@@ -44,6 +44,20 @@ def test_plugin_deactivation_override_configure_hook(customized_suite, suite_tes
     result = customized_suite.run(additional_args=['--without-custom']).session.results.global_result
     assert 'customized' not in result.data
 
+def test_configure_hook_depends_on_configuration_cmdline(customized_suite, suite_test):
+
+    @customized_suite.slashrc.include
+    def __code__():
+        slash.config.extend({
+            'some_config': 1 // slash.conf.Cmdline(arg='--some-config'),
+        })
+
+        @slash.hooks.configure.register
+        def configure_hook():
+            assert slash.config.root.some_config == 1000
+
+    result = customized_suite.run(additional_args=['--some-config=1000']).session.results.global_result
+
 
 @pytest.fixture
 def customized_suite(suite):

@@ -31,11 +31,11 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), po
         parsed_args = parser.parse_args(argv)
         positionals = []
 
-    hooks.configure() # pylint: disable=no-member
-    plugins.manager.activate_pending_plugins()
-    parsed_args.positionals = positionals
-    _configure_plugins_from_args(parsed_args)
     with _get_modified_configuration_from_args_context(parser, config, parsed_args):
+        hooks.configure() # pylint: disable=no-member
+        plugins.manager.activate_pending_plugins()
+        parsed_args.positionals = positionals
+        _configure_plugins_from_args(parsed_args)
         yield parser, parsed_args
 
 def _deduce_program_name():
