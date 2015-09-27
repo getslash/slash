@@ -3,7 +3,7 @@ import os
 import sys
 from contextlib import contextmanager
 
-from .. import conf, plugins
+from .. import conf, plugins, hooks
 from .._compat import cStringIO, iteritems, itervalues
 from ..plugins import UnknownPlugin
 
@@ -29,6 +29,7 @@ def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), po
         parsed_args = parser.parse_args(argv)
         positionals = []
 
+    hooks.configure()
     plugins.manager.activate_pending_plugins()
     parsed_args.positionals = positionals
     _configure_plugins_from_args(parsed_args)
