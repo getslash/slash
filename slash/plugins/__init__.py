@@ -131,9 +131,9 @@ class PluginManager(object):
 
     def activate_later(self, plugin):
         """
-        Adds a plugin to the set of plugins pending activation. It can be remvoed from the queue with :func:`.deactivate_later`
+        Adds a plugin to the set of plugins pending activation. It can be remvoed from the queue with :meth:`.deactivate_later`
 
-        .. seealso:: :func:`.activate_pending_plugins`
+        .. seealso:: :meth:`.activate_pending_plugins`
         """
         self._pending_activation.add(self._get_installed_plugin(plugin).get_name())
 
@@ -141,14 +141,14 @@ class PluginManager(object):
         """
         Removes a plugin from the set of plugins pending activation.
 
-        .. seealso:: :func:`.activate_pending_plugins`
+        .. seealso:: :meth:`.activate_pending_plugins`
         """
 
         self._pending_deactivation.add(self._get_installed_plugin(plugin).get_name())
 
     def activate_pending_plugins(self):
         """
-        Activates all plugins queued with :func:`.activate_later`
+        Activates all plugins queued with :meth:`.activate_later`
         """
         while self._pending_activation:
             plugin_name = self._pending_activation.pop()

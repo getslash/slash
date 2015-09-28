@@ -5,6 +5,7 @@ Configuration
 
 Slash uses a hierarchical configuration structure provided by `Confetti <https://github.com/vmalloc/confetti>`_. The configuration values are addressed by their full path (e.g. ``debug.enabled``, meaning the value called 'enabled' under the branch 'debug').
 
+.. note:: You can inspect the current paths, defaults and docs for Slash's configuration via the ``slash list-config`` command from your shell
 
 Several ways exist to modify configuration values.
 
