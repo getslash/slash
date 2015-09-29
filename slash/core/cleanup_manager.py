@@ -68,13 +68,13 @@ class CleanupManager(object):
         return self._scope_stack[-1]
 
     def push_scope(self, scope_name):
-        _logger.debug('CleanupManager: pushing scope {0!r}', scope_name)
+        _logger.trace('CleanupManager: pushing scope {0!r}', scope_name)
         scope = _Scope(scope_name)
         self._scope_stack.append(scope)
         self._scopes_by_name.setdefault(scope_name, []).append(scope)
 
     def pop_scope(self, scope_name, in_failure=None, in_interruption=None):
-        _logger.debug('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
+        _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
         scope = self._scope_stack[-1]
         assert scope.name == scope_name, 'Attempted to pop scope {0!r}, but current scope is {1!r}'.format(scope_name, scope.name)
         self._scope_stack.pop()
@@ -86,11 +86,11 @@ class CleanupManager(object):
 
     def call_cleanups(self, scope=_LAST_SCOPE, in_failure=False, in_interruption=False):
 
-        _logger.debug('Calling cleanups of scope {0.name!r} (failure={1}, interrupt={2})', scope, in_failure, in_interruption)
+        _logger.trace('Calling cleanups of scope {0.name!r} (failure={1}, interrupt={2})', scope, in_failure, in_interruption)
 
         if scope is _LAST_SCOPE:
             scope = self._scope_stack[-1]
-            _logger.debug('Deducing last scope={0.name!r}', scope)
+            _logger.trace('Deducing last scope={0.name!r}', scope)
 
         if scope.name == 'test': # pylint: disable=no-member
             with handling_exceptions():
@@ -104,7 +104,7 @@ class CleanupManager(object):
             if (in_failure or in_interruption) and cleanup.success_only:
                 continue
             with handling_exceptions(swallow=True):
-                _logger.debug("Calling cleanup: {0}", cleanup)
+                _logger.trace("Calling cleanup: {0}", cleanup)
                 cleanup()
 
 

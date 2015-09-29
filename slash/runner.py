@@ -68,7 +68,7 @@ def run_tests(iterable, stop_on_error=None):
         context.session.mark_complete()
     elif last_filename is not None:
         context.session.reporter.report_file_end(last_filename)
-    _logger.debug('Session finished. is_success={0} has_skips={1}',
+    _logger.trace('Session finished. is_success={0} has_skips={1}',
                   context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
 
 
