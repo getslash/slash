@@ -169,7 +169,7 @@ class SessionLogging(object):
         root_path = config.root.log.root
         if root_path is None:
             log_path = None
-            handler = logbook.NullHandler(bubble=False)
+            handler = logbook.NullHandler()
         else:
             log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=_NormalizedObject(context))))
             ensure_containing_directory(log_path)
