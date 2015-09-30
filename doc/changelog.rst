@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.19.0 <30-09-2015>`
 * :bug:`373 major` Fix test collection progress when outputting to non-ttys
 * :feature:`361` Demote slash logs to TRACE level
 * :feature:`368` add slash list-config command
