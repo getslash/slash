@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`372` Fixed logbook compatibility issue
 * :release:`0.18.1 <11-08-2015>`
 * :bug:`350` Fixed scope mismatch bug when hooks raise exceptions
 * :release:`0.18.0 <02-08-2015>`
