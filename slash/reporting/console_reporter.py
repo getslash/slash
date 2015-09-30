@@ -38,7 +38,11 @@ class TerminalWriterWrapper(object):
     def __init__(self, file):
         super(TerminalWriterWrapper, self).__init__()
         self._writer = TerminalWriter(file=file)
+        self._isatty = file.isatty()
         self._line = ''
+
+    def isatty(self):
+        return self._isatty
 
     def _get_full_width(self):
         fullwidth = self._writer.fullwidth
@@ -138,7 +142,13 @@ class ConsoleReporter(ReporterInterface):
         self._report_num_collected(collected, stillworking=False)
 
     def _report_num_collected(self, collected, stillworking):
-        self._terminal.write('\r{0} tests collected{1}'.format(
+        if self._terminal.isatty():
+            self._terminal.write('\r')
+
+        elif stillworking:
+            return
+
+        self._terminal.write('{0} tests collected{1}'.format(
             len(collected), '...' if stillworking else '   \n'), white=True, bold=True)
 
     def _is_verbose(self, level):

@@ -19,6 +19,11 @@ def test_silence_manual_errors(suite, suite_test, config_override):
     output = suite.run().get_console_output()
     assert 'slash.add_error' not in output
 
+def test_num_collected_printed_once(suite, suite_test):
+    assert len(suite) > 1
+    output = suite.run().get_console_output()
+    assert output.count('collected') == 1
+
 
 @pytest.fixture(params=list(range(logbook.DEBUG, logbook.CRITICAL + 1)))
 def level(request):

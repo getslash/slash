@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`373 major` Fix test collection progress when outputting to non-ttys
 * :feature:`361` Demote slash logs to TRACE level
 * :feature:`368` add slash list-config command
 * :feature:`366` Added ``activate_later`` and ``deactivate_later`` to the plugin manager, allowing plugins to be collected into a 'pending activation' set, later activated with ``activate_pending_plugins``
