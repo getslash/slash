@@ -9,8 +9,8 @@ Changelog
 * :feature:`366` Added ``configure`` hook which is called after command-line processing but before plugin activation
 * :feature:`371` Add warning_added hook
 * :feature:`349` Plugin configuration is now installed in the installation phase, not activation phase
-+* :release:`0.18.2 <30-09-2015>`
-+* :bug:`372` Fixed logbook compatibility issue
+* :release:`0.18.2 <30-09-2015>`
+* :bug:`372` Fixed logbook compatibility issue
 * :release:`0.18.1 <11-08-2015>`
 * :bug:`350` Fixed scope mismatch bug when hooks raise exceptions
 * :release:`0.18.0 <02-08-2015>`
