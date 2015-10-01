@@ -1,6 +1,7 @@
 Changelog
 =========
-
+* :release:`0.19.1 <01-10-2015>`
+* :bug:`374` Fix issue with xunit plugin
 * :release:`0.19.0 <30-09-2015>`
 * :bug:`373 major` Fix test collection progress when outputting to non-ttys
 * :feature:`361` Demote slash logs to TRACE level
