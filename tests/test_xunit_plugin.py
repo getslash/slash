@@ -25,12 +25,11 @@ def xunit_filename(tmpdir, request, config_override):
     xunit_filename = str(tmpdir.join('xunit.xml'))
     slash.plugins.manager.activate('xunit')
 
-    slash.config.root.plugins.xunit.filename = xunit_filename
+    slash.config.root.plugin_config.xunit.filename = xunit_filename
 
     @request.addfinalizer
     def deactivate():
         slash.plugins.manager.deactivate('xunit')
-        assert 'xunit' not in slash.config['plugins']
 
     return xunit_filename
 
