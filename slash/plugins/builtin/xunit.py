@@ -24,15 +24,11 @@ class Plugin(PluginInterface):
     def get_name(self):
         return "xunit"
 
-    def activate(self):
-        slash_config["plugins"].extend({"xunit": {"filename": "testsuite.xml" // Cmdline(arg="--xunit-filename")}})
-
-    def deactivate(self):
-        slash_config["plugins"].pop("xunit")
+    def get_config(self):
+        return {"filename": "testsuite.xml" // Cmdline(arg="--xunit-filename")}
 
     def session_start(self):
         self._start_time = datetime.datetime.now()
-
 
     def test_start(self):
         self._get_xunit_elements_list().append(E("testcase", {
@@ -77,5 +73,5 @@ class Plugin(PluginInterface):
         })
         for element in self._get_xunit_elements_list():
             e.append(element)
-        with open(slash_config.root.plugins.xunit.filename, "wb") as outfile:
+        with open(slash_config.root.plugin_config.xunit.filename, "wb") as outfile:
             outfile.write(xml_to_string(e))
