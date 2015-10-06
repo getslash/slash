@@ -189,4 +189,4 @@ def _walk(p):
         return [p]
     return (os.path.join(dirname, filename)
             for dirname, _, filenames in os.walk(p)
-            for filename in filenames)
+            for filename in sorted(filenames))
