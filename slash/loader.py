@@ -187,6 +187,6 @@ class Loader(object):
 def _walk(p):
     if os.path.isfile(p):
         return [p]
-    return sorted([os.path.join(dirname, filename)
-                   for dirname, _, filenames in os.walk(p)
-                   for filename in filenames])
+    return (os.path.join(dirname, filename)
+            for dirname, _, filenames in os.walk(p)
+            for filename in sorted(filenames))
