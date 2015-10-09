@@ -5,16 +5,25 @@ from contextlib import contextmanager
 from ..ctx import context
 from ..core import metadata
 from ..core.function_test import FunctionTestFactory
+from ..exception_handling import handle_exception
 
-try:
-    from IPython import embed # pylint: disable=F0401
-except ImportError:
-    import code
-    def _interact(ns):
-        code.interact(local=ns)
-else:
-    def _interact(ns):
-        embed(user_ns=ns)
+from IPython.terminal.embed import InteractiveShellEmbed # pylint: disable=F0401
+
+def _interact(ns):
+    shell = InteractiveShellEmbed(user_ns=ns)
+    def _handle_exception(shell, exc_type, exc_value, exc_tb, tb_offset):
+        exc_info = (exc_type, exc_value, exc_tb)
+        shell.showtraceback(exc_info, tb_offset)
+        if not _is_exception_in_ipython_eval(exc_tb):
+            handle_exception(exc_info)
+    shell.set_custom_exc((Exception,), _handle_exception)
+    shell()
+
+
+def _is_exception_in_ipython_eval(exc_tb):
+    while exc_tb.tb_next is not None:
+        exc_tb = exc_tb.tb_next
+    return exc_tb.tb_frame.f_code.co_filename.startswith('<')
 
 def start_interactive_shell(**namespace):
     """

@@ -16,6 +16,7 @@ install_requires = [
     "dessert",
     "emport>=1.0.0",
     "gossip>=1.0.0",
+    "IPython",
     "Logbook>=0.11.2",
     "requests>=1.1.0",
     "raven",
