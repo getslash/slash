@@ -30,8 +30,8 @@ nitpicky = True
 sys.path.insert(0, os.path.dirname(__file__))
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'config_doc', 'hook_list_doc', 'releases', 'alabaster']
 
-releases_issue_uri = "https://github.com/slash-testing/slash/issues/%s"
-releases_release_uri = "https://github.com/slash-testing/slash/tree/%s"
+releases_issue_uri = "https://github.com/getslash/slash/issues/%s"
+releases_release_uri = "https://github.com/getslash/slash/tree/%s"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -109,11 +109,11 @@ html_theme_options = {
     'github_repo': 'slash',
     'github_button': True,
     'github_banner': True,
-    'travis_button': 'slash-testing/slash',
+    'travis_button': 'getslash/slash',
     'analytics_id': 'UA-62537825-1',
     'extra_nav_links': {
-        'Slash Website': 'http://slash-testing.github.io/slash',
-        'Slash@Github': 'https://github.com/slash-testing/slash',
+        'Slash Website': 'http://getslash.github.io',
+        'Slash@Github': 'https://github.com/getslash/slash',
         'Slash@Pypi': 'https://pypi.python.org/pypi/slash',
     }
 }
