@@ -58,7 +58,7 @@ class Plugin(PluginInterface):
 
     def test_skip(self, reason):
         test_element = self._get_xunit_elements_list()[-1]
-        test_element.append(E('skipped', type=reason))
+        test_element.append(E('skipped', type=reason or ''))
 
     def result_summary(self):
         e = E('testsuite', {
