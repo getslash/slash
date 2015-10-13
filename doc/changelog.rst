@@ -1,5 +1,6 @@
 Changelog
 =========
+* :release:`0.19.2 <13-10-2015>`
 * :bug:`376` Fix xunit bug when using skip decorators without reasons
 * :release:`0.19.1 <01-10-2015>`
 * :bug:`374` Fix issue with xunit plugin
