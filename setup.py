@@ -43,7 +43,7 @@ setup(name="slash",
       license="BSD",
       author="Rotem Yaari",
       author_email="vmalloc@gmail.com",
-      url="http://vmalloc.github.io/slash",
+      url="http://getslash.github.io/",
       version=__version__,  # pylint: disable=E0602
       packages=find_packages(exclude=["tests"]),
       install_requires=install_requires,
