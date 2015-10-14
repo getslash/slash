@@ -103,6 +103,15 @@ class WhenRunHelper(object):
         self.test.append_line('raise KeyboardInterrupt()')
         self.test.expect_interruption()
 
-    def skip(self):
-        self.test.append_line('slash.skip_test("reason")')
+    def skip(self, with_reason=True, decorator=False):
+        if decorator:
+            if with_reason:
+                self.test.add_decorator('slash.skipped("reason")')
+            else:
+                self.test.add_decorator('slash.skipped')
+        else:
+            if with_reason:
+                self.test.append_line('slash.skip_test("reason")')
+            else:
+                self.test.append_line('slash.skip_test()')
         self.test.expect_skip()

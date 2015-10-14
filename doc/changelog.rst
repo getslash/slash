@@ -1,6 +1,8 @@
 Changelog
 =========
 * :feature:`339` Errors in interactive session (but not ones originating from IPython input itself) are now recorded as test errors
+* :release:`0.19.2 <13-10-2015>`
+* :bug:`376` Fix xunit bug when using skip decorators without reasons
 * :release:`0.19.1 <01-10-2015>`
 * :bug:`374` Fix issue with xunit plugin
 * :release:`0.19.0 <30-09-2015>`

@@ -19,7 +19,7 @@ deploy:
   provider: pypi
   user: vmalloc
   password:
-    secure: sNOkUNFfWKGsRy4BI+1jyqycZGSMiXTLtpCrX1mTuvjddbndULrHL3ecIPsCno49/nPR4Gww+e9U3HXc8LKJ9qR4mJ8bVCNiHO5GlGVnpV+wdGh9LVnsU1LWwuD8uWlLyTSOKP+ZmerCw7tGACYiv0e9zp8SqZXCH6VS+sAGFxU=
+    secure: EBE30QsQvwodsakJRtXvmeah0KRQoMpHQSfSACjE0FviWU6eHhgE7nSzxrTSwetmLaB/+hexkys8ULsE4Dxwgvd8aXJ5T6+GnhFkWLgaTl8Q39g/cnLqnVj+OCS95XlyFcWyBLsdyPY+tAc34YpYRfjuWgXup5UNc7Ze2KQ7wqk=
   on:
     tags: true
     repo: getslash/slash

@@ -17,8 +17,28 @@ def test_xunit_plugin(results, xunit_filename):
 
 
 @pytest.fixture
-def results(suite, xunit_filename):
+def results(suite, suite_test, test_event, xunit_filename):
+    test_event(suite_test)
     suite.run()
+
+@pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason', 'error', 'failure'])
+def test_event(request):
+    flavor = request.param
+    def func(test):
+        if flavor != 'normal':
+            if flavor == 'skip_without_reason':
+                test.when_run.skip(with_reason=False)
+            elif flavor == 'skip_decorator_without_reason':
+                test.when_run.skip(with_reason=False, decorator=True)
+            elif flavor == 'skip_with_reason':
+                test.when_run.skip(with_reason=True)
+            elif flavor == 'error':
+                test.when_run.error()
+            elif flavor == 'failure':
+                test.when_run.fail()
+            else:
+                raise NotImplementedError() # pragma: no cover
+    return func
 
 @pytest.fixture
 def xunit_filename(tmpdir, request, config_override):
