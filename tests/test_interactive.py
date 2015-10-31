@@ -21,6 +21,7 @@ def test_interactive_test(forge, suite, checkpoint):
 
     result = next(summary.session.results.iter_test_results())
     assert repr(result.test_metadata) == '<Interactive>'
+    assert result.test_metadata.file_path == '<Interactive>'
 
 
 @pytest.mark.parametrize('with_session', [True, False])

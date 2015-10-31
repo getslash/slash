@@ -42,9 +42,8 @@ def _start_interactive_test():
 
 def generate_interactive_test():
     [returned] = FunctionTestFactory(_start_interactive_test).generate_tests(context.session.fixture_store)
-    m = returned.__slash__ = metadata.Metadata(None, returned, '')
+    returned.__slash__ = metadata.Metadata(None, returned, '')
     returned.__slash__.mark_interactive()
-    m.factory_name = m.address = 'Interactive'
     return returned
 
 @contextmanager

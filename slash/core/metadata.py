@@ -40,6 +40,9 @@ class Metadata(object):
 
     def mark_interactive(self):
         self._interactive = True
+        assert hasattr(self, 'file_path')
+        self.file_path = '<Interactive>'
+        self.factory_name = self.address = 'Interactive'
 
     @property
     def class_name(self):
