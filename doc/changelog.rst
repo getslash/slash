@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`379` Allow exception marks to be used on both exception classes and exception values
 * :feature:`339` Errors in interactive session (but not ones originating from IPython input itself) are now recorded as test errors
 * :release:`0.19.2 <13-10-2015>`
 * :bug:`376` Fix xunit bug when using skip decorators without reasons
