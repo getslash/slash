@@ -1,6 +1,3 @@
-import code
-import sys
-
 import pytest
 import slash
 from slash.utils import interactive
@@ -9,7 +6,7 @@ from slash import start_interactive_shell
 
 def test_interactive_test(forge, suite, checkpoint):
 
-    def _interact(*_, **__):
+    def _interact(*_, **__):  #pylint: disable=unused-argument
         assert slash.context.session.scope_manager.get_current_stack() == ['session', 'module', 'test']
         assert slash.context.test.__slash__.is_interactive()
         checkpoint()
