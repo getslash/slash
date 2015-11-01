@@ -48,10 +48,16 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype):
         exc_type, exc_value, exc_tb = exc_info = sys.exc_info()
+        self.add_test_metadata(errortype,
+                               dict(type=exc_type.__name__,
+                                    message=str(exc_value)),
+                               get_traceback_string(exc_info))
+
+def add_test_metadata(self, title, attributes={}, content=None):
         test_element = self._get_xunit_elements_list()[-1]
-        error_element = E(errortype, dict(type=exc_type.__name__, message=str(exc_value)))
-        error_element.text = get_traceback_string(exc_info)
-        test_element.append(error_element)
+        data_element = E(title, attributes)
+        data_element = content
+        test_element.append(data_element)
 
     def _get_test_case_element(self, test):
         return E('testcase', dict(name=str(test), classname="{}.{}".format(test.__class__.__module__, test.__class__.__name__), time="0"))
