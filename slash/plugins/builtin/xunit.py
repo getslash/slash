@@ -53,7 +53,9 @@ class Plugin(PluginInterface):
                                      message=str(exc_value)),
                                 get_traceback_string(exc_info))
 
-    def _add_test_metadata(self, title, attributes={}, content=None):
+    def _add_test_metadata(self, title, attributes=None, content=None):
+        if not attributes:
+            attributes = {}
         test_element = self._get_xunit_elements_list()[-1]
         data_element = E(title, attributes)
         data_element.text = content
