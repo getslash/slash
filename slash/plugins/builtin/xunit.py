@@ -3,9 +3,11 @@ import socket
 import sys
 from ..interface import PluginInterface
 from ...ctx import context
-from ...utils.traceback_utils import get_traceback_string
+from ...utils.marks import mark
 from ...utils.conf_utils import Cmdline
+from ...utils.traceback_utils import get_traceback_string
 from slash import config as slash_config
+
 from xml.etree.ElementTree import (
     tostring as xml_to_string,
     Element as E,
@@ -48,12 +50,12 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype):
         exc_type, exc_value, exc_tb = exc_info = sys.exc_info()
-        self._add_test_metadata(errortype,
-                                dict(type=exc_type.__name__,
-                                     message=str(exc_value)),
+        self.add_test_metadata(errortype,
+                                {'type': exc_type.__name__, 'message': str(exc_value)},
                                 get_traceback_string(exc_info))
 
-    def _add_test_metadata(self, title, attributes=None, content=None):
+    @mark("register_on", None)  # same as slash.plugins.registers_on, which cause circular ImportError
+    def add_test_metadata(self, title, attributes=None, content=None):
         if not attributes:
             attributes = {}
         test_element = self._get_xunit_elements_list()[-1]
