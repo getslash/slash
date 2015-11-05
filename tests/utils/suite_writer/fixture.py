@@ -28,7 +28,7 @@ class Fixture(Function):
 
         self._write_event(code_formatter, 'fixture_start')
         code_formatter.writeln(
-            '__ut__.notify_fixture_start({0!r}, {1})'.format(self.id, self._get_value_string()))
+            '__ut__.notify_fixture_start({0!r}, {1})'.format(self.id, self.get_value_string()))
         code_formatter.writeln('@this.add_cleanup')
         code_formatter.writeln('def cleanup():')
         with code_formatter.indented():
@@ -40,7 +40,7 @@ class Fixture(Function):
 
     def _write_return(self, code_formatter):
         code_formatter.writeln(
-            'return {0}'.format(self._get_value_string()))
+            'return {0}'.format(self.get_value_string()))
 
     def _write_fixture_decorator(self, code_formatter):
 
@@ -56,7 +56,7 @@ class Fixture(Function):
                 '{0}={1!r}'.format(k, v) for k, v in params.items())))
         code_formatter.writeln()
 
-    def _get_value_string(self):
+    def get_value_string(self):
         returned = '{{"value": {0!r}, "params": {{'.format(self.name)
 
         for param in itertools.chain(self._parameters, self._fixtures):

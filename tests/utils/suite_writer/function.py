@@ -8,12 +8,14 @@ from .parameter import Parameter
 
 class Function(CodeElement):
 
-    def __init__(self, suite):
+    def __init__(self, suite, name=None):
         super(Function, self).__init__(suite)
+        self._name = name
         self._decorators = []
         self._parameters = []
         self._additional_parameter_string = ""
         self._fixtures = []
+        self._events = []
         self._deferred_events = []
 
     def add_parameter_string(self, s):
@@ -49,6 +51,10 @@ class Function(CodeElement):
             'decorator': decorator, 'event': event, 'extra_code': extra_code, 'adder': adder})
         return event
 
+    def add_event(self, name='event'):
+        event = '{0}_{1}'.format(name, uuid4())
+        self._events.append(event)
+        return (event, self.id)
 
     @contextmanager
     def _body_context(self, code_formatter):
@@ -61,6 +67,7 @@ class Function(CodeElement):
             if not self.suite.debug_info:
                 code_formatter.writeln('pass')
             self._write_parameter_values(code_formatter)
+            self._write_immediate_events(code_formatter)
             self._write_deferred_events(code_formatter)
             self._write_prologue(code_formatter)
             yield
@@ -80,6 +87,10 @@ class Function(CodeElement):
 
     def _write_epilogue(self, code_formatter):
         pass
+
+    def _write_immediate_events(self, code_formatter):
+        for event in self._events:
+            self._write_event(code_formatter, event)
 
     def _write_deferred_events(self, code_formatter):
         if not self.suite.debug_info:
@@ -116,7 +127,9 @@ class Function(CodeElement):
                 p.id, p.name))
 
     def _get_function_name(self):
-        raise NotImplementedError()  # pragma: no cover
+        if self._name is None:
+            raise NotImplementedError()  # pragma: no cover
+        return self._name
 
     @property
     def name(self):
@@ -124,3 +137,9 @@ class Function(CodeElement):
 
     def _get_argument_names(self):
         return (p.name for p in itertools.chain(self._parameters, self._fixtures))
+
+
+class Method(Function):
+
+    def _get_argument_names(self):
+        return itertools.chain(['self'], super(Method, self)._get_argument_names())

@@ -85,6 +85,9 @@ class Event(object):
     def is_before(self, other_event):
         return self.timestamp < other_event.timestamp
 
+    def __repr__(self):
+        return '<Event #{0}: {1}>'.format(self.timestamp, self.args)
+
 
 class Events(object):
 
@@ -120,4 +123,3 @@ class Events(object):
 
     def __repr__(self):
         return '<Events>'
-

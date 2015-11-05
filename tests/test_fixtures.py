@@ -1,8 +1,7 @@
+import pytest
 import operator
 
-import pytest
-
-from slash._compat import itervalues, reduce
+from slash._compat import reduce
 
 
 def test_fixtures(suite, suite_test, defined_fixture):
@@ -21,7 +20,7 @@ def test_fixture_cleanup_at_end_of_suite(suite):
 
 def test_fixture_cleanup_failure_fails_test(suite, suite_test, defined_fixture):
     suite_test.depend_on_fixture(defined_fixture)
-    cleanup = defined_fixture.add_cleanup(extra_code=['raise Exception()'])
+    defined_fixture.add_cleanup(extra_code=['raise Exception()'])
     suite_test.expect_error()
     suite.run()
 
@@ -72,3 +71,29 @@ def test_fixture_context(suite, suite_test):
     fixture2.depend_on_fixture(fixture1)
     suite_test.depend_on_fixture(fixture1)
     suite.run()
+
+@pytest.mark.parametrize('where', [['before'], ['after'], ['before', 'after']])
+def test_fixtures_in_before_after(suite, where):
+    test_class = suite.files[-1].add_class()
+    suite_test = test_class.add_method_test()
+
+    fixture = suite.slashconf.add_fixture()
+    fixture_event = fixture.add_event(name='fixture')
+
+    assert len(suite_test.cls.tests) == 1
+
+    before = suite_test.cls.add_before_method()
+    evt1 = before.add_event(name='before')
+    after = suite_test.cls.add_after_method()
+    evt2 = after.add_event(name='after')
+
+    for func in before, after:
+        if func.name in where:
+            func.depend_on_fixture(fixture)
+            func.append_line('assert {0} == {1}'.format(fixture.name, fixture.get_value_string()))
+
+    summary = suite.run()
+
+    assert evt1 in summary.events
+    assert evt2 in summary.events
+    assert fixture_event in summary.events
