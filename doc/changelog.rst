@@ -1,5 +1,8 @@
 Changelog
 =========
+
+* :release:`0.19.3 <05-11-2015>`
+* :bug:`383` Fix fixture passing to ``before`` and ``after``
 * :release:`0.19.2 <13-10-2015>`
 * :bug:`376` Fix xunit bug when using skip decorators without reasons
 * :release:`0.19.1 <01-10-2015>`
