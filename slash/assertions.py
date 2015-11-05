@@ -145,19 +145,3 @@ def assert_almost_equal(a, b, delta=0.00000001):
 
 class _CaughtException(object):
     exception = None
-
-# def assertDictEqual(self, d1, d2, msg=None):
-# def assertDictContainsSubset(self, expected, actual, msg=None):
-# def assertItemsEqual(self, expected_seq, actual_seq, msg=None):
-# def assertMultiLineEqual(self, first, second, msg=None):
-# def assertLess(self, a, b, msg=None):
-# def assertLessEqual(self, a, b, msg=None):
-# def assertGreater(self, a, b, msg=None):
-# def assertGreaterEqual(self, a, b, msg=None):
-# def assertRaisesRegexp(self, expected_exception, expected_regexp,
-# def assertRegexpMatches(self, text, expected_regexp, msg=None):
-# def assertNotRegexpMatches(self, text, unexpected_regexp, msg=None):
-# def assertSequenceEqual(self, seq1, seq2, msg=None, seq_type=None):
-# def assertAlmostEqual(self, first, second, places=None, msg=None, delta=None):
-# def assertNotAlmostEqual(self, first, second, places=None, msg=None, delta=None):
-#
