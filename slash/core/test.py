@@ -110,17 +110,15 @@ class Test(RunnableTest):
         """
         method = getattr(self, self._test_method_name)
         with bound_parametrizations_context(self._fixture_variation):
+            _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace, is_method=True)
             self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
-            self.before()
+            _call_with_fixtures(self.before)
             try:
                 with handling_exceptions():
-                    self._fixture_store.call_with_fixtures(
-                        method, namespace=self._fixture_namespace,
-                        is_method=True,
-                    )
+                    _call_with_fixtures(method)
             finally:
                 with handling_exceptions():
-                    self.after()
+                    _call_with_fixtures(self.after)
 
     def before(self):
         """
