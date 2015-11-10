@@ -113,16 +113,22 @@ class Result(object):
         return self._interrupted
 
     def add_error(self, e=None, frame_correction=0):
+        """Adds a failure to the result
+        """
         err = self._add_error(self._errors, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_error_added(context.test, err)
         return err
 
     def add_failure(self, e=None, frame_correction=0):
+        """Adds a failure to the result
+        """
         err = self._add_error(self._failures, e, frame_correction=frame_correction + 1)
         context.reporter.report_test_failure_added(context.test, err)
         return err
 
     def set_test_detail(self, key, value):
+        """Adds a generic detail to this test result, which can be later inspected or used
+        """
         self._details[key] = value
 
     def _add_error(self, error_list, error=None, frame_correction=0):

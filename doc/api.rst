@@ -127,3 +127,6 @@ Internals
 
 .. autoclass:: slash.core.metadata.Metadata
   :members:
+
+.. autoclass:: slash.core.result.Result
+  :members:

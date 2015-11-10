@@ -3,6 +3,21 @@
 Slash Internals
 ===============
 
+The Result Object
+-----------------
+
+Running tests store their results in :class:`slash.core.result.Result` objects, accessible through ``slash.context.result``.
+
+In normal scenarios, tests are not supposed to directly interact with result objects, but in some cases it may come in handy.
+
+A specific example of such cases is adding additional test details using :meth:`.Result.set_test_detail`. These details are later displayed in the summary and other integrations:
+
+.. code-block:: python
+       
+       def test_something(microwave):
+           slash.context.result.set_test_detail('microwave_version', microwave.get_version())
+
+
 The Session Object
 ------------------
 
