@@ -1,3 +1,5 @@
+# pylint: disable=redefined-outer-name
+
 import os
 
 import pytest
@@ -5,7 +7,7 @@ import slash
 from lxml import etree
 
 
-def test_xunit_plugin(results, xunit_filename):
+def test_xunit_plugin(results, xunit_filename): # pylint: disable=unused-argument
     assert os.path.exists(xunit_filename), 'xunit file not created'
 
     schema_root = etree.XML(_XUNIT_XSD)
@@ -16,14 +18,40 @@ def test_xunit_plugin(results, xunit_filename):
         etree.parse(f, parser)
 
 
+def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
+    for key, value in details.items():
+        suite_test.append_line('slash.context.result.set_test_detail({0!r}, {1!r})'.format(key, value))
+
+    suite.run()
+    testcase_xml = _get_testcase_xml(suite_test, xunit_filename)
+
+    saved_details = dict((d.attrib['name'], d.attrib['value']) for d in testcase_xml.findall('detail'))
+    assert saved_details
+
+
+def _get_testcase_xml(suite_test, filename):
+    with open(filename) as f:
+        xml = etree.parse(f)
+    match = [testcase for testcase in xml.findall('testcase') if testcase.attrib['name'].split('_')[-1] == suite_test.id]
+    assert len(match) == 1
+    return match[0]
+
+
 @pytest.fixture
-def results(suite, suite_test, test_event, xunit_filename):
+def details():
+    return {'detail1': 'value1', 'detail2': 'value2'}
+
+
+@pytest.fixture
+def results(suite, suite_test, test_event, xunit_filename): #pylint: disable=unused-argument
     test_event(suite_test)
     suite.run()
+
 
 @pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason', 'error', 'failure'])
 def test_event(request):
     flavor = request.param
+
     def func(test):
         if flavor != 'normal':
             if flavor == 'skip_without_reason':
@@ -37,8 +65,9 @@ def test_event(request):
             elif flavor == 'failure':
                 test.when_run.fail()
             else:
-                raise NotImplementedError() # pragma: no cover
+                raise NotImplementedError()  # pragma: no cover
     return func
+
 
 @pytest.fixture
 def xunit_filename(tmpdir, request, config_override):

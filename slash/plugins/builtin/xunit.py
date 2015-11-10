@@ -6,6 +6,7 @@ from ...ctx import context
 from ...utils.traceback_utils import get_traceback_string
 from ...utils.conf_utils import Cmdline
 from slash import config as slash_config
+from slash import context
 from xml.etree.ElementTree import (
     tostring as xml_to_string,
     Element as E,
@@ -32,13 +33,17 @@ class Plugin(PluginInterface):
 
     def test_start(self):
         self._get_xunit_elements_list().append(E("testcase", {
-            "name": str(context.test),
-            "classname": type(context.test).__name__,
+            "name": context.test.__slash__.address,
+            "classname": context.test.__slash__.class_name or '',
             "time": "0"
         }))
 
     def test_success(self):
         pass
+
+    def test_end(self):
+        for detail_name, detail_value in context.result.get_additional_details().items():
+            self._add_element('detail', {'name': detail_name, 'value': detail_value})
 
     def error_added(self, result, error):
         if error.is_failure():
@@ -48,10 +53,14 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype):
         exc_type, exc_value, exc_tb = exc_info = sys.exc_info()
+        self._add_element(errortype, {'type': exc_type.__name__, 'message': str(exc_value)}, text=get_traceback_string(exc_info))
+
+    def _add_element(self, tag, attrib, text=None):
         test_element = self._get_xunit_elements_list()[-1]
-        error_element = E(errortype, dict(type=exc_type.__name__, message=str(exc_value)))
-        error_element.text = get_traceback_string(exc_info)
-        test_element.append(error_element)
+        element = E(tag, attrib)
+        if text is not None:
+            element.text = text
+        test_element.append(element)
 
     def _get_test_case_element(self, test):
         return E('testcase', dict(name=str(test), classname="{}.{}".format(test.__class__.__module__, test.__class__.__name__), time="0"))
