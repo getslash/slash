@@ -2,15 +2,16 @@ from __future__ import print_function
 
 import argparse
 import inspect
+import itertools
 import os
 import sys
 from functools import partial
 
 import colorama
 import slash
-from slash.utils.cli_utils import make_styler, UNDERLINED
+from slash.utils.cli_utils import UNDERLINED, make_styler
 from slash.utils.python import get_underlying_func
-
+from slash.utils.suite_files import iter_suite_file_paths
 
 _heading_style = make_styler(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + UNDERLINED)  # pylint: disable=no-member
 _title_style = make_styler(colorama.Fore.WHITE + colorama.Style.BRIGHT)  # pylint: disable=no-member
@@ -18,32 +19,37 @@ _unused_style = make_styler(colorama.Fore.YELLOW)  # pylint: disable=no-member
 _doc_style = make_styler(colorama.Fore.GREEN + colorama.Style.BRIGHT)  # pylint: disable=no-member
 
 
-def _parse_args(args):
+def _get_parser():
     parser = argparse.ArgumentParser('slash list [options] PATH...')
+    parser.add_argument('-f', '--suite-file', dest='suite_files', action='append', default=[])
     parser.add_argument('--only-fixtures', dest='only', action='store_const', const='fixtures', default=None)
     parser.add_argument('--only-tests', dest='only', action='store_const', const='tests', default=None)
-    parser.add_argument('paths', nargs='+', default=['.'])
-    return parser.parse_args(args)
+    parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
+    return parser
 
 
 def slash_list(args, report_stream=sys.stdout):
     _print = partial(print, file=report_stream)
 
-    args = _parse_args(args)
+    parser = _get_parser()
+    parsed_args = parser.parse_args(args)
+
+    if not parsed_args.paths and not parsed_args.suite_files:
+        parser.error('Neither test paths nor suite files were specified')
 
     with slash.Session() as session:
         slash.site.load()
         loader = slash.loader.Loader()
-        runnables = loader.get_runnables(args.paths)
+        runnables = loader.get_runnables(itertools.chain(parsed_args.paths, iter_suite_file_paths(parsed_args.suite_files)))
         used_fixtures = set()
         for test in runnables:
             used_fixtures.update(test.get_required_fixture_objects())
 
-        if args.only in (None, 'fixtures'):
-            _report_fixtures(args, session, _print, used_fixtures)
+        if parsed_args.only in (None, 'fixtures'):
+            _report_fixtures(parsed_args, session, _print, used_fixtures)
 
-        if args.only in (None, 'tests'):
-            _report_tests(args, runnables, _print)
+        if parsed_args.only in (None, 'tests'):
+            _report_tests(parsed_args, runnables, _print)
 
 
 def _report_tests(args, runnables, printer):
@@ -71,6 +77,6 @@ def _report_fixtures(args, session, printer, used_fixtures):
                 printer('    {0}'.format(line))
 
         printer('    Source: {0}:{1}'.format(
-            os.path.relpath(inspect.getsourcefile(fixture_func), args.paths[0]),
+            os.path.relpath(inspect.getsourcefile(fixture_func), args.paths[0] if args.paths else '.'),
             inspect.getsourcelines(fixture_func)[1]))
         printer('\n')

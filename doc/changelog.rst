@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`386` Make slash list support -f and other configuration parameters
 * :feature:`385` Add test details to xunit plugin output
 * :feature:`379` Allow exception marks to be used on both exception classes and exception values
 * :feature:`339` Errors in interactive session (but not ones originating from IPython input itself) are now recorded as test errors

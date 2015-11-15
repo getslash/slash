@@ -1,6 +1,5 @@
 import itertools
 import functools
-import os
 import sys
 from contextlib import contextmanager
 
@@ -14,6 +13,7 @@ from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume,
                         save_resume_state)
 from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
+from ..utils.suite_files import iter_suite_file_paths
 
 _logger = logbook.Logger(__name__)
 
@@ -81,24 +81,6 @@ def _extend_paths_from_suite_files(paths):
     if not suite_files:
         return paths
     paths = list(paths)
-    paths.extend(_iter_suite_file_paths(suite_files))
+    paths.extend(iter_suite_file_paths(suite_files))
     return paths
 
-def _iter_suite_file_paths(suite_files):
-    for filename in suite_files:
-
-        dirname = os.path.abspath(os.path.dirname(filename))
-        for path in open(filename):
-            path = path.strip()
-            if not path or path.startswith("#"):
-                continue
-
-            if not os.path.isabs(path):
-                path = os.path.abspath(os.path.join(dirname, path))
-
-            if not path.endswith('.py') and '.py:' not in path and not os.path.isdir(path):
-                for p in _iter_suite_file_paths([path]):
-                    yield p
-                continue
-
-            yield path

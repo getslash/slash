@@ -1,17 +1,16 @@
 import os
 import shutil
-import tempfile
 from tempfile import mkdtemp
 
 import pytest
-from slash.frontend.slash_run import _iter_suite_file_paths
+from slash.utils.suite_files import iter_suite_file_paths
 
 
 def test_iter_suite_paths_files_abspaths(filename, paths):
     with open(filename, 'w') as f:
         f.write('\n'.join(paths))
 
-    assert list(_iter_suite_file_paths([filename])) == paths
+    assert list(iter_suite_file_paths([filename])) == paths
 
 def test_iter_suite_paths_files_relpath(filename, paths):
     with open(filename, 'w') as f:
@@ -21,7 +20,7 @@ def test_iter_suite_paths_files_relpath(filename, paths):
             f.write(relpath)
             f.write('\n')
 
-    assert list(_iter_suite_file_paths([filename])) == [os.path.abspath(p) for p in paths]
+    assert list(iter_suite_file_paths([filename])) == [os.path.abspath(p) for p in paths]
 
 @pytest.mark.parametrize('use_relpath', [True, False])
 def test_files_containing_files(filename, paths, use_relpath):
@@ -38,7 +37,7 @@ def test_files_containing_files(filename, paths, use_relpath):
         f.write('\n')
         f.write(filename2)
 
-    assert list(_iter_suite_file_paths([filename])) == paths + paths[::-1]
+    assert list(iter_suite_file_paths([filename])) == paths + paths[::-1]
 
 
 @pytest.fixture
