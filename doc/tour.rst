@@ -6,7 +6,7 @@ Whirlwind Tour of Slash
 Writing Tests
 -------------
 
-Slash loads and runs tests from Python files. To get started, let's create an examplet test file and name it ``test_addition.py``:
+Slash loads and runs tests from Python files. To get started, let's create an example test file and name it ``test_addition.py``:
 
 .. code-block:: python
 
