@@ -4,6 +4,7 @@ import os
 import sys
 
 _PYTHON_VERSION = sys.version_info
+_IS_PYPY = hasattr(sys, 'pypy_version_info')
 _in_same_dir = functools.partial(os.path.join, os.path.dirname(__file__))
 
 with open(_in_same_dir("slash", "__version__.py")) as version_file:
@@ -29,7 +30,7 @@ if _PYTHON_VERSION < (2, 7):
     install_requires.append("ordereddict")
 
 # Ipython dep
-if _PYTHON_VERSION < (2, 7):
+if _PYTHON_VERSION < (2, 7) or _IS_PYPY:
     install_requires.insert(0, "ptyprocess==0.4") # 0.5 dropped 2.6 support
     install_requires.append('IPython==1.2.1')
 else:

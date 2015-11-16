@@ -1,12 +1,20 @@
 # pylint: disable=redefined-outer-name
-
 import os
+import sys
 
 import pytest
 import slash
-from lxml import etree
 
+try:
+    from lxml import etree
+except ImportError:
+    if not hasattr(sys, 'pypy_version_info'):
+        raise
+    etree = None
 
+_needs_lxml = pytest.mark.skipif(etree is None, reason='Requires lxml')
+
+@_needs_lxml
 def test_xunit_plugin(results, xunit_filename): # pylint: disable=unused-argument
     assert os.path.exists(xunit_filename), 'xunit file not created'
 
@@ -18,6 +26,7 @@ def test_xunit_plugin(results, xunit_filename): # pylint: disable=unused-argumen
         etree.parse(f, parser)
 
 
+@_needs_lxml
 def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
     for key, value in details.items():
         suite_test.append_line('slash.context.result.set_test_detail({0!r}, {1!r})'.format(key, value))

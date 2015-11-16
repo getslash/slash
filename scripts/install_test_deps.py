@@ -18,9 +18,9 @@ if __name__ == '__main__':
         "pytest-cov",
         "pytest-timeout",
         "pyforge",
-        "lxml", # for XSD validations
     ]
     if not _PYPY:
+        deps.append("lxml")
         if sys.version_info < (2, 7):
             deps.append("pylint<1.4.0")
         else:
