@@ -6,7 +6,6 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  - "pypy"
 # command to run tests, e.g. python setup.py test
 install: 
   - pip install virtualenv
