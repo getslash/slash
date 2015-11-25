@@ -3,8 +3,10 @@ from .utils import run_tests_assert_success
 import itertools
 import os
 import slash
+from slash._compat import izip_longest
 import pytest
 
+from .utils.suite_writer import Suite
 
 @pytest.mark.parametrize('parametrize', [True, False])
 def test_class_name(suite, suite_test, test_type, parametrize):
@@ -34,6 +36,25 @@ def test_function_name(suite, suite_test, test_type, parametrize):
         assert '(' not in result.test_metadata.function_name
 
 
+def test_function_name_with_special_parameters(test_type):
+    suite = Suite()
+    assert len(suite) == 0
+    suite_test = suite.add_test(type=test_type)
+    values = ['a.b', 'a(b']
+    suite_test.add_parameter(values=values)
+
+    # we can't verify result because we would not be able to parse the function properly
+    # TODO: this will change once we properly support variations metadata
+    summary = suite.run(verify=False, sort=False)
+    for result, value in izip_longest(summary.session.results, values):
+        function_name = result.test_metadata.function_name
+        assert value not in function_name
+        assert '.' not in result.test_metadata.function_name
+        assert '(' not in result.test_metadata.function_name
+        assert function_name.startswith('test_')
+
+
+        
 def test_module_name_not_none_or_empty_string(suite):
     for result in suite.run().session.results:
         assert result.test_metadata.module_name

@@ -49,7 +49,7 @@ class Metadata(object):
 
     @property
     def function_name(self):
-        returned = self.address_in_file
+        returned = self.address_in_file.split('(', 1)[0]
         if '.' in returned:
             returned = returned.rsplit('.', 1)[-1]
         return returned.split('(', 1)[0]

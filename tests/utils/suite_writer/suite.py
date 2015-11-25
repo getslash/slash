@@ -114,7 +114,7 @@ class Suite(object):
     def __getitem__(self, idx):
         return self._notified[idx]
 
-    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True):
+    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True):
         if commit:
             self.commit()
         path = self._last_committed_path
@@ -131,7 +131,7 @@ class Suite(object):
                     returned.exit_code = slash_run(
                         args, report_stream=report_stream,
                         app_callback=captured.append,
-                        test_sort_key=self._get_test_id_from_runnable
+                        test_sort_key=self._get_test_id_from_runnable if sort else None
                     )
             except (KeyboardInterrupt, SystemExit, TerminatedException) as e:
                 if isinstance(e, KeyboardInterrupt):
