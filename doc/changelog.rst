@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :release:`0.19.6 <01-12-2015>`
+* :bug:`-` Minor fixes
 * :release:`0.19.5 <01-12-2015>`
 * :bug:`390` Fix handling of add_failure and add_error with message strings in xunit plugin
 * :release:`0.19.5 <25-11-2015>`
