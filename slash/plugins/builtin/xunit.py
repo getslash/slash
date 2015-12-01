@@ -50,7 +50,8 @@ class Plugin(PluginInterface):
         exc_type, exc_value, _ = exc_info = sys.exc_info()
         test_element = self._get_xunit_elements_list()[-1]
         error_element = E(errortype, dict(type=exc_type.__name__ if exc_type else '', message=str(exc_value)))
-        error_element.text = get_traceback_string(exc_info)
+        if exc_value is not None:
+            error_element.text = get_traceback_string(exc_info)
         test_element.append(error_element)
 
     def _get_test_case_element(self, test):
