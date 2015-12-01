@@ -283,7 +283,7 @@ class ConsoleReporter(ReporterInterface):
     def _report_additional_test_details(self, result):
         if result.is_success():
             return
-        detail_items = iteritems(result.get_additional_details())
+        detail_items = iteritems(result.details.all())
 
         log_path = result.get_log_path()
         if log_path is not None:

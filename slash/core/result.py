@@ -8,8 +8,10 @@ import logbook
 from .._compat import itervalues, OrderedDict
 from ..ctx import context
 from .. import hooks
+from .details import Details
 from .error import Error
 from ..exceptions import FAILURE_EXCEPTION_TYPES, SkipTest
+from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 
 _logger = logbook.Logger(__name__)
@@ -18,6 +20,8 @@ _ADDED_TO_RESULT = ExceptionMarker('added_to_result')
 
 
 class Result(object):
+    """Represents a single result for a test which was run
+    """
 
     def __init__(self, test_metadata=None):
         super(Result, self).__init__()
@@ -27,7 +31,8 @@ class Result(object):
         self._errors = []
         self._failures = []
         self._skips = []
-        self._details = {}
+        #: a :class:`slash.core.details.Details` instance for storing additional test details
+        self.details = Details()
         self._started = False
         self._finished = False
         self._interrupted = False
@@ -129,7 +134,7 @@ class Result(object):
     def set_test_detail(self, key, value):
         """Adds a generic detail to this test result, which can be later inspected or used
         """
-        self._details[key] = value
+        self.details.set(key, value)
 
     def _add_error(self, error_list, error=None, frame_correction=0):
         try:
@@ -157,8 +162,9 @@ class Result(object):
     def get_failures(self):
         return self._failures
 
+    @deprecated('Use result.details.all()', since='0.20.0')
     def get_additional_details(self):
-        return self._details
+        return self.details.all()
 
     def get_skips(self):
         return self._skips
@@ -205,7 +211,7 @@ class SessionResults(object):
 
     def iter_all_additional_details(self):
         for result in self.iter_all_results():
-            if result.get_additional_details():
+            if result.details:
                 yield result, result.get_additional_details()
 
     def iter_all_failures(self):

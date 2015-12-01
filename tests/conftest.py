@@ -12,6 +12,7 @@ import slash
 import slash.plugins
 from slash import resuming
 from slash.loader import Loader
+from slash.core.result import GlobalResult, Result
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
@@ -137,6 +138,10 @@ def suite_test(suite, test_type, is_last_test):
         _ = suite.add_test(type=test_type)
 
     return returned
+
+@pytest.fixture(params=[GlobalResult, Result])
+def result(request):
+    return request.param()
 
 
 @pytest.fixture(params=[True, False])

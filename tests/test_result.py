@@ -182,7 +182,3 @@ class SessionResultTest(TestCase):
         self.assertEquals(self.result.get_num_skipped(), 2)
         self.assertEquals(self.result.get_num_failures(), 1)
 
-
-@pytest.fixture(params=[GlobalResult, Result])
-def result(request):
-    return request.param()

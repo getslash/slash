@@ -130,3 +130,6 @@ Internals
 
 .. autoclass:: slash.core.result.Result
   :members:
+
+.. autoclass:: slash.core.details.Details
+  :members:

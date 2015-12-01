@@ -42,7 +42,7 @@ class Plugin(PluginInterface):
         pass
 
     def test_end(self):
-        for detail_name, detail_value in context.result.get_additional_details().items():
+        for detail_name, detail_value in context.result.details.all().items():
             self._add_element('detail', {'name': detail_name, 'value': detail_value})
 
     def error_added(self, result, error): # pylint: disable=unused-argument
