@@ -45,14 +45,14 @@ class Plugin(PluginInterface):
         for detail_name, detail_value in context.result.get_additional_details().items():
             self._add_element('detail', {'name': detail_name, 'value': detail_value})
 
-    def error_added(self, result, error):
+    def error_added(self, result, error): # pylint: disable=unused-argument
         if error.is_failure():
             self._add_error("failure")
         else:
             self._add_error("error")
 
     def _add_error(self, errortype):
-        exc_type, exc_value, exc_tb = exc_info = sys.exc_info()
+        exc_type, exc_value, _ = exc_info = sys.exc_info()
         self._add_element(errortype, {'type': exc_type.__name__ if exc_type else '', 'message': str(exc_value)}, text=get_traceback_string(exc_info))
 
     def _add_element(self, tag, attrib, text=None):
