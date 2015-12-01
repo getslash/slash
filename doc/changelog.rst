@@ -1,6 +1,10 @@
 Changelog
 =========
 
+* :release:`0.19.5 <01-12-2015>`
+* :bug:`390` Fix handling of add_failure and add_error with message strings in xunit plugin
+* :release:`0.19.5 <25-11-2015>`
+* :bug:`389` Fix deduction of function names for parametrized tests
 * :release:`0.19.3 <05-11-2015>`
 * :bug:`383` Fix fixture passing to ``before`` and ``after``
 * :release:`0.19.2 <13-10-2015>`
