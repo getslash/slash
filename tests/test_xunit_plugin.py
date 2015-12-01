@@ -54,10 +54,10 @@ def details():
 @pytest.fixture
 def results(suite, suite_test, test_event, xunit_filename): #pylint: disable=unused-argument
     test_event(suite_test)
-    suite.run()
+    summary = suite.run()
+    assert 'Traceback' not in summary.get_console_output()
 
-
-@pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason', 'error', 'failure'])
+@pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason', 'error', 'failure', 'add_error', 'add_failure'])
 def test_event(request):
     flavor = request.param
 
@@ -73,6 +73,12 @@ def test_event(request):
                 test.when_run.error()
             elif flavor == 'failure':
                 test.when_run.fail()
+            elif flavor == 'add_error':
+                test.append_line('slash.add_error("error")')
+                test.expect_error()
+            elif flavor == 'add_failure':
+                test.append_line('slash.add_failure("failure")')
+                test.expect_failure()
             else:
                 raise NotImplementedError()  # pragma: no cover
     return func
