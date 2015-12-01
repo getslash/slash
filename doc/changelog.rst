@@ -5,6 +5,8 @@ Changelog
 * :feature:`385` Add test details to xunit plugin output
 * :feature:`379` Allow exception marks to be used on both exception classes and exception values
 * :feature:`339` Errors in interactive session (but not ones originating from IPython input itself) are now recorded as test errors
+* :release:`0.19.6 <01-12-2015>`
+* :bug:`-` Minor fixes
 * :release:`0.19.5 <01-12-2015>`
 * :bug:`390` Fix handling of add_failure and add_error with message strings in xunit plugin
 * :release:`0.19.5 <25-11-2015>`

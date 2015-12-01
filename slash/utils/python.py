@@ -26,6 +26,7 @@ def get_underlying_func(func):
         func = underlying
 
 def getargspec(func):
+    # pylint: disable=deprecated-method
     return inspect.getargspec(get_underlying_func(func))
 
 

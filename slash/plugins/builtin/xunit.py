@@ -53,7 +53,7 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype):
         exc_type, exc_value, _ = exc_info = sys.exc_info()
-        self._add_element(errortype, {'type': exc_type.__name__ if exc_type else '', 'message': str(exc_value)}, text=get_traceback_string(exc_info))
+        self._add_element(errortype, {'type': exc_type.__name__ if exc_type else '', 'message': str(exc_value)}, text=get_traceback_string(exc_info) if exc_value is not None else None)
 
     def _add_element(self, tag, attrib, text=None):
         test_element = self._get_xunit_elements_list()[-1]
