@@ -61,7 +61,7 @@ class Session(Activatable):
         self.results.global_result.mark_finished()
         with handling_exceptions():
             self.cleanups.pop_scope('session-global')
-            self._logging_context.__exit__(*sys.exc_info())
+            self._logging_context.__exit__(*sys.exc_info()) # pylint: disable=no-member
             self._logging_context = None
             ctx.pop_context()
 

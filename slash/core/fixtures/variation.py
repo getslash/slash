@@ -135,7 +135,7 @@ class Variation(object):
         return self.param_value_indices == other
 
     def __ne__(self, other):
-        return not (self == other)  # pylint: disable=superfluous-parens
+        return not (self == other)  # pylint: disable=superfluous-parens,unneeded-not
 
     def __repr__(self):
         return 'Variation({0})'.format(', '.join('{0}={1}'.format(key, value) for key, value in iteritems(self.param_value_indices)))

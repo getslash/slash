@@ -220,7 +220,7 @@ class ConsoleReporter(ReporterInterface):
         warnings_by_key = collections.defaultdict(list)
         for warning in session.warnings:
             warnings_by_key[warning.key].append(warning)
-        for i, (warning_key, warnings) in iteration(iteritems(warnings_by_key)):
+        for i, (_, warnings) in iteration(iteritems(warnings_by_key)):
             if i.first:
                 self._terminal.sep(
                     '=', 'Warnings ({0} total)'.format(len(session.warnings)), yellow=True)
@@ -271,7 +271,7 @@ class ConsoleReporter(ReporterInterface):
             if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
 
-            code_lines = self._write_frame_code(
+            self._write_frame_code(
                 frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
                 self._terminal.write(err_type, **theme('tb-error'))
@@ -378,7 +378,7 @@ class ConsoleReporter(ReporterInterface):
     def report_test_failure_added(self, test, error):
         self._report_test_error_failure_added(test, error, 'F')
 
-    def _report_test_error_failure_added(self, test, e, errtype):
+    def _report_test_error_failure_added(self, test, e, errtype): # pylint: disable=unused-argument
         self._file_failed = True
         if not self._verobsity_allows(VERBOSITIES.NOTICE):
             self._terminal.write(errtype, red=True)

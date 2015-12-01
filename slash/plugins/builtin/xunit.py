@@ -40,14 +40,14 @@ class Plugin(PluginInterface):
     def test_success(self):
         pass
 
-    def error_added(self, result, error):
+    def error_added(self, result, error): # pylint: disable=unused-argument
         if error.is_failure():
             self._add_error("failure")
         else:
             self._add_error("error")
 
     def _add_error(self, errortype):
-        exc_type, exc_value, exc_tb = exc_info = sys.exc_info()
+        exc_type, exc_value, _ = exc_info = sys.exc_info()
         test_element = self._get_xunit_elements_list()[-1]
         error_element = E(errortype, dict(type=exc_type.__name__ if exc_type else '', message=str(exc_value)))
         error_element.text = get_traceback_string(exc_info)
