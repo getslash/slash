@@ -36,6 +36,17 @@ def test_function_name(suite, suite_test, test_type, parametrize):
         assert '(' not in result.test_metadata.function_name
 
 
+def test_variation(suite, suite_test):
+    fixture = suite.slashconf.add_fixture()
+    param = fixture.add_parameter()
+    suite_test.depend_on_fixture(fixture)
+    suite_test.append_line('slash.context.result.data["variation"] = slash.context.test.__slash__.variation')
+    summary = suite.run()
+    for result in summary.get_all_results_for_test(suite_test):
+        assert len(result.data['variation']) == 1
+        assert fixture.name in result.data['variation']
+
+
 def test_function_name_with_special_parameters(test_type):
     suite = Suite()
     assert len(suite) == 0
@@ -93,7 +104,7 @@ class TestMetadataTest(TestCase):
         parameterized = set(x.test_metadata.address for x in self.results[1:])
 
         self.assertEquals(parameterized, set(
-            "{0}:T002.test_parameters(before:a={1}, after:c={2}, b={3})".format(self.filename, a, c, b)
+            "{0}:T002.test_parameters(after:c={2}, b={3}, before:a={1})".format(self.filename, a, c, b)
             for a, b, c in itertools.product([1, 2], [3, 4], [5, 6])))
 
 _TEST_FILE_TEMPLATE = """

@@ -35,7 +35,7 @@ class TestTestFactory(RunnableTestFactory):
                     )
                     if self.testclass.__slash_skipped__:
                         case.run = functools.partial(SkipTest.throw, self.testclass.__slash_skipped_reason__)
-                    yield case._get_address_in_factory(), case  # pylint: disable=protected-access
+                    yield case._get_address_in_factory(), fixture_variation, case  # pylint: disable=protected-access
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(

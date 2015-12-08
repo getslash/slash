@@ -84,13 +84,13 @@ class VariationFactory(object):
         if not self._named_fixture_ids:
             return None
 
-        parts = []
+        returned = {}
         for fixture_id, fixture_name in iteritems(self._named_fixture_ids):
-            value_str = self._get_fixture_value_string(fixture_id, fixture_name, param_value_indices)
-            parts.append('{0}={1}'.format(fixture_name, value_str))
-        return ', '.join(parts)
+            value_str = self._get_fixture_value(fixture_id, fixture_name, param_value_indices)
+            returned[fixture_name] = value_str
+        return VariationRepresentation(returned)
 
-    def _get_fixture_value_string(self, fixture_id, fixture_name, param_value_indices):
+    def _get_fixture_value(self, fixture_id, fixture_name, param_value_indices):
         fixture = self._store.get_fixture_by_id(fixture_id)
         needed_ids = self._store.get_all_needed_parametrization_ids(fixture)
         combination = frozenset((param_id, param_value_indices[param_id]) for param_id in needed_ids)
@@ -99,7 +99,7 @@ class VariationFactory(object):
             if isinstance(fixture, Parametrization) and self._is_printable(fixture.values[param_value_indices[fixture_id]]):
                 value_str = str(fixture.values[param_value_indices[fixture_id]])
             else:
-                value_str = '{0}{1}'.format(fixture_name, len(self._known_value_strings[fixture_id]))
+                value_str = FixtureValueRepresentation('{0}{1}'.format(fixture_name, len(self._known_value_strings[fixture_id])))
                 self._known_value_strings[fixture_id][combination] = value_str
         return value_str
 
@@ -144,3 +144,23 @@ class Variation(object):
         return bool(self.param_value_indices)
 
     __bool__ = __nonzero__
+
+
+class VariationRepresentation(object):
+
+    def __init__(self, variation_dict):
+        super(VariationRepresentation, self).__init__()
+        self._variation_dict = variation_dict
+
+    def __len__(self):
+        return len(self._variation_dict)
+
+    def __contains__(self, param_name):
+        return param_name in self._variation_dict
+
+    def __repr__(self):
+        return ", ".join("{0}={1}".format(k, v) for k, v in sorted(self._variation_dict.items()))
+
+
+class FixtureValueRepresentation(str):
+    pass

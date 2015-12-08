@@ -45,4 +45,4 @@ class FunctionTestFactory(RunnableTestFactory):
         for variation in fixture_store.iter_parametrization_variations(funcs=[self.func]):
             address = '({0})'.format(variation.representation) if variation else None
             for _ in xrange(self._get_num_repetitions(self.func)):
-                yield address, FunctionTest(self.func, fixture_store, namespace, variation)
+                yield address, variation, FunctionTest(self.func, fixture_store, namespace, variation)

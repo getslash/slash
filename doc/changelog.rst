@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`395` Add __slash__.variation, enabling investigation of exact parametrization of tests
 * :feature:`391` Add result.details, giving more options to adding/appending test details
 * :feature:`386` Make slash list support -f and other configuration parameters
 * :feature:`385` Add test details to xunit plugin output

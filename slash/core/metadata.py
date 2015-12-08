@@ -10,7 +10,7 @@ class Metadata(object):
     #: The index of the test in the current execution, 0-based
     test_index0 = None
 
-    def __init__(self, factory, test, address_in_factory=None):
+    def __init__(self, factory, test, address_in_factory=None, variation=None):
         super(Metadata, self).__init__()
         #: The test's unique id
         self.id = None
@@ -25,6 +25,7 @@ class Metadata(object):
             self.module_name = type(test).__module__
             self.file_path = sys.modules[self.module_name].__file__
             self.factory_name = '?'
+        self._variation = variation
         #: Address string to identify the test inside the file from which it was loaded
         self.address_in_file = self.factory_name
         self.address_in_factory = address_in_factory
@@ -34,6 +35,14 @@ class Metadata(object):
         #: generally it is composed of the file path and the address inside the file
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
         self._interactive = False
+
+    def set_variation(self, v):
+        assert self._variation is None
+        self._variation = v
+
+    @property
+    def variation(self):
+        return self._variation
 
     def is_interactive(self):
         return self._interactive
