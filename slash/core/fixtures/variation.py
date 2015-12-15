@@ -161,6 +161,9 @@ class VariationRepresentation(object):
     def __repr__(self):
         return ", ".join("{0}={1}".format(k, v) for k, v in sorted(self._variation_dict.items()))
 
+    def items(self):
+        return self._variation_dict.items()
+
 
 class FixtureValueRepresentation(str):
     pass

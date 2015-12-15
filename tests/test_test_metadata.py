@@ -45,7 +45,7 @@ def test_variation(suite, suite_test):
     for result in summary.get_all_results_for_test(suite_test):
         assert len(result.data['variation']) == 1
         assert fixture.name in result.data['variation']
-
+        assert fixture.name in dict(result.data['variation'].items())
 
 def test_function_name_with_special_parameters(test_type):
     suite = Suite()
