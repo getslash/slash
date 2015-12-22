@@ -42,8 +42,10 @@ class Error(object):
         return isinstance(self.exception, FAILURE_EXCEPTION_TYPES)
 
     @classmethod
-    def capture_exception(cls):
-        _, exc_value, _ = exc_info = sys.exc_info()
+    def capture_exception(cls, exc_info=None):
+        if exc_info is None:
+            exc_info = sys.exc_info()
+        _, exc_value, _ = exc_info
         if exc_value is None:
             return None
         cached = getattr(exc_value, "__slash_captured_error__", None)

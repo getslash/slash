@@ -55,7 +55,7 @@ class Result(object):
             self.add_skip(exc_value.reason)
         elif issubclass(exc_class, Exception):
             #skip keyboardinterrupt and system exit
-            self.add_error()
+            self.add_error(exc_info=exc_info)
         else:
             self.mark_interrupted()
 
@@ -117,17 +117,17 @@ class Result(object):
     def is_interrupted(self):
         return self._interrupted
 
-    def add_error(self, e=None, frame_correction=0):
+    def add_error(self, e=None, frame_correction=0, exc_info=None):
         """Adds a failure to the result
         """
-        err = self._add_error(self._errors, e, frame_correction=frame_correction + 1)
+        err = self._add_error(self._errors, e, frame_correction=frame_correction + 1, exc_info=exc_info)
         context.reporter.report_test_error_added(context.test, err)
         return err
 
-    def add_failure(self, e=None, frame_correction=0):
+    def add_failure(self, e=None, frame_correction=0, exc_info=None):
         """Adds a failure to the result
         """
-        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1)
+        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1, exc_info=exc_info)
         context.reporter.report_test_failure_added(context.test, err)
         return err
 
@@ -136,14 +136,14 @@ class Result(object):
         """
         self.details.set(key, value)
 
-    def _add_error(self, error_list, error=None, frame_correction=0):
+    def _add_error(self, error_list, error=None, frame_correction=0, exc_info=None):
         try:
             if error is None:
-                error = Error.capture_exception()
+                error = Error.capture_exception(exc_info=exc_info)
                 if error is None:
                     raise RuntimeError('add_error() must be called with either an argument or in an active exception')
             if not isinstance(error, Error):
-                error = Error(error, frame_correction=frame_correction + 1)
+                error = Error(error, frame_correction=frame_correction + 1, exc_info=exc_info)
             _logger.debug('Error added: {0}', error)
             error_list.append(error)
             hooks.error_added(result=self, error=error)  # pylint: disable=no-member

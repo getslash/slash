@@ -37,19 +37,20 @@ def skipped(thing, reason=None):
     return new_func
 
 
-def add_error(msg=None, frame_correction=0):
+def add_error(msg=None, frame_correction=0, exc_info=None):
     """
     Adds an error to the current test result
 
     :param msg: can be either an object or a string representing a message
     :param frame_correction: when delegating add_error from another function, specifies
       the amount of frames to skip to reach the actual cause of the added error
+    :param exc_info: (optional) - the exc_info tuple of the exception being recorded
     """
     if context.session is not None:
-        return context.session.results.current.add_error(msg, frame_correction=frame_correction+1)
+        return context.session.results.current.add_error(msg, frame_correction=frame_correction+1, exc_info=exc_info)
 
 
-def add_failure(msg=None, frame_correction=0):
+def add_failure(msg=None, frame_correction=0, exc_info=None):
     """
     Adds a failure to the current test result
 
@@ -58,7 +59,7 @@ def add_failure(msg=None, frame_correction=0):
       the amount of frames to skip to reach the actual cause of the added failure
     """
     if context.session is not None:
-        return context.session.results.current.add_failure(msg, frame_correction=frame_correction+1)
+        return context.session.results.current.add_failure(msg, frame_correction=frame_correction+1, exc_info=exc_info)
 
 
 def set_test_detail(key, value):
