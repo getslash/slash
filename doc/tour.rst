@@ -225,7 +225,8 @@ When writing tests as classes, you can also decorate the class itself with requi
 	   microwave.heat(food)
 	   assert food.is_hot()
 
-
+.. note::
+   Requirements are evaluated during the load phase of the tests, so they are usually checked before any test started running. This means that if you're relying on a transient state that can be altered by other tests, you have to use skips instead. Requirements are useful for checking environmental constraints that are unlikely to change as a result of the session being run.
 
 Warnings
 --------
