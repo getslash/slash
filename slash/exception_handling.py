@@ -6,14 +6,16 @@ from .ctx import context as slash_context
 from .conf import config
 from .exceptions import SkipTest
 import functools
+import threading
 import logbook
 try:
-    import raven # pylint: disable=F0401
+    import raven  # pylint: disable=F0401
 except ImportError:
     raven = None
 import sys
 
 _logger = logbook.Logger(__name__)
+
 
 def update_current_result(exc_info):  # pylint: disable=unused-argument
     if slash_context.session is None:
@@ -25,18 +27,42 @@ def update_current_result(exc_info):  # pylint: disable=unused-argument
 
     current_result.add_exception()
 
+
 def trigger_hooks_before_debugger(_):
     trigger_hook.exception_caught_before_debugger()  # pylint: disable=no-member
 
+
 def trigger_hooks_after_debugger(_):
     trigger_hook.exception_caught_after_debugger()  # pylint: disable=no-member
+
 
 _EXCEPTION_HANDLERS = [
     update_current_result,
     trigger_hooks_before_debugger,
     debug_if_needed,
     trigger_hooks_after_debugger,
-    ]
+]
+
+
+class _IgnoredState(threading.local):
+    ignored_exception_types = ()
+
+_ignored_state = _IgnoredState()
+
+
+def _is_exception_ignored(exc_value):
+    return isinstance(exc_value, _ignored_state.ignored_exception_types)
+
+
+@contextmanager
+def thread_ignore_exception_context(exc_type):
+    prev = _ignored_state.ignored_exception_types
+    _ignored_state.ignored_exception_types = list(_ignored_state.ignored_exception_types) + [exc_type]
+    try:
+        yield
+    finally:
+        _ignored_state.ignored_exception_types = prev
+
 
 @contextmanager
 def handling_exceptions(**kwargs):
@@ -53,6 +79,8 @@ def handling_exceptions(**kwargs):
         yield
     except passthrough_types:
         raise
+    except tuple(_ignored_state.ignored_exception_types): # pylint: disable=catching-non-exception
+        raise
     except:
         exc_info = _, exc_value, _ = sys.exc_info()
         handle_exception(exc_info, **kwargs)
@@ -60,6 +88,7 @@ def handling_exceptions(**kwargs):
             raise
         if not swallow or not isinstance(exc_value, Exception):
             raise
+
 
 def handle_exception(exc_info, context=None):
     """
@@ -83,14 +112,17 @@ def handle_exception(exc_info, context=None):
         for handler in _EXCEPTION_HANDLERS:
             handler(exc_info)
 
+
 def mark_exception_handled(e):
     mark_exception(e, "handled", True)
+
 
 def is_exception_handled(e):
     """
     Checks if the exception ``e`` already passed through the exception handling logic
     """
     return bool(get_exception_mark(e, "handled", False))
+
 
 @contextmanager
 def get_exception_swallowing_context(report_to_sentry=True):
@@ -106,6 +138,7 @@ def get_exception_swallowing_context(report_to_sentry=True):
             capture_sentry_exception()
         _logger.debug("Ignoring exception", exc_info=sys.exc_info())
 
+
 def noswallow(exception):
     """
     Marks an exception to prevent swallowing by :func:`slash.exception_handling.get_exception_swallowing_context`,
@@ -113,6 +146,7 @@ def noswallow(exception):
     """
     mark_exception(exception, "swallow", False)
     return exception
+
 
 def mark_exception_fatal(exception):
     """
@@ -124,8 +158,10 @@ def mark_exception_fatal(exception):
     mark_exception(exception, "fatal", True)
     return exception
 
+
 def is_exception_fatal(exception):
     return bool(get_exception_mark(exception, "fatal", False))
+
 
 def disable_exception_swallowing(func_or_exception):
     """
@@ -134,6 +170,7 @@ def disable_exception_swallowing(func_or_exception):
     """
     if isinstance(func_or_exception, BaseException):
         return noswallow(func_or_exception)
+
     @functools.wraps(func_or_exception)
     def func(*args, **kwargs):
         try:
@@ -143,10 +180,12 @@ def disable_exception_swallowing(func_or_exception):
             raise
     return func
 
+
 def capture_sentry_exception():
     client = get_sentry_client()
     if client is not None:
         client.captureException()
+
 
 def get_sentry_client():
     if raven is not None and config.root.sentry.dsn:

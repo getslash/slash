@@ -1,9 +1,7 @@
-from contextlib import contextmanager
-
-from forge import Anything
-
 import pytest
+import slash
 from slash import exception_handling
+from slash._compat import ExitStack
 from slash.exceptions import SkipTest
 from slash.utils import debug
 
@@ -116,4 +114,25 @@ def test_disable_exception_swallowing_decorator():
         with exception_handling.get_exception_swallowing_context():
             func()
     assert caught.value is raised
+
+
+@pytest.mark.parametrize('with_session', [True, False])
+def test_handling_exceptions_inside_assert_raises_with_session(with_session):
+    value = CustomException()
+
+    with ExitStack() as ctx:
+
+        if with_session:
+            session = ctx.enter_context(slash.Session())
+            ctx.enter_context(session.get_started_context())
+        else:
+            session = None
+
+        with slash.assert_raises(CustomException):
+            with exception_handling.handling_exceptions():
+                raise value
+
+    assert not exception_handling.is_exception_handled(value)
+    if with_session:
+        assert session.results.get_num_errors() == 0
 

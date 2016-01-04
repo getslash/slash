@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`381` ``handling_exceptions`` now doesn't handle exceptions which are currently expected by ``assert_raises``
 * :feature:`398` Allow specifying exc_info for add_error
 * :feature:`395` Add __slash__.variation, enabling investigation of exact parametrization of tests
 * :feature:`391` Add result.details, giving more options to adding/appending test details

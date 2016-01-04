@@ -1,4 +1,5 @@
 from .exceptions import TestFailed
+from . import exception_handling
 from .utils import operator_information
 from .utils.deprecation import deprecated
 from contextlib import contextmanager
@@ -118,7 +119,8 @@ def assert_raises(exception_class, msg=None):
     """
     caught = _CaughtException()
     try:
-        yield caught
+        with exception_handling.thread_ignore_exception_context(exception_class):
+            yield caught
     except exception_class as e:
         caught.exception = e
     else:
