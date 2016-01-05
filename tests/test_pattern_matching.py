@@ -5,13 +5,26 @@ from slash.core.tagging import NO_TAGS, Tags
 def test_string_patterns(suite, config_override):
     selected_test = suite[len(suite) // 2]
 
-    config_override("run.filter_string", selected_test.id)
+    config_override("run.filter_strings", [selected_test.id])
 
     for i, test in enumerate(suite):
         if test is not selected_test:
             test.expect_deselect()
 
     suite.run()
+
+
+def test_string_patterns_and(suite, config_override):
+    selected_test = suite[len(suite) // 2]
+    other_test = suite[-1]
+
+    config_override("run.filter_strings", [selected_test.id, other_test.id])
+
+    for i, test in enumerate(suite):
+        test.expect_deselect()
+
+    suite.run()
+
 
 
 def test_matcher():

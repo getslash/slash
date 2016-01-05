@@ -34,10 +34,10 @@ class Loader(object):
 
     def __init__(self):
         super(Loader, self).__init__()
-        if config.root.run.filter_string:
-            self._matcher = Matcher(config.root.run.filter_string)
+        if config.root.run.filter_strings:
+            self._matchers = [Matcher(s) for s in config.root.run.filter_strings]
         else:
-            self._matcher = None
+            self._matchers = None
         self._local_config = LocalConfig()
 
     def get_runnables(self, paths, sort_key=None):
@@ -147,9 +147,9 @@ class Loader(object):
             context.session.fixture_store.pop_namespace()
 
     def _is_excluded(self, test):
-        if self._matcher is None:
+        if self._matchers is None:
             return False
-        return not self._matcher.matches(test.__slash__)
+        return not all(m.matches(test.__slash__) for m in self._matchers)
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")

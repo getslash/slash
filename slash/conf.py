@@ -61,7 +61,7 @@ config = Config({
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),
         "suite_files": [] // Doc("File(s) to be read for lists of tests to be run") // Cmdline(append="-f", metavar="FILENAME"),
         "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
-        "filter_string": None // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(arg='-k', metavar='FILTER'),
+        "filter_strings": [] // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(append='-k', metavar='FILTER'),
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
         "project_customization_file_path": "./.slashrc",
