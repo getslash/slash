@@ -53,6 +53,7 @@ You also have :func:`slash.assert_almost_equal` to test for near equality:
 
 	  slash.assert_almost_equal(1.001, 1, max_delta=0.1)
 
+.. note:: :func:`slash.assert_raises` interacts with :func:`.handling_exceptions` - exceptions anticipated by ``assert_raises`` will be ignored by ``handling_exceptions``.
 
 Errors
 ------
@@ -163,6 +164,8 @@ the :func:`handling_exceptions <slash.exception_handling.handling_exceptions>` c
 
     with handling_exceptions():
         some_function()
+
+.. note:: ``handling_exceptions`` will ignore exceptions currently anticipated by :func:`.assert_raises`. This is desired since these exceptions are an expected flow and not an actual error that needs to be handled. These exceptions will be simply propagated upward without any handling or marking of any kind.
 
 Exception Marks
 ~~~~~~~~~~~~~~~
