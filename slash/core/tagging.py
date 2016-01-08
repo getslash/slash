@@ -64,6 +64,9 @@ class Tags(object):
                 return True
         return False
 
+    def __iter__(self):
+        return iter(self._tags)
+
 
 class _NoTags(object):
 
@@ -77,5 +80,8 @@ class _NoTags(object):
 
     def matches_pattern(self, pattern): # pylint: disable=unused-argument
         return False
+
+    def __iter__(self):
+        return iter([])
 
 NO_TAGS = _NoTags()

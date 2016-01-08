@@ -24,6 +24,7 @@ def _get_parser():
     parser.add_argument('-f', '--suite-file', dest='suite_files', action='append', default=[])
     parser.add_argument('--only-fixtures', dest='only', action='store_const', const='fixtures', default=None)
     parser.add_argument('--only-tests', dest='only', action='store_const', const='tests', default=None)
+    parser.add_argument('--with-tags', dest='with_tags', action='store_true', default=False)
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
 
@@ -56,7 +57,8 @@ def _report_tests(args, runnables, printer):
     if not args.only:
         printer(_heading_style('Tests'))
     for runnable in runnables:
-        printer(_title_style(runnable.__slash__.address))
+        extra = "" if not args.with_tags else "  Tags: {0}".format(list(runnable.get_tags()))
+        printer("{0}{1}".format(_title_style(runnable.__slash__.address), extra))
 
 
 def _report_fixtures(args, session, printer, used_fixtures):
