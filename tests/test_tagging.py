@@ -17,6 +17,10 @@ def test_setting_getting_tags(taggable):
     assert 'other_tags' not in get_tags(taggable)
 
 
+def test_no_tags_contains(taggable):
+    assert 'bla' not in get_tags(taggable)
+
+
 def test_tags_addition_no_tags_no_tags():
     assert NO_TAGS + NO_TAGS is NO_TAGS
 

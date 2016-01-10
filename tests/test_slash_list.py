@@ -3,7 +3,7 @@ from slash._compat import StringIO
 
 import pytest
 
-@pytest.mark.parametrize('flag', ["--only-fixtures", "--only-tests", None, "--show-tags"])
+@pytest.mark.parametrize('flag', ["--only-fixtures", "--only-tests", None])
 def test_slash_list(suite, flag):
     suite.debug_info = False
     f = suite.slashconf.add_fixture()
@@ -18,7 +18,8 @@ def test_slash_list(suite, flag):
 
 
 @pytest.mark.parametrize('should_show_tags', [True, False])
-def test_slash_list_tests(suite, should_show_tags):
+def test_slash_list_tests(suite, should_show_tags, suite_test):
+    suite_test.add_decorator('slash.tag("bla")')
     suite.debug_info = False
     path = suite.commit()
     report_stream = StringIO()
