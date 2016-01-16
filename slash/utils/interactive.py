@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from ..ctx import context
 from ..core import metadata
 from ..core.function_test import FunctionTestFactory
+from ..exceptions import TerminatedException
 from ..exception_handling import handle_exception
 
 from IPython.terminal.embed import InteractiveShellEmbed # pylint: disable=F0401
@@ -16,7 +17,11 @@ def _interact(ns):
         shell.showtraceback(exc_info, tb_offset)
         if not _is_exception_in_ipython_eval(exc_tb):
             handle_exception(exc_info)
-    shell.set_custom_exc((Exception,), _handle_exception)
+        if isinstance(exc_value, TerminatedException):
+            context.result.add_error('Terminated')
+            shell.exit_now = True
+
+    shell.set_custom_exc((Exception, TerminatedException), _handle_exception)
     shell()
 
 

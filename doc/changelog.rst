@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`402` TerminatedException now causes interactive sessions to terminate
 * :feature:`405` Add ``--show-tags`` flag to ``slash list``
 * :feature:`388` ``-k`` can now be specified multiple times, implying AND relationship
 * :feature:`381` ``handling_exceptions`` now doesn't handle exceptions which are currently expected by ``assert_raises``
