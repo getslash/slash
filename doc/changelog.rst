@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`348` Color test code differently when displaying tracebacks
 * :bug:`402` TerminatedException now causes interactive sessions to terminate
 * :feature:`405` Add ``--show-tags`` flag to ``slash list``
 * :feature:`388` ``-k`` can now be specified multiple times, implying AND relationship

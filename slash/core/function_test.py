@@ -27,6 +27,9 @@ class FunctionTest(RunnableTest):
                 is_method=False
             )
 
+    def get_test_function(self):
+        return self._func
+
     def get_requirements(self):
         return get_requirements(self._func)
 

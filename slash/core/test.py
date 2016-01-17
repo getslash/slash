@@ -71,6 +71,9 @@ class Test(RunnableTest):
         self._fixture_namespace = fixture_namespace
         self._fixture_variation = fixture_variation
 
+    def get_test_function(self):
+        return getattr(self, self._test_method_name)
+
     def get_tags(self):
         return get_tags(type(self)) + get_tags(getattr(type(self), self._test_method_name))
 
@@ -85,7 +88,7 @@ class Test(RunnableTest):
         cls.__slash_skipped_reason__ = reason
 
     def get_required_fixture_objects(self):
-        method = getattr(self, self._test_method_name)
+        method = self.get_test_function()
         return self._fixture_store.get_required_fixture_objects(method, namespace=self._fixture_namespace, is_method=True)
 
     def _get_address_in_factory(self):
@@ -102,13 +105,13 @@ class Test(RunnableTest):
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
 
     def get_requirements(self):
-        return get_requirements(type(self)) + get_requirements(getattr(self, self._test_method_name))
+        return get_requirements(type(self)) + get_requirements(self.get_test_function())
 
     def run(self):  # pylint: disable=E0202
         """
         .. warning:: Not to be overriden
         """
-        method = getattr(self, self._test_method_name)
+        method = self.get_test_function()
         with bound_parametrizations_context(self._fixture_variation):
             _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace, is_method=True)
             self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)

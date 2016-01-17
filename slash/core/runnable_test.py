@@ -18,6 +18,9 @@ class RunnableTest(object):
     def get_tags(self):
         return NO_TAGS
 
+    def get_test_function(self):
+        raise NotImplementedError() # pragma: no cover
+
     def get_unmet_requirements(self):
         return [r for r in self.get_requirements() if not r.is_met()]
 

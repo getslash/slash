@@ -331,7 +331,13 @@ class ConsoleReporter(ReporterInterface):
                     self._terminal.write('>', **theme('error-cause-marker'))
                 else:
                     self._terminal.write(' ')
-                self._terminal.write(line, **theme('tb-line-cause' if line_iteration.last else 'tb-line'))
+                if frame.is_in_test_code():
+                    theme_name = 'tb-test-line'
+                elif line_iteration.last:
+                    theme_name = 'tb-line-cause'
+                else:
+                    theme_name = 'tb-line'
+                self._terminal.write(line, **theme(theme_name))
                 self._terminal.write('\n')
             return code_lines
 

@@ -35,3 +35,11 @@ def context():
         assert False, 'did not fail'
 
     assert err.traceback.frames[-2].lineno == 6
+
+
+def test_is_test_code(suite, suite_test):
+    suite_test.when_run.error()
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    [err] = result.get_errors()
+    assert err.traceback.frames[-1].is_in_test_code()

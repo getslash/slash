@@ -7,6 +7,8 @@ import sys
 import traceback
 import types
 
+from .. import context
+
 
 def get_traceback_string(exc_info=None):
     if exc_info is None:
@@ -127,6 +129,10 @@ class DistilledFrame(object):
         self.code_string = "".join(
             linecache.getline(self.filename, lineno)
             for lineno in range(frame.f_code.co_firstlineno, self.lineno + 1)) or None
+        self._is_in_test_code = context.test is not None and frame.f_code is context.test.get_test_function().__code__
+
+    def is_in_test_code(self):
+        return self._is_in_test_code
 
     def to_dict(self):
         serialized = {}

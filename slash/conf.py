@@ -32,6 +32,7 @@ config = Config({
             'test-error-header': 'white',
             'test-skip-message': 'yellow',
             'tb-line-cause': 'white',
+            'tb-test-line': 'red/bold',
             'tb-line': 'black/bold',
         },
 
