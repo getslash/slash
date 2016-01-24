@@ -1,7 +1,6 @@
 import itertools
 import functools
 import sys
-from contextlib import contextmanager
 
 import logbook
 
@@ -21,40 +20,39 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, test_so
     if report_stream is None:
         report_stream = sys.stderr
     with _get_slash_app_context(args, report_stream, resume) as app:
-        if app_callback is not None:
-            app_callback(app)
-        try:
-            with handling_exceptions():
-                if resume:
-                    session_ids = app.args.positionals
-                    if not session_ids:
-                        session_ids = [get_last_resumeable_session_id()]
-                    to_resume = [x for session_id in session_ids for x in get_tests_to_resume(session_id)]
-                    collected = app.test_loader.get_runnables(to_resume, sort_key=test_sort_key)
-                else:
-                    collected = _collect_tests(app, args, test_sort_key=test_sort_key)
-                if app.args.interactive:
-                    collected = itertools.chain([generate_interactive_test()], collected)
-            with app.session.get_started_context():
-                run_tests(collected)
+        with app.session:
+            if app_callback is not None:
+                app_callback(app)
+            try:
+                with handling_exceptions():
+                    if resume:
+                        session_ids = app.args.positionals
+                        if not session_ids:
+                            session_ids = [get_last_resumeable_session_id()]
+                        to_resume = [x for session_id in session_ids for x in get_tests_to_resume(session_id)]
+                        collected = app.test_loader.get_runnables(to_resume, sort_key=test_sort_key)
+                    else:
+                        collected = _collect_tests(app, args, test_sort_key=test_sort_key)
+                    if app.args.interactive:
+                        collected = itertools.chain([generate_interactive_test()], collected)
+                with app.session.get_started_context():
+                    run_tests(collected)
 
-        except SlashException as e:
-            logbook.error(str(e))
-            return -1
-        finally:
-            save_resume_state(app.session.results)
+            except SlashException as e:
+                logbook.error(str(e))
+                return -1
+            finally:
+                save_resume_state(app.session.results)
 
         if app.session.results.is_success(allow_skips=True):
             return 0
         return -1
 
-@contextmanager
 def _get_slash_app_context(args, report_stream, resume_session):
-    with get_application_context(
+    return get_application_context(
             argv=args, positionals_metavar="SESSION_ID" if resume_session else "TEST",
             enable_interactive=True,
-            report_stream=report_stream) as app:
-        yield app
+            report_stream=report_stream)
 
 slash_resume = functools.partial(slash_run, resume=True)
 

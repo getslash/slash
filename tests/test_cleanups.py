@@ -6,6 +6,21 @@ from slash import exception_handling, Session
 from slash.loader import Loader
 
 
+def test_session_cleanup(suite, suite_test):
+
+    @suite.slashconf.append_body
+    def __code__():
+        @slash.add_cleanup
+        def session_cleanup():
+            1/0
+
+    summary = suite.run()
+    assert not summary.session.results.is_success()
+    [err] = summary.session.results.global_result.get_errors()
+    assert err.exception_type is ZeroDivisionError
+    assert 'Session-Level' in summary.get_console_output()
+
+
 @pytest.mark.parametrize('other_error', ['error', 'failure', None])
 def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
 
