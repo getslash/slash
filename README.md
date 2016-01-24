@@ -19,26 +19,3 @@ Slash is a testing framework written in Python for testing complex projects.
 
 * [Documentation](https://slash.readthedocs.org/)
 
-Development
-===========
-
-Releasing a Version
--------------------
-
-Run the following from the project's root (requires `git-flow`):
-
-```
-$ make release
-```
-
-After the script finishes, push the relevant branches
-
-```
-$ git push origin master:master develop:develop --tags
-```
-
-Upload a release:
-```
-$ git checkout master
-$ python setup.py sdist upload
-```
