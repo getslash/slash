@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`408` Fix handling of cleanups registered from within cleanups
 * :bug:`406` Fix error reporting for session scoped cleanups
 * :feature:`348` Color test code differently when displaying tracebacks
 * :bug:`402` TerminatedException now causes interactive sessions to terminate

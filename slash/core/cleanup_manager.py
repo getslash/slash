@@ -77,12 +77,14 @@ class CleanupManager(object):
         _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
         scope = self._scope_stack[-1]
         assert scope.name == scope_name, 'Attempted to pop scope {0!r}, but current scope is {1!r}'.format(scope_name, scope.name)
-        self._scope_stack.pop()
-        self._scopes_by_name[scope_name].pop()
+        try:
+            self.call_cleanups(
+                scope=scope,
+                in_failure=in_failure, in_interruption=in_interruption)
 
-        self.call_cleanups(
-            scope=scope,
-            in_failure=in_failure, in_interruption=in_interruption)
+        finally:
+            self._scope_stack.pop()
+            self._scopes_by_name[scope_name].pop()
 
     def call_cleanups(self, scope=_LAST_SCOPE, in_failure=False, in_interruption=False):
 

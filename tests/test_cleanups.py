@@ -21,6 +21,25 @@ def test_session_cleanup(suite, suite_test):
     assert 'Session-Level' in summary.get_console_output()
 
 
+def test_cleanups_within_cleanups(suite, suite_test):
+
+    @suite_test.append_body
+    def __code__():
+        @slash.add_cleanup
+        def cleanup1():
+            slash.context.result.data['cleanup1'] = True
+
+            @slash.add_cleanup
+            def cleanup2():
+                slash.context.result.data['cleanup2'] = True
+
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    assert result.data['cleanup1']
+    assert result.data['cleanup2']
+
+
+
 @pytest.mark.parametrize('other_error', ['error', 'failure', None])
 def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
 
