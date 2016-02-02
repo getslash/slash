@@ -2,10 +2,10 @@ Changelog
 =========
 
 * :release:`0.20 <02-02-2016>`
-* :bug:`408` Fix handling of cleanups registered from within cleanups
-* :bug:`406` Fix error reporting for session scoped cleanups
+* :bug:`408 major` Fix handling of cleanups registered from within cleanups
+* :bug:`406 major` Fix error reporting for session scoped cleanups
 * :feature:`348` Color test code differently when displaying tracebacks
-* :bug:`402` TerminatedException now causes interactive sessions to terminate
+* :bug:`402 major` TerminatedException now causes interactive sessions to terminate
 * :feature:`405` Add ``--show-tags`` flag to ``slash list``
 * :feature:`388` ``-k`` can now be specified multiple times, implying AND relationship
 * :feature:`381` ``handling_exceptions`` now doesn't handle exceptions which are currently expected by ``assert_raises``
