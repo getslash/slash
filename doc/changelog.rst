@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`0.20 <02-02-2016>`
 * :bug:`408` Fix handling of cleanups registered from within cleanups
 * :bug:`406` Fix error reporting for session scoped cleanups
 * :feature:`348` Color test code differently when displaying tracebacks
