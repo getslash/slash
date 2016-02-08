@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks
 * :release:`0.20 <02-02-2016>`
 * :bug:`408 major` Fix handling of cleanups registered from within cleanups
 * :bug:`406 major` Fix error reporting for session scoped cleanups
