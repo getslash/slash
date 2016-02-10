@@ -26,6 +26,23 @@ def test_xunit_plugin(results, xunit_filename): # pylint: disable=unused-argumen
         etree.parse(f, parser)
 
 
+def test_session_errors(suite, xunit_filename):
+    # pylint: disable=unused-argument
+
+    @suite.slashconf.append_body
+    def __code__():
+        1/0
+
+    for test in suite:
+        # tests are not going to even be loaded
+        test.expect_deselect()
+
+    summary = suite.run()
+
+    assert 'ZeroDivision' in summary.get_console_output()
+
+
+
 @_needs_lxml
 def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
     for key, value in details.items():
