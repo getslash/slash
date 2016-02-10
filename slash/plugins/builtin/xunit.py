@@ -15,6 +15,7 @@ from xml.etree.ElementTree import (
 class Plugin(PluginInterface):
 
     _xunit_elements = None
+    _start_time = datetime.datetime.now()
 
     def _get_xunit_elements_list(self):
         returned = self._xunit_elements
@@ -56,6 +57,8 @@ class Plugin(PluginInterface):
         self._add_element(errortype, {'type': exc_type.__name__ if exc_type else '', 'message': str(exc_value)}, text=get_traceback_string(exc_info) if exc_value is not None else None)
 
     def _add_element(self, tag, attrib, text=None):
+        if not context.test:
+            return
         test_element = self._get_xunit_elements_list()[-1]
         element = E(tag, attrib)
         if text is not None:
