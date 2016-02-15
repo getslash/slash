@@ -1,7 +1,6 @@
 import pytest
 
 
-
 import slash
 
 from .utils.suite_writer import Suite
@@ -23,6 +22,7 @@ def test_cleanups_from_test_start(suite):
         test_id = slash.context.test.__slash__.id
         test_ids.append(test_id)
         events.append(('test_start', test_id))
+
         @slash.add_cleanup
         def cleanup():
             events.append(('test_cleanup', test_id))
@@ -46,17 +46,21 @@ def test_module_scope(scoped_suite, file1_tests, file2_tests):
     assert summary.events[file1_end].timestamp < summary.events[file1_test_cleanup].timestamp
 
 
-def test_test_scoped_cleanups_in_session(checkpoint):
-    # with scoped cleanups, and the default being 'test', there is a special meaning
-    # for cleanups registered outside of tests....
-    with slash.Session() as s:
+
+def test_cleanups_without_session_start_never_called(checkpoint):
+    assert not checkpoint.called
+    with slash.Session():
         slash.add_cleanup(checkpoint)
         assert not checkpoint.called
-        with s.get_started_context():
-            pass
+    assert not checkpoint.called
 
-        assert not checkpoint.called
-    assert checkpoint.called
+
+def test_cleanups_before_session_start_get_deferred(checkpoint):
+    with slash.Session() as s:
+        slash.add_cleanup(checkpoint)
+        with s.get_started_context():
+            assert not checkpoint.called
+        assert checkpoint.called_count == 1
 
 
 def test_errors_associated_with_correct_result(scoped_suite, file1_tests, file2_tests):
@@ -71,6 +75,7 @@ def test_errors_associated_with_correct_result(scoped_suite, file1_tests, file2_
 def scoped_suite(suite, file1_tests, file2_tests):
     return suite
 
+
 @pytest.fixture
 def suite():
     return Suite()
@@ -80,6 +85,7 @@ def suite():
 def file1_tests(suite):
     file1 = suite.add_file()
     return [file1.add_function_test() for i in range(5)]
+
 
 @pytest.fixture
 def file2_tests(suite):

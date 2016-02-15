@@ -18,8 +18,7 @@ def test_session_cleanup(suite, suite_test):
     assert not summary.session.results.is_success()
     [err] = summary.session.results.global_result.get_errors()
     assert err.exception_type is ZeroDivisionError
-    assert 'Session-Level' in summary.get_console_output()
-
+    assert 'Session error' in summary.get_console_output()
 
 def test_cleanups_within_cleanups(suite, suite_test):
 
@@ -165,5 +164,3 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
     cleanup_error = result.get_errors()[-1]
     assert 'AttributeError' in str(cleanup_error)
     assert 'NoneType' in str(cleanup_error)
-
-

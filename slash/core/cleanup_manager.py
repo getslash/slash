@@ -21,6 +21,7 @@ class CleanupManager(object):
         super(CleanupManager, self).__init__()
         self._scope_stack = []
         self._scopes_by_name = {}
+        self._pending = []
 
     def add_cleanup(self, _func, *args, **kwargs):
         """
@@ -35,13 +36,10 @@ class CleanupManager(object):
         :param kwargs: keyword arguments to pass to the cleanup function
         """
 
+        scope_name = kwargs.pop('scope', None)
+
         critical = kwargs.pop('critical', False)
         success_only = kwargs.pop('success_only', False)
-        scope_name = kwargs.pop('scope', None)
-        if scope_name is None:
-            scope = self._scope_stack[-1]
-        else:
-            scope = self._scopes_by_name[scope_name][-1]
 
         new_kwargs = kwargs.pop('kwargs', {}).copy()
         new_args = list(kwargs.pop('args', ()))
@@ -52,7 +50,17 @@ class CleanupManager(object):
             new_kwargs.update(kwargs)
 
         added = _Cleanup(_func, new_args, new_kwargs, critical=critical, success_only=success_only)
-        scope.cleanups.append(added)
+
+
+        if scope_name is None:
+            scope = self._scope_stack[-1] if self._scope_stack else None
+        else:
+            scope = self._scopes_by_name[scope_name][-1]
+
+        if scope is None:
+            self._pending.append(added)
+        else:
+            scope.cleanups.append(added)
         return _func
 
     @contextmanager
@@ -72,6 +80,9 @@ class CleanupManager(object):
         scope = _Scope(scope_name)
         self._scope_stack.append(scope)
         self._scopes_by_name.setdefault(scope_name, []).append(scope)
+        for p in self._pending:
+            scope.cleanups.append(p)
+        del self._pending[:]
 
     def pop_scope(self, scope_name, in_failure=None, in_interruption=None):
         _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)

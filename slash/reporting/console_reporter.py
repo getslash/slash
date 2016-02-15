@@ -385,11 +385,14 @@ class ConsoleReporter(ReporterInterface):
         self._report_test_error_failure_added(test, error, 'F')
 
     def _report_test_error_failure_added(self, test, e, errtype): # pylint: disable=unused-argument
-        self._file_failed = True
-        if not self._verobsity_allows(VERBOSITIES.NOTICE):
-            self._terminal.write(errtype, red=True)
+        if test is None:
+            self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
         else:
-            self._terminal.write('{0}: {1}\n'.format(errtype, e), **theme('inline-error'))
+            self._file_failed = True
+            if not self._verobsity_allows(VERBOSITIES.NOTICE):
+                self._terminal.write(errtype, red=True)
+            else:
+                self._terminal.write('{0}: {1}\n'.format(errtype, e), **theme('inline-error'))
 
     def report_fancy_message(self, headline, message):
         if self._verobsity_allows(VERBOSITIES.INFO):

@@ -31,6 +31,7 @@ class Session(Activatable):
         self.scope_manager = ScopeManager(self)
         self._started = False
         self._complete = False
+        self._active = False
         self._active_context = None
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
@@ -47,6 +48,7 @@ class Session(Activatable):
         return self._started
 
     def activate(self):
+        assert not self._active, 'Attempted to activate an already-active session'
         with handling_exceptions():
             ctx.push_context()
             assert ctx.context.session is None
@@ -55,20 +57,21 @@ class Session(Activatable):
             ctx.context.result = self.results.global_result
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()
-            self.cleanups.push_scope('session-global')
+        self._active = True
 
     def deactivate(self):
+        assert self._active, 'Session not active'
+        self._active = False
         self.results.global_result.mark_finished()
-        with handling_exceptions():
-            self.cleanups.pop_scope('session-global')
-            self._logging_context.__exit__(*sys.exc_info()) # pylint: disable=no-member
-            self._logging_context = None
-            ctx.pop_context()
+        self._logging_context.__exit__(*sys.exc_info()) # pylint: disable=no-member
+        self._logging_context = None
+        ctx.pop_context()
 
     @contextmanager
     def get_started_context(self):
         self.start_time = time.time()
         self.results.global_result.mark_started()
+        self.cleanups.push_scope('session-global')
         try:
             with handling_exceptions():
                 with notify_if_slow_context("Initializing session..."):
@@ -82,6 +85,9 @@ class Session(Activatable):
             self.results.global_result.mark_finished()
             self.end_time = time.time()
             self.duration = self.end_time - self.start_time
+
+            with handling_exceptions():
+                self.cleanups.pop_scope('session-global')
 
             with handling_exceptions():
                 hooks.session_end()  # pylint: disable=no-member
