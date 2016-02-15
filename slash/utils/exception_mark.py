@@ -35,6 +35,7 @@ class ExceptionMarker(object):
 
     def mark_exception(self, e):
         mark_exception(e, self.name, True)
+        return e
 
     def is_exception_marked(self, e):
         return bool(get_exception_mark(e, self.name, False))

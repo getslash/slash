@@ -7,6 +7,12 @@ def test_marker():
     marker.mark_exception(exc)
     assert marker.is_exception_marked(exc)
 
+
+def test_marker_mark_returns_exception():
+    exc = AttributeError()
+    assert ExceptionMarker('mark').mark_exception(exc) is exc
+    assert ExceptionMarker('mark').is_exception_marked(exc)
+
 def test_marker_class():
 
     class CustomException(Exception):
