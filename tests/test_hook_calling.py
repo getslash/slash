@@ -232,8 +232,6 @@ def make_custom_plugin(name, test, hook_names=None):
         hook_names = [name for name, _ in slash.hooks.get_all_hooks()]
 
     for hook_name in hook_names:
-        if hook_name == 'result_summary':
-            continue
         setattr(CustomPlugin, hook_name, test.forge.create_wildcard_function_stub(name=hook_name))
 
     setattr(CustomPlugin, "activate", test.forge.create_wildcard_function_stub(name="activate"))

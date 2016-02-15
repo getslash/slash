@@ -166,10 +166,10 @@ class ConsoleReporter(ReporterInterface):
 
         header_format = self._get_session_summary_header_format(session)
 
-        for index, (test_result, infos) in enumerate(self._iter_reported_results(session)):
+        for index, (test_index, test_result, infos) in enumerate(self._iter_reported_results(session)):
             if index == 0:
                 self._terminal.sep('=', 'Session Summary', **header_format)
-            self._report_test_summary_header(test_result)
+            self._report_test_summary_header(test_index, test_result)
             self._report_additional_test_details(test_result)
             for info_reporter in infos:
                 info_reporter(test_result)
@@ -197,19 +197,15 @@ class ConsoleReporter(ReporterInterface):
         return theme('session-summary-failure')
 
     def _iter_reported_results(self, session):
-        for test_result in session.results.iter_all_results():
+        for test_index, test_result in enumerate(session.results.iter_test_results()):
             infos = self._get_result_info_generators(test_result)
             if not infos:
                 continue
-            yield test_result, infos
+            yield test_index, test_result, infos
 
-    def _report_test_summary_header(self, test_result):
-        if test_result.test_metadata is None:
-            self._terminal.lsep(
-                "=", '== (Session-Level)')
-        else:
-            self._terminal.lsep(
-                "=", '== #{0}: {1}'.format(test_result.test_metadata.test_index1, test_result.test_metadata.address), **theme('test-error-header'))
+    def _report_test_summary_header(self, index, test_result):
+        self._terminal.lsep(
+            "=", '== #{0}: {1}'.format(index + 1, test_result.test_metadata.address), **theme('test-error-header'))
 
     def _get_result_info_generators(self, test_result):
         returned = []

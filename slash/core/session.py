@@ -55,31 +55,19 @@ class Session(Activatable):
             ctx.context.result = self.results.global_result
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()
-            self.start_time = time.time()
-
             self.cleanups.push_scope('session-global')
 
     def deactivate(self):
         self.results.global_result.mark_finished()
         with handling_exceptions():
-            with handling_exceptions(swallow=True):
-                self.cleanups.pop_scope('session-global')
-
-            self.results.global_result.mark_finished()
-            self.end_time = time.time()
-            self.duration = self.end_time - self.start_time
-
-            with handling_exceptions():
-                hooks.session_end()  # pylint: disable=no-member
-            hooks.result_summary() # pylint: disable=no-member
-            self.reporter.report_session_end(self)
-
+            self.cleanups.pop_scope('session-global')
             self._logging_context.__exit__(*sys.exc_info()) # pylint: disable=no-member
             self._logging_context = None
             ctx.pop_context()
 
     @contextmanager
     def get_started_context(self):
+        self.start_time = time.time()
         self.results.global_result.mark_started()
         try:
             with handling_exceptions():
@@ -91,6 +79,13 @@ class Session(Activatable):
             yield
         finally:
             self._started = False
+            self.results.global_result.mark_finished()
+            self.end_time = time.time()
+            self.duration = self.end_time - self.start_time
+
+            with handling_exceptions():
+                hooks.session_end()  # pylint: disable=no-member
+            self.reporter.report_session_end(self)
 
     def mark_complete(self):
         self._complete = True

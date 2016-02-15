@@ -2,6 +2,7 @@ import signal
 import sys
 from contextlib import contextmanager
 
+from . import hooks as trigger_hook
 from . import site
 from .core.session import Session
 from .conf import config
@@ -39,8 +40,9 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
         with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, positionals_metavar=positionals_metavar) as (parser, parsed_args):
             app = Application(parser=parser, args=parsed_args, report_stream=report_stream)
             _check_unknown_switches(app)
-            yield app
-
+            with app.session:
+                yield app
+                trigger_hook.result_summary()  # pylint: disable=no-member
 
 def _check_unknown_switches(app):
     unknown = [arg for arg in app.args.positionals if arg.startswith("-")]
