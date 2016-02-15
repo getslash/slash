@@ -9,6 +9,7 @@ from textwrap import wrap
 
 from .._compat import iteritems, izip
 from ..conf import config
+from ..exceptions import CLI_ABORT_EXCEPTIONS
 from ..log import VERBOSITIES
 from ..utils.iteration import iteration
 from ..utils.python import wraps
@@ -386,7 +387,8 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_test_error_failure_added(self, test, e, errtype): # pylint: disable=unused-argument
         if test is None:
-            self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
+            if not isinstance(e.exception, CLI_ABORT_EXCEPTIONS):
+                self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
         else:
             self._file_failed = True
             if not self._verobsity_allows(VERBOSITIES.NOTICE):
@@ -403,6 +405,13 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.write(message)
         self._terminal.write('\n')
         self.notify_after_console_output()
+
+    def report_error_message(self, message):
+        self.notify_before_console_output()
+        self._terminal.write('ERROR: {0}'.format(message), **theme('inline-error'))
+        self._terminal.write('\n')
+        self.notify_after_console_output()
+
 
     def _format_duration(self, duration):
         seconds = duration % 60

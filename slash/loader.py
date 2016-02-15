@@ -20,7 +20,6 @@ from .core.function_test import FunctionTestFactory
 from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
-from .utils import add_error
 from .utils.pattern_matching import Matcher
 
 _logger = Logger(__name__)
@@ -105,8 +104,8 @@ class Loader(object):
         for path in paths:
             if not os.path.exists(path):
                 msg = "Path {0} could not be found".format(path)
-                add_error(msg)
-                raise CannotLoadTests(msg)
+                with handling_exceptions():
+                    raise CannotLoadTests(msg)
         for path in paths:
             for file_path in _walk(path):
                 _logger.debug("Checking {0}", file_path)

@@ -19,6 +19,8 @@ class NoActiveSession(SlashException):
 class CannotLoadTests(SlashException):
     pass
 
+CLI_ABORT_EXCEPTIONS = (CannotLoadTests, )
+
 
 class FixtureException(CannotLoadTests):
     pass

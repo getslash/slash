@@ -39,7 +39,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, test_so
                 run_tests(collected)
 
         except SlashException as e:
-            logbook.error(str(e))
+            app.session.reporter.report_error_message(str(e))
             return -1
         finally:
             save_resume_state(app.session.results)

@@ -76,3 +76,6 @@ class ReporterInterface(object):
     def report_message(self, message):
         pass
 
+    def report_error_message(self, message):
+        pass
+
