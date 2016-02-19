@@ -143,6 +143,7 @@ class DistilledFrame(object):
         serialized = {}
         for attr in ['filename', 'lineno', 'func_name', 'locals', 'globals', 'code_line', 'code_string']:
             serialized[attr] = getattr(self, attr)
+        serialized['is_in_test_code'] = self._is_in_test_code
         return serialized
 
     def _capture_globals(self, frame):

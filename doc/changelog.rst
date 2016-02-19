@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`412` Add is_in_test_code to traceback json
 * :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks
 * :release:`0.20 <02-02-2016>`
 * :bug:`408 major` Fix handling of cleanups registered from within cleanups
