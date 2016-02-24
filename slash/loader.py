@@ -154,7 +154,8 @@ class Loader(object):
         return filename.endswith(".py")
 
     def _iter_runnable_tests_in_module(self, file_path, module):
-        for thing_name, thing in iteritems(vars(module)):
+        for thing_name in sorted(dir(module)):
+            thing = getattr(module, thing_name)
             if thing is RunnableTestFactory:  # probably imported directly
                 continue
 

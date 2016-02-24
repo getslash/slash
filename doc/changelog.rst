@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`413` Test names inside files are now sorted
 * :feature:`412` Add is_in_test_code to traceback json
 * :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks
 * :release:`0.20 <02-02-2016>`
