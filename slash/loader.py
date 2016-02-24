@@ -11,7 +11,7 @@ import dessert
 import sys
 
 from .conf import config
-from ._compat import iteritems, string_types
+from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
 from .core.runnable_test import RunnableTest
