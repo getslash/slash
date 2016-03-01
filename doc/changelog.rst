@@ -1,8 +1,10 @@
 Changelog
 =========
 
+* :release:`0.20.1 <01-03-2016>`
 * :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks
-* :release:`0.20 <02-02-2016>`
+* :bug:`409` Improve session startup/shutdown logic to avoid several potentially invalid states
+* :release:`0.20.0 <02-02-2016>`
 * :bug:`408 major` Fix handling of cleanups registered from within cleanups
 * :bug:`406 major` Fix error reporting for session scoped cleanups
 * :feature:`348` Color test code differently when displaying tracebacks
