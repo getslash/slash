@@ -25,6 +25,7 @@ def _get_parser():
     parser.add_argument('--only-fixtures', dest='only', action='store_const', const='fixtures', default=None)
     parser.add_argument('--only-tests', dest='only', action='store_const', const='tests', default=None)
     parser.add_argument('--show-tags', dest='show_tags', action='store_true', default=False)
+    parser.add_argument('--no-params', dest='show_params', action='store_false', default=True)
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
 
@@ -56,9 +57,18 @@ def slash_list(args, report_stream=sys.stdout):
 def _report_tests(args, runnables, printer):
     if not args.only:
         printer(_heading_style('Tests'))
+
+    visited = set()
+
     for runnable in runnables:
         extra = "" if not args.show_tags else "  Tags: {0}".format(list(runnable.get_tags()))
-        printer("{0}{1}".format(_title_style(runnable.__slash__.address), extra))
+        address = runnable.__slash__.address
+        if not args.show_params:
+            address = address.split('(')[0]
+        if address in visited:
+            continue
+        visited.add(address)
+        printer("{0}{1}".format(_title_style(address), extra))
 
 
 def _report_fixtures(args, session, printer, used_fixtures):

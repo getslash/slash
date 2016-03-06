@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`416` Add --no-params for "slash list"
 * :feature:`413` Test names inside files are now sorted
 * :feature:`412` Add is_in_test_code to traceback json
 * :release:`0.20.1 <01-03-2016>`
