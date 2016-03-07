@@ -34,8 +34,11 @@ class ScopeManager(object):
         self._push_scope('test')
         self._last_test = test
 
-    def end_test(self, test, next_test, exc_info):
+    def end_test(self, test, next_test, exc_info=None):
         assert test == self._last_test
+
+        if exc_info is None:
+            exc_info = (None, None, None)
 
         exc_type = exc_info[0]
         in_failure = exc_type is not None and not issubclass(exc_type, SkipTest)
