@@ -28,6 +28,7 @@ class Error(object):
             self.traceback = distill_traceback(tb, frame_correction=frame_correction)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
+        self._is_failure = False
 
     def mark_as_failure(self):
         self._is_failure = True
