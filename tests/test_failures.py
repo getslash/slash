@@ -41,6 +41,15 @@ def test_adding_errors(error_adder, test_type):
     assert '<object object at 0x' in objs[2].message
 
 
+def test_add_failure_error_object_marked_as_failure():
+
+    with slash.Session() as s:
+        with s.get_started_context():
+            slash.add_failure('msg')
+        [failure] = slash.context.result.get_failures()
+    assert failure.is_failure()
+
+
 def test_manual_add_error_preserves_traceback(suite, suite_test):
     suite_test.append_line('slash.add_error("error here")')
     suite_test.expect_error()

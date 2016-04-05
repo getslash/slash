@@ -29,6 +29,9 @@ class Error(object):
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
 
+    def mark_as_failure(self):
+        self._is_failure = True
+
     def is_fatal(self):
         if self._fatal:
             return True
@@ -39,7 +42,7 @@ class Error(object):
         return self
 
     def is_failure(self):
-        return isinstance(self.exception, FAILURE_EXCEPTION_TYPES)
+        return self._is_failure or isinstance(self.exception, FAILURE_EXCEPTION_TYPES)
 
     @classmethod
     def capture_exception(cls, exc_info=None):
