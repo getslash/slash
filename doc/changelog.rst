@@ -1,7 +1,7 @@
 Changelog
 =========
 
-* :feature:`428` Add ability to specify a requirement message, to be displayed when the requirement isn't matched
+* :feature:`428` Requirements using functions can now have these functions return tuples of (fullfilled, requirement_message) specifying the requirement message to display
 * :feature:`427` Drop support for Python 2.6
 * :feature:`416` Add --no-params for "slash list"
 * :feature:`413` Test names inside files are now sorted
