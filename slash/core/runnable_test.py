@@ -22,7 +22,12 @@ class RunnableTest(object):
         raise NotImplementedError() # pragma: no cover
 
     def get_unmet_requirements(self):
-        return [r for r in self.get_requirements() if not r.is_met()]
+        returned = []
+        for req in self.get_requirements():
+            is_met, reason = req.is_met()
+            if not is_met:
+                returned.append((req, reason))
+        return returned
 
     def get_requirements(self):
         raise NotImplementedError() # pragma: no cover

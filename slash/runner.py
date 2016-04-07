@@ -150,7 +150,7 @@ def _mark_unrun_tests(test_iterator):
 def _check_test_requirements(test):
     unmet_reqs = test.get_unmet_requirements()
     if unmet_reqs:
-        context.result.add_skip('Unmet requirements: {0}'.format(unmet_reqs))
+        context.result.add_skip('Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs if reason)))
         return False
     return True
 
