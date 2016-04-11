@@ -171,6 +171,7 @@ class DistMaster(CovController):
         node.slaveinput['cov_master_rsync_roots'] = [str(root) for root in node.nodemanager.roots]
 
     def testnodedown(self, node, error):
+        # pylint: disable=unused-argument
         """Collect data file name from slave."""
 
         # If slave doesn't return any data then it is likely that this
@@ -204,7 +205,7 @@ class DistMaster(CovController):
             self.cov.config.paths['source'].append(path)
 
         # Record the slave types that contribute to the data file.
-        rinfo = node.gateway._rinfo()
+        rinfo = node.gateway._rinfo()  # pylint: disable=protected-access
         node_desc = self.get_node_desc(rinfo.platform, rinfo.version_info)
         self.node_descs.add(node_desc)
 

@@ -17,6 +17,7 @@ import os
 
 
 def multiprocessing_start(obj):
+    # pylint: disable=unused-argument
     cov = init()
     if cov:
         multiprocessing.util.Finalize(None, multiprocessing_finish, args=(cov,), exitpriority=1000)
@@ -64,6 +65,6 @@ def init():
         )
         cov.load()
         cov.start()
-        cov._warn_no_data = False
-        cov._warn_unimported_source = False
+        cov._warn_no_data = False  # pylint: disable=protected-access
+        cov._warn_unimported_source = False  # pylint: disable=protected-access
         return cov

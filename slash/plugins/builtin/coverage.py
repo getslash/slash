@@ -36,7 +36,7 @@ class Plugin(PluginInterface):
         self.failed = False
         self._started = False
 
-        # TODO: _start should run here and not on session run,
+        # TODO: _start should run here and not on session run, # pylint: disable=fixme
         # but the config parameters are not available here :(
         # self._start(engine.Central)
 
