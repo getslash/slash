@@ -3,11 +3,8 @@ from __future__ import absolute_import
 import os
 import sys
 from ..interface import PluginInterface
-from ...ctx import context
-from ...utils.traceback_utils import get_traceback_string
 from ...utils.conf_utils import Cmdline
 from slash import config as slash_config
-from slash import session
 from ..cov_engine import engine, embed
 from coverage.misc import CoverageException
 
@@ -80,11 +77,10 @@ class Plugin(PluginInterface):
                 }
 
     def session_start(self):
-        self._start(engine.Central)
         """At session start determine our implementation and delegate to it."""
         self.pid = os.getpid()
         if not self._started:
-            self.start(engine.Central)
+            self._start(engine.Central)
 
     def session_end(self):
         """Delegate to our implementation."""
