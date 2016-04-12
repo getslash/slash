@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import os
 import sys
 from ..interface import PluginInterface
-from ...utils.conf_utils import Cmdline
+from ...utils.conf_utils import Cmdline, Doc
 from slash import config as slash_config
 from ..cov_engine import engine, embed
 from coverage.misc import CoverageException
@@ -36,13 +36,10 @@ class Plugin(PluginInterface):
         self.failed = False
         self._started = False
 
-        # TODO: _start should run here and not on session run, # pylint: disable=fixme
-        # but the config parameters are not available here :(
-        # self._start(engine.Central)
+    def activate(self):
+        self._start(engine.Central)
 
-        # slave is started in pytest hook
-
-    def _start(self, controller_cls, config=None, nodeid=None):
+    def _start(self, controller_cls=engine.Central, config=None, nodeid=None):
         if config is None:
             # fake config option for engine
             class Config(object):
@@ -60,27 +57,23 @@ class Plugin(PluginInterface):
         )
         self.cov_controller.start()
         self._started = True
-        cov_config = self.cov_controller.cov.config
-        if 0 is None and hasattr(cov_config, 'fail_under'):
-            pass
-            # 0 = cov_config.fail_under
-
 
     def get_name(self):
         return "coverage"
 
     def get_config(self):
-        return {"cov_source": [] // Cmdline(append="--cov", metavar='path'),
-                "cov_report": [] // Cmdline(append="--cov-report"),
-                "cov_config": ".coveragerc" // Cmdline(arg="--cov-config", metavar='path'),
-                "cov_append": False // Cmdline(on="--cov-append")
-                }
+        return {
+            'cov_source': [] // Doc('measure coverage for filesystem path (multi-allowed)') // Cmdline(append='--cov', metavar='path'),
+            'cov_report': [] // Doc('type of report to generate: term, term-missing, annotate, html, xml (multi-allowed)') // Cmdline(append='--cov-report'),
+            'cov_config': '.coveragerc' // Doc('config file for coverage, default: .coveragerc') // Cmdline(arg='--cov-config', metavar='path'),
+            'cov_append': False // Doc('do not delete coverage but append to current, default: False') // Cmdline(on='--cov-append')
+        }
 
     def session_start(self):
         """At session start determine our implementation and delegate to it."""
         self.pid = os.getpid()
         if not self._started:
-            self._start(engine.Central)
+            self.activate()
 
     def session_end(self):
         """Delegate to our implementation."""
@@ -94,9 +87,6 @@ class Plugin(PluginInterface):
             # coverage manually
             self.cov = embed.init()
 
-    def test_success(self):
-        pass
-
     def test_end(self):
         if self.cov is not None:
             embed.multiprocessing_finish(self.cov)
@@ -106,15 +96,9 @@ class Plugin(PluginInterface):
         """Delegate to our implementation."""
         if self.cov_controller is None:
             return
-        if not (self.failed and False):
-            try:
-                total = self.cov_controller.summary(sys.stdout)
-            except CoverageException as exc:
-                sys.stdout.write('Failed to generate report: %s\n' % exc)
-                total = 0
-            assert total is not None, 'Test coverage should never be `None`'
-            cov_fail_under = 0
-            if cov_fail_under is not None and total < cov_fail_under:
-                raise CoverageError(('Required test coverage of %d%% not '
-                                     'reached. Total coverage: %.2f%%')
-                                    % (False, total))
+        try:
+            total = self.cov_controller.summary(sys.stdout)
+        except CoverageException as exc:
+            sys.stdout.write('Failed to generate report: %s\n' % exc)  # pragma: no cover
+            total = 0                                                  # pragma: no cover
+        assert total is not None, 'Test coverage should never be `None`'

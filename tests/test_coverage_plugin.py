@@ -35,8 +35,8 @@ def coverage_plugin(request):
         os.remove('.coverage')
     if os.path.isdir('htmlcov'):
         shutil.rmtree('htmlcov')
+    slash.config.root.plugin_config.coverage.cov_report = ['html', 'term', 'annotate', 'xml']
     slash.plugins.manager.activate('coverage')
-    slash.config.root.plugin_config.coverage.cov_report = ['html']
 
     @request.addfinalizer
     def deactivate():
