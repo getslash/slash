@@ -102,3 +102,6 @@ class Plugin(PluginInterface):
             sys.stdout.write('Failed to generate report: %s\n' % exc)  # pragma: no cover
             total = 0                                                  # pragma: no cover
         assert total is not None, 'Test coverage should never be `None`'
+
+    def deactivate(self):
+        self.cov_controller.finish()

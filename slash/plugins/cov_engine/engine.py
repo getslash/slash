@@ -1,8 +1,6 @@
 """Coverage controllers for use by pytest-cov and nose-cov."""
 
 import os
-import random
-import socket
 import sys
 try:
     from StringIO import StringIO
@@ -10,7 +8,6 @@ except ImportError:
     from io import StringIO
 
 import coverage
-from coverage.data import CoverageData
 
 
 class CovController(object):
@@ -143,142 +140,3 @@ class Central(CovController):
         self.cov.save()
         node_desc = self.get_node_desc(sys.platform, sys.version_info)
         self.node_descs.add(node_desc)
-
-
-class DistMaster(CovController):
-    """Implementation for distributed master."""
-
-    def start(self):
-        """Ensure coverage rc file rsynced if appropriate."""
-
-        if self.cov_config and os.path.exists(self.cov_config):
-            self.config.option.rsyncdir.append(self.cov_config)
-
-        self.cov = coverage.coverage(source=self.cov_source,
-                                     config_file=self.cov_config)
-        if self.cov_append:
-            self.cov.load()
-        else:
-            self.cov.erase()
-        self.cov.start()
-        self.cov.config.paths['source'] = [self.topdir]
-
-    def configure_node(self, node):
-        """Slaves need to know if they are collocated and what files have moved."""
-
-        node.slaveinput['cov_master_host'] = socket.gethostname()
-        node.slaveinput['cov_master_topdir'] = self.topdir
-        node.slaveinput['cov_master_rsync_roots'] = [str(root) for root in node.nodemanager.roots]
-
-    def testnodedown(self, node, error):
-        # pylint: disable=unused-argument
-        """Collect data file name from slave."""
-
-        # If slave doesn't return any data then it is likely that this
-        # plugin didn't get activated on the slave side.
-        if not (hasattr(node, 'slaveoutput') and 'cov_slave_node_id' in node.slaveoutput):
-            self.failed_slaves.append(node)
-            return
-
-        # If slave is not collocated then we must save the data file
-        # that it returns to us.
-        if 'cov_slave_data' in node.slaveoutput:
-            data_suffix = '%s.%s.%06d.%s' % (
-                socket.gethostname(), os.getpid(),
-                random.randint(0, 999999),
-                node.slaveoutput['cov_slave_node_id']
-                )
-
-            cov = coverage.coverage(source=self.cov_source,
-                                    data_suffix=data_suffix,
-                                    config_file=self.cov_config)
-            cov.start()
-            if hasattr(self.cov.data, 'read_fileobj'):  # for coverage 4.0
-                data = CoverageData()
-                data.read_fileobj(StringIO(node.slaveoutput['cov_slave_data']))
-                cov.data.update(data)
-            else:
-                cov.data.lines, cov.data.arcs = node.slaveoutput['cov_slave_data']
-            cov.stop()
-            cov.save()
-            path = node.slaveoutput['cov_slave_path']
-            self.cov.config.paths['source'].append(path)
-
-        # Record the slave types that contribute to the data file.
-        rinfo = node.gateway._rinfo()  # pylint: disable=protected-access
-        node_desc = self.get_node_desc(rinfo.platform, rinfo.version_info)
-        self.node_descs.add(node_desc)
-
-    def finish(self):
-        """Combines coverage data and sets the list of coverage objects to report on."""
-
-        # Combine all the suffix files into the data file.
-        self.cov.stop()
-        self.cov.combine()
-        self.cov.save()
-
-
-class DistSlave(CovController):
-    """Implementation for distributed slaves."""
-
-    def start(self):
-        """Determine what data file and suffix to contribute to and start coverage."""
-
-        # Determine whether we are collocated with master.
-        self.is_collocated = (socket.gethostname() == self.config.slaveinput['cov_master_host'] and
-                              self.topdir == self.config.slaveinput['cov_master_topdir'])
-
-        # If we are not collocated then rewrite master paths to slave paths.
-        if not self.is_collocated:
-            master_topdir = self.config.slaveinput['cov_master_topdir']
-            slave_topdir = self.topdir
-            self.cov_source = [source.replace(master_topdir, slave_topdir)
-                               for source in self.cov_source]
-            self.cov_config = self.cov_config.replace(master_topdir, slave_topdir)
-
-        # Erase any previous data and start coverage.
-        self.cov = coverage.coverage(source=self.cov_source,
-                                     data_suffix=True,
-                                     config_file=self.cov_config)
-        if self.cov_append:
-            self.cov.load()
-        else:
-            self.cov.erase()
-        self.cov.start()
-        self.set_env()
-
-    def finish(self):
-        """Stop coverage and send relevant info back to the master."""
-        self.unset_env()
-        self.cov.stop()
-
-        if self.is_collocated:
-            # We don't combine data if we're collocated - we can get
-            # race conditions in the .combine() call (it's not atomic)
-            # The data is going to be combined in the master.
-            self.cov.save()
-
-            # If we are collocated then just inform the master of our
-            # data file to indicate that we have finished.
-            self.config.slaveoutput['cov_slave_node_id'] = self.nodeid
-        else:
-            self.cov.combine()
-            self.cov.save()
-            # If we are not collocated then add the current path
-            # and coverage data to the output so we can combine
-            # it on the master node.
-
-            # Send all the data to the master over the channel.
-            self.config.slaveoutput['cov_slave_path'] = self.topdir
-            self.config.slaveoutput['cov_slave_node_id'] = self.nodeid
-            if hasattr(self.cov.data, 'write_fileobj'):  # for coverage 4.0
-                buff = StringIO()
-                self.cov.data.write_fileobj(buff)
-                self.config.slaveoutput['cov_slave_data'] = buff.getvalue()
-            else:
-                self.config.slaveoutput['cov_slave_data'] = self.cov.data.lines, self.cov.data.arcs
-
-    def summary(self, stream):
-        """Only the master reports so do nothing."""
-
-        pass
