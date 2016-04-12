@@ -6,6 +6,8 @@ import sys
 import pytest
 import slash
 
+_PYPY = hasattr(sys, "pypy_version_info")
+
 def test_coverage(suite, coverage_plugin, capsys):
     # pylint: disable=unused-argument
 
@@ -35,7 +37,10 @@ def coverage_plugin(request):
         os.remove('.coverage')
     if os.path.isdir('htmlcov'):
         shutil.rmtree('htmlcov')
-    slash.config.root.plugin_config.coverage.cov_report = ['html', 'term', 'annotate', 'xml']
+    slash.config.root.plugin_config.coverage.cov_report = ['html', 'term', 'xml']
+    if not _PYPY:
+        slash.config.root.plugin_config.coverage.cov_report.append('annotate')
+
     slash.plugins.manager.activate('coverage')
 
     @request.addfinalizer
