@@ -20,7 +20,7 @@ class Plugin(PluginInterface):
             'sources': [] // Cmdline(append='--cov'),
         }
 
-    def before_session_start(self):
+    def activate(self):
         try:
             import coverage
         except ImportError:
@@ -44,6 +44,7 @@ class Plugin(PluginInterface):
             else:
                 raise RuntimeError('Unknown report type: {!r}'.format(report_type_name))
         self._cov.start()
+
 
     def session_end(self):
         self._cov.stop()
