@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`430` Added coverage plugin to generate code coverage report at the end of the run (``--with-coverage``)
 * :feature:`428` Requirements using functions can now have these functions return tuples of (fullfilled, requirement_message) specifying the requirement message to display
 * :feature:`427` Drop support for Python 2.6
 * :feature:`416` Add --no-params for "slash list"
