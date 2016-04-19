@@ -139,6 +139,10 @@ def suite_test(suite, test_type, is_last_test):
 
     return returned
 
+@pytest.fixture
+def last_suite_test(suite, test_type):
+    return suite.add_test(type=test_type)
+
 @pytest.fixture(params=[GlobalResult, Result])
 def result(request):
     return request.param()

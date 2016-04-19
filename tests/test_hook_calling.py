@@ -52,6 +52,25 @@ def test_test_start_before_fixture_start(suite, suite_test, defined_fixture, aut
     assert summary.events['fixture_start', defined_fixture.id].timestamp > event.timestamp
 
 
+def test_last_test_end_after_session_cleanup(suite, last_suite_test):
+    test = last_suite_test
+    @test.append_body
+    def __code__(): # pylint: disable=unused-variable
+        import gossip # pylint: disable=reimported
+        # pylint: disable=undefined-variable,unused-variable
+        def session_cleanup_callback():
+            __ut__.events.add('session_cleanup')
+        slash.add_cleanup(session_cleanup_callback, scope='session')
+
+        @gossip.register('slash.test_end')
+        def test_end_callback():
+            __ut__.events.add('test_end')
+
+    events = suite.run().events
+
+    assert events['test_end'].timestamp < events['session_cleanup'].timestamp
+
+
 def test_no_error_hooks_called_on_success(suite):
 
     called = []

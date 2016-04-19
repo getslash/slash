@@ -1,4 +1,3 @@
-import sys
 from contextlib import contextmanager
 
 import logbook
@@ -60,8 +59,7 @@ def run_tests(iterable, stop_on_error=None):
         else:
             complete = True
     finally:
-        context.session.scope_manager.flush_remaining_scopes(
-            in_failure=not complete, in_interruption=context.session.results.is_interrupted())
+        context.session.scope_manager.flush_remaining_scopes()
 
     _mark_unrun_tests(test_iterator)
     if complete:
@@ -73,7 +71,7 @@ def run_tests(iterable, stop_on_error=None):
 
 
 def _run_single_test(test, test_iterator):
-    run_state = {'exc_info': (None, None, None)}
+    next_test = test_iterator.peek_or_none()
     with ExitStack() as exit_stack:
 
         # sets the current result, test id etc.
@@ -93,19 +91,16 @@ def _run_single_test(test, test_iterator):
                         try:
                             hooks.test_start() # pylint: disable=no-member
                             with handling_exceptions(swallow=True):
-                                try:
-                                    test.run()
-                                except:
-                                    run_state['exc_info'] = sys.exc_info()
-                                    raise
+                                test.run()
                         finally:
-                            context.session.scope_manager.end_test(
-                                test,
-                                next_test=test_iterator.peek_or_none(),
-                                exc_info=run_state['exc_info'])
+                            context.session.scope_manager.end_test(test)
                 except SkipTest:
                     pass
                 _fire_test_summary_hooks(test, result)
+                if next_test is None:
+                    with handling_exceptions(swallow=True):
+                        context.session.scope_manager.flush_remaining_scopes()
+
             except SkipTest:
                 pass
             except INTERRUPTION_EXCEPTIONS:
@@ -167,7 +162,7 @@ def _get_test_context(test, logging=True):
         context.result = result
         try:
             with (context.session.logging.get_test_logging_context() if logging else ExitStack()):
-                _logger.debug("Started test: {0}", test)
+                _logger.debug("Started test #{0.__slash__.test_index1}: {0}", test)
                 yield result
         finally:
             context.result = prev_result

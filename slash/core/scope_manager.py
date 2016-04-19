@@ -2,9 +2,7 @@ import functools
 
 import logbook
 
-from ..ctx import context
 from ..utils.python import call_all_raise_first
-from ..exceptions import SkipTest, INTERRUPTION_EXCEPTIONS
 
 _logger = logbook.Logger(__name__)
 
@@ -27,28 +25,16 @@ class ScopeManager(object):
         if self._last_module != test_module:
             if self._last_module is not None:
                 _logger.trace('Module scope has changed. Popping previous module scope')
-                self._pop_scope('module', in_failure=False, in_interruption=False)
+                self._pop_scope('module')
             assert self._scopes[-1] != 'module'
             self._push_scope('module')
         self._last_module = test_module
         self._push_scope('test')
         self._last_test = test
 
-    def end_test(self, test, next_test, exc_info):
+    def end_test(self, test):
         assert test == self._last_test
-
-        exc_type = exc_info[0]
-        in_failure = exc_type is not None and not issubclass(exc_type, SkipTest)
-        if context.result is not None:
-            in_failure = in_failure or context.result.is_error() or context.result.is_failure()
-        kw = {'in_failure': in_failure, 'in_interruption': exc_type in INTERRUPTION_EXCEPTIONS}
-
-        self._pop_scope('test', **kw)
-
-        if next_test is None:
-            _logger.trace('No next test. Popping scopes')
-            self._pop_scope('module', **kw)
-            self._pop_scope('session', **kw)
+        self._pop_scope('test')
 
     def get_current_stack(self):
         return self._scopes[:]
@@ -59,13 +45,13 @@ class ScopeManager(object):
         self._session.fixture_store.push_scope(scope)
         self._session.cleanups.push_scope(scope)
 
-    def _pop_scope(self, scope, **kw):
+    def _pop_scope(self, scope):
         popped = self._scopes.pop()
         _logger.trace('Popped scope {0} (expected {1})', popped, scope)
         assert popped == scope
         call_all_raise_first([self._session.cleanups.pop_scope, self._session.fixture_store.pop_scope],
-                             scope, **kw)
+                             scope)
 
-    def flush_remaining_scopes(self, **kw):
+    def flush_remaining_scopes(self):
         call_all_raise_first([functools.partial(self._pop_scope, s)
-                              for s in self._scopes[::-1]], **kw)
+                              for s in self._scopes[::-1]])

@@ -42,7 +42,6 @@ def test_cleanups_within_cleanups(suite, suite_test):
 @pytest.mark.parametrize('other_error', ['error', 'failure', None])
 def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
 
-
     if other_error == 'error':
         suite_test.append_line('slash.add_error("error")')
         suite_test.expect_error()

@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`432` Fixed a bug where session cleanups happened before ``test_end`` hooks are fired
 * :release:`0.20.1 <01-03-2016>`
 * :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks
 * :bug:`409` Improve session startup/shutdown logic to avoid several potentially invalid states

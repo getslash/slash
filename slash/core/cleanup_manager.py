@@ -84,7 +84,13 @@ class CleanupManager(object):
             scope.cleanups.append(p)
         del self._pending[:]
 
-    def pop_scope(self, scope_name, in_failure=None, in_interruption=None):
+    def pop_scope(self, scope_name):
+        if context.result is None:
+            in_failure = in_interruption = False
+        else:
+            in_failure = not context.result.is_success(allow_skips=True)
+            in_interruption = context.result.is_interrupted()
+
         _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
         scope = self._scope_stack[-1]
         assert scope.name == scope_name, 'Attempted to pop scope {0!r}, but current scope is {1!r}'.format(scope_name, scope.name)

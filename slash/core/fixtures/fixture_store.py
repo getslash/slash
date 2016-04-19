@@ -112,8 +112,8 @@ class FixtureStore(object):
     def push_scope(self, scope):
         scope = get_scope_by_name(scope)
 
-    def pop_scope(self, scope, in_failure, in_interruption): # pylint: disable=unused-argument
-        if in_interruption:
+    def pop_scope(self, scope): # pylint: disable=unused-argument
+        if slash_context.result is not None and slash_context.result.is_interrupted():
             return
         scope = get_scope_by_name(scope)
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):

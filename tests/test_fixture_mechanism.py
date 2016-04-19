@@ -140,7 +140,7 @@ def _get_all_values(store, fixture_name):
         with bound_parametrizations_context(variation):
             returned.append(
                 store.get_fixture_dict([fixture_name])[fixture_name])
-        store.pop_scope('test', in_failure=False, in_interruption=False)
+        store.pop_scope('test')
     return returned
 
 

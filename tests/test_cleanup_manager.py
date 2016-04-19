@@ -1,4 +1,5 @@
 import pytest
+import slash
 from slash.core.cleanup_manager import CleanupManager
 
 from .conftest import Checkpoint
