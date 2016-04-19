@@ -127,7 +127,7 @@ class Result(object):
     def add_failure(self, e=None, frame_correction=0, exc_info=None):
         """Adds a failure to the result
         """
-        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1, exc_info=exc_info)
+        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1, exc_info=exc_info, is_failure=True)
         context.reporter.report_test_failure_added(context.test, err)
         return err
 
@@ -136,7 +136,7 @@ class Result(object):
         """
         self.details.set(key, value)
 
-    def _add_error(self, error_list, error=None, frame_correction=0, exc_info=None):
+    def _add_error(self, error_list, error=None, frame_correction=0, exc_info=None, is_failure=False):
         try:
             if error is None:
                 error = Error.capture_exception(exc_info=exc_info)
@@ -144,6 +144,9 @@ class Result(object):
                     raise RuntimeError('add_error() must be called with either an argument or in an active exception')
             if not isinstance(error, Error):
                 error = Error(error, frame_correction=frame_correction + 1, exc_info=exc_info)
+            if is_failure:
+                # force the error object to be marked as failure
+                error.mark_as_failure()
             _logger.debug('Error added: {0}', error)
             error_list.append(error)
             hooks.error_added(result=self, error=error)  # pylint: disable=no-member

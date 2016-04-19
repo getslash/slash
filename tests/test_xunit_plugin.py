@@ -55,6 +55,28 @@ def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
     assert saved_details
 
 
+@_needs_lxml
+@pytest.mark.parametrize('errtype', ['error', 'failure'])
+def test_xunit_plugin_add_failure_error(suite, suite_test, xunit_filename, errtype):
+    num_errors = 3
+    for i in range(num_errors):
+        suite_test.append_line('slash.add_{0}("some message")'.format(errtype))
+    if errtype == 'error':
+        suite_test.expect_error()
+    else:
+        suite_test.expect_failure()
+
+    suite.run()
+    testcase_xml = _get_testcase_xml(suite_test, xunit_filename)
+    errors = testcase_xml.findall(errtype)
+    assert len(errors) == num_errors
+    for error in errors:
+        assert error.attrib['message'] == 'some message'
+        assert error.attrib['type'] == errtype
+    assert errors
+
+
+
 def _get_testcase_xml(suite_test, filename):
     with open(filename) as f:
         xml = etree.parse(f)
@@ -187,6 +209,27 @@ _XUNIT_XSD = """<?xml version="1.0"?>
               </xs:complexType>
             </xs:element>
             <xs:element name="failure">
+      <xs:annotation>
+        <xs:documentation xml:lang="en">Indicates that the test failed. A failure is a test which the code has explicitly failed by using the mechanisms for that purpose. e.g., via an assertEquals. Contains as a text node relevant data for the failure, e.g., a stack trace</xs:documentation>
+      </xs:annotation>
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="pre-string">
+                    <xs:attribute name="message" type="xs:string">
+                      <xs:annotation>
+                        <xs:documentation xml:lang="en">The message specified in the assert</xs:documentation>
+                      </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="type" type="xs:string" use="required">
+                      <xs:annotation>
+                        <xs:documentation xml:lang="en">The type of the assert.</xs:documentation>
+                      </xs:annotation>
+                    </xs:attribute>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+    <xs:element name="error">
       <xs:annotation>
         <xs:documentation xml:lang="en">Indicates that the test failed. A failure is a test which the code has explicitly failed by using the mechanisms for that purpose. e.g., via an assertEquals. Contains as a text node relevant data for the failure, e.g., a stack trace</xs:documentation>
       </xs:annotation>

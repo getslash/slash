@@ -35,5 +35,8 @@ class Requirement(object):
 
     def is_met(self):
         if isinstance(self._req, bool):
-            return self._req
-        return self._req()
+            return self._req, self._message
+        returned = self._req()
+        if not isinstance(returned, tuple):
+            returned = (returned, self._message)
+        return returned

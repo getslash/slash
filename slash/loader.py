@@ -11,7 +11,7 @@ import dessert
 import sys
 
 from .conf import config
-from ._compat import iteritems, string_types
+from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
 from .core.runnable_test import RunnableTest
@@ -154,7 +154,8 @@ class Loader(object):
         return filename.endswith(".py")
 
     def _iter_runnable_tests_in_module(self, file_path, module):
-        for thing_name, thing in iteritems(vars(module)):
+        for thing_name in sorted(dir(module)):
+            thing = getattr(module, thing_name)
             if thing is RunnableTestFactory:  # probably imported directly
                 continue
 

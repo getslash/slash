@@ -2,6 +2,7 @@ import pytest
 
 
 import slash
+from slash.loader import Loader
 
 from .utils.suite_writer import Suite
 
@@ -61,6 +62,30 @@ def test_cleanups_before_session_start_get_deferred(checkpoint):
         with s.get_started_context():
             assert not checkpoint.called
         assert checkpoint.called_count == 1
+
+
+def test_cleanups_within_cleanups_preserve_scope(checkpoint1):
+    """Cleanups added from within other cleanups should happen within the scope of the parent cleanups
+    """
+
+    @slash.parametrize('x', [1, 2])
+    def test_something(x): # pylint: disable=unused-argument
+        pass
+
+    with slash.Session() as s:
+        [fake_test1, fake_test2] = Loader().get_runnables(test_something) # pylint: disable=unbalanced-tuple-unpacking
+
+        s.scope_manager.begin_test(fake_test1)
+
+        def cleanup():
+            slash.add_cleanup(checkpoint1)
+
+        slash.add_cleanup(cleanup)
+
+        assert not checkpoint1.called
+        s.scope_manager.end_test(fake_test1)
+
+        assert checkpoint1.called
 
 
 def test_errors_associated_with_correct_result(scoped_suite, file1_tests, file2_tests):

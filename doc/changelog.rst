@@ -1,6 +1,13 @@
 Changelog
 =========
 
+* :feature:`430` Added coverage plugin to generate code coverage report at the end of the run (``--with-coverage``)
+* :feature:`428` Requirements using functions can now have these functions return tuples of (fullfilled, requirement_message) specifying the requirement message to display
+* :feature:`427` Drop support for Python 2.6
+* :feature:`416` Add --no-params for "slash list"
+* :feature:`413` Test names inside files are now sorted
+* :feature:`412` Add is_in_test_code to traceback json
+* :release:`0.20.2 <??-??-????>`
 * :bug:`432` Fixed a bug where session cleanups happened before ``test_end`` hooks are fired
 * :release:`0.20.1 <01-03-2016>`
 * :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks

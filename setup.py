@@ -41,7 +41,6 @@ if _PYTHON_VERSION < (3, 3):
 
 setup(name="slash",
       classifiers=[
-          "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3.3",
           "Programming Language :: Python :: 3.4",

@@ -43,3 +43,6 @@ def test_is_test_code(suite, suite_test):
     [result] = summary.get_all_results_for_test(suite_test)
     [err] = result.get_errors()
     assert err.traceback.frames[-1].is_in_test_code()
+
+    error_json = err.traceback.to_list()
+    assert error_json[-1]['is_in_test_code']

@@ -201,6 +201,12 @@ In many cases you want to depend in our test on a certain precondition in order 
 
 Requirements are stronger than skips, since they can be reported separately and imply a basic precondition that is not met in the current testing environment. 
 
+``slash.requires`` can receive either:
+
+1. A boolean value (useful for computing on import-time)
+2. A function returning a boolean value, to be called when loading tests
+3. A function returning a tuple of (boolean, message) - the message being the description of the unmet requirements when ``False`` is returned
+
 When a requirement fails, the test is skipped without even being started, and appears in the eventual console summary along with the unmet requirements. If you want to control the message shown if the requirement is not met, you can pass the ``message`` parameter:
 
 .. code-block:: python

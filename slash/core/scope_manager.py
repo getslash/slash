@@ -47,10 +47,11 @@ class ScopeManager(object):
 
     def _pop_scope(self, scope):
         popped = self._scopes.pop()
-        _logger.trace('Popped scope {0} (expected {1})', popped, scope)
+        _logger.trace('Popping scope {0} (expected {1})', popped, scope)
         assert popped == scope
         call_all_raise_first([self._session.cleanups.pop_scope, self._session.fixture_store.pop_scope],
                              scope)
+        _logger.trace('Popped scope {0}', popped)
 
     def flush_remaining_scopes(self):
         call_all_raise_first([functools.partial(self._pop_scope, s)
