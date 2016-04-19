@@ -65,7 +65,6 @@ def test_function_name_with_special_parameters(test_type):
         assert function_name.startswith('test_')
 
 
-        
 def test_module_name_not_none_or_empty_string(suite):
     for result in suite.run().session.results:
         assert result.test_metadata.module_name
@@ -76,6 +75,17 @@ def test_test_index(suite):
     for index, result in enumerate(session.results):
         assert result.test_metadata.test_index0 == index
         assert result.test_metadata.test_index1 == index + 1
+    assert index > 0
+
+
+def test_set_test_name(suite, suite_test):
+    result = suite.run()[suite_test]
+    metadata = result.test_metadata
+    assert metadata.file_path in str(metadata)
+    custom_name = 'some_custom_name'
+    metadata.set_test_full_name(custom_name)
+    assert str(metadata) == '<{0}:{1}>'.format(metadata.file_path, custom_name)
+
 
 
 class TestMetadataTest(TestCase):
