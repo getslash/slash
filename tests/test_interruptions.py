@@ -47,6 +47,23 @@ def test_sigterm_interrupt(suite, suite_test):
     suite.run(expect_interruption=True)
 
 
+@pytest.mark.parametrize('hook_name', ['session_start', 'test_start'])
+def test_sigterm_on_hook(suite, hook_name):
+    @gossip.register('slash.{0}'.format(hook_name))
+    def session_start():  # pylint: disable=unused-variable
+        raise slash.exceptions.TerminatedException('Terminated by signal')
+
+    assert len(suite)
+    for index, test in enumerate(suite):
+        if index == 0 and hook_name == 'test_start':
+            # first test should be interrupted...
+            test.expect_interruption()
+        else:
+            test.expect_deselect()
+
+    result = suite.run(expect_interruption=True)
+
+
 @pytest.fixture
 def interrupted_suite(suite, interrupted_index):
     for index, test in enumerate(suite):
