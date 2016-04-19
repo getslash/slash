@@ -33,18 +33,16 @@ class Metadata(object):
             self.address_in_file += address_in_factory
         #: String identifying the test, to be used when logging or displaying results in the console
         #: generally it is composed of the file path and the address inside the file
+        self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
         self._interactive = False
-
-    @property
-    def address(self):
-        return '{0}:{1}'.format(self.file_path, self.address_in_file)
-
-    def set_test_full_name(self, name):
-        self.address_in_file = name
 
     def set_variation(self, v):
         assert self._variation is None
         self._variation = v
+
+    def set_test_full_name(self, name):
+        assert hasattr(self, 'address')
+        self.address = name
 
     @property
     def variation(self):

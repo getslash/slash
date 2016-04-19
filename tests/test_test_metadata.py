@@ -84,7 +84,7 @@ def test_set_test_name(suite, suite_test):
     assert metadata.file_path in str(metadata)
     custom_name = 'some_custom_name'
     metadata.set_test_full_name(custom_name)
-    assert str(metadata) == '<{0}:{1}>'.format(metadata.file_path, custom_name)
+    assert str(metadata) == '<{0}>'.format(custom_name)
 
 
 
