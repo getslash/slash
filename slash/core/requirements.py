@@ -31,6 +31,10 @@ class Requirement(object):
     def __repr__(self):
         if self._message is not None:
             return self._message
+        if isinstance(self._req, bool):
+            return '?'
+        if hasattr(self._req, '__call__'):
+            return '<Function {0.__name__}>'.format(self._req)
         return repr(self._req)
 
     def is_met(self):

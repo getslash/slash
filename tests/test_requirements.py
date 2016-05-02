@@ -42,6 +42,15 @@ def test_requirements(suite, suite_test, requirement_fullfilled, use_fixtures, u
             assert message in skip
 
 
+def test_requirements_functions_no_message(suite, suite_test):
+    suite_test.add_decorator('slash.requires(lambda: False)')
+    suite_test.expect_skip()
+    results = suite.run()
+    result = results[suite_test]
+    [skip] = result.get_skips()
+    assert 'lambda' in skip
+
+
 def test_requirements_on_class():
 
     def req1():
