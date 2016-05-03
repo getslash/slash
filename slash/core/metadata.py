@@ -34,6 +34,7 @@ class Metadata(object):
         #: String identifying the test, to be used when logging or displaying results in the console
         #: generally it is composed of the file path and the address inside the file
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
+        self._class_name = factory.get_class_name()
         self._interactive = False
 
     def set_variation(self, v):
@@ -59,9 +60,7 @@ class Metadata(object):
 
     @property
     def class_name(self):
-        if '.' in self.address_in_file:
-            return self.address_in_file.split('.', 1)[0]
-        return None
+        return self._class_name
 
     @property
     def function_name(self):

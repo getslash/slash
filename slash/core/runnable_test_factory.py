@@ -22,6 +22,9 @@ class RunnableTestFactory(object):
         assert returned
         return returned
 
+    def get_class_name(self):
+        return None
+
     def set_module_name(self, module_name):
         self._module_name = module_name
 

@@ -17,6 +17,9 @@ class TestTestFactory(RunnableTestFactory):
         super(TestTestFactory, self).__init__(testclass)
         self.testclass = testclass
 
+    def get_class_name(self):
+        return self.testclass.__name__
+
     def _generate_tests(self, fixture_store):
         if is_abstract_base_class(self.testclass):
             return
