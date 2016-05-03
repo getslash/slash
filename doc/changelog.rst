@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :release:`0.20.2 <03-04-2016>`
+* :bug:`434` Fixed a bug where class names were not deduced properly when loading tests
 * :bug:`432` Fixed a bug where session cleanups happened before ``test_end`` hooks are fired
 * :release:`0.20.1 <01-03-2016>`
 * :bug:`410` Fixed bug causing incorrect test frame highlighting in tracebacks
