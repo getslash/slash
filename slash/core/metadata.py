@@ -34,7 +34,15 @@ class Metadata(object):
         #: String identifying the test, to be used when logging or displaying results in the console
         #: generally it is composed of the file path and the address inside the file
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
-        self._class_name = factory.get_class_name()
+        if factory is not None:
+            self._class_name = factory.get_class_name()
+        else:
+            testfunc = test.get_test_function()
+            if hasattr(testfunc, '__self__'):
+                self._class_name = testfunc.__self__.__class__.__name__
+            else:
+                self._class_name = None
+
         self._interactive = False
 
     def set_variation(self, v):
@@ -64,10 +72,13 @@ class Metadata(object):
 
     @property
     def function_name(self):
-        returned = self.address_in_file.split('(', 1)[0]
-        if '.' in returned:
-            returned = returned.rsplit('.', 1)[-1]
-        return returned.split('(', 1)[0]
+        returned = self.address_in_file
+        if self._class_name:
+            prefix = self._class_name + '.'
+            assert returned.startswith(prefix)
+            returned = returned[len(prefix):]
+
+        return returned.split('(')[0]
 
     @property
     def test_index1(self):
