@@ -33,8 +33,8 @@ class Requirement(object):
             return self._message
         if isinstance(self._req, bool):
             return '?'
-        if hasattr(self._req, '__call__'):
-            return '<Function {0.__name__}>'.format(self._req)
+        if hasattr(self._req, '__name__'):
+            return '<{0.__name__}>'.format(self._req)
         return repr(self._req)
 
     def is_met(self):
