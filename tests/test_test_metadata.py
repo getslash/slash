@@ -8,6 +8,7 @@ import pytest
 
 from .utils.suite_writer import Suite
 
+
 @pytest.mark.parametrize('parametrize', [True, False])
 def test_class_name(suite, suite_test, test_type, parametrize):
     if parametrize:
@@ -20,7 +21,7 @@ def test_class_name(suite, suite_test, test_type, parametrize):
         elif test_type == 'function':
             assert result.test_metadata.class_name is None
         else:
-            raise NotImplementedError() # pragma: no cover
+            raise NotImplementedError()  # pragma: no cover
 
 
 @pytest.mark.parametrize('parametrize', [True, False])
@@ -46,6 +47,7 @@ def test_variation(suite, suite_test):
         assert len(result.data['variation']) == 1
         assert fixture.name in result.data['variation']
         assert fixture.name in dict(result.data['variation'].items())
+
 
 def test_function_name_with_special_parameters(test_type):
     suite = Suite()
@@ -86,6 +88,19 @@ def test_set_test_name(suite, suite_test):
     metadata.set_test_full_name(custom_name)
     assert str(metadata) == '<{0}>'.format(custom_name)
 
+
+def test_class_name_with_dot_parameters():
+
+    # pylint: disable=unused-argument
+
+    @slash.parametrize('path', ['x.y'])
+    def test_something(path):
+        pass
+
+    with slash.Session() as s:
+        loader = slash.loader.Loader()
+        [test] = loader.get_runnables(test_something)
+        assert test.__slash__.class_name is None
 
 
 class TestMetadataTest(TestCase):
