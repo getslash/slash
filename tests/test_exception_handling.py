@@ -40,6 +40,13 @@ def test_passthrough_types():
     assert exception_handling.is_exception_handled(value)
 
 
+def test_swallow_types():
+    value = CustomException()
+
+    with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
+        raise value
+
+
 def test_handling_exceptions():
     value = CustomException()
 

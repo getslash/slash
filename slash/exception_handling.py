@@ -70,10 +70,13 @@ def handling_exceptions(**kwargs):
 
     :param passthrough_types: a tuple specifying exception types to avoid handling, raising them immediately onward
     :param swallow: causes this context to swallow exceptions
+    :param swallow_types: causes the context to swallow exceptions of, or derived from, the specified types
 
     .. note:: certain exceptions are never swallowed - most notably KeyboardInterrupt, SystemExit, and SkipTest
     """
     swallow = kwargs.pop("swallow", False)
+    swallow_types = kwargs.pop('swallow_types', ())
+    assert isinstance(swallow_types, (list, tuple)), 'swallow_types must be either a list or a tuple'
     passthrough_types = kwargs.pop('passthrough_types', ())
     try:
         yield
@@ -86,6 +89,7 @@ def handling_exceptions(**kwargs):
         handle_exception(exc_info, **kwargs)
         if isinstance(exc_value, SkipTest):
             raise
+        swallow = swallow or isinstance(exc_value, swallow_types)
         if not swallow or not isinstance(exc_value, Exception):
             raise
 
