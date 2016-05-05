@@ -1,5 +1,6 @@
 from slash.frontend.slash_list import slash_list
 from slash._compat import StringIO
+from .utils.suite_writer import Suite
 
 import pytest
 
@@ -15,6 +16,20 @@ def test_slash_list(suite, flag):
         args.append(flag)
     slash_list(args, report_stream)
     assert report_stream.getvalue()
+
+
+@pytest.mark.parametrize('allow_empty', [True, False])
+def test_slash_list_without_any_tests(allow_empty):
+    empty_suite = Suite()
+    empty_suite.debug_info = False
+    path = empty_suite.commit()
+    report_stream = StringIO()
+    args = [path]
+    if allow_empty:
+        args.append('--allow-empty')
+    rc = slash_list(args, report_stream)
+    expected_rc = 0 if allow_empty else 1
+    assert rc == expected_rc
 
 
 @pytest.mark.parametrize('should_show_tags', [True, False])

@@ -26,12 +26,14 @@ def _get_parser():
     parser.add_argument('--only-tests', dest='only', action='store_const', const='tests', default=None)
     parser.add_argument('--show-tags', dest='show_tags', action='store_true', default=False)
     parser.add_argument('--no-params', dest='show_params', action='store_false', default=True)
+    parser.add_argument('--allow-empty', dest='allow_empty', action='store_true', default=False)
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
 
 
 def slash_list(args, report_stream=sys.stdout):
     _print = partial(print, file=report_stream)
+    _report_error = partial(print, file=sys.stderr)
 
     parser = _get_parser()
     parsed_args = parser.parse_args(args)
@@ -52,6 +54,11 @@ def slash_list(args, report_stream=sys.stdout):
 
         if parsed_args.only in (None, 'tests'):
             _report_tests(parsed_args, runnables, _print)
+
+    if len(runnables):
+        return 0
+    _report_error('No tests were found!')
+    return not int(parsed_args.allow_empty)
 
 
 def _report_tests(args, runnables, printer):
