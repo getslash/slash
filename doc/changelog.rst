@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`436` ``slash list`` now fails by default if no tests are listed. This can be overriden by specifying ``--allow-empty``
 * :feature:`435` Added ``swallow_types`` argument to exception_handling context to enable selective swallowing of specific exceptions
 * :feature:`430` Added coverage plugin to generate code coverage report at the end of the run (``--with-coverage``)
 * :feature:`428` Requirements using functions can now have these functions return tuples of (fullfilled, requirement_message) specifying the requirement message to display
