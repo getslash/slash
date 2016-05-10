@@ -27,6 +27,7 @@ _define('after_session_start', doc="Second entry point for session start, useful
 _define('configure', doc='Configuration hook that happens during commandline parsing, and before plugins are activated. It is a convenient point to override plugin activation settings')
 
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
+_define('test_avoided', doc="Called when a test is skipped completely (not even started)")
 _define('test_start', doc="Called right after a test starts")
 _define('test_end', doc="Called right before a test ends, regardless of the reason for termination")
 _define('before_test_cleanups', doc="Called right before a test cleanups are executed")

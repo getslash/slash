@@ -1,8 +1,13 @@
+import gossip
 import pytest
 import slash
+
 from slash.loader import Loader
 
 from .utils import make_runnable_tests
+
+
+_UNMET_REQ_DECORATOR = 'slash.requires(lambda: False)'
 
 
 def test_requirements_mismatch_session_success(suite, suite_test):
@@ -43,7 +48,7 @@ def test_requirements(suite, suite_test, requirement_fullfilled, use_fixtures, u
 
 
 def test_requirements_functions_no_message(suite, suite_test):
-    suite_test.add_decorator('slash.requires(lambda: False)')
+    suite_test.add_decorator(_UNMET_REQ_DECORATOR)
     suite_test.expect_skip()
     results = suite.run()
     result = results[suite_test]
@@ -70,3 +75,24 @@ def test_requirements_on_class():
         [test] = make_runnable_tests(Test)
 
     assert [r._req for r in test.get_requirements()] == [req1, req2]
+
+
+def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
+
+    suite_test.add_decorator(_UNMET_REQ_DECORATOR)
+    suite_test.expect_skip()
+
+
+    @gossip.register('slash.test_avoided')
+    def test_avoided():
+        slash.context.result.data['avoided'] = True
+
+    summary = suite.run()
+    avoided_result = summary[suite_test]
+
+
+    for r in summary.session.results.iter_all_results():
+        if r is avoided_result:
+            assert 'avoided' in r.data
+        else:
+            assert 'avoided' not in r.data
