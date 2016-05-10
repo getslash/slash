@@ -84,8 +84,8 @@ def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
 
 
     @gossip.register('slash.test_avoided')
-    def test_avoided():
-        slash.context.result.data['avoided'] = True
+    def test_avoided(reason):
+        slash.context.result.data['avoided'] = reason
 
     summary = suite.run()
     avoided_result = summary[suite_test]
@@ -94,5 +94,7 @@ def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
     for r in summary.session.results.iter_all_results():
         if r is avoided_result:
             assert 'avoided' in r.data
+            assert 'lambda' in r.data['avoided']
+            assert 'unmet requirement' in r.data['avoided'].lower()
         else:
             assert 'avoided' not in r.data

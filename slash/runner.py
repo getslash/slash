@@ -79,9 +79,13 @@ def _run_single_test(test, test_iterator):
 
         with handling_exceptions():
 
-            if not _check_test_requirements(test):
+            unmet_reqs = test.get_unmet_requirements()
+
+            if unmet_reqs:
+                skip_msg = 'Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs))
                 _logger.debug('Requirements not met for {0}. Not running', test)
-                hooks.test_avoided() # pylint: disable=no-member
+                context.result.add_skip(skip_msg)
+                hooks.test_avoided(reason=skip_msg) # pylint: disable=no-member
                 return
 
             result.mark_started()
@@ -141,15 +145,6 @@ def _mark_unrun_tests(test_iterator):
     for test in remaining:
         with _get_test_context(test, logging=False):
             pass
-
-
-def _check_test_requirements(test):
-    unmet_reqs = test.get_unmet_requirements()
-    if unmet_reqs:
-        context.result.add_skip('Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs)))
-        return False
-    return True
-
 
 @contextmanager
 def _get_test_context(test, logging=True):
