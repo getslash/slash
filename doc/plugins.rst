@@ -62,6 +62,23 @@ Activating plugins from command-line is usually done with the ``--with-`` prefix
 
 Also, since some plugins can be activated from other locations, you can also override and deactivate plugins using ``--without-X`` (e.g. ``--without-test-plugin``).
 
+Conditionally Registering Hooks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can make the hook registration of a plugin *conditional*, meaning it should only happen if a boolean condition is ``True``.
+
+This can be used to create plugins that are compatible with multiple versions of Slash:
+
+.. code-block:: python
+       
+       class MyPlugin(PluginInterface):
+           ...
+           @slash.plugins.register_if(int(slash.__version__.split('.')[0]) >= 1)
+           def shiny_new_hook(self):
+	       ...
+
+.. seealso:: :func:`slash.plugins.register_if`
+
 Plugin Command-Line Interaction
 -------------------------------
 

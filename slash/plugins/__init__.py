@@ -217,6 +217,9 @@ class PluginManager(object):
                 # asked not to register for nothing
                 continue
 
+            if not try_get_mark(method, 'register_if', True):
+                continue
+
             if hook_name is not NOTHING:
                 expect_exists = False
             else:
@@ -253,6 +256,11 @@ def registers_on(hook_name):
     Specifying ``registers_on(None)`` means that this is not a hook entry point at all.
     """
     return mark("register_on", hook_name)
+
+def register_if(condition):
+    """Marks the decorated plugins method to only be registered if *condition* is ``True``
+    """
+    return mark("register_if", condition)
 
 def active(plugin_class):
     """Decorator for automatically installing and activating a plugin upon definition
