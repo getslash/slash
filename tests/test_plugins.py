@@ -1,3 +1,4 @@
+#pylint: disable=unused-argument
 import os
 
 import gossip
@@ -7,7 +8,7 @@ from slash._compat import PY2
 from slash import hooks, plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
-from .utils import CustomException, TestCase
+from .utils import CustomException
 
 
 @pytest.fixture
@@ -188,3 +189,32 @@ def test_install_uninstall(no_plugins):
 
 
 
+@pytest.mark.parametrize('cond', [True, False])
+def test_register_if(no_plugins, checkpoint, cond):
+
+    @slash.plugins.active
+    class CustomPlugin(NamedPlugin):
+
+        @slash.plugins.register_if(cond)
+        def test_start(self):
+            checkpoint()
+
+    slash.hooks.test_start()
+
+    assert checkpoint.called == cond
+
+
+def test_register_if_nonexistent_hook(no_plugins, checkpoint):
+
+    @slash.plugins.active
+    class CustomPlugin(NamedPlugin):
+
+        @slash.plugins.register_if(False)
+        def nonexistent_hook(self):
+            checkpoint()
+
+
+class NamedPlugin(PluginInterface):
+
+    def get_name(self):
+        return 'some-plugin'

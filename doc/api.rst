@@ -83,6 +83,8 @@ Plugins
 
 .. autofunction:: slash.plugins.registers_on
 
+.. autofunction:: slash.plugins.register_if
+
 .. autoclass:: slash.plugins.PluginInterface
   :members:
 

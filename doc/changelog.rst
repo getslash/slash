@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :release:`0.20.3 <10-05-2016>`
+* :feature:`438` Add the register_if helper for conditionally registering hooks in plugins
 * :release:`0.20.2 <03-04-2016>`
 * :bug:`434` Fixed a bug where class names were not deduced properly when loading tests
 * :bug:`432` Fixed a bug where session cleanups happened before ``test_end`` hooks are fired
