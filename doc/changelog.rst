@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`437 major` tests with unmet requirements are now properly reported as skipped
 * :feature:`424` slash internal app context can now be instructed to avoid reporting to console (use ``report=False``)
 * :feature:`436` ``slash list`` now fails by default if no tests are listed. This can be overriden by specifying ``--allow-empty``
 * :feature:`435` Added ``swallow_types`` argument to exception_handling context to enable selective swallowing of specific exceptions

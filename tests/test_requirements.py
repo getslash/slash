@@ -1,5 +1,7 @@
 import pytest
 import slash
+import gossip
+
 from slash.loader import Loader
 
 from .utils import make_runnable_tests
@@ -35,7 +37,6 @@ def test_requirements(suite, suite_test, requirement_fullfilled, use_fixtures, u
     if requirement_fullfilled:
         assert results[suite_test].is_success()
     else:
-        assert not results[suite_test].is_started()
         assert results[suite_test].is_skip()
         if use_message:
             [skip] = results[suite_test].get_skips()
@@ -70,3 +71,19 @@ def test_requirements_on_class():
         [test] = make_runnable_tests(Test)
 
     assert [r._req for r in test.get_requirements()] == [req1, req2]
+
+
+def test_requirement_mismatch_gets_skipped(suite, suite_test):
+    reason = "some reason here"
+    suite_test.add_decorator('slash.requires(lambda: False, {!r})'.format(reason))
+    skips = []
+
+    suite_test.expect_skip()
+
+    @gossip.register('slash.test_skip')
+    def test_skip(reason):
+        skips.append(reason)
+
+    suite.run()
+
+    assert skips == ['Unmet requirements: ' + reason]

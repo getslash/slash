@@ -79,17 +79,17 @@ def _run_single_test(test, test_iterator):
 
         with handling_exceptions():
 
-            if not _check_test_requirements(test):
-                _logger.debug('Requirements not met for {0}. Not running', test)
-                return
-
             result.mark_started()
             try:
                 try:
                     with handling_exceptions(swallow=True):
+
+                        hooks.test_start() # pylint: disable=no-member
+
+                        _check_test_requirements(test)
+
                         context.session.scope_manager.begin_test(test)
                         try:
-                            hooks.test_start() # pylint: disable=no-member
                             with handling_exceptions(swallow=True):
                                 test.run()
                         finally:
@@ -145,9 +145,7 @@ def _mark_unrun_tests(test_iterator):
 def _check_test_requirements(test):
     unmet_reqs = test.get_unmet_requirements()
     if unmet_reqs:
-        context.result.add_skip('Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs)))
-        return False
-    return True
+        raise SkipTest('Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs)))
 
 
 @contextmanager
