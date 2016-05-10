@@ -81,7 +81,7 @@ def _run_single_test(test, test_iterator):
 
             if not _check_test_requirements(test):
                 _logger.debug('Requirements not met for {0}. Not running', test)
-                hooks.test_avoided()
+                hooks.test_avoided() # pylint: disable=no-member
                 return
 
             result.mark_started()
