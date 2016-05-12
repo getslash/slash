@@ -56,3 +56,24 @@ _SCOPES = dict(
     izip(('test', 'module', 'session'), itertools.count()))
 
 _SCOPES_BY_ID = dict((id, name) for (name, id) in iteritems(_SCOPES))
+
+
+def generator_fixture(func):
+    """A utility for generating parametrization values from a generator:
+
+    >>> @slash.generator_fixture
+    ... def some_parameter():
+    ...     yield first_value
+    ...     yield second_value
+
+    .. note:: A generator parameter is a shortcut for a simple parametrized fixture, so the entire iteration is exhausted during test load time
+    """
+    from .parameters import parametrize
+
+    @parametrize('param', list(func()))
+    def new_func(param):
+        return param
+
+    new_func.__name__ = func.__name__
+
+    return fixture(new_func)

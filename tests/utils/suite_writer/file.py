@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from .code_element import CodeElement
 from .element import Element
 from .fixture import Fixture
+from .generator_fixture import GeneratorFixture
 from .nonmethod_test import NonMethodTest
 from .test_class import Class
 from .test_container import TestContainer
@@ -35,6 +36,11 @@ class File(TestContainer, CodeElement):
 
     def add_fixture(self, **kw):
         returned = Fixture(self.suite, self, **kw)
+        self._fixtures.append(returned)
+        return returned
+
+    def add_generator_fixture(self):
+        returned = GeneratorFixture(self.suite, self)
         self._fixtures.append(returned)
         return returned
 

@@ -240,3 +240,16 @@ def plugin(no_plugins):
         def deactivate(self):
             self._deactivate_called = True
     return StartSessionPlugin()
+
+
+@pytest.fixture(params=['slashconf', 'file'])
+def get_fixture_location(request):
+
+    def getter(test):
+        if request.param == 'slashconf':
+            return test.suite.slashconf
+        elif request.param == 'file':
+            return test.file
+        else:
+            raise NotImplementedError() # pragma: no cover
+    return getter

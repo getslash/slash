@@ -4,6 +4,8 @@ import logbook
 
 from slash._compat import iteritems, itervalues, xrange
 
+from .generator_fixture import GeneratorFixture
+
 _logger = logbook.Logger(__name__)
 
 
@@ -47,15 +49,18 @@ def _iter_param_value_sets(test):
 
 
 def _find_all_parameters(func):
-    returned = {}
+    params = []
     stack = [func]
     while stack:
         f = stack.pop()
-        stack.extend(f.get_fixtures())
-        for param in f.get_parameters():
-            if param.id not in returned:
-                returned[param.id] = param
-    return list(itervalues(returned))
+        for subfixture in f.get_fixtures():
+            if isinstance(subfixture, GeneratorFixture):
+                params.append(subfixture)
+                continue
+            else:
+                stack.append(subfixture)
+        params.extend(f.get_parameters())
+    return list(itervalues({p.id: p for p in params}))
 
 
 def _result_matches(test, result, param_values):

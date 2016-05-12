@@ -170,6 +170,40 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 		    @this.add_cleanup
 		    def cleanup():
 		        shutil.rmtree(directory)
+
+Misc. Utilities
+---------------
+
+Generator Fixtures
+~~~~~~~~~~~~~~~~~~
+
+:func:`slash.generator_fixture` is a shortcut for a fixture returning a single parametrization:
+
+.. code-block:: python
+       
+       @slash.generator_fixture
+       def model_types():
+           for model_config in all_model_configs:
+               if model_config.supported:
+                   yield model_config.type
+
+
+In general, this form:
+
+.. code-block:: python
+       
+       @slash.generator_fixture
+       def fixture():
+           yield from x
+
+is equivalent to this form:
+
+.. code-block:: python
+       
+       @slash.fixture
+       @slash.parametrize('param', x)
+       def fixture(param):
+           return param
 		    
 
 Listing Available Fixtures

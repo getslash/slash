@@ -12,6 +12,9 @@ class Fixture(Function):
         self.scope = scope
         self.autouse = autouse
 
+    def is_generator_fixture(self):
+        return False
+
     def add_cleanup(self, **kwargs):
         return self.add_deferred_event('this.add_cleanup', name='fixture_cleanup', **kwargs)
 

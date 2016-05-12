@@ -122,9 +122,15 @@ class Function(CodeElement):
     def _write_parameter_values(self, code_formatter):
         if not self.suite.debug_info:
             return
-        for p in self._parameters:
+
+        for p in self._iter_notify_parameters():
             code_formatter.writeln('__ut__.notify_parameter_value({0!r}, {1})'.format(
                 p.id, p.name))
+
+    def _iter_notify_parameters(self):
+        return itertools.chain(
+            self._parameters,
+            (f for f in self._fixtures if f.is_generator_fixture()))
 
     def _get_function_name(self):
         if self._name is None:
