@@ -153,7 +153,7 @@ class SessionLogging(object):
             stack.enter_context(self.warnings_handler.applicationbound())
             stack.enter_context(self._get_silenced_logs_context())
             if config.root.log.unittest_mode:
-                stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True))
+                stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.DEBUG))
             for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler.applicationbound())
             if config.root.log.unified_session_log and self.session_log_handler is not None:
