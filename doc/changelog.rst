@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`401` session_end/test_end no longer called on plugins when session_start/test_start isn't called (e.g. due to errors with other plugins)
 * :feature:`423` Added support for generator fixtures
 * :feature:`437` Added ``test_avoided`` hook to be called when tests are completely skipped (e.g. requirements)
 * :feature:`424` slash internal app context can now be instructed to avoid reporting to console (use ``report=False``)

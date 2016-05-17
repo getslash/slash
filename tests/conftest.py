@@ -13,6 +13,7 @@ import slash.plugins
 from slash import resuming
 from slash.loader import Loader
 from slash.core.result import GlobalResult, Result
+from slash import plugins
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
@@ -253,3 +254,8 @@ def get_fixture_location(request):
         else:
             raise NotImplementedError() # pragma: no cover
     return getter
+
+@pytest.fixture
+def restore_plugins_on_cleanup(request):
+    request.addfinalizer(plugins.manager.install_builtin_plugins)
+    request.addfinalizer(plugins.manager.uninstall_all)

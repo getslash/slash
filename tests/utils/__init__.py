@@ -1,4 +1,5 @@
 from types import FunctionType
+from contextlib import contextmanager
 import itertools
 import platform
 import shutil
@@ -8,6 +9,7 @@ import tempfile
 import forge
 import logbook
 from logbook.compat import LoggingHandler
+import pytest
 
 import gossip
 import slash
@@ -16,11 +18,9 @@ from slash._compat import ExitStack
 from slash.core.runnable_test import RunnableTest
 from slash.core.test import TestTestFactory
 from slash.core.function_test import FunctionTestFactory
+from slash.plugins import PluginInterface
 
-if platform.python_version() < "2.7":
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 
 _logger = logbook.Logger(__name__)
@@ -86,6 +86,12 @@ class CustomException(Exception):
         raise cls("Custom exception")
 
 
+class NamedPlugin(PluginInterface):
+
+    def get_name(self):
+        return type(self).__name__
+
+
 def no_op(*args, **kwargs):
     pass
 
@@ -123,3 +129,13 @@ def without_pyc(filename):
     if filename.endswith('.pyc'):
         return filename[:-1]
     return filename
+
+
+def raises_maybe(exc, cond):
+    @contextmanager
+    def noop():
+        yield
+
+    if cond:
+        return pytest.raises(exc)
+    return noop()

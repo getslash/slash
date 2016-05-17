@@ -77,6 +77,11 @@ class PluginManager(object):
         plugin_name = plugin.get_name()
         self._configure(plugin)
         self._installed[plugin_name] = plugin
+        if not hasattr(plugin, '__toggles__'):
+            plugin.__toggles__ = {
+                'session': gossip.Toggle(),
+                'test': gossip.Toggle(),
+            }
         if activate:
             self.activate(plugin_name)
         if activate_later:
@@ -115,6 +120,7 @@ class PluginManager(object):
         """
         for plugin in list(itervalues(self._installed)):
             self.uninstall(plugin)
+        assert not self._installed
 
     def activate(self, plugin):
         """
@@ -125,8 +131,8 @@ class PluginManager(object):
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
         plugin.activate()
-        for hook, callback, plugin_needs, plugin_provides in self._get_plugin_registrations(plugin):
-            hook.register(callback, token=self._get_token(plugin_name), needs=plugin_needs, provides=plugin_provides)
+        for hook, callback, kwargs in self._get_plugin_registrations(plugin):
+            hook.register(callback, **kwargs)
         self._active.add(plugin_name)
 
     def activate_later(self, plugin):
@@ -198,6 +204,7 @@ class PluginManager(object):
         return plugin
 
     def _get_plugin_registrations(self, plugin):
+        plugin_name = plugin.get_name()
         returned = []
         unknown = []
         global_needs = try_get_mark(plugin, 'plugin_needs', [])
@@ -242,10 +249,22 @@ class PluginManager(object):
                 unknown.append(hook_name)
                 continue
             assert hook is not None
-            returned.append((hook, method, plugin_needs, plugin_provides))
+            kwargs = {
+                'needs': plugin_needs,
+                'provides': plugin_provides,
+                'token': self._get_token(plugin_name),
+            }
+            for location in ('session', 'test'):
+                if hook_name == 'slash.{}_start'.format(location):
+                    kwargs['toggles_on'] = plugin.__toggles__[location]
+                elif hook_name == 'slash.{}_end'.format(location):
+                    kwargs['toggles_off'] = plugin.__toggles__[location]
+
+            returned.append((hook, method, kwargs))
         if unknown:
             raise IncompatiblePlugin("Unknown hooks: {0}".format(", ".join(unknown)))
         return returned
+
 
 manager = PluginManager()
 

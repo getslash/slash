@@ -8,13 +8,8 @@ from slash._compat import PY2
 from slash import hooks, plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
-from .utils import CustomException
+from .utils import CustomException, NamedPlugin
 
-
-@pytest.fixture
-def restore_plugins_on_cleanup(request):
-    request.addfinalizer(plugins.manager.install_builtin_plugins)
-    request.addfinalizer(plugins.manager.uninstall_all)
 
 
 def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
@@ -212,9 +207,3 @@ def test_register_if_nonexistent_hook(no_plugins, checkpoint):
         @slash.plugins.register_if(False)
         def nonexistent_hook(self):
             checkpoint()
-
-
-class NamedPlugin(PluginInterface):
-
-    def get_name(self):
-        return 'some-plugin'
