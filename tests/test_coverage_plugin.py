@@ -1,5 +1,6 @@
 import sys
 import pytest
+import coverage
 
 import slash.plugins
 
@@ -8,9 +9,18 @@ def test_coverage_plugin(suite, enabled_coverage_plugin): # pylint: disable=unus
     suite.run()
 
 @pytest.fixture
-def enabled_coverage_plugin(request):
+def enabled_coverage_plugin(request, patched_coverage):
     slash.plugins.manager.activate('coverage')
 
     @request.addfinalizer
     def deactivate(): # pylint: disable=unused-variable
         slash.plugins.manager.deactivate('coverage')
+
+@pytest.yield_fixture
+def patched_coverage(forge):
+    s = forge.replace_with(coverage.Coverage, 'start', lambda self: None)
+    forge.replay()
+    try:
+        yield
+    finally:
+        forge.restore_all_replacements()
