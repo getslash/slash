@@ -80,7 +80,6 @@ class PluginManager(object):
         if not hasattr(plugin, '__toggles__'):
             plugin.__toggles__ = {
                 'session': gossip.Toggle(),
-                'test': gossip.Toggle(),
             }
         if activate:
             self.activate(plugin_name)
@@ -254,11 +253,10 @@ class PluginManager(object):
                 'provides': plugin_provides,
                 'token': self._get_token(plugin_name),
             }
-            for location in ('session', 'test'):
-                if hook_name == 'slash.{}_start'.format(location):
-                    kwargs['toggles_on'] = plugin.__toggles__[location]
-                elif hook_name == 'slash.{}_end'.format(location):
-                    kwargs['toggles_off'] = plugin.__toggles__[location]
+            if hook_name == 'slash.session_start':
+                kwargs['toggles_on'] = plugin.__toggles__['session']
+            elif hook_name == 'slash.session_end':
+                kwargs['toggles_off'] = plugin.__toggles__['session']
 
             returned.append((hook, method, kwargs))
         if unknown:
