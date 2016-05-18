@@ -6,6 +6,9 @@ detox-test:
 test: env
 	.env/bin/python scripts/test_and_pylint.py --parallel
 
+pylint: env
+	.env/bin/pylint --rcfile=.pylintrc slash
+
 env: .env/.up-to-date
 
 .env/.up-to-date: setup.py Makefile
