@@ -34,11 +34,11 @@ class TestTestFactory(RunnableTestFactory):
                         test_method_name,
                         fixture_store=fixture_store,
                         fixture_namespace=fixture_store.get_current_namespace(),
-                        fixture_variation=fixture_variation,
+                        variation=fixture_variation,
                     )
                     if self.testclass.__slash_skipped__:
                         case.run = functools.partial(SkipTest.throw, self.testclass.__slash_skipped_reason__)
-                    yield case._get_address_in_factory(), fixture_variation, case  # pylint: disable=protected-access
+                    yield case  # pylint: disable=protected-access
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(
@@ -67,12 +67,9 @@ class Test(RunnableTest):
     """
     This is a base class for implementing unittest-style test classes.
     """
-    def __init__(self, test_method_name, fixture_store, fixture_namespace, fixture_variation):
-        super(Test, self).__init__()
+    def __init__(self, test_method_name, fixture_store, fixture_namespace, variation):
+        super(Test, self).__init__(fixture_store, fixture_namespace, variation)
         self._test_method_name = test_method_name
-        self._fixture_store = fixture_store
-        self._fixture_namespace = fixture_namespace
-        self._fixture_variation = fixture_variation
 
     def get_test_function(self):
         return getattr(self, self._test_method_name)
@@ -94,12 +91,10 @@ class Test(RunnableTest):
         method = self.get_test_function()
         return self._fixture_store.get_required_fixture_objects(method, namespace=self._fixture_namespace, is_method=True)
 
-    def _get_address_in_factory(self):
+    def get_address_in_factory(self):
         returned = ''
         if self._test_method_name is not None:
             returned += ".{0}".format(self._test_method_name)
-        if self._fixture_variation:
-            returned += '({0})'.format(self._fixture_variation.representation)
         return returned
 
     def _get_call_string(self, kwargs):
@@ -115,7 +110,7 @@ class Test(RunnableTest):
         .. warning:: Not to be overriden
         """
         method = self.get_test_function()
-        with bound_parametrizations_context(self._fixture_variation):
+        with bound_parametrizations_context(self._variation):
             _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace, is_method=True)
             self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             _call_with_fixtures(self.before)

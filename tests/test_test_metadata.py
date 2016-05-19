@@ -41,7 +41,7 @@ def test_variation(suite, suite_test):
     fixture = suite.slashconf.add_fixture()
     param = fixture.add_parameter()
     suite_test.depend_on_fixture(fixture)
-    suite_test.append_line('slash.context.result.data["variation"] = slash.context.test.__slash__.variation')
+    suite_test.append_line('slash.context.result.data["variation"] = slash.context.test.__slash__.variation.values.copy()')
     summary = suite.run()
     for result in summary.get_all_results_for_test(suite_test):
         assert len(result.data['variation']) == 1
@@ -129,7 +129,7 @@ class TestMetadataTest(TestCase):
         parameterized = set(x.test_metadata.address for x in self.results[1:])
 
         self.assertEquals(parameterized, set(
-            "{0}:T002.test_parameters(after:c={2}, b={3}, before:a={1})".format(self.filename, a, c, b)
+            "{0}:T002.test_parameters(after:c={2},b={3},before:a={1})".format(self.filename, a, c, b)
             for a, b, c in itertools.product([1, 2], [3, 4], [5, 6])))
 
 _TEST_FILE_TEMPLATE = """

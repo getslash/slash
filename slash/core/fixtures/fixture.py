@@ -3,7 +3,7 @@ import itertools
 from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
 from .namespace import Namespace
-from .parameters import get_parametrizations
+from .parameters import iter_parametrization_fixtures
 from .fixture_base import FixtureBase
 
 
@@ -33,15 +33,15 @@ class Fixture(FixtureBase):
         assert self.fixture_kwargs is None
 
         assert self.parametrization_ids is None
-        self.parametrization_ids = []
+        self.parametrization_ids = set()
 
         kwargs = {}
         parametrized = set()
 
-        for param in get_parametrizations(self.fixture_func):
+        for name, param in iter_parametrization_fixtures(self.fixture_func):
             store.register_fixture_id(param)
-            parametrized.update(param.names)
-            self.parametrization_ids.append(param.info.id)
+            parametrized.add(name)
+            self.parametrization_ids.add(param.info.id)
 
         for name in self.info.required_args:
             if name in parametrized:

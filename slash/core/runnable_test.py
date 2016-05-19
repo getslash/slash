@@ -8,6 +8,18 @@ class RunnableTest(object):
     """
     __slash__ = None
 
+    def __init__(self, fixture_store, fixture_namespace, variation):
+        super(RunnableTest, self).__init__()
+        self._fixture_store = fixture_store
+        self._fixture_namespace = fixture_namespace
+        self._variation = variation
+
+    def get_variation(self):
+        return self._variation
+
+    def get_address_in_factory(self):
+        raise NotImplementedError() # pragma: no cover
+
     def run(self):
         """
         This method is meant to be overriden by derived classes to actually

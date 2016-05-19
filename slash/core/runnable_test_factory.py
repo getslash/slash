@@ -53,9 +53,9 @@ class RunnableTestFactory(object):
 
         Do not override this method directly. Use :func:`.RunnableTestFactory._generate_tests` instead.
         """
-        for address_in_factory, variation, test in self._generate_tests(fixture_store):
+        for test in self._generate_tests(fixture_store):
             assert test.__slash__ is None
-            test.__slash__ = Metadata(self, test, address_in_factory, variation=variation.representation)
+            test.__slash__ = Metadata(self, test)
             yield test
 
     def _generate_tests(self, fixture_store):

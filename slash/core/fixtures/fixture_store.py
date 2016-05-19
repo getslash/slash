@@ -9,9 +9,9 @@ from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import getargspec
 from .fixture import Fixture
 from .namespace import Namespace
-from .parameters import Parametrization, get_parametrizations
+from .parameters import Parametrization, iter_parametrization_fixtures
 from .utils import get_scope_by_name, nofixtures
-from .variation import VariationFactory
+from ..variation_factory import VariationFactory
 from .active_fixture import ActiveFixture
 
 class FixtureStore(object):
@@ -25,9 +25,25 @@ class FixtureStore(object):
         self._active_fixtures_by_scope = collections.defaultdict(OrderedDict)
         self._computing = set()
         self._all_needed_parametrization_ids_by_fixture_id = {}
+        self._known_fixture_ids = collections.defaultdict(dict) # maps fixture ids to known combinations
 
     def get_active_fixture(self, fixture):
         return self._active_fixtures_by_scope[fixture.info.scope].get(fixture.info.id)
+
+    def get_variation_id(self, variation):
+        return {name: self._compute_id(variation, p) for name, p in variation.name_bindings.items()}
+
+    def _compute_id(self, variation, p):
+        if isinstance(p, Parametrization):
+            return variation.param_value_indices[p.info.id]
+        combination = frozenset((f.info.id, self._compute_id(variation, f))
+                                for f in self.iter_all_needed_fixture_objects(p))
+        known = self._known_fixture_ids[p.info.id]
+        return known.setdefault(combination, len(known))
+
+    def iter_all_needed_fixture_objects(self, fixtureobj):
+        for fid in self.get_all_needed_fixture_ids(fixtureobj):
+            yield self.get_fixture_by_id(fid)
 
     def call_with_fixtures(self, test_func, namespace, is_method):
 
@@ -40,7 +56,7 @@ class FixtureStore(object):
         return test_func(**kwargs)
 
     def get_required_fixture_names(self, test_func, is_method):
-        skip_names = set(name for p in get_parametrizations(test_func) for name in p.names)
+        skip_names = {name for name, _ in iter_parametrization_fixtures(test_func)}
         arg_names = [name for name in getargspec(test_func).args if name not in skip_names]
         if is_method:
             arg_names = arg_names[1:]
@@ -62,7 +78,7 @@ class FixtureStore(object):
     def get_current_namespace(self):
         return self._namespaces[-1]
 
-    def get_all_needed_parametrization_ids(self, fixtureobj):
+    def get_all_needed_fixture_ids(self, fixtureobj):
         if self._unresolved_fixture_ids:
             raise UnresolvedFixtureStore()
         if isinstance(fixtureobj, Parametrization):
@@ -178,6 +194,18 @@ class FixtureStore(object):
 
         value = self._fill_fixture_value(name, fixture)
         return value
+
+    def get_value(self, variation, parameter):
+        returned = self.get_value_by_id(variation, parameter.info.id)
+        if isinstance(parameter, Parametrization):
+            returned = parameter.transform(returned)
+        return returned
+
+    def get_value_by_id(self, variation, fixture_or_parametrization_id):
+        f = self.get_fixture_by_id(fixture_or_parametrization_id)
+        if isinstance(f, Parametrization):
+            return f.values[variation.param_value_indices[fixture_or_parametrization_id]]
+        return self.get_fixture_value(f)
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
 

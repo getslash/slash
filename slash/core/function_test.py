@@ -10,14 +10,14 @@ from .tagging import get_tags
 class FunctionTest(RunnableTest):
 
     def __init__(self, function, fixture_store, fixture_namespace, variation):
-        super(FunctionTest, self).__init__()
+        super(FunctionTest, self).__init__(fixture_store, fixture_namespace, variation)
         self._func = function
-        self._fixture_store = fixture_store
-        self._fixture_namespace = fixture_namespace
-        self._variation = variation
 
     def get_tags(self):
         return get_tags(self._func)
+
+    def get_address_in_factory(self):
+        return ''
 
     def run(self):
         with bound_parametrizations_context(self._variation):
@@ -46,6 +46,5 @@ class FunctionTestFactory(RunnableTestFactory):
     def _generate_tests(self, fixture_store):
         namespace = fixture_store.get_current_namespace()
         for variation in fixture_store.iter_parametrization_variations(funcs=[self.func]):
-            address = '({0})'.format(variation.representation) if variation else None
             for _ in xrange(self._get_num_repetitions(self.func)):
-                yield address, variation, FunctionTest(self.func, fixture_store, namespace, variation)
+                yield FunctionTest(self.func, fixture_store, namespace, variation)

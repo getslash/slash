@@ -12,6 +12,7 @@ if __name__ == '__main__':
     deps = [
         "coverage",
         "coveralls",
+        "munch",
         "pytest",
         "pytest-xdist",
         "pytest-capturelog",

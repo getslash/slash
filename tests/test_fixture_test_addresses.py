@@ -14,7 +14,7 @@ def test_fixtures_representation_strings(results, a_values, fixture_values, file
         prefix += 'Test.'
     assert len(results) == len(a_values) * len(fixture_values)
     assert set(result.test_metadata.address for result in results) == set(
-        '{0}test_1(a={1}, fixture=fixture{2})'.format(prefix, i, j) for i, j in itertools.product(a_values, xrange(len(fixture_values))))
+        '{0}test_1(a={1},fixture=fixture{2})'.format(prefix, i, j) for i, j in itertools.product(a_values, xrange(len(fixture_values))))
 
 
 @pytest.mark.parametrize('non_printable', ['string/with/slashes', object()])

@@ -5,7 +5,7 @@ from uuid import uuid1
 import pytest
 import slash
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
-from slash.core.fixtures.parameters import bound_parametrizations_context, get_parametrizations
+from slash.core.fixtures.parameters import bound_parametrizations_context, iter_parametrization_fixtures
 from slash.core.fixtures.fixture_store import FixtureStore
 
 
@@ -205,7 +205,7 @@ def test_fixture_store_resolve_missing_fixtures(store):
         store.resolve()
 
 
-def test_get_all_needed_parametrization_ids(store):
+def test_get_all_needed_fixture_ids(store):
 
     @store.add_fixture
     @slash.fixture
@@ -227,14 +227,14 @@ def test_get_all_needed_parametrization_ids(store):
     fixtureobj = store.get_fixture_by_id(fixture3.__slash_fixture__.id)
 
     with pytest.raises(UnresolvedFixtureStore):
-        store.get_all_needed_parametrization_ids(fixtureobj)
+        store.get_all_needed_fixture_ids(fixtureobj)
 
     store.resolve()
 
-    assert len(set(store.get_all_needed_parametrization_ids(fixtureobj))) == 2
+    assert len(set(store.get_all_needed_fixture_ids(fixtureobj))) == 2
 
 
-def test_get_all_needed_parametrization_ids_of_parametrization(store):
+def test_get_all_needed_fixture_ids_of_parametrization(store):
 
     @store.add_fixture
     @slash.fixture
@@ -243,14 +243,14 @@ def test_get_all_needed_parametrization_ids_of_parametrization(store):
         pass
 
     fixtureobj = store.get_fixture_by_id(fixture1.__slash_fixture__.id)
-    [param_fixtureobj] = get_parametrizations(fixture1)
+    [(_, param_fixtureobj)] = iter_parametrization_fixtures(fixture1)
 
     with pytest.raises(UnresolvedFixtureStore):
-        store.get_all_needed_parametrization_ids(fixtureobj)
+        store.get_all_needed_fixture_ids(fixtureobj)
 
     store.resolve()
 
-    needed = set(store.get_all_needed_parametrization_ids(param_fixtureobj))
+    needed = set(store.get_all_needed_fixture_ids(param_fixtureobj))
     assert len(needed) == 1
     assert needed == set([param_fixtureobj.info.id])
 
