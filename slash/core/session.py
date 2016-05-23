@@ -72,11 +72,13 @@ class Session(Activatable):
         self.start_time = time.time()
         self.results.global_result.mark_started()
         self.cleanups.push_scope('session-global')
+        session_start_called = False
         try:
             with handling_exceptions():
                 with notify_if_slow_context("Initializing session..."):
                     hooks.before_session_start()  # pylint: disable=no-member
                     hooks.session_start()  # pylint: disable=no-member
+                    session_start_called = True
                     hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield
@@ -89,8 +91,9 @@ class Session(Activatable):
             with handling_exceptions():
                 self.cleanups.pop_scope('session-global')
 
-            with handling_exceptions():
-                hooks.session_end()  # pylint: disable=no-member
+            if session_start_called:
+                with handling_exceptions():
+                    hooks.session_end()  # pylint: disable=no-member
             self.reporter.report_session_end(self)
 
     def mark_complete(self):

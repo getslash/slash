@@ -1,3 +1,4 @@
+#pylint: disable=unused-argument, unused-variable
 from slash._compat import ExitStack
 import slash
 from slash import plugins
@@ -6,7 +7,7 @@ from slash import hooks
 import pytest
 import gossip
 
-from .utils import TestCase, make_runnable_tests
+from .utils import TestCase, make_runnable_tests, CustomException
 
 
 class SessionEndException(Exception):
@@ -194,6 +195,27 @@ def test_before_cleanup_hook(request, forge):
     with slash.Session() as s:
         with s.get_started_context():
             slash.runner.run_tests(make_runnable_tests(test_something))
+
+
+def test_session_end_not_called_when_before_session_start_fails(checkpoint):
+
+    @gossip.register('slash.before_session_start')
+    def before_start_hook():
+        raise CustomException()
+
+    @gossip.register('slash.session_end')
+    def hook():
+        checkpoint()
+
+
+    with slash.Session() as s:
+        with pytest.raises(CustomException):
+            with s.get_started_context():
+                pass
+
+    [err] = s.results.global_result.get_errors()
+    assert 'CustomException' in str(err)
+    assert not checkpoint.called
 
 
 #### Older tests below, need modernizing ####
