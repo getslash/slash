@@ -48,6 +48,8 @@ class VariationFactory(object):
             self._store.ensure_known_parametrization(param)
             parametrizations[name] = param
 
+            self._needed_fixtures.append(param)
+
         for arg_name in arg_names:
             fixture = parametrizations.get(arg_name, None)
             if fixture is None:

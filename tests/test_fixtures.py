@@ -97,3 +97,9 @@ def test_fixtures_in_before_after(suite, where):
     assert evt1 in summary.events
     assert evt2 in summary.events
     assert fixture_event in summary.events
+
+def test_fixture_and_parameter(suite, suite_test, get_fixture_location):
+    fixture = get_fixture_location(suite_test).add_fixture()
+    suite_test.add_parameter()
+    suite_test.depend_on_fixture(fixture)
+    suite.run()

@@ -41,22 +41,38 @@ def test_nested_fixture_ids(results):
     ids = {res.data['captured_values']['outer_fixture'] for res in results.test_nested_fixture}
     assert ids == {'outer_inner{}'.format(i+1) for i in range(3)}
 
+def test_fixture_and_toggle(results):
+    assert len(results.test_fixture_and_toggle) == 2
+
 
 @pytest.fixture
 def results():
 
+    tests = []
+    def include(f):
+        tests.append(f)
+        return f
+
+    @include
     def test_no_params():
         pass
 
+    @include
     def test_single_param_fixture(fixture):
         _capture_arguments()
 
+    @include
     def test_nested_fixture(outer_fixture):
         _capture_arguments()
 
-
+    @include
     @slash.parametrize(('x', 'y'), [(1, 2)])
     def test_parametrization_tuple(x, y):
+        _capture_arguments()
+
+    @include
+    @slash.parameters.toggle('toggle')
+    def test_fixture_and_toggle(fixture, toggle):
         _capture_arguments()
 
     with slash.Session() as s:
@@ -80,13 +96,7 @@ def results():
         s.fixture_store.resolve()
 
         with s.get_started_context():
-            for t in [
-                    test_no_params,
-                    test_single_param_fixture,
-                    test_nested_fixture,
-                    test_parametrization_tuple,
-            ]:
-                slash.runner.run_tests(make_runnable_tests(t))
+            slash.runner.run_tests(make_runnable_tests(tests))
     assert s.results.is_success(allow_skips=False)
 
     returned = collections.defaultdict(list)

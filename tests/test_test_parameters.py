@@ -3,7 +3,7 @@ import copy
 import pytest
 import slash
 
-from .utils import run_tests_assert_success
+from .utils import run_tests_assert_success, run_tests_in_session
 from .utils.suite_writer import Suite
 
 
@@ -141,6 +141,23 @@ def test_parametrization_tuples_invalid_type():
     assert 'Invalid parametrization value' in str(caught.value)
     assert 'expected sequence' in str(caught.value)
 
+
+def test_parametrizing_function_without_arg(checkpoint):
+
+    @slash.parameters.toggle('param')
+    def test_example():
+        checkpoint()
+
+    session = run_tests_in_session(test_example)
+    assert session.results.global_result.get_errors() == []
+    results = list(session.results.iter_test_results())
+    assert len(results) == 2
+
+    for result in results:
+        [err] = result.get_errors()
+        assert "unexpected keyword argument 'param'" in str(err)
+
+    assert not checkpoint.called
 
 
 def _set(param, value):

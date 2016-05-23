@@ -14,14 +14,12 @@ class Variation(object):
     This mostly applies for parametrization fixtures. The other fixtures follow since they are either constant
     or indirectly depend on parametrization"""
 
-    def __init__(self, store, param_value_indices=None, name_bindings=None):
+    def __init__(self, store, param_value_indices, name_bindings=None):
         """
         :param name_bindings: dictionary mapping parameter name to its id
         """
         super(Variation, self).__init__()
         self._store = store
-        if param_value_indices is None:
-            param_value_indices = {}
         self.param_value_indices = param_value_indices
         self.name_bindings = name_bindings or {}
         self.values = {}
@@ -58,7 +56,7 @@ class Variation(object):
             self.values[name] = self._store.get_value(self, param)
 
     def forget_values(self):
-        self.values = None
+        self.values.clear()
 
     def get_param_value(self, param):
         return self._store.get_value(self, param)
