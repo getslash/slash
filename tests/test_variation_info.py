@@ -12,14 +12,14 @@ from .utils import make_runnable_tests
 def test_variation_info_without_params_is_none(results):
     assert len(results.test_no_params) == 1
     for res in results.test_no_params:
-        assert res.test_metadata.variation.values is None
+        assert res.test_metadata.variation.values == {}
 
 
 def test_variation_info_single_value_id_none(results):
     assert len(results.test_single_param_fixture) == 1
     for res in results.test_single_param_fixture:
         assert res.test_metadata.variation.id is not None
-        assert res.test_metadata.variation.values is None
+        assert res.test_metadata.variation.values == {}
         assert res.data['captured_values']['fixture'] is _object1
 
 def test_unique_variation_ids(results):
