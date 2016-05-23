@@ -25,7 +25,7 @@ class Function(CodeElement):
         self._decorators.append(decorator_string)
 
     def get_fixtures(self):
-        return self._fixtures
+        return [f for _, f in self._fixtures]
 
     def get_parameters(self):
         return self._parameters
@@ -35,8 +35,9 @@ class Function(CodeElement):
         self._parameters.append(returned)
         return returned
 
-    def depend_on_fixture(self, f):
-        self._fixtures.append(f)
+    def depend_on_fixture(self, f, alias=False):
+        alias_name = 'alias_{}'.format(str(uuid4()).replace('-', '')) if alias else None
+        self._fixtures.append((alias_name, f))
         return f
 
     def _write_event(self, code_formatter, eventcode):
@@ -76,7 +77,7 @@ class Function(CodeElement):
         code_formatter.writeln()
 
     def _get_parameter_string(self):
-        returned = ', '.join(self._get_argument_names())
+        returned = ', '.join(self._get_argument_strings())
         if returned and self._additional_parameter_string:
             returned += ', '
         returned += self._additional_parameter_string
@@ -130,7 +131,7 @@ class Function(CodeElement):
     def _iter_notify_parameters(self):
         return itertools.chain(
             self._parameters,
-            (f for f in self._fixtures if f.is_generator_fixture()))
+            (f for _, f in self._fixtures if f.is_generator_fixture()))
 
     def _get_function_name(self):
         if self._name is None:
@@ -141,11 +142,17 @@ class Function(CodeElement):
     def name(self):
         return self._get_function_name()
 
-    def _get_argument_names(self):
-        return (p.name for p in itertools.chain(self._parameters, self._fixtures))
+    def _get_argument_strings(self):
+        for p in self._parameters:
+            yield p.name
+        for alias, f in self._fixtures:
+            if alias is not None:
+                yield '{}: slash.use({!r})'.format(alias, f.name)
+            else:
+                yield f.name
 
 
 class Method(Function):
 
-    def _get_argument_names(self):
-        return itertools.chain(['self'], super(Method, self)._get_argument_names())
+    def _get_argument_strings(self):
+        return itertools.chain(['self'], super(Method, self)._get_argument_strings())

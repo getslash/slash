@@ -1,9 +1,11 @@
 import functools
 import itertools
 
+from sentinels import NOTHING
+
 from ...ctx import context
 from ..._compat import izip, iteritems
-from ...utils.python import getargspec, wraps
+from ...utils.python import get_arguments_dict, wraps
 from ...utils.function_marker import function_marker
 
 _id_gen = itertools.count(1000)
@@ -39,11 +41,12 @@ class FixtureInfo(object):
         self.autouse = autouse
         self.scope = _SCOPES[scope]
         if self.func is not None:
-            self.required_args = getargspec(func).args
+
+            self.required_args = get_arguments_dict(self.func)
         else:
-            self.required_args = []
+            self.required_args = {}
         if 'this' in self.required_args:
-            self.required_args.remove('this')
+            self.required_args.pop('this')
             self.needs_this = True
         else:
             self.needs_this = False
@@ -109,4 +112,22 @@ def yield_fixture(func):
         return value
     return new_func
 
-__all__ = ['fixture', 'nofixtures', 'generator_fixture', 'yield_fixture']
+class use(object):
+    """Allows tests to use fixtures under different names
+
+    def test_something(m: use('microwave')):
+        ...
+    """
+
+    def __init__(self, real_fixture_name):
+        super(use, self).__init__()
+        self.real_fixture_name = real_fixture_name
+
+
+def get_real_fixture_name_from_argument(argument):
+    if argument.annotation is not NOTHING and isinstance(argument.annotation, use):
+        return argument.annotation.real_fixture_name
+    return argument.name
+
+
+__all__ = ['fixture', 'nofixtures', 'generator_fixture', 'yield_fixture', 'use']

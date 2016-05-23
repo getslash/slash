@@ -62,13 +62,16 @@ class Fixture(Function):
     def get_value_string(self):
         returned = '{{"value": {0!r}, "params": {{'.format(self.name)
 
-        for param in itertools.chain(self._parameters, self._fixtures):
-            returned += '{0!r}: {1},'.format(param.id, param.name)
+        for name, param in itertools.chain(
+                ((p.name, p) for p in self._parameters),
+                ((alias or f.name, f) for alias, f in self._fixtures),
+        ):
+            returned += '{0!r}: {1},'.format(param.id, name)
         returned += '} }'
         return returned
 
-    def _get_argument_names(self):
-        return itertools.chain(['this'], super(Fixture, self)._get_argument_names())
+    def _get_argument_strings(self):
+        return itertools.chain(['this'], super(Fixture, self)._get_argument_strings())
 
     def __repr__(self):
         return '<Fixture {0}>'.format(self.name)

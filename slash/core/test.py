@@ -89,7 +89,7 @@ class Test(RunnableTest):
 
     def get_required_fixture_objects(self):
         method = self.get_test_function()
-        return self._fixture_store.get_required_fixture_objects(method, namespace=self._fixture_namespace, is_method=True)
+        return self._fixture_store.get_required_fixture_objects(method, namespace=self._fixture_namespace)
 
     def get_address_in_factory(self):
         returned = ''
@@ -111,7 +111,7 @@ class Test(RunnableTest):
         """
         method = self.get_test_function()
         with bound_parametrizations_context(self._variation):
-            _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace, is_method=True)
+            _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace)
             self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             _call_with_fixtures(self.before)
             try:

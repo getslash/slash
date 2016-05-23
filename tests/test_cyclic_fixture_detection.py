@@ -10,7 +10,7 @@ def test_cyclic_fixture_detection(suite, suite_test):
 
     suite_test.depend_on_fixture(fixture1)
     for test in suite:
-        test.expect_deselect()
+        test.expect_deselect() # no test should start at all....
 
     summary = suite.run()
     assert not summary.session.results.global_result.is_success()
@@ -24,7 +24,7 @@ def test_cyclic_fixture_detection_depend_on_self(suite, suite_test):
 
     suite_test.depend_on_fixture(fixture)
     for test in suite:
-        test.expect_deselect()
+        test.expect_deselect() # no test should start at all...
 
     summary = suite.run()
     assert not summary.session.results.global_result.is_success()

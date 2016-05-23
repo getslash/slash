@@ -13,5 +13,5 @@ class MethodTest(Test):
     def is_method_test(self):
         return True
 
-    def _get_argument_names(self):
-        return itertools.chain(['self'], super(MethodTest, self)._get_argument_names())
+    def _get_argument_strings(self):
+        return itertools.chain(['self'], super(MethodTest, self)._get_argument_strings())

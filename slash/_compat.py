@@ -12,6 +12,7 @@
 import sys
 
 PY2 = sys.version_info[0] == 2
+PYPY = hasattr(sys, 'pypy_version_info')
 
 if PY2:
     from cStringIO import StringIO as cStringIO

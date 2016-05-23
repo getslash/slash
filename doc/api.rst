@@ -57,6 +57,8 @@ Fixtures
 
 .. autofunction:: slash.nofixtures()
 
+.. autofunction:: slash.use
+
 
 Requirements
 ------------

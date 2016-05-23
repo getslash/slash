@@ -1,16 +1,15 @@
 import sys
 
 import collections
-
 from ..._compat import iteritems, itervalues, OrderedDict, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
-from ...utils.python import getargspec
+from ...utils.python import get_arguments
 from .fixture import Fixture
 from .namespace import Namespace
 from .parameters import Parametrization, iter_parametrization_fixtures
-from .utils import get_scope_by_name, nofixtures
+from .utils import get_scope_by_name, nofixtures, get_real_fixture_name_from_argument
 from ..variation_factory import VariationFactory
 from .active_fixture import ActiveFixture
 
@@ -45,25 +44,36 @@ class FixtureStore(object):
         for fid in self.get_all_needed_fixture_ids(fixtureobj):
             yield self.get_fixture_by_id(fid)
 
-    def call_with_fixtures(self, test_func, namespace, is_method):
+    def call_with_fixtures(self, test_func, namespace):
 
         if not nofixtures.is_marked(test_func):
-            arg_names = self.get_required_fixture_names(test_func, is_method=is_method)
-            kwargs = self.get_fixture_dict(arg_names, namespace)
+            fixture_names = self.get_required_fixture_names(test_func)
+            kwargs = self.get_fixture_dict(fixture_names, namespace)
         else:
             kwargs = {}
 
         return test_func(**kwargs)
 
-    def get_required_fixture_names(self, test_func, is_method):
-        skip_names = {name for name, _ in iter_parametrization_fixtures(test_func)}
-        arg_names = [name for name in getargspec(test_func).args if name not in skip_names]
-        if is_method:
-            arg_names = arg_names[1:]
-        return arg_names
+    def get_required_fixture_names(self, test_func):
+        """Returns a list of fixture names needed by test_func.
 
-    def get_required_fixture_objects(self, test_func, namespace, is_method):
-        names = self.get_required_fixture_names(test_func, is_method=is_method)
+        Each element returned is either a string or a tuple of (required_name, real_name)
+        """
+        skip_names = {name for name, _ in iter_parametrization_fixtures(test_func)}
+        returned = []
+        for argument in get_arguments(test_func):
+            if argument.name in skip_names:
+                continue
+            real_name = get_real_fixture_name_from_argument(argument)
+            if real_name == argument.name:
+                returned.append(real_name)
+            else:
+                returned.append((argument.name, real_name))
+        return returned
+
+    def get_required_fixture_objects(self, test_func, namespace):
+        names = self.get_required_fixture_names(test_func)
+        assert isinstance(names, list)
         return set(itervalues(self.get_fixture_dict(names, namespace=namespace, get_values=False)))
 
     def __iter__(self):
@@ -170,19 +180,27 @@ class FixtureStore(object):
     def get_fixture_by_name(self, name):
         return self._namespaces[-1].get_fixture_by_name(name)
 
+    def get_fixture_by_argument(self, arg):
+        return self.get_fixture_by_name(get_real_fixture_name_from_argument(arg))
+
     def get_fixture_by_id(self, fixture_id):
         return self._fixtures_by_id[fixture_id]
 
-    def get_fixture_dict(self, required_names, namespace=None, get_values=True, skip_names=frozenset()):
+    def get_fixture_dict(self, fixture_names, namespace=None, get_values=True, skip_names=frozenset()):
         returned = {}
 
         if namespace is None:
             namespace = self.get_current_namespace()
 
-        for required_name in required_names:
+        for element in fixture_names:
+            if isinstance(element, tuple):
+                required_name, real_name = element
+            else:
+                required_name = real_name = element
+
             if required_name in skip_names:
                 continue
-            fixture = namespace.get_fixture_by_name(required_name)
+            fixture = namespace.get_fixture_by_name(real_name)
             if get_values:
                 fixture = self.get_fixture_value(fixture, name=required_name)
             returned[required_name] = fixture

@@ -24,7 +24,6 @@ class FunctionTest(RunnableTest):
             self._fixture_store.activate_autouse_fixtures_in_namespace(namespace=self._fixture_namespace)
             self._fixture_store.call_with_fixtures(
                 self._func, namespace=self._fixture_namespace,
-                is_method=False
             )
 
     def get_test_function(self):
@@ -34,7 +33,7 @@ class FunctionTest(RunnableTest):
         return get_requirements(self._func)
 
     def get_required_fixture_objects(self):
-        return self._fixture_store.get_required_fixture_objects(self._func, namespace=self._fixture_namespace, is_method=False)
+        return self._fixture_store.get_required_fixture_objects(self._func, namespace=self._fixture_namespace)
 
 
 class FunctionTestFactory(RunnableTestFactory):

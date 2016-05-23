@@ -25,7 +25,7 @@ class GeneratorFixture(Function):
             code_formatter.writeln(
                 'yield {0!r}'.format(value))
 
-    def _get_argument_names(self):
+    def _get_argument_strings(self):
         return []
 
     def __repr__(self):

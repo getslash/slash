@@ -1,9 +1,11 @@
+# pylint: disable=unused-variable
 import inspect
 import itertools
 from uuid import uuid1
 
 import pytest
 import slash
+from slash._compat import OrderedDict
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
 from slash.core.fixtures.parameters import bound_parametrizations_context, iter_parametrization_fixtures
 from slash.core.fixtures.fixture_store import FixtureStore
@@ -385,8 +387,8 @@ def test_fixture_decorator_multiple_calls(fixture_func):
 
 
 def test_fixture_required_fixtures(fixture_func):
-    assert fixture_func.__slash_fixture__.required_args == inspect.getargspec(
-        fixture_func).args
+    #pylint: disable=deprecated-method
+    assert set(fixture_func.__slash_fixture__.required_args) == set(inspect.getargspec(fixture_func).args)
 
 
 def test_fixture_name(fixture_func, fixture_func_name):

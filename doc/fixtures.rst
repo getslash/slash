@@ -171,6 +171,42 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 		    def cleanup():
 		        shutil.rmtree(directory)
 
+Aliasing Fixtures
+-----------------
+
+In some cases you may want to name your fixtures descriptively, e.g.:
+
+.. code-block:: python
+       
+       @slash.fixture
+       def microwave_with_up_to_date_firmware(microwave):
+           microwave.update_firmware()
+	   return microwave
+
+Although this is a very nice practice, it makes tests clumsy and verbose:
+
+.. code-block:: python
+       
+       def test_turning_off(microwave_with_up_to_date_firmware):
+           microwave_with_up_to_date_firmware.turn_off()
+	   assert microwave_with_up_to_date_firmware.is_off()
+	   microwave_with_up_to_date_firmware.turn_on()
+
+Fortunately, Slash allows you to *alias* fixtures, using the :func:`slash.use` shortcut:
+
+.. code-block:: python
+       
+       def test_turning_off(m: slash.use('microwave_with_up_to_date_firmware')):
+           m.turn_off()
+	   assert m.is_off()
+	   m.turn_on()
+
+.. versionadded: 1.0
+
+
+.. note:: Fixture aliases require Python 3.x, as they rely on `function argument annotation <https://www.python.org/dev/peps/pep-3107/>`_
+
+
 Misc. Utilities
 ---------------
 
@@ -186,6 +222,8 @@ Yield Fixtures
            m = Microwave(model_name)
 	   yield m
 	   m.turn_off()
+
+.. versionadded: 1.0
 
 Generator Fixtures
 ~~~~~~~~~~~~~~~~~~
@@ -217,6 +255,8 @@ is equivalent to this form:
        @slash.parametrize('param', x)
        def fixture(param):
            return param
+
+.. versionadded: 1.0
 		    
 
 Listing Available Fixtures

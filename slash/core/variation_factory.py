@@ -4,7 +4,7 @@ import itertools
 from .variation import Variation
 from .._compat import OrderedDict, imap, izip, reduce, xrange
 from ..exceptions import FixtureException
-from ..utils.python import getargspec
+from ..utils.python import get_arguments
 from .fixtures.parameters import iter_parametrization_fixtures
 from .fixtures.utils import nofixtures
 
@@ -25,12 +25,12 @@ class VariationFactory(object):
         self._needed_fixtures.append(self._store.get_fixture_by_id(fixture_id))
 
     def add_needed_fixtures_from_method(self, method):
-        self._add_needed_fixtures_from_function(method, is_method=True)
+        self._add_needed_fixtures_from_function(method)
 
     def add_needed_fixtures_from_function(self, func):
-        self._add_needed_fixtures_from_function(func, is_method=False)
+        self._add_needed_fixtures_from_function(func)
 
-    def _add_needed_fixtures_from_function(self, func, is_method):
+    def _add_needed_fixtures_from_function(self, func):
 
         if isinstance(func, tuple):
             namespace, func = func
@@ -40,7 +40,7 @@ class VariationFactory(object):
         if nofixtures.is_marked(func):
             return
 
-        arg_names = getargspec(func).args[1 if is_method else 0:]
+        args = get_arguments(func)
 
         parametrizations = {}
         for name, param in iter_parametrization_fixtures(func):
@@ -50,16 +50,17 @@ class VariationFactory(object):
 
             self._needed_fixtures.append(param)
 
-        for arg_name in arg_names:
-            fixture = parametrizations.get(arg_name, None)
+        for argument in args:
+            fixture = parametrizations.get(argument.name, None)
             if fixture is None:
                 try:
-                    fixture = self._store.get_fixture_by_name(arg_name)
+                    fixture = self._store.get_fixture_by_argument(argument)
                 except FixtureException as e:
                     raise type(e)('Loading {0.__code__.co_filename}:{0.__name__}: {1}'.format(func, e))
 
 
             self._needed_fixtures.append(fixture)
+            arg_name = argument.name
             if namespace is not None:
                 arg_name = '{0}:{1}'.format(namespace, arg_name)
             self._name_bindings[arg_name] = fixture
