@@ -2,6 +2,7 @@ import copy
 
 import pytest
 import slash
+from slash._compat import PY2
 
 from .utils import run_tests_assert_success, run_tests_in_session
 from .utils.suite_writer import Suite
@@ -155,7 +156,10 @@ def test_parametrizing_function_without_arg(checkpoint):
 
     for result in results:
         [err] = result.get_errors()
-        assert "unexpected keyword argument 'param'" in str(err)
+        if PY2:
+            assert "test_example() takes no arguments" in str(err)
+        else:
+            assert "unexpected keyword argument 'param'" in str(err)
 
     assert not checkpoint.called
 
