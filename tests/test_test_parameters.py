@@ -1,4 +1,5 @@
 import copy
+import sys
 
 import pytest
 import slash
@@ -156,7 +157,7 @@ def test_parametrizing_function_without_arg(checkpoint):
 
     for result in results:
         [err] = result.get_errors()
-        if PY2:
+        if PY2 or hasattr(sys, 'pypy_version_info'):
             assert "test_example() takes no arguments" in str(err)
         else:
             assert "unexpected keyword argument 'param'" in str(err)
