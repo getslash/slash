@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`441` ``variation`` in test metadata now contains both ``id`` and ``values``. The former is a unique identification of the test variation, whereas the latter contains the actual fixture/parameter values when the test is run
 * :feature:`401` session_end no longer called on plugins when session_start isn't called (e.g. due to errors with other plugins)
 * :feature:`423` Added support for generator fixtures
 * :feature:`437` Added ``test_avoided`` hook to be called when tests are completely skipped (e.g. requirements)
