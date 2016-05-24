@@ -41,7 +41,9 @@ class Loader(object):
 
     def get_runnables(self, paths, sort_key=None):
         assert context.session is not None
-        returned = self._collect(self._get_iterator(paths))
+        iterator = (t for repetition in range(config.root.run.repeat_all)
+                    for t in self._get_iterator(paths))
+        returned = self._collect(iterator)
         if sort_key is not None:
             returned.sort(key=sort_key)
         return returned
@@ -70,6 +72,7 @@ class Loader(object):
             thing = self._get_runnable_test_factory(thing)
 
         return thing.generate_tests(fixture_store=context.session.fixture_store)
+
 
     def _iter_test_address(self, address):
         if ':' in address:

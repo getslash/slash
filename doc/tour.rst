@@ -240,7 +240,6 @@ Global State
 Slash maintains a set of globals for convenience. The most useful one is ``slash.g``, which is an attribute holder that can be used to hold environment objects set up by plugins or hooks for use in tests.
 
 
-
 Misc. Utilities
 ---------------
 
@@ -255,4 +254,4 @@ Use the :func:`slash.repeat` decorator to make a test repeat several times:
        def test_probabilistic():
            assert still_works()
 
-.. note:: You can also use the `--repeat-each=X` argument to `slash run`, causing it to repeat each test being loaded a specified amount of times
+.. note:: You can also use the ``--repeat-each=X`` argument to `slash run`, causing it to repeat each test being loaded a specified amount of times, or ``--repeat-all=X`` to repeat the entire suite several times

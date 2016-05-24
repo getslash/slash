@@ -64,6 +64,7 @@ config = Config({
         "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
         "filter_strings": [] // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(append='-k', metavar='FILTER'),
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
+        "repeat_all": 1 // Doc("Repeat all suite a specified amount of times") // Cmdline(arg='--repeat-all', metavar="NUM_TIMES"),
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
         "project_customization_file_path": "./.slashrc",
         "user_customization_file_path": "~/.slash/slashrc",

@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`407` Added ``--repeat-all`` option for repeating the entire suite several times
 * :feature:`439` Support ``yield_fixture`` added
 * :bug:`442 major` Prevent ``session_end`` from being called when ``session_start`` doesn't complete successfully
 * :feature:`441` ``variation`` in test metadata now contains both ``id`` and ``values``. The former is a unique identification of the test variation, whereas the latter contains the actual fixture/parameter values when the test is run
