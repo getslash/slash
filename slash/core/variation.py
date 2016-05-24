@@ -50,10 +50,15 @@ class Variation(object):
     def has_value_for_parameter(self, param_id):
         return param_id in self.param_value_indices
 
+    def populate_early_known_values(self):
+        for name, param in self.name_bindings.items():
+            if isinstance(param, Parametrization):
+                self.values[name] = self._store.get_value(self, param)
+
     def populate_values(self):
         for name, param in self.name_bindings.items():
-            assert name not in self.values
-            self.values[name] = self._store.get_value(self, param)
+            if name not in self.values:
+                self.values[name] = self._store.get_value(self, param)
 
     def forget_values(self):
         self.values.clear()

@@ -1,7 +1,9 @@
 # pylint: disable=unused-variable, unused-argument
 import collections
 import copy
+from uuid import uuid4
 
+import gossip
 import pytest
 import slash
 from munch import Munch
@@ -27,6 +29,37 @@ def test_unique_variation_ids(results):
     ids = {_freeze(res.test_metadata.variation.id) for res in all_results}
     assert len(ids) == len(all_results)
     assert None not in ids
+
+
+def test_parametrization_info_availabe_on_test_start(checkpoint):
+    param_value = str(uuid4())
+
+    @gossip.register('slash.test_start')
+    def test_start_hook():
+        assert slash.context.test.__slash__.variation.values['param'] == param_value
+        assert 'fixture' not in slash.context.test.__slash__.variation.values
+        checkpoint()
+
+    @slash.parametrize('param', [param_value])
+    def test_something(param, fixture):
+        pass
+
+    with slash.Session() as s:
+
+        @s.fixture_store.add_fixture
+        @slash.fixture
+        def fixture():
+            pass
+
+        s.fixture_store.resolve()
+
+        with s.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))
+
+    assert s.results.is_success(allow_skips=False)
+    assert checkpoint.called
+
+
 
 def _freeze(dictionary):
     return frozenset(dictionary.items())

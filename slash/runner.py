@@ -35,6 +35,7 @@ def run_tests(iterable, stop_on_error=None):
     complete = False
     try:
         for test in test_iterator:
+            test.get_variation().populate_early_known_values()
             _set_test_metadata(test)
             test_filename = test.__slash__.file_path
             if last_filename != test_filename:
