@@ -49,7 +49,7 @@ Sometimes you would like to run a sequence of tests that you control in fine det
 
  if __name__ == "__main__":
      with slash.Session():
-          slash.run_tests(slash.loader.Loader().iter_paths(["/my_path", ...]))
+          slash.run_tests(slash.loader.Loader().get_runnables(["/my_path", ...]))
 
 The parameter given above to :func:`slash.runner.run_tests` is merely an iterator yielding runnable tests. You can interfere or skip specific tests quite easily:
 
@@ -64,7 +64,7 @@ The parameter given above to :func:`slash.runner.run_tests` is merely an iterato
           yield test
 
  ...
-     slash.run_tests(_filter_tests(slash.loader.Loader().iter_paths(...)))
+     slash.run_tests(_filter_tests(slash.loader.Loader().get_runnables(...)))
 
 .. seealso:: :ref:`Test Metadata <test_metadata>`
 
