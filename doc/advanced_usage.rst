@@ -48,8 +48,9 @@ Sometimes you would like to run a sequence of tests that you control in fine det
  import slash
 
  if __name__ == "__main__":
-     with slash.Session():
-          slash.run_tests(slash.loader.Loader().get_runnables(["/my_path", ...]))
+     with slash.Session() as s:
+         with s.get_started_context():
+             slash.run_tests(slash.loader.Loader().get_runnables(["/my_path", ...]))
 
 The parameter given above to :func:`slash.runner.run_tests` is merely an iterator yielding runnable tests. You can interfere or skip specific tests quite easily:
 
