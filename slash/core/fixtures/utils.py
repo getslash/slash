@@ -1,11 +1,13 @@
 import functools
 import itertools
 
+from ...ctx import context
 from ..._compat import izip, iteritems
-from ...utils.python import getargspec
+from ...utils.python import getargspec, wraps
 from ...utils.function_marker import function_marker
 
 _id_gen = itertools.count(1000)
+
 
 def fixture(func=None, name=None, scope=None, autouse=False):
     if func is None:
@@ -77,3 +79,34 @@ def generator_fixture(func):
     new_func.__name__ = func.__name__
 
     return fixture(new_func)
+
+def yield_fixture(func):
+    """Builds a fixture out of a generator. The pre-yield part of the generator is used as the setup, where the
+    yielded value becomes the fixture value. The post-yield part is added as a cleanup:
+
+    >>> @slash.yield_fixture
+    ... def some_fixture(arg1, arg2):
+    ...     m = Microwave()
+    ...     m.turn_on(wait=True)
+    ...     yield m
+    ...     m.turn_off()
+    """
+
+    func = func
+    @fixture
+    @wraps(func)
+    def new_func(**kwargs):
+        f = func(**kwargs)
+        value = next(f)
+        @context.fixture.add_cleanup
+        def cleanup(): # pylint: disable=unused-variable
+            try:
+                next(f)
+            except StopIteration:
+                pass
+            else:
+                raise RuntimeError('Yielded fixture did not stop at cleanup')
+        return value
+    return new_func
+
+__all__ = ['fixture', 'nofixtures', 'generator_fixture', 'yield_fixture']

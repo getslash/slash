@@ -174,6 +174,19 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 Misc. Utilities
 ---------------
 
+Yield Fixtures
+~~~~~~~~~~~~~~
+
+:func:`slash.yield_fixture` allows you to create a fixture from a generator. In such fixtures, the yielded value becomes the fixture's return value, and the code after the yield becomes the "cleanup" code (similar to using ``this.add_cleanup``):
+
+.. code-block:: python
+       
+       @slash.yield_fixture
+       def microwave(model_name):
+           m = Microwave(model_name)
+	   yield m
+	   m.turn_off()
+
 Generator Fixtures
 ~~~~~~~~~~~~~~~~~~
 

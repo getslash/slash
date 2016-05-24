@@ -51,6 +51,8 @@ Fixtures
 
 .. autofunction:: slash.fixture
 
+.. autofunction:: slash.yield_fixture
+
 .. autofunction:: slash.generator_fixture
 
 .. autofunction:: slash.nofixtures()
