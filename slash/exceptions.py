@@ -42,6 +42,10 @@ class InvalidFixtureScope(FixtureException):
     pass
 
 
+class IncorrectScope(SlashException):
+    pass
+
+
 class TestFailed(AssertionError):
 
     """

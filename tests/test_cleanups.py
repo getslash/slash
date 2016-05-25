@@ -3,6 +3,7 @@ import gossip
 import slash
 import slash.runner
 from slash import exception_handling, Session
+from slash.exceptions import IncorrectScope
 from slash.loader import Loader
 
 
@@ -163,3 +164,11 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
     cleanup_error = result.get_errors()[-1]
     assert 'AttributeError' in str(cleanup_error)
     assert 'NoneType' in str(cleanup_error)
+
+def test_add_test_cleanup_from_session_scope_forbidden(checkpoint):
+
+    with slash.Session() as s:
+        with pytest.raises(IncorrectScope):
+            slash.add_cleanup(checkpoint, scope='test')
+
+    assert not checkpoint.called

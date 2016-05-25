@@ -8,6 +8,7 @@ _logger = logbook.Logger(__name__)
 from .. import hooks
 from ..ctx import context
 from ..exception_handling import handling_exceptions
+from ..exceptions import IncorrectScope
 
 
 _LAST_SCOPE = Sentinel('LAST_SCOPE')
@@ -55,6 +56,8 @@ class CleanupManager(object):
         if scope_name is None:
             scope = self._scope_stack[-1] if self._scope_stack else None
         else:
+            if scope_name not in self._scopes_by_name:
+                raise IncorrectScope('Incorrect scope specified: {!r}'.format(scope_name))
             scope = self._scopes_by_name[scope_name][-1]
 
         if scope is None:
