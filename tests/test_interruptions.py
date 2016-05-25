@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0201
+# pylint: disable=unused-argument,unused-variable
 import gossip
 import pytest
 
@@ -62,6 +62,19 @@ def test_sigterm_on_hook(suite, hook_name):
             test.expect_deselect()
 
     result = suite.run(expect_interruption=True)
+
+
+def test_test_end_called_for_interrupted_test(interrupted_suite, interrupted_test):
+    ended = []
+
+    @gossip.register('slash.test_end')
+    def test_end():
+        ended.append(slash.context.test.__slash__.id)
+
+    s = interrupted_suite.run(expect_interruption=True)
+    result = s[interrupted_test]
+
+    assert result.test_metadata.id in ended
 
 
 @pytest.fixture

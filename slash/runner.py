@@ -89,50 +89,71 @@ def _run_single_test(test, test_iterator):
                 hooks.test_avoided(reason=skip_msg) # pylint: disable=no-member
                 return
 
+
             result.mark_started()
-            try:
+            with TestStartEndController(result) as controller:
                 try:
-                    with handling_exceptions(swallow=True):
-                        context.session.scope_manager.begin_test(test)
-                        try:
-                            hooks.test_start() # pylint: disable=no-member
-                            with handling_exceptions(swallow=True):
-                                test.run()
-                        finally:
-                            context.session.scope_manager.end_test(test)
+                    try:
+                        with handling_exceptions(swallow=True):
+                            context.session.scope_manager.begin_test(test)
+                            try:
+                                controller.start()
+                                with handling_exceptions(swallow=True):
+                                    test.run()
+                            finally:
+                                context.session.scope_manager.end_test(test)
+                    except SkipTest:
+                        pass
+                    _fire_test_summary_hooks(test, result)
+                    if next_test is None:
+                        controller.end()
+
+                        with handling_exceptions(swallow=True):
+                            context.session.scope_manager.flush_remaining_scopes()
+
                 except SkipTest:
                     pass
-                _fire_test_summary_hooks(test, result)
-                if next_test is None:
-                    with handling_exceptions(swallow=True):
-                        context.session.scope_manager.flush_remaining_scopes()
+                except INTERRUPTION_EXCEPTIONS:
+                    with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
+                        hooks.test_interrupt() # pylint: disable=no-member
+                    raise
 
-            except SkipTest:
-                pass
-            except INTERRUPTION_EXCEPTIONS:
-                with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
-                    hooks.test_interrupt() # pylint: disable=no-member
-                raise
-            finally:
-                result.mark_finished()
+class TestStartEndController(object):
 
+    def __init__(self, result):
+        self._result = result
+        self._started = False
+
+    def __enter__(self):
+        return self
+
+    def start(self):
+        if not self._started:
+            self._started = True
+            self._result.mark_started()
+            hooks.test_start() # pylint: disable=no-member
+
+    def end(self):
+        if self._started:
+            self._started = False
+            hooks.test_end() # pylint: disable=no-member
+            self._result.mark_finished()
+
+    def __exit__(self, *args):
+        self.end()
 
 
 def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
     with handling_exceptions():
-        try:
-            if result.is_just_failure():
-                hooks.test_failure()  # pylint: disable=no-member
-            elif result.is_skip():
-                hooks.test_skip(reason=result.get_skips()[0]) # pylint: disable=no-member
-            elif result.is_success():
-                hooks.test_success()  # pylint: disable=no-member
-            else:
-                _logger.debug('Firing test_error hook for {0} (result: {1})', test, result)
-                hooks.test_error()  # pylint: disable=no-member
-
-        finally:
-            hooks.test_end()  # pylint: disable=no-member
+        if result.is_just_failure():
+            hooks.test_failure()  # pylint: disable=no-member
+        elif result.is_skip():
+            hooks.test_skip(reason=result.get_skips()[0]) # pylint: disable=no-member
+        elif result.is_success():
+            hooks.test_success()  # pylint: disable=no-member
+        else:
+            _logger.debug('Firing test_error hook for {0} (result: {1})', test, result)
+            hooks.test_error()  # pylint: disable=no-member
 
 
 def _set_test_metadata(test):
