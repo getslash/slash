@@ -1,10 +1,8 @@
+# pylint: disable=unused-argument,unused-variable
 import pytest
-import gossip
 import slash
 import slash.runner
-from slash import exception_handling, Session
 from slash.exceptions import IncorrectScope
-from slash.loader import Loader
 
 
 def test_session_cleanup(suite, suite_test):
@@ -13,13 +11,14 @@ def test_session_cleanup(suite, suite_test):
     def __code__():
         @slash.add_cleanup
         def session_cleanup():
-            1/0
+            1 / 0 # pylint: disable=pointless-statement
 
     summary = suite.run()
     assert not summary.session.results.is_success()
     [err] = summary.session.results.global_result.get_errors()
     assert err.exception_type is ZeroDivisionError
     assert 'Session error' in summary.get_console_output()
+
 
 def test_cleanups_within_cleanups(suite, suite_test):
 
@@ -39,7 +38,6 @@ def test_cleanups_within_cleanups(suite, suite_test):
     assert result.data['cleanup2']
 
 
-
 @pytest.mark.parametrize('other_error', ['error', 'failure', None])
 def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
 
@@ -50,15 +48,14 @@ def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
         suite_test.append_line('slash.add_failure("failure")')
         suite_test.expect_failure()
     elif other_error is not None:
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     @suite_test.append_body
     def __code__():
         def callback():
-            __ut__.events.add('success_only_cleanup_called')
+            __ut__.events.add('success_only_cleanup_called') # pylint: disable=undefined-variable
         slash.add_cleanup(callback, success_only=True)
         slash.skip_test()
-
 
     if other_error is None:
         suite_test.expect_skip()
@@ -67,7 +64,6 @@ def test_success_only_cleanups_with_skips(suite, suite_test, other_error):
     [result] = summary.get_all_results_for_test(suite_test)
     assert result.has_skips()
     assert ('success_only_cleanup_called' in summary.events) == (other_error is None)
-
 
 
 def test_fatal_exceptions_from_cleanup(suite, suite_test, is_last_test):
@@ -102,7 +98,6 @@ def test_add_skip_from_fixture_cleanup(suite, suite_test, cleanup_mechanism):
     cleanup = fixture.add_deferred_event(decorator='{0}.add_cleanup'.format(cleanup_mechanism), extra_code=['slash.skip_test()'])
     summary = suite.run()
     assert summary.events[cleanup].timestamp
-
 
 
 def test_test_cleanups_happen_before_fixture_cleanups(suite, suite_test):
@@ -165,9 +160,10 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
     assert 'AttributeError' in str(cleanup_error)
     assert 'NoneType' in str(cleanup_error)
 
+
 def test_add_test_cleanup_from_session_scope_forbidden(checkpoint):
 
-    with slash.Session() as s:
+    with slash.Session():
         with pytest.raises(IncorrectScope):
             slash.add_cleanup(checkpoint, scope='test')
 
