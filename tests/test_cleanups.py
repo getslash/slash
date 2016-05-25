@@ -1,8 +1,9 @@
 # pylint: disable=unused-argument,unused-variable
+import gossip
 import pytest
 import slash
 import slash.runner
-from slash.exceptions import IncorrectScope
+from slash.exceptions import CannotAddCleanup, IncorrectScope
 
 
 def test_session_cleanup(suite, suite_test):
@@ -168,3 +169,25 @@ def test_add_test_cleanup_from_session_scope_forbidden(checkpoint):
             slash.add_cleanup(checkpoint, scope='test')
 
     assert not checkpoint.called
+
+
+def test_adding_implicit_scoped_cleanups_from_test_end_forbidden(suite, suite_test, checkpoint):
+
+    @gossip.register('slash.test_end')
+    def test_end():
+
+        with pytest.raises(CannotAddCleanup):
+            slash.add_cleanup(checkpoint)
+
+    suite.run()
+    assert not checkpoint.called
+
+
+def test_adding_session_scoped_cleanups_from_test_end_allowed(suite, suite_test, checkpoint):
+
+    @gossip.register('slash.test_end')
+    def test_end():
+        slash.add_cleanup(checkpoint, scope='session')
+
+    suite.run()
+    assert checkpoint.called_count == len(suite)

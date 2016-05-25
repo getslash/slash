@@ -46,6 +46,10 @@ class IncorrectScope(SlashException):
     pass
 
 
+class CannotAddCleanup(SlashException):
+    pass
+
+
 class TestFailed(AssertionError):
 
     """

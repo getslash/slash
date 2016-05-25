@@ -104,6 +104,7 @@ def _run_single_test(test, test_iterator):
                                 context.session.scope_manager.end_test(test)
                     except SkipTest:
                         pass
+
                     _fire_test_summary_hooks(test, result)
                     if next_test is None:
                         controller.end()
@@ -136,7 +137,8 @@ class TestStartEndController(object):
     def end(self):
         if self._started:
             self._started = False
-            hooks.test_end() # pylint: disable=no-member
+            with context.session.cleanups.forbid_implicit_scoping_context():
+                hooks.test_end() # pylint: disable=no-member
             self._result.mark_finished()
 
     def __exit__(self, *args):

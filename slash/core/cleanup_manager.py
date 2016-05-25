@@ -8,7 +8,7 @@ _logger = logbook.Logger(__name__)
 from .. import hooks
 from ..ctx import context
 from ..exception_handling import handling_exceptions
-from ..exceptions import IncorrectScope
+from ..exceptions import IncorrectScope, CannotAddCleanup
 
 
 _LAST_SCOPE = Sentinel('LAST_SCOPE')
@@ -23,6 +23,16 @@ class CleanupManager(object):
         self._scope_stack = []
         self._scopes_by_name = {}
         self._pending = []
+        self._allow_implicit_scopes = True
+
+    @contextmanager
+    def forbid_implicit_scoping_context(self):
+        prev = self._allow_implicit_scopes
+        self._allow_implicit_scopes = False
+        try:
+            yield
+        finally:
+            self._allow_implicit_scopes = prev
 
     def add_cleanup(self, _func, *args, **kwargs):
         """
@@ -54,6 +64,8 @@ class CleanupManager(object):
 
 
         if scope_name is None:
+            if not self._allow_implicit_scopes:
+                raise CannotAddCleanup('Cleanup added at a stage requiring explicit scoping')
             scope = self._scope_stack[-1] if self._scope_stack else None
         else:
             if scope_name not in self._scopes_by_name:
