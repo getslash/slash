@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`397` Native Python warnings are now captured during testing sessions
 * :feature:`407` Added ``--repeat-all`` option for repeating the entire suite several times
 * :feature:`276` Added support for fixture aliases using ``slash.use``
 * :feature:`439` Added support ``yield_fixture``

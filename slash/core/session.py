@@ -57,13 +57,22 @@ class Session(Activatable):
             ctx.context.result = self.results.global_result
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()
+
+            self._warning_capture_context = self.warnings.capture_context()
+            self._warning_capture_context.__enter__()
         self._active = True
 
     def deactivate(self):
         assert self._active, 'Session not active'
         self._active = False
         self.results.global_result.mark_finished()
-        self._logging_context.__exit__(*sys.exc_info()) # pylint: disable=no-member
+
+        exc_info = sys.exc_info()
+
+        self._warning_capture_context.__exit__(*exc_info) # pylint: disable=no-member
+        self._warning_capture_context = None
+
+        self._logging_context.__exit__(*exc_info) # pylint: disable=no-member
         self._logging_context = None
         ctx.pop_context()
 

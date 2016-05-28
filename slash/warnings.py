@@ -2,8 +2,10 @@ import collections
 
 import logbook
 
-from .ctx import context
 from . import hooks
+from .utils.warning_capture import warning_callback_context
+from .ctx import context
+from contextlib import contextmanager
 
 
 class SessionWarnings(object):
@@ -12,17 +14,29 @@ class SessionWarnings(object):
     """
     def __init__(self):
         super(SessionWarnings, self).__init__()
-        self.records = []
+        self.warnings = []
+
+    @contextmanager
+    def capture_context(self):
+        with warning_callback_context(self._capture_native_warning):
+            yield
+
+    def _capture_native_warning(self, message, category, filename, lineno):
+        self.warnings.append(RecordedWarning.from_native_warning(message, category, filename, lineno))
+
+    def add(self, warning):
+        hooks.warning_added(warning=warning) # pylint: disable=no-member
+        self.warnings.append(warning)
 
     def __iter__(self):
         "Iterates through stored warnings"
-        return iter(self.records)
+        return iter(self.warnings)
 
     def __len__(self):
-        return len(self.records)
+        return len(self.warnings)
 
     def __nonzero__(self):
-        return bool(self.records)
+        return bool(self.warnings)
 
     __bool__ = __nonzero__
 
@@ -36,29 +50,45 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     def __init__(self, session_warnings, format_string=None, filter=None, bubble=True):
         logbook.Handler.__init__(self, logbook.WARNING, filter, bubble)
         logbook.StringFormatterHandlerMixin.__init__(self, format_string)
-        #: captures the :class:`LogRecord`\s as instances
-        self.records = session_warnings.records
+        self.session_warnings = session_warnings
 
     def should_handle(self, record):
         """Returns `True` if this record is a warning """
         return record.level == self.level
 
     def emit(self, record):
-        warning = Warning(record, self.format(record))
-        self.records.append(warning)
-        hooks.warning_added(warning=warning) # pylint: disable=no-member
+        warning = RecordedWarning.from_log_record(record, self)
+        self.session_warnings.add(warning)
 
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
-class Warning(object):
+class RecordedWarning(object):
 
-    def __init__(self, record, message):
-        super(Warning, self).__init__()
-        self.details = record.to_dict()
+    def __init__(self, details, message):
+        super(RecordedWarning, self).__init__()
+        self.details = details
         self.details['session_id'] = context.session_id
         self.details['test_id'] = context.test_id
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
         self._repr = message
+
+    @classmethod
+    def from_log_record(cls, record, handler):
+        details = record.to_dict()
+        return cls(details, handler.format(record))
+
+
+    @classmethod
+    def from_native_warning(cls, message, category, filename, lineno):
+        if isinstance(message, Warning):
+            message = message.args[0]
+
+        return cls({
+            'message': message,
+            'type': category.__name__,
+            'filename': filename,
+            'lineno': lineno,
+            }, message=message)
 
     @property
     def message(self):

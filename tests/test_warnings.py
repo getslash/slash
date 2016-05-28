@@ -1,4 +1,7 @@
 #pylint: disable=unused-variable
+import warnings
+from uuid import uuid4
+
 import pytest
 import slash
 
@@ -36,6 +39,22 @@ def test_warning_added_hook(suite, suite_test):
     assert w.lineno
     assert w.filename
 
+
+def test_native_warnings(message):
+
+    def test_example():
+        warnings.warn(message)
+
+    s = run_tests_assert_success(test_example)
+
+    assert len(s.warnings) == 1
+    [w] = s.warnings
+    assert w.message == message
+
+
+@pytest.fixture
+def message():
+    return 'some message here {}'.format(uuid4())
 
 @pytest.fixture
 def warning():
