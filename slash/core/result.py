@@ -94,6 +94,9 @@ class Result(object):
     def is_skip(self):
         return bool(self._skips)
 
+    def is_run_and_skip(self):
+        return self.is_started() and self.is_skip()
+
     def is_success(self, allow_skips=False):
         if not self.is_started():
             return allow_skips
@@ -265,8 +268,10 @@ class SessionResults(object):
     def get_num_failures(self):
         return self._count(Result.is_just_failure)
 
-    def get_num_skipped(self):
-        return self._count(Result.is_skip)
+    def get_num_skipped(self, include_not_run=True):
+        if include_not_run:
+            return self._count(Result.is_skip)
+        return self._count(Result.is_run_and_skip)
 
     def get_num_not_run(self):
         return self._count(Result.is_not_run, include_global=False)

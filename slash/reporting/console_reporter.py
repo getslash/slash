@@ -181,7 +181,7 @@ class ConsoleReporter(ReporterInterface):
         msg = 'Session ended.'
         msg += ' {0} successful, {1} skipped, {2} failures, {3} errors.'.format(
             session.results.get_num_successful(
-            ), session.results.get_num_skipped(),
+            ), session.results.get_num_skipped(include_not_run=False),
             session.results.get_num_failures(), session.results.get_num_errors())
 
         not_run = session.results.get_num_not_run()

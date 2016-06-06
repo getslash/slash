@@ -36,6 +36,15 @@ def test_result_summary_some_not_run(suite):
     assert results.is_success(allow_skips=True)
 
 
+def test_get_num_skips_no_not_run(suite, suite_test):
+    suite_test.add_decorator('slash.requires(False)')
+    suite_test.expect_skip()
+    results = suite.run().session.results
+    assert results.get_num_skipped(include_not_run=False) == 0
+    assert results.get_num_skipped(include_not_run=True) == 1
+    assert results.get_num_skipped() == 1
+
+
 def test_result_summary(suite):
 
     suite[2].when_run.fail()
