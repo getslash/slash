@@ -1,15 +1,11 @@
 import gc
 
-import slash
 import pytest
-
-from .utils import TestCase
+import slash
 from slash import Session
-from slash.core.result import Result
-from slash.core.result import SessionResults, GlobalResult
+from slash.core.result import Result, SessionResults
 
-from .utils import run_tests_assert_success
-
+from .utils import TestCase, run_tests_assert_success
 
 
 @pytest.mark.parametrize('use_error', [True, False])
@@ -18,17 +14,18 @@ def test_result_add_exception_multiple_times(result, use_error):
     second_result.mark_started()
     try:
         if use_error:
-            1 / 0
+            1 / 0               # pylint: disable=pointless-statement
         else:
             assert 1 + 1 == 3
     except:
-        for i in range(3):
+        for _ in range(3):
             result.add_exception()
         second_result.add_exception()
 
     assert result.is_error() == use_error
     assert result.is_failure() == (not use_error)
-    assert len(result.get_errors() if use_error else result.get_failures()) == 1
+    assert len(result.get_errors()
+               if use_error else result.get_failures()) == 1
     assert second_result.is_success()
 
 
@@ -75,7 +72,6 @@ def test_result_not_run_zero_when_all_success(suite):
     assert summary.session.results.get_num_not_run() == 0
 
 
-
 def test_has_errors_or_failures(suite):
     suite[2].when_run.fail()
     suite[3].when_run.raise_exception()
@@ -110,12 +106,14 @@ def test_result_data_is_unique():
 def test_result_test_garbage_collected(gc_marker):
 
     class SomeTest(slash.Test):
+
         def test_something(self):
             pass
 
     # we have to run another test at the end to make sure Slash's internal _last_test
     # doesn't refer to our test
     class OtherTest(slash.Test):
+
         def test_something(self):
             pass
 
@@ -124,7 +122,8 @@ def test_result_test_garbage_collected(gc_marker):
         tests = loader.get_runnables(SomeTest)
         # we use list(genexp) to prevent 't' from leaking
         marks = list(gc_marker.mark(t) for t in tests)
-        session = run_tests_assert_success(tests + loader.get_runnables(OtherTest))
+        session = run_tests_assert_success(
+            tests + loader.get_runnables(OtherTest))
         del tests
     gc.collect()
     for mark in marks:
@@ -181,4 +180,3 @@ class SessionResultTest(TestCase):
         self.assertEquals(self.result.get_num_errors(), 3)
         self.assertEquals(self.result.get_num_skipped(), 2)
         self.assertEquals(self.result.get_num_failures(), 1)
-
