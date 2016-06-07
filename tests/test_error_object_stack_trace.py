@@ -1,3 +1,4 @@
+# pylint: disable=pointless-statement
 import pytest
 import slash
 
