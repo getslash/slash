@@ -7,8 +7,15 @@ import sys
 import traceback
 import types
 
+from .._compat import PY2
 from .. import context
 from .python import get_underlying_func
+
+_FILTERED_MEMBER_TYPES = [types.MethodType, types.FunctionType, type]
+if PY2:
+    _FILTERED_MEMBER_TYPES.append(types.UnboundMethodType) # pylint: disable=no-member
+    _FILTERED_MEMBER_TYPES.append(types.ClassType) # pylint: disable=no-member
+_FILTERED_MEMBER_TYPES = tuple(_FILTERED_MEMBER_TYPES)
 
 
 def get_traceback_string(exc_info=None):
@@ -158,9 +165,26 @@ class DistilledFrame(object):
         return True
 
     def _capture_locals(self, frame):
-        return dict((local_name, {"value": _safe_repr(value)})
-                    for local_name, value in frame.f_locals.items()
-                    if "@" not in local_name)
+        return dict((local_name, {"value": _safe_repr(local_value)})
+                    for key, value in frame.f_locals.items()
+                    if "@" not in key
+                    for local_name, local_value in self._unwrap_local(key, value))
+
+    def _unwrap_local(self, local_name, local_value):
+        yield local_name, local_value
+        if local_name != 'self':
+            return
+
+        for attr in getattr(local_value, '__dict__', {}):
+            if attr.startswith('__') and attr.endswith('__'):
+                continue
+            try:
+                value = getattr(local_value, attr)
+            except Exception:   # pylint: disable=broad-except
+                continue
+            if isinstance(value, _FILTERED_MEMBER_TYPES):
+                continue
+            yield 'self.{}'.format(attr), value
 
     def __repr__(self):
         return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
