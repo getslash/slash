@@ -78,7 +78,7 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
     def format(self, record):
         orig_message = record.message
         should_truncate = self._truncate_errors or record.level < logbook.ERROR
-        if self._truncate_lines and len(orig_message) > self.MAX_LINE_LENGTH and should_truncate:
+        if self._truncate_lines and len(str(orig_message)) > self.MAX_LINE_LENGTH and should_truncate:
             record.message = "\n".join(self._truncate(line) for line in orig_message.splitlines())
         try:
             returned = super(ConsoleHandler, self).format(record)
