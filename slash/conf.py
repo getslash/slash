@@ -59,6 +59,7 @@ config = Config({
         "unified_session_log": False // Doc("Make the session log file contain all logs, including from tests"),
     },
     "run": {
+        "dump_variation": False // Doc("Output the full variation structure before each test is run (mainly used for internal debugging)"),
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),
         "suite_files": [] // Doc("File(s) to be read for lists of tests to be run") // Cmdline(append="-f", metavar="FILENAME"),
         "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),

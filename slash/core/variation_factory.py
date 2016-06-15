@@ -75,6 +75,9 @@ class VariationFactory(object):
             yield self._build_variation(parametrizations, value_indices)
 
     def _build_variation(self, parametrizations, value_indices):
-        param_value_indices = dict((p.info.id, param_index)
-                              for p, param_index in izip(parametrizations, value_indices))
-        return Variation(self._store, param_value_indices, self._name_bindings.copy())
+        verbose_id = {}
+        value_index_by_id = {}
+        for param, param_index in izip(parametrizations, value_indices):
+            value_index_by_id[param.info.id] = param_index
+            verbose_id[param.info.path] = param.values[param_index]
+        return Variation(self._store, value_index_by_id, self._name_bindings.copy(), verbose_id=verbose_id)

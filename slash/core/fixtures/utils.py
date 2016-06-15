@@ -26,8 +26,9 @@ nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fi
 
 class FixtureInfo(object):
 
-    def __init__(self, func=None, name=None, scope=None, autouse=False):
+    def __init__(self, func=None, name=None, scope=None, autouse=False, path=None):
         super(FixtureInfo, self).__init__()
+        self.path = path
         self.id = next(_id_gen)
         if name is None:
             if func is None:

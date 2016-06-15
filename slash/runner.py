@@ -35,6 +35,8 @@ def run_tests(iterable, stop_on_error=None):
     complete = False
     try:
         for test in test_iterator:
+            if config.root.run.dump_variation:
+                _dump_variation(test)
             test.get_variation().populate_early_known_values()
             _set_test_metadata(test)
             test_filename = test.__slash__.file_path
@@ -69,6 +71,11 @@ def run_tests(iterable, stop_on_error=None):
         context.session.reporter.report_file_end(last_filename)
     _logger.trace('Session finished. is_success={0} has_skips={1}',
                   context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
+
+
+def _dump_variation(test):
+    _logger.trace('Variation information:\n{}',
+                  '\n'.join('\t{}: {!r}'.format(k, v) for k, v in sorted(test.get_variation().verbose_id.items())))
 
 
 def _run_single_test(test, test_iterator):

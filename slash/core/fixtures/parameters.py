@@ -17,7 +17,7 @@ def parametrize(parameter_name, values):
 
         params = getattr(func, _PARAM_INFO_ATTR_NAME, None)
         if params is None:
-            params = ParameterizationInfo()
+            params = ParameterizationInfo(func)
 
             @wraps(func, preserve=['__slash_fixture__'])
             def new_func(*args, **kwargs):
@@ -81,9 +81,10 @@ def iter_parametrization_fixtures(func):
 
 class ParameterizationInfo(object):
 
-    def __init__(self):
+    def __init__(self, func):
         super(ParameterizationInfo, self).__init__()
         self._params = {}
+        self.path = '{}:{}'.format(func.__module__, func.__name__)
 
     def add_options(self, param_name, values):
         assert param_name not in self._params
@@ -100,7 +101,7 @@ class ParameterizationInfo(object):
                 if len(value_set) != len(names):
                     raise RuntimeError('Invalid parametrization value (invalid length): {0!r}'.format(value_set))
 
-        p = Parametrization(values)
+        p = Parametrization(values=values, path='{}.{}'.format(self.path, param_name))
         for index, name in enumerate(names):
             self._params[name] = p.as_transform(operator.itemgetter(index))
 
@@ -114,11 +115,12 @@ def _id(obj):
 
 class Parametrization(FixtureBase):
 
-    def __init__(self, values, info=None, transform=_id):
+    def __init__(self, path, values, info=None, transform=_id):
         super(Parametrization, self).__init__()
+        self.path = path
         self.values = list(values)
         if info is None:
-            info = FixtureInfo()
+            info = FixtureInfo(path=path)
         self.info = info
         self.scope = get_scope_by_name('test')
         self.transform = transform
@@ -133,4 +135,4 @@ class Parametrization(FixtureBase):
         return {}
 
     def as_transform(self, transform):
-        return Parametrization(self.values, info=self.info, transform=transform)
+        return Parametrization(values=self.values, info=self.info, transform=transform, path=self.path)
