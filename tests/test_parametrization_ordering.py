@@ -1,27 +1,53 @@
+import pytest
 import slash
 
 import itertools
-from .utils import run_tests_assert_success
+from .utils import run_tests_in_session
 
 
-def test_stable_ordering():
+@pytest.mark.parametrize('on_fixture', [True, False])
+def test_stable_ordering(on_fixture):
     """Make sure that cartesian products in parametrizations are stable, even when changing the order of the parametrization decorators
     """
     params = [('a', [1, 2, 3]), ('b', [True, False]), ('c', [4, 5, 6])]
     permutations = list(itertools.permutations(params))
 
-    def generate_test(permutation):
+    def generate_session_and_test(permutation):
 
-        def test_something(a, b, c):
-            slash.context.result.data['params'] = {'a': a, 'b': b, 'c': c}
+        s = slash.Session()
+
+        if on_fixture:
+
+            @slash.fixture
+            def some_fixture(a, b, c):
+                return {'a': a, 'b': b, 'c': c}
+
+            parametrized = some_fixture
+
+            def test_something(some_fixture):
+                slash.context.result.data['params'] = some_fixture
+        else:
+            def test_something(a, b, c):
+                slash.context.result.data['params'] = {'a': a, 'b': b, 'c': c}
+            parametrized = test_something
 
         for param_name, values in permutation:
-            test_something = slash.parametrize(param_name, values)(test_something)
+            parametrized = slash.parametrize(param_name, values)(parametrized)
 
-        return test_something
+        if on_fixture:
+            s.fixture_store.push_namespace()
+            s.fixture_store.add_fixture(some_fixture)
+            s.fixture_store.pop_namespace()
+        s.fixture_store.resolve()
 
-    results_by_permutation = [run_tests_assert_success(generate_test(p)).results
-                              for p in permutations]
+        return s, test_something
+
+    results_by_permutation = []
+    for p in permutations:
+        session, test = generate_session_and_test(p)
+        res = run_tests_in_session(test, session=session)
+        assert res.is_success(), 'run failed'
+        results_by_permutation.append(res)
 
     param_values = {}
     for results in results_by_permutation:
