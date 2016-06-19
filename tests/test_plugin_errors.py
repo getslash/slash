@@ -46,6 +46,21 @@ def test_plugin_end_not_called_when_start_not_called(gossip_raise_immediately, h
     assert not errors
 
 
+def test_plugin_with_no_session_start_gets_called_session_end(checkpoint):
+
+    @slash.plugins.active
+    class MyPlugin(NamedPlugin):
+
+        def session_end(self):
+            checkpoint()
+
+    with slash.Session() as s:
+        with s.get_started_context():
+            pass
+
+    assert checkpoint.called
+
+
 @pytest.yield_fixture
 def gossip_raise_immediately():
     g = gossip.get_group('slash')

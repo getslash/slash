@@ -208,6 +208,9 @@ class PluginManager(object):
         unknown = []
         global_needs = try_get_mark(plugin, 'plugin_needs', [])
         global_provides = try_get_mark(plugin, 'plugin_provides', [])
+
+        has_session_end = has_session_start = False
+
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
                 continue
@@ -254,11 +257,16 @@ class PluginManager(object):
                 'token': self._get_token(plugin_name),
             }
             if hook_name == 'slash.session_start':
+                has_session_start = True
                 kwargs['toggles_on'] = plugin.__toggles__['session']
             elif hook_name == 'slash.session_end':
+                has_session_end = True
                 kwargs['toggles_off'] = plugin.__toggles__['session']
 
             returned.append((hook, method, kwargs))
+
+        if has_session_end and not has_session_start:
+            returned.append((gossip.get_hook('slash.session_start'), lambda: None, {'toggles_on': plugin.__toggles__['session']}))
         if unknown:
             raise IncompatiblePlugin("Unknown hooks: {0}".format(", ".join(unknown)))
         return returned
