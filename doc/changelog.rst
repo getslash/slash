@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`447` Added a more stable sorting logic for cartesian products of parametrizations
 * :feature:`446` Exception tracebacks now include instance attributes to make debugging easier
 * :feature:`397` Native Python warnings are now captured during testing sessions
 * :feature:`407` Added ``--repeat-all`` option for repeating the entire suite several times

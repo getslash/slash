@@ -2,7 +2,7 @@ import operator
 from contextlib import contextmanager
 
 from ..._compat import iteritems
-from ...utils.python import wraps
+from ...utils.python import wraps, get_argument_names
 from .fixture_base import FixtureBase
 from .utils import FixtureInfo, get_scope_by_name
 
@@ -83,7 +83,10 @@ class ParameterizationInfo(object):
 
     def __init__(self, func):
         super(ParameterizationInfo, self).__init__()
+        self._argument_names = get_argument_names(func)
+        self._argument_name_set = frozenset(self._argument_names)
         self._params = {}
+        self._extra_params = {}
         self.path = '{}:{}'.format(func.__module__, func.__name__)
 
     def add_options(self, param_name, values):
@@ -103,10 +106,19 @@ class ParameterizationInfo(object):
 
         p = Parametrization(values=values, path='{}.{}'.format(self.path, param_name))
         for index, name in enumerate(names):
-            self._params[name] = p.as_transform(operator.itemgetter(index))
+            if name in self._argument_name_set:
+                params_dict = self._params
+            else:
+                params_dict = self._extra_params
+            params_dict[name] = p.as_transform(operator.itemgetter(index))
 
     def iter_parametrization_fixtures(self):
-        return iteritems(self._params)
+        for name in self._argument_names:
+            values = self._params.get(name)
+            if values is not None:
+                yield name, values
+        for name, values in self._extra_params.items():
+            yield name, values
 
 
 def _id(obj):

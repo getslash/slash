@@ -18,6 +18,7 @@ install_requires = [
     "emport>=1.1.3",
     "gossip>=2.0.0",
     "Logbook>=0.11.2",
+    "orderedset>=2.0.0",
     "requests>=1.1.0",
     "raven",
     "py>=1.4.20",

@@ -1,8 +1,10 @@
 import collections
 import itertools
 
+from orderedset import OrderedSet
+
 from .variation import Variation
-from .._compat import OrderedDict, imap, izip, reduce, xrange
+from .._compat import OrderedDict, izip, xrange
 from ..exceptions import FixtureException
 from ..utils.python import get_arguments
 from .fixtures.parameters import iter_parametrization_fixtures
@@ -66,9 +68,13 @@ class VariationFactory(object):
             self._name_bindings[arg_name] = fixture
 
     def iter_variations(self):
-        param_ids = list(reduce(set.union, imap(self._store.get_all_needed_fixture_ids, self._needed_fixtures), set()))
-        parametrizations = [self._store.get_fixture_by_id(param_id) for param_id in param_ids]
-        if not param_ids:
+        needed_ids = OrderedSet()
+
+        for fixture in self._needed_fixtures:
+            needed_ids.update(self._store.get_all_needed_fixture_ids(fixture))
+
+        parametrizations = [self._store.get_fixture_by_id(param_id) for param_id in needed_ids]
+        if not needed_ids:
             yield Variation(self._store, {}, self._name_bindings.copy())
             return
         for value_indices in itertools.product(*(xrange(len(p.values)) for p in parametrizations)):
