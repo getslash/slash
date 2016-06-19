@@ -4,7 +4,7 @@ detox-test:
 	detox
 
 test: env
-	.env/bin/python scripts/test_and_pylint.py --parallel
+	.env/bin/python scripts/test_and_pylint.py
 
 pylint: env
 	.env/bin/pylint --rcfile=.pylintrc slash
