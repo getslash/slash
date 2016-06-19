@@ -9,8 +9,9 @@ def test_coverage_plugin(suite, enabled_coverage_plugin): # pylint: disable=unus
     suite.run()
 
 @pytest.fixture
-def enabled_coverage_plugin(request, patched_coverage):
+def enabled_coverage_plugin(request, patched_coverage, config_override):
     slash.plugins.manager.activate('coverage')
+    config_override('plugin_config.coverage.report', False)
 
     @request.addfinalizer
     def deactivate(): # pylint: disable=unused-variable

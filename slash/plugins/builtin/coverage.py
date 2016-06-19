@@ -16,6 +16,7 @@ class Plugin(PluginInterface):
         return {
             'config_filename': False // Cmdline(arg='--cov-config'),
             'report_type': 'html' // Cmdline(arg='--cov-report'),
+            'report': True,
             'append': False // Cmdline(on='--cov-append'),
             'sources': [] // Cmdline(append='--cov'),
         }
@@ -49,5 +50,6 @@ class Plugin(PluginInterface):
     def session_end(self):
         self._cov.stop()
         self._cov.save()
-        for reporter in self._reporters:
-            reporter()
+        if slash_config.root.plugin_config.coverage.report:
+            for reporter in self._reporters:
+                reporter()
