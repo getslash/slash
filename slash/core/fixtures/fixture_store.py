@@ -1,6 +1,8 @@
+import collections
 import sys
 
-import collections
+from orderedset import OrderedSet
+
 from ..._compat import iteritems, itervalues, OrderedDict, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
@@ -112,7 +114,7 @@ class FixtureStore(object):
 
     def _compute_all_needed_parametrization_ids(self, fixtureobj):
         stack = [(fixtureobj.info.id, [fixtureobj.info.id], set([fixtureobj.info.id]))]
-        returned = set()
+        returned = OrderedSet()
         while stack:
             fixture_id, path, visited = stack.pop()
             if fixture_id in self._all_needed_parametrization_ids_by_fixture_id:
@@ -120,13 +122,14 @@ class FixtureStore(object):
                 continue
             fixture = self._fixtures_by_id[fixture_id]
             if fixture.parametrization_ids:
+                assert isinstance(fixture.parametrization_ids, OrderedSet)
                 returned.update(fixture.parametrization_ids)
             if fixture.fixture_kwargs:
                 for needed_id in itervalues(fixture.fixture_kwargs):
                     if needed_id in visited:
                         self._raise_cyclic_dependency_error(fixtureobj, path, needed_id)
                     stack.append((needed_id, path + [needed_id], visited | set([needed_id])))
-        return frozenset(returned)
+        return returned
 
     def _raise_cyclic_dependency_error(self, fixtureobj, path, new_id):
         raise CyclicFixtureDependency(

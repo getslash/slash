@@ -1,5 +1,9 @@
 import itertools
 
+from collections import OrderedDict
+
+from orderedset import OrderedSet
+
 from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
 from .namespace import Namespace
@@ -34,9 +38,9 @@ class Fixture(FixtureBase):
         assert self.fixture_kwargs is None
 
         assert self.parametrization_ids is None
-        self.parametrization_ids = set()
+        self.parametrization_ids = OrderedSet()
 
-        kwargs = {}
+        kwargs = OrderedDict()
         parametrized = set()
 
         for name, param in iter_parametrization_fixtures(self.fixture_func):

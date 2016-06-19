@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import functools
 import inspect
 import sys
@@ -32,7 +33,10 @@ def get_argument_names(func):
 
 
 def get_arguments_dict(func):
-    return {arg.name: arg for arg in get_arguments(func)}
+    returned = OrderedDict()
+    for arg in get_arguments(func):
+        returned[arg.name] = arg
+    return returned
 
 
 def get_arguments(func):

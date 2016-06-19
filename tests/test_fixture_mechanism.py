@@ -421,6 +421,19 @@ def test_nofixtures_decorator_methods(store):
     assert var == {}
 
 
+def test_parametrized_fixture(store):
+
+    _fixture = lambda f: store.add_fixture(slash.fixture(f))
+
+    @_fixture
+    @slash.parametrize('a', [1, 2, 3])
+    @slash.parametrize('b', [4, 5, 6])
+    def fixture(a, b):
+        pass
+
+    store.resolve()
+
+
 
 @pytest.fixture(params=[True, False])
 def fixture_func(request, fixture_func_name):
