@@ -41,6 +41,14 @@ def test_matcher():
         for string in not_matching:
             assert not matcher.matches(FakeMetadata(string))
 
+
+def test_test_name_matcher():
+    test_name = '/path/to/testfile.py:TestName'
+    m = FakeMetadata(test_name)
+    assert not Matcher('not {}'.format(test_name)).matches(m)
+    assert Matcher(test_name).matches(m)
+
+
 def test_matches_tag():
     assert Matcher('bla').matches(FakeMetadata('something', {'bla': 2}))
     assert not Matcher('bla').matches(FakeMetadata('something', {'bloop': 2}))
