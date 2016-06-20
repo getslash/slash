@@ -26,7 +26,6 @@ def test_string_patterns_and(suite, config_override):
     suite.run()
 
 
-
 def test_matcher():
     for pattern, matching, not_matching in [
             ('xy', ['blapxy'], ['blap']),
@@ -34,7 +33,7 @@ def test_matcher():
             ('x and y', ['xy', 'yx', 'x kjfldkjfd y'], ['x', 'y', 'xx']),
             ('(x and some.string) and not z', ['xysome.string', 'some.stringyx'], ['z', 'xysome.stringz']),
             ('exact(x=y)(y=z)', ['exact(x=y)(y=z)'], ['exlact(x=y)(y=z)']),
-            ]:
+    ]:
 
         matcher = Matcher(pattern)
         for string in matching:
@@ -47,9 +46,11 @@ def test_matches_tag():
     assert not Matcher('bla').matches(FakeMetadata('something', {'bloop': 2}))
     assert Matcher('substring').matches(FakeMetadata('something', {'xxxxsubstringxxx': 2}))
 
+
 def test_matches_tag_exclusively():
     assert Matcher('tag:bla').matches(FakeMetadata('something', {'bla': 2}))
     assert not Matcher('tag:bla').matches(FakeMetadata('bla', {'bloop': 2}))
+
 
 def test_matches_values():
     assert Matcher('tag:bla=2').matches(FakeMetadata('something', {'bla': 2}))
