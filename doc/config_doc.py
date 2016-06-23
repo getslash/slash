@@ -2,9 +2,11 @@ from docutils.parsers.rst import directives, Directive
 from docutils import nodes
 from slash.conf import config
 
+
 class ConfigDoc(Directive):
     required_arguments = 0
     optional_arguments = 0
+
     def run(self):
         returned = []
         for path, leaf in config.traverse_leaves():
@@ -17,6 +19,6 @@ class ConfigDoc(Directive):
             returned.append(section)
         return returned
 
-def setup(app):
-    directives.register_directive('config_doc', ConfigDoc)
 
+def setup(app):                 # pylint: disable=unused-argument
+    directives.register_directive('config_doc', ConfigDoc)
