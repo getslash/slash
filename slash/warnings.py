@@ -69,6 +69,7 @@ class RecordedWarning(object):
         self.details = details
         self.details['session_id'] = context.session_id
         self.details['test_id'] = context.test_id
+        self.details.setdefault('func_name', None)
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
         self._repr = message
 
