@@ -102,12 +102,13 @@ class TerminalWriterWrapper(object):
     def clear_line_in_progress(self):
         if self._line and self._writer.hasmarkup:
             self._do_write('\r')
-            self._do_write(' ' * len(self._line))
+            self._do_write(' ' * (len(self._line) % self._writer.fullwidth))
             self._do_write('\r')
 
     def restore_line_in_progress(self):
         if self._writer.hasmarkup:
-            self._do_write(self._line)
+            idx = len(self._line) - (len(self._line) % self._writer.fullwidth)
+            self._do_write(self._line[idx:])
 
     def _do_write(self, *args, **kwargs):
         return self._writer.write(*args, **kwargs)
