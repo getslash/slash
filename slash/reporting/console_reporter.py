@@ -1,13 +1,12 @@
 # pylint: disable=import-error,no-name-in-module
 from __future__ import division
-import collections
 import itertools
 import sys
 
 from py.io import TerminalWriter
 from textwrap import wrap
 
-from .._compat import iteritems, izip
+from .._compat import iteritems, izip, OrderedDict
 from ..conf import config
 from ..exceptions import CLI_ABORT_EXCEPTIONS
 from ..log import VERBOSITIES
@@ -219,9 +218,9 @@ class ConsoleReporter(ReporterInterface):
         return returned
 
     def _report_result_warning_summary(self, session):
-        warnings_by_key = collections.defaultdict(list)
+        warnings_by_key = OrderedDict()
         for warning in session.warnings:
-            warnings_by_key[warning.key].append(warning)
+            warnings_by_key.setdefault(warning.key, []).append(warning)
         for i, (_, warnings) in iteration(iteritems(warnings_by_key)):
             if i.first:
                 self._terminal.sep(
