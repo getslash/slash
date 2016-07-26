@@ -60,11 +60,12 @@ _current_variation = None
 
 
 @contextmanager
-def bound_parametrizations_context(variation):
+def bound_parametrizations_context(variation, fixture_store, fixture_namespace):
     global _current_variation  # pylint: disable=global-statement
     assert _current_variation is None
     _current_variation = variation
     try:
+        fixture_store.activate_autouse_fixtures_in_namespace(fixture_namespace)
         _current_variation.populate_values()
         yield
     finally:

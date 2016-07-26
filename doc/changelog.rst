@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`457` Fixed initialization order for *autouse* fixtures
 * :release:`1.0.0 <26-06-2016>`
 * :feature:`447` Added a more stable sorting logic for cartesian products of parametrizations
 * :feature:`446` Exception tracebacks now include instance attributes to make debugging easier

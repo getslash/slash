@@ -110,9 +110,8 @@ class Test(RunnableTest):
         .. warning:: Not to be overriden
         """
         method = self.get_test_function()
-        with bound_parametrizations_context(self._variation):
+        with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
             _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace)
-            self._fixture_store.activate_autouse_fixtures_in_namespace(self._fixture_namespace)
             _call_with_fixtures(self.before)
             try:
                 with handling_exceptions():

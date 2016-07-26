@@ -1,5 +1,7 @@
 import pytest
 
+from .utils.suite_writer import Suite
+
 
 def test_autouse_fixtures_global(tracked_suite):
 
@@ -23,6 +25,27 @@ def test_autouse_fixtures_specific_module(tracked_suite, suite_test):
                 assert fixture.id in result.data['active_fixtures']
             else:
                 assert fixture.id not in result.data['active_fixtures']
+
+@pytest.mark.parametrize('scope', ['test', 'session', 'module'])
+@pytest.mark.parametrize('depend_explicitly', [True, False])
+def test_autouse_called_first(scope, test_type, depend_explicitly):
+    suite = Suite()
+    suite_test = suite.add_test(type=test_type)
+
+    autouse_fixture = suite.slashconf.add_fixture(autouse=True, scope=scope)
+    autouse_fixture_called = autouse_fixture.add_event()
+
+    regular_fixture = suite.slashconf.add_fixture()
+    regular_fixture_called = regular_fixture.add_event()
+    suite_test.depend_on_fixture(regular_fixture)
+
+    if depend_explicitly:
+        suite_test.depend_on_fixture(autouse_fixture)
+
+    test_called = suite_test.add_event()
+    events = suite.run().events
+    assert events[regular_fixture_called].timestamp < events[test_called].timestamp
+    assert events[autouse_fixture_called].timestamp < events[regular_fixture_called].timestamp
 
 
 @pytest.fixture

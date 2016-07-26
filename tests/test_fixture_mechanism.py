@@ -139,7 +139,7 @@ def _get_all_values(store, fixture_name):
     returned = []
     for variation in store.iter_parametrization_variations(fixture_ids=[store.get_fixture_by_name(fixture_name).info.id]):
         store.push_scope('test')
-        with bound_parametrizations_context(variation):
+        with bound_parametrizations_context(variation, store, store.get_current_namespace()):
             returned.append(
                 store.get_fixture_dict([fixture_name])[fixture_name])
         store.pop_scope('test')

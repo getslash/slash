@@ -20,8 +20,7 @@ class FunctionTest(RunnableTest):
         return ''
 
     def run(self):
-        with bound_parametrizations_context(self._variation):
-            self._fixture_store.activate_autouse_fixtures_in_namespace(namespace=self._fixture_namespace)
+        with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
             self._fixture_store.call_with_fixtures(
                 self._func, namespace=self._fixture_namespace,
             )
