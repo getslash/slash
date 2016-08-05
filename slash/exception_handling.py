@@ -72,6 +72,7 @@ def handling_exceptions(**kwargs):
     :param passthrough_types: a tuple specifying exception types to avoid handling, raising them immediately onward
     :param swallow: causes this context to swallow exceptions
     :param swallow_types: causes the context to swallow exceptions of, or derived from, the specified types
+    :param context: An optional string describing the operation being wrapped. This will be emitted to the logs to simplify readability
 
     .. note:: certain exceptions are never swallowed - most notably KeyboardInterrupt, SystemExit, and SkipTest
     """
