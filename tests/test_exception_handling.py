@@ -60,7 +60,8 @@ def test_handling_exceptions():
     assert caught.value is value
 
 
-def test_reraise_after_hook_calling():
+@pytest.mark.skipif(sys.version_info >= (3, 0), reason='Cannot run on 3.x')
+def test_reraise_after_exc_info_reset():
     @gossip.register('slash.exception_caught_before_debugger')
     def exception_hook():       # pylint: disable=unused-variable
         sys.exc_clear()
