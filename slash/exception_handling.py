@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from .utils.debug import debug_if_needed
 from .utils.exception_mark import mark_exception, get_exception_mark
 from . import hooks as trigger_hook
+from ._compat import reraise
 from .ctx import context as slash_context
 from .conf import config
 from .exceptions import SkipTest
@@ -88,10 +89,10 @@ def handling_exceptions(**kwargs):
         exc_info = _, exc_value, _ = sys.exc_info()
         handle_exception(exc_info, **kwargs)
         if isinstance(exc_value, SkipTest):
-            raise
+            reraise(*exc_info)
         swallow = swallow or isinstance(exc_value, swallow_types)
         if not swallow or not isinstance(exc_value, Exception):
-            raise
+            reraise(*exc_info)
 
 
 def handle_exception(exc_info, context=None):

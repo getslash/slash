@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`464` Fix reraising behavior from handling_exceptions
 * :bug:`457` Fixed initialization order for *autouse* fixtures
 * :release:`1.0.0 <26-06-2016>`
 * :feature:`447` Added a more stable sorting logic for cartesian products of parametrizations

@@ -1,3 +1,5 @@
+import sys
+import gossip
 import pytest
 import slash
 from slash import exception_handling
@@ -11,11 +13,11 @@ from .utils import CustomException, TestCase
 def test_handling_exceptions_swallow_skip_test(suite, suite_test):
 
     @suite_test.append_body
-    def __code__():
+    def __code__():             # pylint: disable=unused-variable
         from slash.exception_handling import handling_exceptions
         with handling_exceptions(swallow=True):
             slash.skip_test()
-        __ut__.events.add('NEVER')
+        __ut__.events.add('NEVER') # pylint: disable=undefined-variable
 
     suite_test.expect_skip()
 
@@ -56,6 +58,17 @@ def test_handling_exceptions():
                 with exception_handling.handling_exceptions():
                     raise value
     assert caught.value is value
+
+
+def test_reraise_after_hook_calling():
+    @gossip.register('slash.exception_caught_before_debugger')
+    def exception_hook():       # pylint: disable=unused-variable
+        sys.exc_clear()
+
+    with pytest.raises(CustomException):
+        with exception_handling.handling_exceptions():
+            raise CustomException()
+
 
 
 class DebuggingTest(TestCase):
