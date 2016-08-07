@@ -193,7 +193,7 @@ Fatal exceptions can be added in two ways. Either via marking explicitly with :f
 .. code-block:: python
        
        ...
-       raise slash.mark_exception_fatal(Exception('something'))
+       raise slash.exception_handling.mark_exception_fatal(Exception('something'))
 
 Or, when adding errors explicitly, via the ``mark_fatal`` method:
 
