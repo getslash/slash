@@ -28,13 +28,13 @@ def _get_parser():
     parser.add_argument('--show-tags', dest='show_tags', action='store_true', default=False)
     parser.add_argument('--no-params', dest='show_params', action='store_false', default=True)
     parser.add_argument('--allow-empty', dest='allow_empty', action='store_true', default=False)
+    parser.add_argument('-r', '--relative-paths', action='store_true', default=False)
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
 
 
 def slash_list(args, report_stream=sys.stdout):
     _print = partial(print, file=report_stream)
-    _report_error = partial(print, file=sys.stderr)
 
     parser = _get_parser()
     parsed_args = parser.parse_args(args)
@@ -76,10 +76,19 @@ def _report_tests(args, runnables, printer):
         address = runnable.__slash__.address
         if not args.show_params:
             address = address.split('(')[0]
+        if args.relative_paths:
+            address = _convert_address_to_relpath(address)
         if address in visited:
             continue
         visited.add(address)
         printer("{0}{1}".format(_title_style(address), extra))
+
+
+def _convert_address_to_relpath(address):
+    filename, remainder = address.split(':', 1)
+    if os.path.isabs(filename):
+        filename = os.path.relpath(filename)
+    return '{}:{}'.format(filename, remainder)
 
 
 def _report_fixtures(args, session, printer, used_fixtures):
