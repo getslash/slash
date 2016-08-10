@@ -9,7 +9,8 @@ from functools import partial
 
 import colorama
 import slash
-from slash.utils.cli_utils import UNDERLINED, make_styler
+from slash.exceptions import CannotLoadTests
+from slash.utils.cli_utils import UNDERLINED, make_styler, error_abort
 from slash.utils.python import get_underlying_func
 from slash.utils.suite_files import iter_suite_file_paths
 
@@ -41,23 +42,26 @@ def slash_list(args, report_stream=sys.stdout):
     if not parsed_args.paths and not parsed_args.suite_files:
         parser.error('Neither test paths nor suite files were specified')
 
-    with slash.Session() as session:
-        slash.site.load()
-        loader = slash.loader.Loader()
-        runnables = loader.get_runnables(itertools.chain(parsed_args.paths, iter_suite_file_paths(parsed_args.suite_files)))
-        used_fixtures = set()
-        for test in runnables:
-            used_fixtures.update(test.get_required_fixture_objects())
+    try:
+        with slash.Session() as session:
+            slash.site.load()
+            loader = slash.loader.Loader()
+            runnables = loader.get_runnables(itertools.chain(parsed_args.paths, iter_suite_file_paths(parsed_args.suite_files)))
+            used_fixtures = set()
+            for test in runnables:
+                used_fixtures.update(test.get_required_fixture_objects())
 
-        if parsed_args.only in (None, 'fixtures'):
-            _report_fixtures(parsed_args, session, _print, used_fixtures)
+            if parsed_args.only in (None, 'fixtures'):
+                _report_fixtures(parsed_args, session, _print, used_fixtures)
 
-        if parsed_args.only in (None, 'tests'):
-            _report_tests(parsed_args, runnables, _print)
+            if parsed_args.only in (None, 'tests'):
+                _report_tests(parsed_args, runnables, _print)
 
-    if len(runnables):
-        return 0
-    _report_error('No tests were found!')
+        if len(runnables):
+            return 0
+    except CannotLoadTests as e:
+        error_abort('Could not load tests ({})'.format(e))
+    print('No tests were found!', file=sys.stderr)
     return not int(parsed_args.allow_empty)
 
 
