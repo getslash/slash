@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.parametrize('flag', ["--only-fixtures", "--only-tests", None])
 def test_slash_list(suite, flag):
     suite.debug_info = False
-    f = suite.slashconf.add_fixture()
+    _ = suite.slashconf.add_fixture()
     path = suite.commit()
     report_stream = StringIO()
 
