@@ -1,11 +1,14 @@
 from contextlib import contextmanager
 from .utils.debug import debug_if_needed
 from .utils.exception_mark import mark_exception, get_exception_mark
+from .utils.traceback_proxy import create_traceback_proxy
 from . import hooks as trigger_hook
 from ._compat import reraise
 from .ctx import context as slash_context
 from .conf import config
 from .exceptions import SkipTest
+from ._compat import PYPY
+
 import functools
 import threading
 import logbook
@@ -26,7 +29,7 @@ def update_current_result(exc_info):  # pylint: disable=unused-argument
     else:
         current_result = slash_context.session.results.global_result
 
-    current_result.add_exception()
+    current_result.add_exception(exc_info)
 
 
 def trigger_hooks_before_debugger(_):
@@ -66,7 +69,7 @@ def thread_ignore_exception_context(exc_type):
 
 
 @contextmanager
-def handling_exceptions(**kwargs):
+def handling_exceptions(fake_traceback=True, **kwargs):
     """Context manager handling exceptions that are raised within it
 
     :param passthrough_types: a tuple specifying exception types to avoid handling, raising them immediately onward
@@ -76,6 +79,10 @@ def handling_exceptions(**kwargs):
 
     .. note:: certain exceptions are never swallowed - most notably KeyboardInterrupt, SystemExit, and SkipTest
     """
+
+    if not PYPY and fake_traceback:
+        # Only in CPython we're able to fake the original, full traceback
+        (first_tb, last_tb) = create_traceback_proxy(frame_correction=3)
     swallow = kwargs.pop("swallow", False)
     swallow_types = kwargs.pop('swallow_types', ())
     assert isinstance(swallow_types, (list, tuple)), 'swallow_types must be either a list or a tuple'
@@ -88,6 +95,11 @@ def handling_exceptions(**kwargs):
         raise
     except:
         exc_info = _, exc_value, _ = sys.exc_info()
+
+        if not PYPY and fake_traceback:
+            (second_tb, _) = create_traceback_proxy(exc_info[2])
+            last_tb.tb_next = second_tb
+            exc_info = (exc_info[0], exc_info[1], first_tb._tb) # pylint: disable=protected-access
         handle_exception(exc_info, **kwargs)
         if isinstance(exc_value, SkipTest):
             reraise(*exc_info)

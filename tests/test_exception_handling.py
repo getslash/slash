@@ -3,7 +3,7 @@ import gossip
 import pytest
 import slash
 from slash import exception_handling
-from slash._compat import ExitStack
+from slash._compat import ExitStack, PYPY
 from slash.exceptions import SkipTest
 from slash.utils import debug
 
@@ -47,6 +47,41 @@ def test_swallow_types():
 
     with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
         raise value
+
+
+class FakeTracebackTest(TestCase):
+    def setUp(self):
+        super(FakeTracebackTest, self).setUp()
+        self.override_config("debug.enabled", True)
+        self.forge.replace_with(debug, "launch_debugger", self.verify_fake_traceback_debugger)
+        self.debugger_called = False
+        self._tb_len = 0
+
+    @pytest.mark.skipif(PYPY, reason='Cannot run on PyPy')
+    def test_fake_traceback(self):
+        with pytest.raises(ZeroDivisionError):
+            with exception_handling.handling_exceptions(fake_traceback=False):
+                return 1 / 0
+
+        with pytest.raises(ZeroDivisionError):
+            with exception_handling.handling_exceptions():
+                return 1 / 0
+
+    def verify_fake_traceback_debugger(self, exc_info):
+        if not self._tb_len:
+            # First attempt, no fake traceback
+            self._tb_len = self._get_tb_len(exc_info[2])
+            assert self._tb_len != 0
+        else:
+            # Second attempt, with fake traceback
+            assert self._tb_len < self._get_tb_len(exc_info[2])
+
+    def _get_tb_len(self, tb):
+        tb_len = 0
+        while tb:
+            tb_len += 1
+            tb = tb.tb_next
+        return tb_len
 
 
 def test_handling_exceptions():
