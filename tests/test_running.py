@@ -76,7 +76,8 @@ def test_stop_on_fatal_exception(suite, suite_test, fatal_error_adder):
     suite.run()
 
 
-def test_stop_on_error(suite, suite_test, failure_type):
+@pytest.mark.parametrize('stop_through_config', [True, False])
+def test_stop_on_error(suite, suite_test, failure_type, stop_through_config, config_override):
     if failure_type == 'error':
         suite_test.when_run.error()
     elif failure_type == 'failure':
@@ -87,7 +88,13 @@ def test_stop_on_error(suite, suite_test, failure_type):
     for test in suite.iter_all_after(suite_test):
         test.expect_not_run()
 
-    suite.run(additional_args=['-x'])
+    if stop_through_config:
+        config_override('run.stop_on_error', True)
+        kwargs = {}
+    else:
+        config_override('run.stop_on_error', False)
+        kwargs = {'additional_args': ['-x']}
+    suite.run(**kwargs)
 
 
 def test_stop_on_error_unaffected_by_skips(suite, suite_test):
