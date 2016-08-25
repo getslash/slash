@@ -8,10 +8,9 @@ from ..core.function_test import FunctionTestFactory
 from ..exceptions import TerminatedException
 from ..exception_handling import handle_exception
 
-from IPython.terminal.embed import InteractiveShellEmbed # pylint: disable=F0401
+from IPython.terminal.embed import embed  # pylint: disable=F0401
 
 def _interact(ns):
-    shell = InteractiveShellEmbed(user_ns=ns)
     def _handle_exception(shell, exc_type, exc_value, exc_tb, tb_offset):
         exc_info = (exc_type, exc_value, exc_tb)
         shell.showtraceback(exc_info, tb_offset)
@@ -21,8 +20,7 @@ def _interact(ns):
             context.result.add_error('Terminated')
             shell.exit_now = True
 
-    shell.set_custom_exc((Exception, TerminatedException), _handle_exception)
-    shell()
+    embed(user_ns=ns, custom_exceptions=((Exception, TerminatedException), _handle_exception))
 
 
 def _is_exception_in_ipython_eval(exc_tb):
