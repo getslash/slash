@@ -51,10 +51,6 @@ class _IgnoredState(threading.local):
 _ignored_state = _IgnoredState()
 
 
-def _is_exception_ignored(exc_value):
-    return isinstance(exc_value, _ignored_state.ignored_exception_types)
-
-
 @contextmanager
 def thread_ignore_exception_context(exc_type):
     prev = _ignored_state.ignored_exception_types
