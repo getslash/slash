@@ -10,6 +10,7 @@
 #pylint: disable=unused-import
 #pylint: disable=exec-used
 import sys
+from types import TracebackType
 
 PY2 = sys.version_info[0] == 2
 PYPY = hasattr(sys, 'pypy_version_info')
@@ -65,7 +66,11 @@ def reraise(tp, value, tb=None):
 """, locals(), globals())
 else:
     def reraise(tp, value, tb=None):
+        # A hacky way to check, whether we have a TracebackProxy here. Can't check directly, as
+        # it would lead to circular import.
         if value.__traceback__ is not tb:
+            if not isinstance(tb, TracebackType):
+                tb = tb._tb # pylint: disable=protected-access
             raise value.with_traceback(tb)
         raise value
 
