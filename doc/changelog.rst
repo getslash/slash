@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`344` Exceptions recorded with ``handling_exceptions`` context now properly report the stack frames above the call
 * :feature:`466` Add --relative-paths flag to ``slash list``
 * :release:`1.0.1 <07-08-2016>`
 * :bug:`464` Fix reraising behavior from handling_exceptions
