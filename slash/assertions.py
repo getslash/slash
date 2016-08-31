@@ -1,8 +1,8 @@
 from .exceptions import TestFailed
 from . import exception_handling
+from ._compat import PY2
 from .utils import operator_information
 from .utils.deprecation import deprecated
-from contextlib import contextmanager
 import operator
 import sys
 
@@ -109,7 +109,40 @@ def not_be_in(a, b, msg=None):
 assert_not_in = not_be_in
 
 
-@contextmanager
+class _CaughtContext(object):
+
+    def __init__(self, message, exc_types):
+        if not isinstance(exc_types, tuple):
+            exc_types = (exc_types, )
+        self._expected_classes = exc_types
+        self._caught = _CaughtException()
+        self._ignore_ctx = None
+        self._msg = message
+
+    def __enter__(self):
+        self._ignore_ctx = exception_handling.thread_ignore_exception_context(self._expected_classes)
+        self._ignore_ctx.__enter__()  # pylint: disable=no-member
+        return self._caught
+
+    def __exit__(self, *exc_info):
+        if self._ignore_ctx:
+            self._ignore_ctx.__exit__(*exc_info)  # pylint: disable=no-member
+        if exc_info and exc_info != exception_handling.NO_EXC_INFO:
+            e = exc_info[1]
+            if isinstance(e, self._expected_classes):
+                self._caught.exception = e
+                if PY2:
+                    sys.exc_clear()  # pylint: disable=no-member
+                return True
+            return None
+        if self._msg is None:
+            expected_classes = self._expected_classes
+            if not isinstance(expected_classes, tuple):
+                expected_classes = (expected_classes, )
+            msg = "{0} not raised".format("/".join(e.__name__ for e in expected_classes))
+        raise TestFailed(msg)
+
+
 def assert_raises(exception_class, msg=None):
     """
     Ensures a subclass of **ARG1** leaves the wrapped context:
@@ -117,20 +150,7 @@ def assert_raises(exception_class, msg=None):
     >>> with assert_raises(AttributeError):
     ...     raise AttributeError()
     """
-    caught = _CaughtException()
-    try:
-        with exception_handling.thread_ignore_exception_context(exception_class):
-            yield caught
-    except exception_class as e:
-        caught.exception = e
-    else:
-        expected_classes = exception_class
-        if msg is None:
-            if not isinstance(expected_classes, tuple):
-                expected_classes = (expected_classes,)
-            msg = "{0} not raised".format("/".join(e.__name__ for e in expected_classes))
-        raise TestFailed(msg)
-
+    return _CaughtContext(msg, exception_class)
 
 @deprecated(since='0.19.0', what='slash.should.raise_exception', message='Use slash.assert_raises instead')
 def raise_exception(exception_class, msg=None):
