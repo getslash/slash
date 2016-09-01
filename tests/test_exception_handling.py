@@ -1,9 +1,11 @@
 import sys
 import gossip
 import pytest
+import inspect
+import traceback
 import slash
 from slash import exception_handling
-from slash._compat import ExitStack, PYPY
+from slash._compat import ExitStack, PYPY, PY2
 from slash.exceptions import SkipTest
 from slash.utils import debug
 
@@ -61,13 +63,18 @@ class FakeTracebackTest(TestCase):
     def test_fake_traceback(self):
         with pytest.raises(ZeroDivisionError):
             with exception_handling.handling_exceptions(fake_traceback=False):
-                return 1 / 0
+                self._expected_line_number = inspect.currentframe().f_lineno + 1
+                a = 1 / 0
+                return a
 
         with pytest.raises(ZeroDivisionError):
             with exception_handling.handling_exceptions():
-                return 1 / 0
+                self._expected_line_number = inspect.currentframe().f_lineno + 1
+                a = 1 / 0
+                return a
 
     def verify_fake_traceback_debugger(self, exc_info):
+        assert traceback.extract_tb(exc_info[2])[-1][1] == self._expected_line_number
         if not self._tb_len:
             # First attempt, no fake traceback
             self._tb_len = self._get_tb_len(exc_info[2])

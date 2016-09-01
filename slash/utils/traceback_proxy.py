@@ -72,13 +72,19 @@ else:
             ('tb_lineno', ctypes.c_int)
         ]
 
-        def __init__(self, frame):
+        def __init__(self, tb=None, frame=None):
+            assert tb is not None or frame is not None
             self._tb = TracebackProxy.create_traceback()
             self._obj = TracebackProxy._Traceback.from_address(id(self._tb)) # pylint: disable=no-member
             self.tb_next = None
-            self.tb_frame = frame
-            self.tb_lasti = frame.f_lasti
-            self.tb_lineno = frame.f_lineno
+            if tb:
+                self.tb_frame = tb.tb_frame
+                self.tb_lasti = tb.tb_lasti
+                self.tb_lineno = tb.tb_lineno
+            else:
+                self.tb_frame = frame
+                self.tb_lasti = frame.f_lasti
+                self.tb_lineno = frame.f_lineno
 
         def print_tb(self):
             traceback.print_tb(self._tb)
@@ -160,18 +166,18 @@ else:
         if isinstance(tb, types.TracebackType):
             for i in range(frame_correction): # pylint: disable=unused-variable
                 tb = tb.tb_next
-                first = current = TracebackProxy(tb.tb_frame)
+                first = current = TracebackProxy(tb=tb)
                 tb = tb.tb_next
             while tb:
-                current.tb_next = TracebackProxy(tb.tb_frame)
+                current.tb_next = TracebackProxy(tb=tb)
                 tb = tb.tb_next
                 current = current.tb_next
         else:
             frames = [frame_info[0] for frame_info in inspect.stack()[frame_correction:]]
             frames.reverse()
-            first = current = TracebackProxy(frames[0])
+            first = current = TracebackProxy(frame=frames[0])
             for frame in frames[1:]:
-                current.tb_next = TracebackProxy(frame)
+                current.tb_next = TracebackProxy(frame=frame)
                 current = current.tb_next
 
         return (first, current)
