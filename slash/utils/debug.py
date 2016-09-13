@@ -3,6 +3,7 @@ from __future__ import print_function
 import sys
 import traceback
 
+from .. import hooks as trigger_hook
 from ..conf import config
 from ..exceptions import SkipTest, INTERRUPTION_EXCEPTIONS
 from ..ctx import context
@@ -58,6 +59,8 @@ def debug_if_needed(exc_info=None):
     launch_debugger(exc_info)
 
 def launch_debugger(exc_info):
+    trigger_hook.entering_debugger(exc_info=exc_info)
+
     for debug_func in _KNOWN_DEBUGGERS:
         try:
             debug_func(exc_info)
