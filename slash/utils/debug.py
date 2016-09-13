@@ -59,7 +59,7 @@ def debug_if_needed(exc_info=None):
     launch_debugger(exc_info)
 
 def launch_debugger(exc_info):
-    trigger_hook.entering_debugger(exc_info=exc_info)
+    trigger_hook.entering_debugger(exc_info=exc_info) # pylint: disable=no-member
 
     for debug_func in _KNOWN_DEBUGGERS:
         try:
