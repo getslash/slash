@@ -3,6 +3,3 @@ disable=W0201,I0011,C0111,C0103,C0301,W0702,W0622,R,bad-continuation,wrong-impor
 
 [REPORTS]
 reports=no
-
-[TYPECHECK]
-ignored-modules=slash.hooks
