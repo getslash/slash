@@ -43,6 +43,7 @@ _define('result_summary', doc="Called at the end of the execution, when printing
 
 _define('exception_caught_before_debugger',
         doc="Called whenever an exception is caught, but a debugger hasn't been entered yet")
+_define('entering_debugger', doc='Called right before entering debugger', arg_names=('exc_info',))
 
 _define('exception_caught_after_debugger',
         doc="Called whenever an exception is caught, and a debugger has already been run")
