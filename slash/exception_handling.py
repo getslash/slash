@@ -78,7 +78,7 @@ def handling_exceptions(fake_traceback=True, **kwargs):
 
     if not PYPY and fake_traceback:
         # Only in CPython we're able to fake the original, full traceback
-        (first_tb, last_tb) = create_traceback_proxy(frame_correction=3)
+        (first_tb, last_tb) = create_traceback_proxy(frame_correction=2)
     swallow = kwargs.pop("swallow", False)
     swallow_types = kwargs.pop('swallow_types', ())
     assert isinstance(swallow_types, (list, tuple)), 'swallow_types must be either a list or a tuple'

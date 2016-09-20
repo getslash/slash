@@ -18,7 +18,7 @@ from .._compat import PY2, PYPY
 __all__ = ["create_traceback_proxy"]
 
 if PYPY:
-    def create_traceback_proxy(tb=None, frame_correction=1): # pylint: disable=unused-argument
+    def create_traceback_proxy(tb=None, frame_correction=0): # pylint: disable=unused-argument
         raise NotImplementedError("Tracebacks manipulation is not possible in PyPy")
 
 else:
@@ -155,7 +155,7 @@ else:
             return tb
 
 
-    def create_traceback_proxy(tb=None, frame_correction=1):
+    def create_traceback_proxy(tb=None, frame_correction=0):
         """
         Builds a TracebackProxy object, using a given traceback, or current context if None.
         Returns a tuple with the first and the last tracebacks.
@@ -163,6 +163,7 @@ else:
         :param tb: traceback.traceback object to extract frames from
         :param frame_correction: Specifies the amount of frames to skip
         """
+        frame_correction += 1 # Compensate this call frame
         if isinstance(tb, types.TracebackType):
             for i in range(frame_correction): # pylint: disable=unused-variable
                 tb = tb.tb_next
