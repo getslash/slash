@@ -163,8 +163,10 @@ else:
         :param tb: traceback.traceback object to extract frames from
         :param frame_correction: Specifies the amount of frames to skip
         """
-        frame_correction += 1 # Compensate this call frame
+        assert frame_correction >= 0
         if isinstance(tb, types.TracebackType):
+            if not frame_correction:
+                first = current = TracebackProxy(tb=tb)
             for i in range(frame_correction): # pylint: disable=unused-variable
                 tb = tb.tb_next
                 first = current = TracebackProxy(tb=tb)
@@ -174,6 +176,7 @@ else:
                 tb = tb.tb_next
                 current = current.tb_next
         else:
+            frame_correction += 1 # Compensate this call frame
             frames = [frame_info[0] for frame_info in inspect.stack()[frame_correction:]]
             frames.reverse()
             first = current = TracebackProxy(frame=frames[0])
