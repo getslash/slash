@@ -5,7 +5,7 @@ import inspect
 import traceback
 import slash
 from slash import exception_handling
-from slash._compat import ExitStack, PYPY, PY2
+from slash._compat import ExitStack, PYPY
 from slash.exceptions import SkipTest
 from slash.utils import debug
 
@@ -49,6 +49,7 @@ def test_swallow_types():
 
     with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
         raise value
+    assert sys.exc_info() == exception_handling.NO_EXC_INFO
 
 
 class FakeTracebackTest(TestCase):
@@ -177,6 +178,16 @@ def test_disable_exception_swallowing_decorator():
         with exception_handling.get_exception_swallowing_context():
             func()
     assert caught.value is raised
+
+
+@pytest.mark.parametrize('exc_types', [CustomException, (CustomException, ZeroDivisionError)])
+def test_assert_raises(exc_types):
+    raised = CustomException()
+    with slash.Session():
+        with slash.assert_raises(exc_types) as caught:
+            raise raised
+    assert sys.exc_info() == exception_handling.NO_EXC_INFO
+    assert caught.exception is raised
 
 
 @pytest.mark.parametrize('with_session', [True, False])

@@ -3,7 +3,7 @@ from .utils.debug import debug_if_needed
 from .utils.exception_mark import mark_exception, get_exception_mark
 from .utils.traceback_proxy import create_traceback_proxy
 from . import hooks as trigger_hook
-from ._compat import reraise
+from ._compat import PY2
 from .ctx import context as slash_context
 from .conf import config
 from .exceptions import SkipTest
@@ -19,6 +19,7 @@ except ImportError:
 import sys
 
 _logger = logbook.Logger(__name__)
+NO_EXC_INFO = (None, None, None)
 
 
 def update_current_result(exc_info):  # pylint: disable=unused-argument
@@ -64,7 +65,6 @@ def thread_ignore_exception_context(exc_type):
         _ignored_state.ignored_exception_types = prev
 
 
-@contextmanager
 def handling_exceptions(fake_traceback=True, **kwargs):
     """Context manager handling exceptions that are raised within it
 
@@ -78,30 +78,49 @@ def handling_exceptions(fake_traceback=True, **kwargs):
 
     if not PYPY and fake_traceback:
         # Only in CPython we're able to fake the original, full traceback
-        (first_tb, last_tb) = create_traceback_proxy(frame_correction=2)
+        fake_tbs = create_traceback_proxy(frame_correction=2)
+    else:
+        fake_tbs = tuple()
     swallow = kwargs.pop("swallow", False)
     swallow_types = kwargs.pop('swallow_types', ())
+    if swallow:
+        swallow_types = swallow_types + (Exception, )
     assert isinstance(swallow_types, (list, tuple)), 'swallow_types must be either a list or a tuple'
-    passthrough_types = kwargs.pop('passthrough_types', ())
-    try:
-        yield
-    except passthrough_types:
-        raise
-    except tuple(_ignored_state.ignored_exception_types): # pylint: disable=catching-non-exception
-        raise
-    except:
-        exc_info = _, exc_value, _ = sys.exc_info()
+    passthrough_types = kwargs.pop('passthrough_types', ()) + tuple(_ignored_state.ignored_exception_types)
+    return _HandlingException(fake_tbs, swallow_types, passthrough_types, kwargs)
 
-        if not PYPY and fake_traceback:
+
+class _HandlingException(object):
+
+    def __init__(self, fake_tbs, swallow_types, passthrough_types, handling_kwargs):
+        self._fake_traceback = fake_tbs
+        self._kwargs = handling_kwargs
+        self._passthrough_types = passthrough_types
+        self._swallow_types = swallow_types
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *exc_info):
+        if not exc_info or exc_info == NO_EXC_INFO:
+            return
+        exc_value = exc_info[1]
+
+        if isinstance(exc_value, self._passthrough_types):
+            return None
+        if self._fake_traceback:
+            (first_tb, last_tb) = self._fake_traceback
             (second_tb, _) = create_traceback_proxy(exc_info[2])
             last_tb.tb_next = second_tb
             exc_info = (exc_info[0], exc_info[1], first_tb._tb) # pylint: disable=protected-access
-        handle_exception(exc_info, **kwargs)
+        handle_exception(exc_info, **self._kwargs)
         if isinstance(exc_value, SkipTest):
-            reraise(*exc_info)
-        swallow = swallow or isinstance(exc_value, swallow_types)
-        if not swallow or not isinstance(exc_value, Exception):
-            reraise(*exc_info)
+            return None
+        if self._swallow_types and isinstance(exc_value, self._swallow_types):
+            if PY2:
+                sys.exc_clear()  # pylint: disable=no-member
+            return True
+        return None
 
 
 def handle_exception(exc_info, context=None):
