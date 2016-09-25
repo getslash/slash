@@ -135,6 +135,7 @@ class _CaughtContext(object):
                     sys.exc_clear()  # pylint: disable=no-member
                 return True
             return None
+        msg = self._msg
         if self._msg is None:
             expected_classes = self._expected_classes
             if not isinstance(expected_classes, tuple):

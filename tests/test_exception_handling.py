@@ -6,7 +6,7 @@ import traceback
 import slash
 from slash import exception_handling
 from slash._compat import ExitStack, PYPY
-from slash.exceptions import SkipTest
+from slash.exceptions import SkipTest, TestFailed
 from slash.utils import debug
 
 from .utils import CustomException, TestCase
@@ -180,14 +180,27 @@ def test_disable_exception_swallowing_decorator():
     assert caught.value is raised
 
 
+@pytest.mark.parametrize('message', [None, 'My custom message'])
 @pytest.mark.parametrize('exc_types', [CustomException, (CustomException, ZeroDivisionError)])
-def test_assert_raises(exc_types):
+def test_assert_raises(exc_types, message):
     raised = CustomException()
     with slash.Session():
-        with slash.assert_raises(exc_types) as caught:
+        with slash.assert_raises(exc_types, msg=message) as caught:
             raise raised
     assert sys.exc_info() == exception_handling.NO_EXC_INFO
     assert caught.exception is raised
+
+
+@pytest.mark.parametrize('message', [None, 'My custom message'])
+def test_assert_raises_that_not_raises(message):
+    expected_substring = message or 'not raised'
+    try:
+        with slash.assert_raises(Exception, msg=message):
+            pass
+    except TestFailed as e:
+        assert expected_substring in str(e)
+    else:
+        raise Exception('TestFailed exception was not raised :()')
 
 
 @pytest.mark.parametrize('with_session', [True, False])

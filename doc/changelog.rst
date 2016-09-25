@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`477` Fix assert_raises with message for un-raised exceptions
 * :bug:`464` Fix exc_info leaks outside of ``assert_raises`` & ``handling_exceptions``
 * :feature:`-` Added the ``entering_debugger`` hook to be called before actually entering a debugger
 * :feature:`344` Exceptions recorded with ``handling_exceptions`` context now properly report the stack frames above the call
