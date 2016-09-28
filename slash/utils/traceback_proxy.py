@@ -165,10 +165,7 @@ else:
         """
         assert frame_correction >= 0
         if isinstance(tb, types.TracebackType):
-            if not frame_correction:
-                first = current = TracebackProxy(tb=tb)
-            for i in range(frame_correction): # pylint: disable=unused-variable
-                tb = tb.tb_next
+            for i in range(frame_correction + 1): # pylint: disable=unused-variable
                 first = current = TracebackProxy(tb=tb)
                 tb = tb.tb_next
             while tb:
