@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`479` When installing and activating plugins and activation fails due to incompatibility, the erroneous plugins are now automatically uninstalled
 * :bug:`477` Fix assert_raises with message for un-raised exceptions
 * :bug:`464` Fix exc_info leaks outside of ``assert_raises`` & ``handling_exceptions``
 * :feature:`-` Added the ``entering_debugger`` hook to be called before actually entering a debugger

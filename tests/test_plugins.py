@@ -116,7 +116,7 @@ def test_register_invalid_hook():
     with pytest.raises(IncompatiblePlugin):
         plugins.manager.install(MyPlugin(), activate=True)
 
-    assert list(plugins.manager.get_installed_plugins()) == initially_installed
+    assert set(plugins.manager.get_installed_plugins()) == set(initially_installed)
 
 
 def test_register_custom_hooks_strict_group():

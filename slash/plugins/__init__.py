@@ -1,4 +1,5 @@
 import os
+import sys
 
 from emport import import_file
 from sentinels import NOTHING
@@ -7,7 +8,7 @@ import gossip
 import gossip.hooks
 
 from .. import hooks
-from .._compat import itervalues
+from .._compat import itervalues, reraise
 from ..conf import config
 from ..utils.marks import mark, try_get_mark
 from .interface import PluginInterface
@@ -82,7 +83,12 @@ class PluginManager(object):
                 'session': gossip.Toggle(),
             }
         if activate:
-            self.activate(plugin_name)
+            try:
+                self.activate(plugin_name)
+            except IncompatiblePlugin:
+                exc_info = sys.exc_info()
+                self.uninstall(plugin)
+                reraise(*exc_info)
         if activate_later:
             self.activate_later(plugin_name)
 
