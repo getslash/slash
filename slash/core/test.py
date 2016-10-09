@@ -1,9 +1,10 @@
 import functools
 import itertools
+from types import GeneratorType
 
 from .._compat import iteritems, izip, xrange
 from ..exception_handling import handling_exceptions
-from ..exceptions import SkipTest
+from ..exceptions import SkipTest, InvalidTest
 from .fixtures.parameters import bound_parametrizations_context
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
@@ -115,7 +116,10 @@ class Test(RunnableTest):
             _call_with_fixtures(self.before)
             try:
                 with handling_exceptions():
-                    _call_with_fixtures(method)
+                    result = _call_with_fixtures(method)
+                    if isinstance(result, GeneratorType):
+                        raise InvalidTest('{} is a generator. Running generators is not supported'.format(method))
+
             finally:
                 with handling_exceptions():
                     _call_with_fixtures(self.after)

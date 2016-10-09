@@ -1,4 +1,6 @@
+from types import GeneratorType
 from .._compat import xrange
+from ..exceptions import InvalidTest
 
 from .fixtures.parameters import bound_parametrizations_context
 from .requirements import get_requirements
@@ -21,9 +23,11 @@ class FunctionTest(RunnableTest):
 
     def run(self):
         with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
-            self._fixture_store.call_with_fixtures(
+            result = self._fixture_store.call_with_fixtures(
                 self._func, namespace=self._fixture_namespace,
             )
+            if isinstance(result, GeneratorType):
+                raise InvalidTest('{} is a generator. Running generators is not supported'.format(self._func))
 
     def get_test_function(self):
         return self._func
