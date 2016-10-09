@@ -72,7 +72,7 @@ def test_active_decorator(restore_plugins_on_cleanup):
     assert isinstance(active, SamplePlugin)
 
 
-def test_custom_hook_registration():
+def test_custom_hook_registration(request):
 
     hook_name = 'some_hook'
     with pytest.raises(LookupError):
@@ -88,6 +88,11 @@ def test_custom_hook_registration():
             pass
     p = MyPlugin()
     plugins.manager.install(p, activate=True)
+
+    @request.addfinalizer
+    def cleanup():              # pylint: disable=unused-variable
+        plugins.manager.uninstall(p)
+
     registrations = gossip.get_hook(hook_name).get_registrations()
     assert 1 == len(registrations)
     [r] = registrations
