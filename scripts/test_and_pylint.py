@@ -15,7 +15,7 @@ def _cmd(cmd):
     subprocess.check_call(cmd, shell=True)
 
 if __name__ == '__main__':
-    cmd = "py.test tests --cov=slash --cov-report=html"
+    cmd = "py.test tests -vv --cov=slash --cov-report=html"
     if '--parallel' in sys.argv:
         cmd += ' -n 4'
     try:
