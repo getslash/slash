@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`462` Add ``log.errors_subpath`` to enable log files only recording added errors and failures.
 * :feature:`403` add ``slash list-plugins`` to show available plugins and related information
 * :feature:`461` ``yield_fixture`` now honors the ``scope`` argument
 * :feature:`468` Slash now detects tests that accidentally contain ``yield`` statements and fails accordingly

@@ -150,7 +150,7 @@ class Result(object):
             if is_failure:
                 # force the error object to be marked as failure
                 error.mark_as_failure()
-            _logger.debug('Error added: {0}', error)
+            _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'to_error_log': 1})
             error_list.append(error)
             hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             return error
