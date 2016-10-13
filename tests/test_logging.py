@@ -1,3 +1,4 @@
+# pylint: disable=unused-argument,redefined-outer-name
 import functools
 import os
 
@@ -127,6 +128,10 @@ def test_last_failed(suite, links_dir):
     assert links_dir.join('last-failed').readlink() == fail_log
 
 
+
+################################################################################
+## Fixtures
+
 @pytest.fixture
 def session():
     session = run_tests_assert_success(SampleTest)
@@ -139,12 +144,7 @@ def files_dir(logs_dir):
 
 
 @pytest.fixture
-def links_dir(logs_dir):
-    return logs_dir.join("links")
-
-
-@pytest.fixture
-def logs_dir(request, config_override, tmpdir, relative_symlinks):
+def logs_dir(config_override, tmpdir, relative_symlinks):
     returned = tmpdir.join('logs')
     config_override("log.root", str(returned.join("files")))
     config_override("log.last_session_symlink",
@@ -179,6 +179,10 @@ _SESSION_START_MARK = "session-start-mark"
 _SESSION_END_MARK = "session-end-mark"
 
 _silenced_logger = logbook.Logger("silenced_logger")
+
+
+################################################################################
+## Legacy Tests
 
 
 class LogFormattingTest(TestCase):
