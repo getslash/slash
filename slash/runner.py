@@ -8,7 +8,7 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, SkipTest, INTERRUPTION_EXCEPTIONS
+from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .utils.interactive import notify_if_slow_context
@@ -109,7 +109,7 @@ def _run_single_test(test, test_iterator):
                                     test.run()
                             finally:
                                 context.session.scope_manager.end_test(test)
-                    except SkipTest:
+                    except context.session.get_skip_exception_types():
                         pass
 
                     _fire_test_summary_hooks(test, result)
@@ -119,7 +119,7 @@ def _run_single_test(test, test_iterator):
                         with handling_exceptions(swallow=True):
                             context.session.scope_manager.flush_remaining_scopes()
 
-                except SkipTest:
+                except context.session.get_skip_exception_types():
                     pass
                 except INTERRUPTION_EXCEPTIONS:
                     with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):

@@ -10,7 +10,7 @@ from ..ctx import context
 from .. import hooks
 from .details import Details
 from .error import Error
-from ..exceptions import FAILURE_EXCEPTION_TYPES, SkipTest
+from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 
@@ -51,8 +51,8 @@ class Result(object):
         _ADDED_TO_RESULT.mark_exception(exc_value)
         if isinstance(exc_value, FAILURE_EXCEPTION_TYPES):
             self.add_failure()
-        elif isinstance(exc_value, SkipTest):
-            self.add_skip(exc_value.reason)
+        elif isinstance(exc_value, context.session.get_skip_exception_types()):
+            self.add_skip(getattr(exc_value, 'reason', str(exc_value)))
         elif issubclass(exc_class, Exception):
             #skip keyboardinterrupt and system exit
             self.add_error(exc_info=exc_info)

@@ -36,7 +36,7 @@ from .core.test import abstract_test_class
 from .core.fixtures import parametrize, parameters
 from .core.fixtures.utils import fixture, nofixtures, generator_fixture, yield_fixture, use
 from .core.requirements import requires
-from .utils import skip_test, skipped, add_error, add_failure, set_test_detail, repeat
+from .utils import skip_test, skipped, add_error, add_failure, set_test_detail, repeat, register_skip_exception
 from .utils.interactive import start_interactive_shell
 from .app import get_application_context
 from .runner import run_tests

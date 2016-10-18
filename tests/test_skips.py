@@ -63,6 +63,23 @@ def test_class_decorator(suite):
         assert 'reason' in result.get_skips()
 
 
+def test_custom_skip_exception():
+    reason = 'blabla'
+
+    class MyCustomSkipException(Exception):
+
+        def __repr__(self):
+            return reason
+        __str__ = __repr__
+
+
+    def test_skip():
+        slash.register_skip_exception(MyCustomSkipException)
+        raise MyCustomSkipException()
+
+    _assert_skips(test_skip, reason=reason)
+
+
 def _assert_skips(thing, reason=None):
     session = run_tests_in_session(thing)
     for res in session.results:
