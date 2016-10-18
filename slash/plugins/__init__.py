@@ -62,11 +62,24 @@ class PluginManager(object):
         for active_name in self._active:
             yield (active_name, self._installed[active_name])
 
+    def get_future_active_plugins(self):
+        """
+        Returns a dictionary of plugins intended to be active once the 'pending activation' mechanism
+        is finished
+        """
+        returned = self.get_active_plugins()
+        for name in self._pending_activation:
+            returned[name] = self.get_plugin(name)
+        for name in self._pending_deactivation:
+            returned.pop(name, None)
+        return returned
+
     def get_plugin(self, plugin_name):
         """
         Retrieves a registered plugin by name, or raises a LookupError
         """
         return self._installed[plugin_name]
+
 
     def install(self, plugin, activate=False, activate_later=False):
         """
