@@ -34,6 +34,7 @@ class Message(object):
 
 class Plugin(PluginInterface):
     """Enables notifications for successful and failed test runs through various providers (NMA, Prowl, Pushover etc.)
+    For more information see https://slash.readthedocs.org/en/master/builtin_plugins.html#notifications
     """
 
     def get_name(self):

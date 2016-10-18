@@ -13,6 +13,9 @@ from xml.etree.ElementTree import (
     )
 
 class Plugin(PluginInterface):
+    """
+    For more information see https://slash.readthedocs.org/en/master/builtin_plugins.html#xunit
+    """
 
     _xunit_elements = None
     _start_time = datetime.datetime.now()
