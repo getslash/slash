@@ -43,6 +43,7 @@ Table Of Contents
    logging
    hooks
    plugins
+   builtin_plugins
    internals
    features
    advanced_usage

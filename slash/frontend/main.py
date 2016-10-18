@@ -13,6 +13,7 @@ _COMMANDS = {
     "version": "slash.frontend.main:slash_version",
     "list": "slash.frontend.slash_list:slash_list",
     "list-config": "slash.frontend.list_config:list_config",
+    "list-plugins": "slash.frontend.slash_list_plugins:slash_list_plugins",
 }
 
 

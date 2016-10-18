@@ -9,6 +9,9 @@ _DATA_FILENAME = '.coverage'
 
 class Plugin(PluginInterface):
 
+    """Enables saving coverage information for test runs
+    """
+
     def get_name(self):
         return "coverage"
 
