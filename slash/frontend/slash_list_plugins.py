@@ -31,7 +31,6 @@ def slash_list_plugins(args, report_stream=sys.stdout):
     site.load()
 
     active = manager.get_future_active_plugins()
-    assert active
 
     for plugin in sorted(manager.get_installed_plugins().values(), key=lambda p: p.get_name()):
         name = plugin.get_name()
