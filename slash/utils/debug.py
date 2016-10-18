@@ -5,7 +5,7 @@ import traceback
 
 from .. import hooks as trigger_hook
 from ..conf import config
-from ..exceptions import SkipTest, INTERRUPTION_EXCEPTIONS
+from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..ctx import context
 
 
@@ -51,7 +51,7 @@ def debug_if_needed(exc_info=None):
         return
     if exc_info is None:
         exc_info = sys.exc_info()
-    if exc_info[0] is SkipTest and not config.root.debug.debug_skips:
+    if isinstance(exc_info[1], context.session.get_skip_exception_types()) and not config.root.debug.debug_skips:
         return
     if isinstance(exc_info[1], (SystemExit,) + INTERRUPTION_EXCEPTIONS):
         return

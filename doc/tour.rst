@@ -167,6 +167,8 @@ Slash also provides :func:`slash.skipped`, which is a decorator to skip specific
      def test_2():
          # ...
 
+In some cases you may want to register a custom exception to be recognized as a skip. You can do this by registering your exception type first with :func:`slash.register_skip_exception`.
+
 
 Requirements
 ------------

@@ -31,15 +31,17 @@ def test_passthrough_types():
 
     value = CustomException()
 
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.handling_exceptions(passthrough_types=(CustomException,)):
-            raise value
+    with slash.Session():
+        with pytest.raises(CustomException) as caught:
+            with exception_handling.handling_exceptions(passthrough_types=(CustomException,)):
+                raise value
     assert value is caught.value
     assert not exception_handling.is_exception_handled(value)
 
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)):
-            raise value
+    with slash.Session():
+        with pytest.raises(CustomException) as caught:
+            with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)):
+                raise value
     assert value is caught.value
     assert exception_handling.is_exception_handled(value)
 
@@ -47,8 +49,9 @@ def test_passthrough_types():
 def test_swallow_types():
     value = CustomException()
 
-    with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
-        raise value
+    with slash.Session():
+        with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
+            raise value
     assert sys.exc_info() == exception_handling.NO_EXC_INFO
 
 
@@ -62,13 +65,13 @@ class FakeTracebackTest(TestCase):
 
     @pytest.mark.skipif(PYPY, reason='Cannot run on PyPy')
     def test_fake_traceback(self):
-        with pytest.raises(ZeroDivisionError):
+        with slash.Session(), pytest.raises(ZeroDivisionError):
             with exception_handling.handling_exceptions(fake_traceback=False):
                 self._expected_line_number = inspect.currentframe().f_lineno + 1
                 a = 1 / 0
                 return a
 
-        with pytest.raises(ZeroDivisionError):
+        with slash.Session(), pytest.raises(ZeroDivisionError):
             with exception_handling.handling_exceptions():
                 self._expected_line_number = inspect.currentframe().f_lineno + 1
                 a = 1 / 0
@@ -95,7 +98,7 @@ class FakeTracebackTest(TestCase):
 def test_handling_exceptions():
     value = CustomException()
 
-    with pytest.raises(CustomException) as caught:
+    with slash.Session(), pytest.raises(CustomException) as caught:
         with exception_handling.handling_exceptions():
             with exception_handling.handling_exceptions():
                 with exception_handling.handling_exceptions():
@@ -109,7 +112,7 @@ def test_reraise_after_exc_info_reset():
     def exception_hook():       # pylint: disable=unused-variable
         sys.exc_clear()
 
-    with pytest.raises(CustomException):
+    with slash.Session(), pytest.raises(CustomException):
         with exception_handling.handling_exceptions():
             raise CustomException()
 
@@ -142,7 +145,7 @@ class DebuggingTest(TestCase):
         self.assertTrue(self.debugger_called)
 
     def _raise_exception_in_context(self, exception_type):
-        with self.assertRaises(exception_type):
+        with slash.Session(), self.assertRaises(exception_type):
             with exception_handling.handling_exceptions():
                 raise exception_type()
 

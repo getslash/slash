@@ -41,6 +41,8 @@ Skips
 
 .. autofunction:: slash.skip_test
 
+.. autofunction:: slash.register_skip_exception
+
 Tags
 ----
 

@@ -6,7 +6,6 @@ from . import hooks as trigger_hook
 from ._compat import PY2
 from .ctx import context as slash_context
 from .conf import config
-from .exceptions import SkipTest
 from ._compat import PYPY
 
 import functools
@@ -114,7 +113,7 @@ class _HandlingException(object):
             last_tb.tb_next = second_tb
             exc_info = (exc_info[0], exc_info[1], first_tb._tb) # pylint: disable=protected-access
         handle_exception(exc_info, **self._kwargs)
-        if isinstance(exc_value, SkipTest):
+        if isinstance(exc_value, slash_context.session.get_skip_exception_types()):
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
             if PY2:

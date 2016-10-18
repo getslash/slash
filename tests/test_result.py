@@ -10,17 +10,18 @@ from .utils import TestCase, run_tests_assert_success
 
 @pytest.mark.parametrize('use_error', [True, False])
 def test_result_add_exception_multiple_times(result, use_error):
-    second_result = type(result)()
-    second_result.mark_started()
-    try:
-        if use_error:
-            1 / 0               # pylint: disable=pointless-statement
-        else:
-            assert 1 + 1 == 3
-    except:
-        for _ in range(3):
-            result.add_exception()
-        second_result.add_exception()
+    with slash.Session():
+        second_result = type(result)()
+        second_result.mark_started()
+        try:
+            if use_error:
+                1 / 0               # pylint: disable=pointless-statement
+            else:
+                assert 1 + 1 == 3
+        except:
+            for _ in range(3):
+                result.add_exception()
+            second_result.add_exception()
 
     assert result.is_error() == use_error
     assert result.is_failure() == (not use_error)

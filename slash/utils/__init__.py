@@ -37,6 +37,16 @@ def skipped(thing, reason=None):
     return new_func
 
 
+def register_skip_exception(exception_type):
+    """
+    Registers a custom exception type to be recognized a test skip. This makes the exception
+    behave just as if the test called ``skip_test``
+
+    .. note:: this must be called within an active session
+    """
+    context.session.register_skip_exception(exception_type)
+
+
 def add_error(msg=None, frame_correction=0, exc_info=None):
     """
     Adds an error to the current test result
