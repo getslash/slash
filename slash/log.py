@@ -180,7 +180,10 @@ class SessionLogging(object):
         root_path = config.root.log.root
         if root_path is None or subpath is None:
             log_path = None
-            handler = NoopHandler()
+            if bubble:
+                handler = NoopHandler()
+            else:
+                handler = logbook.NullHandler(filter=filter)
         else:
             log_path = self._normalize_path(os.path.join(root_path, _format_log_path(subpath)))
             ensure_containing_directory(log_path)
