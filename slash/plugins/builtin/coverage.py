@@ -10,6 +10,7 @@ _DATA_FILENAME = '.coverage'
 class Plugin(PluginInterface):
 
     """Enables saving coverage information for test runs
+    For more information see https://slash.readthedocs.org/en/master/builtin_plugins.html#coverage
     """
 
     def get_name(self):

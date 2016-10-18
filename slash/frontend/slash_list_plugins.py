@@ -7,6 +7,7 @@ from functools import partial
 import colorama
 from slash.utils.cli_utils import make_styler
 
+from slash import site
 from slash.plugins import manager
 
 _title_style = make_styler(colorama.Fore.WHITE + colorama.Style.BRIGHT)  # pylint: disable=no-member
@@ -27,6 +28,8 @@ def slash_list_plugins(args, report_stream=sys.stdout):
     parser = _get_parser()
     _ = parser.parse_args(args)
 
+    site.load()
+
     active = manager.get_active_plugins()
 
     for plugin in sorted(manager.get_installed_plugins().values(), key=lambda p: p.get_name()):
@@ -37,7 +40,8 @@ def slash_list_plugins(args, report_stream=sys.stdout):
         else:
             _print(_disabled_style('inactive (use --with-{} to activate)'.format(name)))
         if plugin.__doc__:
-            _print('\t', plugin.__doc__.strip())
-            _print('\t For more information see', _link_style('https://slash.readthedocs.org/en/master/builtin_plugins.html#{}'.format(name)))
+            for line in plugin.__doc__.splitlines():
+                if line.strip():
+                    _print('\t', line.strip())
 
     return 0
