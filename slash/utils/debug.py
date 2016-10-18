@@ -5,7 +5,7 @@ import traceback
 
 from .. import hooks as trigger_hook
 from ..conf import config
-from ..exceptions import SkipTest, INTERRUPTION_EXCEPTIONS
+from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..ctx import context
 
 
