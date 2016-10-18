@@ -5,7 +5,7 @@ import sys
 from functools import partial
 
 import colorama
-from slash.utils.cli_utils import UNDERLINED, make_styler, error_abort
+from slash.utils.cli_utils import make_styler
 
 from slash.plugins import manager
 
