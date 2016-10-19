@@ -176,7 +176,8 @@ class FixtureStore(object):
         return fixture_func
 
     def register_fixture_id(self, f):
-        assert f.info.id not in self._fixtures_by_id
+        if f.info.id in self._fixtures_by_id:
+            return
         self._fixtures_by_id[f.info.id] = f
         self._unresolved_fixture_ids.add(f.info.id)
 

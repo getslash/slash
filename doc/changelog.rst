@@ -12,6 +12,8 @@ Changelog
 * :feature:`-` Added the ``entering_debugger`` hook to be called before actually entering a debugger
 * :feature:`344` Exceptions recorded with ``handling_exceptions`` context now properly report the stack frames above the call
 * :feature:`466` Add --relative-paths flag to ``slash list``
+* :release:`1.0.2 <19-10-2016>`
+* :bug:`481` Fixed tuple parameters for fixtures
 * :release:`1.0.1 <07-08-2016>`
 * :bug:`464` Fix reraising behavior from handling_exceptions
 * :bug:`457` Fixed initialization order for *autouse* fixtures
