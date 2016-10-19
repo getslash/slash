@@ -1,3 +1,4 @@
+# pylint: disable=unused-argument,redefined-outer-name
 import functools
 import os
 
@@ -127,6 +128,42 @@ def test_last_failed(suite, links_dir):
     assert links_dir.join('last-failed').readlink() == fail_log
 
 
+def test_errors_log_for_test(suite, suite_test, errors_log_path, logs_dir):
+    suite_test.when_run.fail()
+    res = suite.run()[suite_test]
+    with errors_log_path.open() as f:
+        lines = [l for l in f.read().splitlines() if 'NOTICE' not in l]
+        error_line = lines[0]
+    assert 'Error added' in error_line
+    with open(res.get_log_path()) as f:
+        lines = f.read().splitlines()
+        assert error_line in lines
+
+
+def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
+    @gossip.register('slash.session_start')
+    def on_session_start():
+        try:
+            1/0                     # pylint: disable=pointless-statement
+        except ZeroDivisionError:
+            slash.add_error()
+
+    request.addfinalizer(on_session_start.gossip.unregister)
+    results = suite.run().session.results
+    assert len(results.global_result.get_errors()) == 1
+    with errors_log_path.open() as f:
+        lines = [l for l in f.read().splitlines() if 'NOTICE' not in l]
+        assert 'Error added' in lines[0]
+
+    with open(results.global_result.get_log_path()) as f:
+        assert lines[0] in f.read().splitlines()
+
+
+
+
+################################################################################
+## Fixtures
+
 @pytest.fixture
 def session():
     session = run_tests_assert_success(SampleTest)
@@ -139,12 +176,7 @@ def files_dir(logs_dir):
 
 
 @pytest.fixture
-def links_dir(logs_dir):
-    return logs_dir.join("links")
-
-
-@pytest.fixture
-def logs_dir(request, config_override, tmpdir, relative_symlinks):
+def logs_dir(config_override, tmpdir, relative_symlinks):
     returned = tmpdir.join('logs')
     config_override("log.root", str(returned.join("files")))
     config_override("log.last_session_symlink",
@@ -158,6 +190,12 @@ def logs_dir(request, config_override, tmpdir, relative_symlinks):
 
     return returned
 
+
+@pytest.fixture
+def errors_log_path(request, config_override, tmpdir, logs_dir):
+    subpath = 'subdir/errors.log'
+    config_override('log.errors_subpath', subpath)
+    return logs_dir.join('files').join(subpath)
 
 @pytest.fixture(params=[True, False])
 def relative_symlinks(request):
@@ -179,6 +217,10 @@ _SESSION_START_MARK = "session-start-mark"
 _SESSION_END_MARK = "session-end-mark"
 
 _silenced_logger = logbook.Logger("silenced_logger")
+
+
+################################################################################
+## Legacy Tests
 
 
 class LogFormattingTest(TestCase):
