@@ -7,6 +7,7 @@ from . import site
 from .core.session import Session
 from .conf import config
 from .exceptions import TerminatedException
+from .exception_handling import handling_exceptions
 from .loader import Loader
 from .reporting.console_reporter import ConsoleReporter
 from .reporting.null_reporter import NullReporter
@@ -59,7 +60,8 @@ def _check_unknown_switches(app):
 def _handling_sigterm_context():
 
     def handle_sigterm(*_):
-        raise TerminatedException('Terminated by signal')
+        with handling_exceptions():
+            raise TerminatedException('Terminated by signal')
 
     prev = signal.signal(signal.SIGTERM, handle_sigterm)
     try:
