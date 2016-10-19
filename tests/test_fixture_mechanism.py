@@ -1,4 +1,4 @@
-# pylint: disable=unused-variable
+# pylint: disable=unused-variable,redefined-outer-name
 import inspect
 import itertools
 from uuid import uuid1
@@ -114,6 +114,21 @@ def test_fixture_parameters(store):
 
     variations = list(_get_all_values(store, 'value'))
     assert set(variations) == set(itertools.product([1, 2, 3], [4, 5, 6]))
+
+
+def test_fixture_tuple_parameters(store):
+
+    @store.add_fixture
+    @slash.fixture
+    @slash.parametrize(('a', 'b'), [(1, 2), (3, 4)])
+    def x(a, b):
+        return a + b
+
+    store.resolve()
+
+    variations = list(_get_all_values(store, 'x'))
+    assert variations == [3, 7]
+
 
 
 def test_variation_equality(store):
