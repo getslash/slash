@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`481` Fixed tuple parameters for fixtures
 * :release:`1.0.1 <07-08-2016>`
 * :bug:`464` Fix reraising behavior from handling_exceptions
 * :bug:`457` Fixed initialization order for *autouse* fixtures
