@@ -11,6 +11,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
+from .core.requirements import format_requirement_skip_message
 from .utils.interactive import notify_if_slow_context
 from .utils.iteration import PeekableIterator
 
@@ -90,7 +91,7 @@ def _run_single_test(test, test_iterator):
             unmet_reqs = test.get_unmet_requirements()
 
             if unmet_reqs:
-                skip_msg = 'Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs))
+                skip_msg = format_requirement_skip_message(unmet_reqs)
                 _logger.debug('Requirements not met for {0}. Not running', test)
                 context.result.add_skip(skip_msg)
                 hooks.test_avoided(reason=skip_msg) # pylint: disable=no-member

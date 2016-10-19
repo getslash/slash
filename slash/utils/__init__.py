@@ -2,6 +2,7 @@ import functools
 
 from ..ctx import context
 from ..core.markers import repeat as repeat_marker
+from ..core import requirements
 from ..exceptions import SkipTest
 
 
@@ -23,19 +24,10 @@ def skipped(thing, reason=None):
     """
     A decorator for skipping methods and classes
     """
-    from ..core.test import Test
-
     if isinstance(thing, str):
         return functools.partial(skipped, reason=thing)
-    if isinstance(thing, type) and issubclass(thing, Test):
-        thing.skip_all(reason)
-        return thing
 
-    @functools.wraps(thing)
-    def new_func(*_, **__):  # pylint: disable=unused-argument
-        skip_test(reason)
-    return new_func
-
+    return requirements.requires(requirements.Skip(reason))(thing)
 
 def register_skip_exception(exception_type):
     """
