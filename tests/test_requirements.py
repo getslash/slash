@@ -1,6 +1,7 @@
 import gossip
 import pytest
 import slash
+import slash.core.requirements
 
 from slash.loader import Loader
 
@@ -100,3 +101,32 @@ def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
             assert r.data['avoided']['test_name'].split('_')[-1] == suite_test.id
         else:
             assert 'avoided' not in r.data
+
+
+def test_adding_requirement_objects():
+
+    class MyRequirement(slash.core.requirements.Requirement):
+        pass
+
+    req = MyRequirement('bla')
+
+    @slash.requires(req)
+    def test_something():
+        pass
+
+    with slash.Session():
+        [test] = make_runnable_tests(test_something) # pylint: disable=unbalanced-tuple-unpacking
+
+    reqs = test.get_requirements()
+    assert len(reqs) == 1 and reqs[0] is req
+
+
+def test_cannot_specify_message_with_requirement_object():
+
+    class MyRequirement(slash.core.requirements.Requirement):
+        pass
+
+    with pytest.raises(AssertionError) as caught:
+        slash.requires(MyRequirement(''), 'message')
+
+    assert 'specify message' in str(caught.value)

@@ -7,12 +7,17 @@ def requires(req, message=None):
     :param req: Either a function receiving no arguments and returning a boolean, or a boolean specifying whether or not
        the requirement is met
     """
+    if not isinstance(req, Requirement):
+        req = Requirement(req, message)
+    else:
+        assert message is None, 'Cannot specify message when passing Requirement objects to slash.requires'
+
     def decorator(func):
         reqs = getattr(func, _SLASH_REQUIRES_KEY_NAME, None)
         if reqs is None:
             reqs = []
             setattr(func, _SLASH_REQUIRES_KEY_NAME, reqs)
-        reqs.append(Requirement(req, message))
+        reqs.append(req)
         return func
     return decorator
 
