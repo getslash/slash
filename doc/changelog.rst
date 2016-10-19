@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`400` ``slash.skipped`` decorator is now implemented through the requirements mechanism. This saves a lot of time in unnecessary setup, and allows multiple skips to be assigned to a single test
 * :feature:`462` Add ``log.errors_subpath`` to enable log files only recording added errors and failures.
 * :feature:`403` add ``slash list-plugins`` to show available plugins and related information
 * :feature:`461` ``yield_fixture`` now honors the ``scope`` argument

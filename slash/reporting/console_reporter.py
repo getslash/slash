@@ -302,9 +302,9 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_result_skip_summary(self, result):
         msg = '\tSkipped'
-        skip_reason = result.get_skips()[0]
-        if skip_reason is not None:
-            msg += ' ({0})'.format(skip_reason)
+        skip_reasons = [r for r in result.get_skips() if r is not None]
+        if skip_reasons:
+            msg += ' ({0})'.format(', '.join(skip_reasons))
         msg += '\n'
 
         self._terminal.write(msg, **theme('test-skip-message'))
