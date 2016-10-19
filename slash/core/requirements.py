@@ -58,23 +58,3 @@ class Skip(Requirement):
     def __init__(self, reason=None):
         super(Skip, self).__init__(False, reason)
         self.reason = reason
-
-def format_requirement_skip_message(reqs):
-    non_skips = []
-    skips = []
-    for req, reason in reqs:
-        if isinstance(req, Skip):
-            skips.append(req.reason or 'Skipped')
-        else:
-            non_skips.append(str(reason or req))
-
-    returned = []
-
-    if skips:
-        returned.append('Skipped ({})'.format(', '.join(skips)))
-
-    if non_skips:
-        returned.append('Unmet requirements: {}'.format(', '.join(non_skips)))
-
-
-    return ', '.join(returned)

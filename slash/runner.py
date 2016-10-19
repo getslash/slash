@@ -11,7 +11,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
-from .core.requirements import format_requirement_skip_message
+from .core import requirements
 from .utils.interactive import notify_if_slow_context
 from .utils.iteration import PeekableIterator
 
@@ -88,15 +88,9 @@ def _run_single_test(test, test_iterator):
 
         with handling_exceptions():
 
-            unmet_reqs = test.get_unmet_requirements()
 
-            if unmet_reqs:
-                skip_msg = format_requirement_skip_message(unmet_reqs)
-                _logger.debug('Requirements not met for {0}. Not running', test)
-                context.result.add_skip(skip_msg)
-                hooks.test_avoided(reason=skip_msg) # pylint: disable=no-member
+            if not _process_requirements(test):
                 return
-
 
             result.mark_started()
             with TestStartEndController(result) as controller:
@@ -126,6 +120,25 @@ def _run_single_test(test, test_iterator):
                     with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
                         hooks.test_interrupt() # pylint: disable=no-member
                     raise
+
+def _process_requirements(test):
+    unmet_reqs = test.get_unmet_requirements()
+    if not unmet_reqs:
+        return True
+
+
+    messages = set()
+    for req, message in unmet_reqs:
+        if isinstance(req, requirements.Skip):
+            context.result.add_skip(req.reason)
+            msg = 'Skipped' if not req.reason else req.reason
+        else:
+            msg = 'Unmet requirement: {}'.format(message or req)
+            context.result.add_skip(msg)
+        messages.add(msg)
+
+    hooks.test_avoided(reason=', '.join(messages)) # pylint: disable=no-member
+    return False
 
 class TestStartEndController(object):
 
