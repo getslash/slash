@@ -181,10 +181,6 @@ def errors_log_path(request, config_override, tmpdir, logs_dir):
     config_override('log.errors_subpath', subpath)
     return logs_dir.join('files').join(subpath)
 
-@pytest.fixture(params=[True, False])
-def relative_symlinks(request):
-    return request.param
-
 
 @pytest.fixture
 def links_dir(logs_dir):

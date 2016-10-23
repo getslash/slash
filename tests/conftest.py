@@ -3,6 +3,7 @@ import os
 import random
 import shutil
 import tempfile
+from uuid import uuid4
 
 from forge import Forge
 
@@ -282,3 +283,11 @@ def relative_symlinks(request):
     return request.param
 
 
+@pytest.fixture
+def session_log(logs_dir):
+    return logs_dir.join('links').join('last-session')
+
+
+@pytest.fixture
+def unique_string1():
+    return str(uuid4())
