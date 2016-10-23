@@ -176,22 +176,6 @@ def files_dir(logs_dir):
 
 
 @pytest.fixture
-def logs_dir(config_override, tmpdir, relative_symlinks):
-    returned = tmpdir.join('logs')
-    config_override("log.root", str(returned.join("files")))
-    config_override("log.last_session_symlink",
-                    str("../links/last-session" if relative_symlinks else returned.join("links", "last-session")))
-    config_override("log.last_session_dir_symlink",
-                    str("../links/last-session-dir" if relative_symlinks else returned.join("links", "last-session-dir")))
-    config_override("log.last_test_symlink",
-                    str("../links/last-test" if relative_symlinks else returned.join("links", "last-test")))
-    config_override("log.last_failed_symlink",
-                    str("../links/last-failed" if relative_symlinks else returned.join("links", "last-failed")))
-
-    return returned
-
-
-@pytest.fixture
 def errors_log_path(request, config_override, tmpdir, logs_dir):
     subpath = 'subdir/errors.log'
     config_override('log.errors_subpath', subpath)
