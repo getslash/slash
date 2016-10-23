@@ -46,7 +46,12 @@ class FixtureStore(object):
         for fid in self.get_all_needed_fixture_ids(fixtureobj):
             yield self.get_fixture_by_id(fid)
 
-    def call_with_fixtures(self, test_func, namespace):
+    def iter_active_fixtures(self):
+        for _, fixtures in self._active_fixtures_by_scope.items():
+            for f in fixtures.values():
+                yield f
+
+    def call_with_fixtures(self, test_func, namespace, trigger_test_start=False, trigger_test_end=False):
 
         if not nofixtures.is_marked(test_func):
             fixture_names = self.get_required_fixture_names(test_func)
@@ -54,7 +59,17 @@ class FixtureStore(object):
         else:
             kwargs = {}
 
-        return test_func(**kwargs)
+        if trigger_test_start:
+            for fixture in self.iter_active_fixtures():
+                fixture.call_test_start()
+
+        returned = test_func(**kwargs)
+
+        if trigger_test_end:
+            for fixture in self.iter_active_fixtures():
+                fixture.call_test_end()
+
+        return returned
 
     def get_required_fixture_names(self, test_func):
         """Returns a list of fixture names needed by test_func.

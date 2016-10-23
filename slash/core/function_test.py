@@ -25,6 +25,7 @@ class FunctionTest(RunnableTest):
         with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
             result = self._fixture_store.call_with_fixtures(
                 self._func, namespace=self._fixture_namespace,
+                trigger_test_start=True, trigger_test_end=True,
             )
             if isinstance(result, GeneratorType):
                 raise InvalidTest('{} is a generator. Running generators is not supported'.format(self._func))
