@@ -1,8 +1,10 @@
+import logbook
 import signal
 import sys
 from contextlib import contextmanager
 
 from . import hooks as trigger_hook
+from . import log
 from . import site
 from .core.session import Session
 from .conf import config
@@ -36,7 +38,10 @@ class Application(object):
 
 @contextmanager
 def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, positionals_metavar=None, report=True):
-    with _handling_sigterm_context():
+
+    prelude_log_handler = log.RetainedLogHandler(bubble=True, level=logbook.TRACE)
+
+    with prelude_log_handler.applicationbound(), _handling_sigterm_context():
         site.load()
         args = list(args)
         if enable_interactive:
@@ -46,10 +51,18 @@ def get_application_context(parser=None, argv=None, args=(), report_stream=sys.s
             )
         with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, positionals_metavar=positionals_metavar) as (parser, parsed_args):
             app = Application(parser=parser, args=parsed_args, report_stream=report_stream, report=report)
+
             _check_unknown_switches(app)
             with app.session:
+                _emit_prelude_logs(prelude_log_handler, app.session)
                 yield app
                 trigger_hook.result_summary()  # pylint: disable=no-member
+
+def _emit_prelude_logs(handler, session):
+    handler.disable()
+    if session.logging.session_log_handler is not None:
+        handler.flush_to_handler(session.logging.session_log_handler)
+
 
 def _check_unknown_switches(app):
     unknown = [arg for arg in app.args.positionals if arg.startswith("-")]

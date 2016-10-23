@@ -12,3 +12,10 @@ def test_retained_logs_handler(unique_string1):
 
     [r] = other_handler.records # pylint: disable=unbalanced-tuple-unpacking
     assert unique_string1 in r.message
+
+
+def test_disable():
+    with slash.log.RetainedLogHandler() as handler:
+        handler.disable()
+        slash.logger.info('hey')
+    assert not handler.records

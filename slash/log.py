@@ -290,8 +290,18 @@ class RetainedLogHandler(logbook.TestHandler):
     This is useful to keep logs that are emitted during session configuration phase, and not lose
     them from the session log
     """
+    def __init__(self, *args, **kwargs):
+        super(RetainedLogHandler, self).__init__(*args, **kwargs)
+        self._enabled = True
+
+    def emit(self, record):
+        if self._enabled:
+            return super(RetainedLogHandler, self).emit(record)
 
     def flush_to_handler(self, handler):
         for r in self.records:
             handler.emit(r)
         del self.records[:]
+
+    def disable(self):
+        self._enabled = False
