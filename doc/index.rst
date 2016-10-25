@@ -41,6 +41,7 @@ Table Of Contents
    customizing_slash
    configuration
    logging
+   details
    hooks
    plugins
    builtin_plugins

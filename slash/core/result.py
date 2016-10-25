@@ -3,6 +3,7 @@ import itertools
 import sys
 from numbers import Number
 
+import gossip
 import logbook
 
 from .._compat import itervalues, OrderedDict
@@ -33,10 +34,14 @@ class Result(object):
         self._skips = []
         #: a :class:`slash.core.details.Details` instance for storing additional test details
         self.details = Details()
+        self.facts = Details(set_callback=self._fact_set_callback)
         self._started = False
         self._finished = False
         self._interrupted = False
         self._log_path = None
+
+    def _fact_set_callback(self, fact_name, fact_value):
+        gossip.trigger('slash.fact_set', name=fact_name, value=fact_value)
 
     def add_exception(self, exc_info=None):
         """Adds the currently active exception, assuming it wasn't already added to a result

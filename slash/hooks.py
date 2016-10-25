@@ -37,6 +37,7 @@ _define('test_failure', doc="Called on test failure")
 _define('test_skip', doc="Called on test skip", arg_names=("reason",))
 
 _define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
+_define('fact_set', doc='Called when a fact is set for a test', arg_names=['name', 'value'])
 _define('warning_added', doc='Called when a warning is captured by Slash', arg_names=('warning',))
 
 _define('result_summary', doc="Called at the end of the execution, when printing results")
