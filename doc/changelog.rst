@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`352` Suite files can now contain filters on specific items via a comment beginning with ``filter:``, e.g. ``/path/to/test.py # filter: x and not y``
 * :feature:`287` Add support for "facts" in test results, intended for coverage reports over relatively narrow sets of values (like OS, product configuration etc.)
 * :feature:`195` Added ``this.test_start`` and ``this.test_end`` to enable fixture-specific test start and end hooks while they're active
 * :feature:`384` Accumulate logs in the configuration phase of sessions and emit them to the session log. Until now this happened before logging gets configured so the logs would get lost

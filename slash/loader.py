@@ -41,9 +41,10 @@ class Loader(object):
 
     def get_runnables(self, paths, sort_key=None):
         assert context.session is not None
-        iterator = (t for repetition in range(config.root.run.repeat_all)
-                    for t in self._get_iterator(paths))
-        returned = self._collect(iterator)
+
+        sources = (t for repetition in range(config.root.run.repeat_all)
+                   for t in self._generate_test_sources(paths))
+        returned = self._collect(sources)
         if sort_key is not None:
             returned.sort(key=sort_key)
         return returned
@@ -60,18 +61,23 @@ class Loader(object):
         context.session.increment_total_num_tests(len(returned))
         return returned
 
-    def _get_iterator(self, thing):
-        if isinstance(thing, (list, GeneratorType, itertools.chain)):
-            return itertools.chain.from_iterable(self._get_iterator(x) for x in thing)
-        if isinstance(thing, string_types):
-            return self._iter_test_address(thing)
-        if isinstance(thing, RunnableTest):
-            return [thing]
+    def _generate_test_sources(self, thing, matcher=None):
 
-        if not isinstance(thing, RunnableTestFactory):
+        if isinstance(thing, tuple):
+            assert len(thing) == 2, '_generate_test_sources on tuples requires a tuple of (loadable_obj, matcher)'
+            iterator = self._generate_test_sources(thing[0], matcher=thing[1])
+
+        elif isinstance(thing, (list, GeneratorType, itertools.chain)):
+            iterator = itertools.chain.from_iterable(self._generate_test_sources(x) for x in thing)
+        elif isinstance(thing, string_types):
+            iterator = self._iter_test_address(thing)
+        elif isinstance(thing, RunnableTest):
+            iterator = [thing]
+        elif not isinstance(thing, RunnableTestFactory):
             thing = self._get_runnable_test_factory(thing)
+            iterator = thing.generate_tests(fixture_store=context.session.fixture_store)
 
-        return thing.generate_tests(fixture_store=context.session.fixture_store)
+        return (t for t in iterator if matcher is None or matcher.matches(t.__slash__))
 
 
     def _iter_test_address(self, address):
