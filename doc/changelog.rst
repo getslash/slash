@@ -3,6 +3,7 @@ Changelog
 
 * :feature:`287` Add support for "facts" in test results, intended for coverage reports over relatively narrow sets of values (like OS, product configuration etc.)
 * :feature:`195` Added ``this.test_start`` and ``this.test_end`` to enable fixture-specific test start and end hooks while they're active
+* :feature:`384` Accumulate logs in the configuration phase of sessions and emit them to the session log. Until now this happened before logging gets configured so the logs would get lost
 * :feature:`400` ``slash.skipped`` decorator is now implemented through the requirements mechanism. This saves a lot of time in unnecessary setup, and allows multiple skips to be assigned to a single test
 * :feature:`462` Add ``log.errors_subpath`` to enable log files only recording added errors and failures.
 * :feature:`403` add ``slash list-plugins`` to show available plugins and related information
