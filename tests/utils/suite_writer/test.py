@@ -1,5 +1,4 @@
-import itertools
-from contextlib import contextmanager
+import os
 
 from .element import Element
 from .function import Function
@@ -8,6 +7,8 @@ _SUCCESS, _FAIL, _ERROR, _INTERRUPT, _SKIP, _NOT_RUN = ['SUCCESS', 'FAIL', 'ERRO
 
 class Test(Function, Element):
 
+    cls = None
+
     def __init__(self, suite, file):
         super(Test, self).__init__(suite)
         self.file = file
@@ -15,6 +16,13 @@ class Test(Function, Element):
         self._selected = True
         self.when_run = WhenRunHelper(self)
         self._repetitions = 1
+
+    def get_full_address(self, root_path):
+        filepath = os.path.join(root_path, self.file.name)
+        name = self.name
+        if self.cls is not None:
+            name = '{.name}.{}'.format(self.cls, name) # pylint: disable=missing-format-attribute
+        return '{}:{}'.format(filepath, name)
 
     def repeat(self, num_repetitions):
         self.add_decorator('slash.repeat({0})'.format(num_repetitions))

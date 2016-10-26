@@ -29,6 +29,12 @@ class Suite(object):
         self.debug_info = debug_info
         self.clear()
 
+    def deselect_all(self, exclude=()):
+        for test in self:
+            if test in exclude:
+                continue
+            test.expect_deselect()
+
     def populate(self, num_tests=10):
         for i in range(num_tests):
             self.add_test()
