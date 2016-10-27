@@ -1,6 +1,7 @@
 import collections
 import sys
 
+import logbook
 from orderedset import OrderedSet
 
 from ..._compat import iteritems, itervalues, OrderedDict, reraise
@@ -14,6 +15,8 @@ from .parameters import Parametrization, iter_parametrization_fixtures
 from .utils import get_scope_by_name, nofixtures, get_real_fixture_name_from_argument
 from ..variation_factory import VariationFactory
 from .active_fixture import ActiveFixture
+
+_logger = logbook.Logger(__name__)
 
 class FixtureStore(object):
 
@@ -229,20 +232,21 @@ class FixtureStore(object):
         if name is None:
             name = fixture.info.name
 
-        value = self._fill_fixture_value(name, fixture)
+        value = self._compute_fixture_value(name, fixture)
         return value
 
-    def get_value(self, variation, parameter):
-        returned = self.get_value_by_id(variation, parameter.info.id)
-        if isinstance(parameter, Parametrization):
-            returned = parameter.transform(returned)
-        return returned
+    def get_value(self, variation, parameter_or_fixture):
+        fixture_id = parameter_or_fixture.info.id
 
-    def get_value_by_id(self, variation, fixture_or_parametrization_id):
-        f = self.get_fixture_by_id(fixture_or_parametrization_id)
-        if isinstance(f, Parametrization):
-            return f.values[variation.param_value_indices[fixture_or_parametrization_id]]
-        return self.get_fixture_value(f)
+        fixtureobj = self.get_fixture_by_id(parameter_or_fixture.info.id)
+        if isinstance(fixtureobj, Parametrization):
+            value = parameter_or_fixture.values[variation.param_value_indices[fixture_id]]
+        else:
+            value = self.get_fixture_value(parameter_or_fixture)
+
+        if isinstance(parameter_or_fixture, Parametrization):
+            value = parameter_or_fixture.transform(value)
+        return value
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
 
@@ -258,7 +262,10 @@ class FixtureStore(object):
 
         return variation_factory.iter_variations()
 
-    def _fill_fixture_value(self, name, fixture):
+    def _compute_fixture_value(self, name, fixture, relative_name=None):
+        if relative_name is None:
+            relative_name = name
+
         if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
                 'Fixture {0!r} is a part of a dependency cycle!'.format(name))
@@ -270,7 +277,7 @@ class FixtureStore(object):
 
         self._computing.add(fixture.info.id)
         try:
-            fixture_value = self._activate_fixture(fixture)
+            fixture_value = self._call_fixture(fixture, relative_name=relative_name)
         except:
             exc_info = sys.exc_info()
             self._deactivate_fixture(fixture)
@@ -280,7 +287,8 @@ class FixtureStore(object):
 
         return fixture_value
 
-    def _activate_fixture(self, fixture):
+    def _call_fixture(self, fixture, relative_name):
+        assert relative_name
         active_fixture = ActiveFixture(fixture)
 
         kwargs = {}
@@ -289,8 +297,9 @@ class FixtureStore(object):
             raise UnresolvedFixtureStore('Fixture {0} is unresolved!'.format(fixture.info.name))
 
         for required_name, fixture_id in iteritems(fixture.fixture_kwargs):
-            kwargs[required_name] = self._fill_fixture_value(
-                required_name, self.get_fixture_by_id(fixture_id))
+            kwargs[required_name] = self._compute_fixture_value(
+                required_name, self.get_fixture_by_id(fixture_id),
+                relative_name='{} -> {}'.format(relative_name, required_name))
 
 
         assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]
@@ -301,6 +310,7 @@ class FixtureStore(object):
             returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
         finally:
             slash_context.fixture = prev_context_fixture
+        _logger.trace(' -- {} = {!r}', relative_name, returned)
         return returned
 
     def _deactivate_fixture(self, fixture):
