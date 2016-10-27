@@ -1,11 +1,10 @@
-import copy
-import functools
 import itertools
 import os
 import sys
 import tempfile
-import types
 from contextlib import contextmanager
+
+import gossip
 
 from slash._compat import StringIO
 from slash.conf import config
@@ -128,7 +127,7 @@ class Suite(object):
         report_stream = StringIO()
         returned = SlashRunResult(report_stream=report_stream)
         captured = []
-        with self._capture_events(returned):
+        with self._capture_events(returned), self._custom_sorting(sort):
             if args is None:
                 args = [path]
             args.extend(additional_args)
@@ -137,7 +136,6 @@ class Suite(object):
                     returned.exit_code = slash_run(
                         args, report_stream=report_stream,
                         app_callback=captured.append,
-                        test_sort_key=self._get_test_id_from_runnable if sort else None
                     )
             except (KeyboardInterrupt, SystemExit, TerminatedException) as e:
                 if isinstance(e, KeyboardInterrupt):
@@ -154,6 +152,19 @@ class Suite(object):
         if verify:
             validate_run(self, returned, expect_interruption)
         return returned
+
+    @contextmanager
+    def _custom_sorting(self, do_sort):
+        @gossip.register('slash.tests_loaded')
+        def tests_loaded(tests):
+            if do_sort:
+                for test in tests:
+                    test.__slash__.set_sort_key(self._get_test_id_from_runnable(test))
+        try:
+            yield
+        finally:
+            tests_loaded.gossip.unregister()
+
 
     def _get_test_id_from_runnable(self, test):
         return get_test_id_from_test_address(test.__slash__.address)

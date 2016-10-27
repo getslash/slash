@@ -48,6 +48,7 @@ Table Of Contents
    internals
    features
    advanced_usage
+   cookbook
    api
    changelog
    development

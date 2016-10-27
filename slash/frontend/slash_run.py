@@ -17,7 +17,7 @@ from ..utils.suite_files import iter_suite_file_paths
 
 _logger = logbook.Logger(__name__)
 
-def slash_run(args, report_stream=None, resume=False, app_callback=None, test_sort_key=None):
+def slash_run(args, report_stream=None, resume=False, app_callback=None):
     if report_stream is None:
         report_stream = sys.stderr
     with _get_slash_app_context(args, report_stream, resume) as app:
@@ -30,9 +30,9 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, test_so
                     if not session_ids:
                         session_ids = [get_last_resumeable_session_id()]
                     to_resume = [x for session_id in session_ids for x in get_tests_to_resume(session_id)]
-                    collected = app.test_loader.get_runnables(to_resume, sort_key=test_sort_key)
+                    collected = app.test_loader.get_runnables(to_resume)
                 else:
-                    collected = _collect_tests(app, args, test_sort_key=test_sort_key)
+                    collected = _collect_tests(app, args)
                 if app.args.interactive:
                     collected = itertools.chain([generate_interactive_test()], collected)
             with app.session.get_started_context():
@@ -58,7 +58,7 @@ def _get_slash_app_context(args, report_stream, resume_session):
 
 slash_resume = functools.partial(slash_run, resume=True)
 
-def _collect_tests(app, args, test_sort_key=None):  # pylint: disable=unused-argument
+def _collect_tests(app, args):  # pylint: disable=unused-argument
     paths = app.args.positionals
 
     paths = _extend_paths_from_suite_files(paths)
@@ -70,7 +70,7 @@ def _collect_tests(app, args, test_sort_key=None):  # pylint: disable=unused-arg
     if not paths and not app.args.interactive:
         app.error("No tests specified")
 
-    collected = app.test_loader.get_runnables(paths, sort_key=test_sort_key)
+    collected = app.test_loader.get_runnables(paths)
     if len(collected) == 0 and not app.args.interactive:
         app.error("No tests could be collected", usage=False)
 

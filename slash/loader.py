@@ -14,6 +14,7 @@ from .conf import config
 from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
+from . import hooks
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory
 from .core.function_test import FunctionTestFactory
@@ -39,14 +40,14 @@ class Loader(object):
             self._matchers = None
         self._local_config = LocalConfig()
 
-    def get_runnables(self, paths, sort_key=None):
+    def get_runnables(self, paths):
         assert context.session is not None
 
         sources = (t for repetition in range(config.root.run.repeat_all)
                    for t in self._generate_test_sources(paths))
         returned = self._collect(sources)
-        if sort_key is not None:
-            returned.sort(key=sort_key)
+        hooks.tests_loaded(tests=returned) # pylint: disable=no-member
+        returned.sort(key=lambda test: test.__slash__.get_sort_key())
         return returned
 
     def _collect(self, iterator):
