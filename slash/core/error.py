@@ -17,6 +17,7 @@ class Error(object):
         super(Error, self).__init__()
         self.time = arrow.utcnow()
         self._fatal = False
+        self._has_custom_message = (msg is not None)
         if msg is None and exc_info is not None:
             msg = traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()
         if not isinstance(msg, string_types):
@@ -25,10 +26,13 @@ class Error(object):
         self.message = msg
         if exc_info is not None:
             self.exception_type, self.exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
-            self.traceback = distill_traceback(tb, frame_correction=frame_correction)
+            self.traceback = distill_traceback(tb)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
         self._is_failure = False
+
+    def has_custom_message(self):
+        return self._has_custom_message
 
     def mark_as_failure(self):
         self._is_failure = True
