@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`483` Properly handle possible exceptions when examining traceback object attributes
 * :feature:`359` Add trace logging of fixture values, including dependent fixtures
 * :feature:`362` Add ability to intervene during test loading and change run order. This is done with a new ``tests_loaded`` hook and a new field in the test metadata controlling the sort order. See `the cookbook <http://slash.readthedocs.io/en/master/cookbook.html#controlling-test-execution-order>`_ for more details
 * :feature:`352` Suite files can now contain filters on specific items via a comment beginning with ``filter:``, e.g. ``/path/to/test.py # filter: x and not y``
