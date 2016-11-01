@@ -74,6 +74,8 @@ def bound_parametrizations_context(variation, fixture_store, fixture_namespace):
 
 
 def iter_parametrization_fixtures(func):
+    if isinstance(func, FixtureBase):
+        func = func.fixture_func
     param_info = getattr(func, _PARAM_INFO_ATTR_NAME, None)
     if param_info is None:
         return []

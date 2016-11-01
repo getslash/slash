@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
 * :bug:`483` Properly handle possible exceptions when examining traceback object attributes
 * :feature:`417` ``add_error``/``add_failure`` can now receive both message and exc_info information
 * :feature:`359` Add trace logging of fixture values, including dependent fixtures

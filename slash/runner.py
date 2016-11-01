@@ -11,6 +11,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
+from .core.exclusions import is_excluded
 from .core import requirements
 from .utils.interactive import notify_if_slow_context
 from .utils.iteration import PeekableIterator
@@ -89,7 +90,8 @@ def _run_single_test(test, test_iterator):
         with handling_exceptions():
 
 
-            if not _process_requirements(test):
+            should_run = _process_requirements_and_exclusions(test)
+            if not should_run:
                 return
 
             result.mark_started()
@@ -121,10 +123,12 @@ def _run_single_test(test, test_iterator):
                         hooks.test_interrupt() # pylint: disable=no-member
                     raise
 
-def _process_requirements(test):
+def _process_requirements_and_exclusions(test):
+    """Returns whether or not a test should run based on requirements and exclusions, also triggers skips and relevant hooks
+    """
     unmet_reqs = test.get_unmet_requirements()
     if not unmet_reqs:
-        return True
+        return _process_exclusions(test)
 
 
     messages = set()
@@ -139,6 +143,14 @@ def _process_requirements(test):
 
     hooks.test_avoided(reason=', '.join(messages)) # pylint: disable=no-member
     return False
+
+def _process_exclusions(test):
+    if is_excluded(test):
+        context.result.add_skip('Excluded')
+        hooks.test_avoided(reason='Excluded') # pylint: disable=no-member
+        return False
+    return True
+
 
 class TestStartEndController(object):
 

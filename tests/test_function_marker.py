@@ -1,5 +1,6 @@
+# pylint: disable=redefined-outer-name
 import pytest
-from slash.utils.function_marker import function_marker
+from slash.utils.function_marker import function_marker, append_function_marker
 
 
 def test_marked_func_identical_to_original(marker, func):
@@ -40,21 +41,21 @@ def test_marker_on_methods(marker):
             pass
 
         @classmethod
-        def unmarked_classmethod(self):
+        def unmarked_classmethod(cls):
             pass
 
         @staticmethod
-        def unmarked_staticmethod(self):
+        def unmarked_staticmethod(param):
             pass
 
         @marker
         @classmethod
-        def marked_classmethod(self):
+        def marked_classmethod(cls):
             pass
 
         @marker
         @staticmethod
-        def marked_staticmethod(self):
+        def marked_staticmethod():
             pass
 
 
@@ -68,6 +69,18 @@ def test_marker_on_methods(marker):
                 assert not marker.is_marked(method)
             else:
                 assert marker.is_marked(method)
+
+def test_append_marker(append_marker):
+
+    @append_marker(1)
+    def func():
+        pass
+
+    assert append_marker.get_value(func) == [1]
+
+@pytest.fixture
+def append_marker():
+    return append_function_marker('some_other_marker')
 
 @pytest.fixture
 def marker():

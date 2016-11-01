@@ -7,7 +7,7 @@ from orderedset import OrderedSet
 from ..._compat import iteritems, itervalues, OrderedDict, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
-from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
+from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures
 from ...utils.python import get_arguments
 from .fixture import Fixture
 from .namespace import Namespace
@@ -95,6 +95,23 @@ class FixtureStore(object):
         names = self.get_required_fixture_names(test_func)
         assert isinstance(names, list)
         return set(itervalues(self.get_fixture_dict(names, namespace=namespace, get_values=False)))
+
+    def resolve_name(self, parameter_name, start_point):
+        parts = parameter_name.split('.')[::-1]
+
+        if not parts:
+            raise UnknownFixtures(parameter_name)
+
+        while parts:
+            current_name = parts.pop()
+            param_fixtures = dict(iter_parametrization_fixtures(start_point))
+            if current_name in param_fixtures:
+                if parts: # we cannot decend further than a parameter
+                    raise UnknownFixtures(parameter_name)
+                start_point = param_fixtures[current_name]
+            else:
+                start_point = self.get_fixture_by_name(current_name)
+        return start_point
 
     def __iter__(self):
         return itervalues(self._fixtures_by_id)

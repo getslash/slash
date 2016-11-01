@@ -1,7 +1,7 @@
 import functools
 
 from ..ctx import context
-from ..core.markers import repeat as repeat_marker
+from ..core.markers import repeat_marker
 from ..core import requirements
 from ..exceptions import SkipTest
 
