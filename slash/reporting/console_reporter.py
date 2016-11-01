@@ -251,6 +251,8 @@ class ConsoleReporter(ReporterInterface):
                 err.time.to('local'),
                 ' - {0}'.format(err.message) if not err.traceback else '')
             self._terminal.lsep(' -', err_header, **theme('error-separator-dash'))
+            if err.has_custom_message():
+                self._terminal.write(' {0}\n'.format(err.message), **theme('tb-error-message'))
             self._report_traceback(err_type, err)
 
     def _report_traceback(self, err_type, err):

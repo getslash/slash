@@ -25,6 +25,7 @@ config = Config({
             'session-summary-success': 'green/bold',
             'session-summary-failure': 'red/bold',
             'error-separator-dash': 'red',
+            'tb-error-message': 'red/bold',
             'tb-error': 'red/bold',
             'tb-frame-location': 'white/bold',
             'test-additional-details-header': 'black/bold',
