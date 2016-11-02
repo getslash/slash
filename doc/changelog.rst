@@ -2,7 +2,7 @@ Changelog
 =========
 
 * :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
-* :bug:`483` Properly handle possible exceptions when examining traceback object attributes
+* :bug:`483 major` Properly handle possible exceptions when examining traceback object attributes
 * :feature:`417` ``add_error``/``add_failure`` can now receive both message and exc_info information
 * :feature:`359` Add trace logging of fixture values, including dependent fixtures
 * :feature:`362` Add ability to intervene during test loading and change run order. This is done with a new ``tests_loaded`` hook and a new field in the test metadata controlling the sort order. See `the cookbook <http://slash.readthedocs.io/en/master/cookbook.html#controlling-test-execution-order>`_ for more details
