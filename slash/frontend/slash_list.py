@@ -101,9 +101,14 @@ def _report_fixtures(args, session, printer, used_fixtures):
         fixture_func = get_underlying_func(fixture.fixture_func)
         doc = inspect.cleandoc(fixture_func.__doc__) if fixture_func.__doc__ else ''
 
-        unused_string = '' if fixture in used_fixtures else ' (Unused)'
+        if fixture.info.autouse:
+            additional_info = ' (Autouse)'
+        elif fixture not in used_fixtures:
+            additional_info = ' (Unused)'
+        else:
+            additional_info = ''
 
-        printer(_title_style('{0}{1}'.format(fixture.info.name, unused_string)))
+        printer(_title_style('{0}{1}'.format(fixture.info.name, additional_info)))
         if doc:
             for line in (_doc_style(doc)).split('\n'):
                 printer('    {0}'.format(line))
