@@ -1,20 +1,22 @@
 import collections
 import sys
+from contextlib import contextmanager
 
 import logbook
 from orderedset import OrderedSet
 
-from ..._compat import iteritems, itervalues, OrderedDict, reraise
+from ..._compat import OrderedDict, iteritems, itervalues, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
 from ...utils.python import get_arguments
+from ..variation_factory import VariationFactory
+from .active_fixture import ActiveFixture
 from .fixture import Fixture
 from .namespace import Namespace
 from .parameters import Parametrization, iter_parametrization_fixtures
-from .utils import get_scope_by_name, nofixtures, get_real_fixture_name_from_argument
-from ..variation_factory import VariationFactory
-from .active_fixture import ActiveFixture
+from .utils import (get_real_fixture_name_from_argument, get_scope_by_name,
+                    nofixtures)
 
 _logger = logbook.Logger(__name__)
 
@@ -104,6 +106,15 @@ class FixtureStore(object):
 
     def pop_namespace(self):
         return self._namespaces.pop(-1)
+
+    @contextmanager
+    def new_namespace_context(self):
+        self.push_namespace()
+        try:
+            yield
+        finally:
+            self.pop_namespace()
+
 
     def get_current_namespace(self):
         return self._namespaces[-1]
