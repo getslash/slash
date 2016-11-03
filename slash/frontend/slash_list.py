@@ -18,6 +18,7 @@ _heading_style = make_styler(colorama.Fore.MAGENTA + colorama.Style.BRIGHT + UND
 _title_style = make_styler(colorama.Fore.WHITE + colorama.Style.BRIGHT)  # pylint: disable=no-member
 _unused_style = make_styler(colorama.Fore.YELLOW)  # pylint: disable=no-member
 _doc_style = make_styler(colorama.Fore.GREEN + colorama.Style.BRIGHT)  # pylint: disable=no-member
+_override_style = make_styler(colorama.Fore.YELLOW + colorama.Style.BRIGHT)  # pylint: disable=no-member
 
 
 def _get_parser():
@@ -107,6 +108,9 @@ def _report_fixtures(args, session, printer, used_fixtures):
             additional_info = ' (Unused)'
         else:
             additional_info = ''
+
+        if fixture.is_override():
+            additional_info += ' -- ' + _override_style('Override')
 
         printer(_title_style('{0}{1}'.format(fixture.info.name, additional_info)))
         if doc:

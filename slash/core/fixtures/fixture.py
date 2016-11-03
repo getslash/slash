@@ -28,6 +28,20 @@ class Fixture(FixtureBase):
     def __repr__(self):
         return '<Function Fixture around {0}>'.format(self.fixture_func)
 
+    def is_override(self):
+        parent = self.namespace.get_parent()
+
+        while parent is not None:
+            f = parent.get_fixture_by_name(self.info.name, default=None)
+            if f is None:
+                return False
+
+            if f is not self:
+                return True
+
+            parent = parent.get_parent()
+        return False
+
     def get_value(self, kwargs, active_fixture):
         if self.info.needs_this:
             assert 'this' not in kwargs
@@ -54,15 +68,15 @@ class Fixture(FixtureBase):
             try:
                 needed_fixture = self.namespace.get_fixture_by_name(get_real_fixture_name_from_argument(arg))
 
-                if needed_fixture.scope < self.scope:
+                if needed_fixture.scope < self.scope: # pylint: disable=no-member
                     raise InvalidFixtureScope('Fixture {0} is dependent on {1}, which has a smaller scope ({2} > {3})'.format(
-                        self.info.name, param_name, self.scope, needed_fixture.scope))
+                        self.info.name, param_name, self.scope, needed_fixture.scope)) # pylint: disable=no-member
 
                 if needed_fixture is self:
                     raise CyclicFixtureDependency('Cyclic fixture dependency detected in {0}: {1} depends on itself'.format(
                         self.info.func.__code__.co_filename,
                         self.info.name))
-                kwargs[param_name] = needed_fixture.info.id
+                kwargs[param_name] = needed_fixture.info.id # pylint: disable=no-member
             except LookupError:
                 raise UnknownFixtures(param_name)
         return kwargs

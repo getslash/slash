@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`484` ``slash list`` now indicates fixtures that are overriding outer fixtures (e.g. from ``slashconf.py``)
 * :bug:`483` Properly handle possible exceptions when examining traceback object attributes
 * :feature:`417` ``add_error``/``add_failure`` can now receive both message and exc_info information
 * :feature:`359` Add trace logging of fixture values, including dependent fixtures
