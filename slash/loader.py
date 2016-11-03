@@ -140,20 +140,19 @@ class Loader(object):
 
     @contextmanager
     def _adding_local_fixtures(self, file_path, module):
-        context.session.fixture_store.push_namespace()
-        try:
+        with context.session.fixture_store.new_namespace_context():
             self._local_config.push_path(os.path.dirname(file_path))
             try:
                 context.session.fixture_store.add_fixtures_from_dict(
                     self._local_config.get_dict())
-                context.session.fixture_store.add_fixtures_from_dict(
-                    vars(module))
-                context.session.fixture_store.resolve()
-                yield
+                with context.session.fixture_store.new_namespace_context():
+                    context.session.fixture_store.add_fixtures_from_dict(
+                        vars(module))
+                    context.session.fixture_store.resolve()
+                    yield
             finally:
                 self._local_config.pop_path()
-        finally:
-            context.session.fixture_store.pop_namespace()
+
 
     def _is_excluded(self, test):
         if self._matchers is None:

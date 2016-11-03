@@ -121,7 +121,6 @@ def run_tests_assert_success(test_class_path_or_iterator, session=None):
 
 run_tests_assert_success.__test__ = False
 
-
 def make_runnable_tests(thing):
     return slash.loader.Loader().get_runnables(thing)
 
