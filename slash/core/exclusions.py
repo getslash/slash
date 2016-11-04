@@ -25,8 +25,8 @@ def is_excluded(test):
         param = context.session.fixture_store.resolve_name(parameter_name, start_point=test_func)
         if not isinstance(param, Parametrization):
             raise UnknownFixtures('{!r} is not a parameter, and therefore cannot be the base for value exclusions'.format(parameter_name))
-        param_index = test.__slash__.variation.param_value_indices[param.info.id]
-        value = param.transform(param.values[param_index])
+        param_index = test.__slash__.variation.param_value_indices[param.info.id] #pylint: disable=no-member
+        value = param.transform(param.values[param_index]) #pylint: disable=no-member
         if value in values:
             return True
     return False
