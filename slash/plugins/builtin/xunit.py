@@ -75,7 +75,7 @@ class Plugin(PluginInterface):
         test_element = self._get_xunit_elements_list()[-1]
         test_element.append(E('skipped', type=reason or ''))
 
-    def result_summary(self):
+    def session_end(self):
         e = E('testsuite', {
             "name": "slash-suite",
             "hostname": socket.getfqdn(),
