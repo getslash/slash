@@ -289,9 +289,9 @@ is equivalent to this form:
 Listing Available Fixtures
 --------------------------
 
-Slash can be invoked with the ``fixtures`` command, which gets a path to a testing directory. This command lists the available fixtures for the specified testing directory:
+Slash can be invoked with the ``list`` command and the ``--only-fixtures`` flag, which takes a path to a testing directory. This command gets the available fixtures for the specified testing directory:
 
-    $ slash fixtures path/to/tests
+    $ slash list --only-fixtures path/to/tests
 
     temp_dir
         Create a temporary directory
