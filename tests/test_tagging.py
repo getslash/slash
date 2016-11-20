@@ -9,6 +9,16 @@ from slash.loader import Loader
 from .utils.suite_writer.method_test import MethodTest
 
 
+def test_get_tag_function(taggable):
+    slash.tag('tagname')(taggable)
+    slash.tag('tag_with_value_name', 'tag_value')(taggable)
+    assert get_tags(taggable).get_tag('tagname') is NOTHING
+    assert get_tags(taggable).get_tag('tag_with_value_name') == 'tag_value'
+    assert get_tags(taggable).get_tag('tag_with_value_name', 'default_value') == 'tag_value'
+    assert get_tags(taggable).get_tag('no_such_tagname', 'default_value') is 'default_value'
+    assert get_tags(taggable).get_tag('no_such_tagname') is None
+
+
 def test_setting_getting_tags(taggable):
 
     slash.tag('tagname')(taggable)

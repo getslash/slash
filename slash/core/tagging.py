@@ -46,6 +46,9 @@ class Tags(object):
 
     has_tag = __contains__
 
+    def get_tag(self, tag_name, default_value=None):
+        return self._tags.get(tag_name, default_value)
+
     def __add__(self, other):
         if other is NO_TAGS:
             return self
