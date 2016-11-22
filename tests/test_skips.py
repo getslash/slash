@@ -1,7 +1,7 @@
 import pytest
 import slash
 
-from .utils import TestCase, make_runnable_tests
+from .utils import TestCase, run_tests_in_session
 
 
 @pytest.mark.parametrize("args", [(), ("message",)])
@@ -63,12 +63,25 @@ def test_class_decorator(suite):
         assert 'reason' in result.get_skips()
 
 
-def _assert_skips(thing, reason=None):
-    with slash.Session():
-        if isinstance(thing, type) and issubclass(thing, slash.Test):
-            [thing] = make_runnable_tests(thing)
-            thing = thing.run
+def test_custom_skip_exception():
+    reason = 'blabla'
 
-    with pytest.raises(slash.exceptions.SkipTest) as caught:
-        thing()
-    assert caught.value.reason == reason
+    class MyCustomSkipException(Exception):
+
+        def __repr__(self):
+            return reason
+        __str__ = __repr__
+
+
+    def test_skip():
+        slash.register_skip_exception(MyCustomSkipException)
+        raise MyCustomSkipException()
+
+    _assert_skips(test_skip, reason=reason)
+
+
+def _assert_skips(thing, reason=None):
+    session = run_tests_in_session(thing)
+    for res in session.results:
+        assert res.is_skip()
+        assert res.get_skips() == [reason]

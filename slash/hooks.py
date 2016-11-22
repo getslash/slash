@@ -21,6 +21,8 @@ def _define(hook_name, **kwargs):
 _define('session_start', doc="Called right after session starts")
 _define('session_end', doc="Called right before the session ends, regardless of the reason for termination")
 
+_define('tests_loaded', doc='Called when Slash finishes loading a batch of tests for execution (not necessarily al tests)', arg_names='tests')
+
 _define('before_session_start', doc="Entry point which is called before session_start, useful for configuring plugins and other global resources")
 _define('after_session_start', doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
 
@@ -37,12 +39,14 @@ _define('test_failure', doc="Called on test failure")
 _define('test_skip', doc="Called on test skip", arg_names=("reason",))
 
 _define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
+_define('fact_set', doc='Called when a fact is set for a test', arg_names=['name', 'value'])
 _define('warning_added', doc='Called when a warning is captured by Slash', arg_names=('warning',))
 
 _define('result_summary', doc="Called at the end of the execution, when printing results")
 
 _define('exception_caught_before_debugger',
         doc="Called whenever an exception is caught, but a debugger hasn't been entered yet")
+_define('entering_debugger', doc='Called right before entering debugger', arg_names=('exc_info',))
 
 _define('exception_caught_after_debugger',
         doc="Called whenever an exception is caught, and a debugger has already been run")

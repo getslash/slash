@@ -42,7 +42,7 @@ class ArgumentParsingTest(TestCase):
 
     callback_success = False
 
-    def _collect_tests_stub(self, app, args, test_sort_key):
+    def _collect_tests_stub(self, app, args):
         self.assertTrue(config.root.debug.enabled)
         self.assertEquals(app.args.positionals, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully

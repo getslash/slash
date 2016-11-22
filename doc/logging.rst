@@ -25,6 +25,7 @@ Controlling the Log Subdir Template
 
 The filenames created under the root are controlled with the :ref:`conf.log.subpath` config variable, which can be also a format string receiving the *context* variable from slash (e.g. ``sessions/{context.session.id}/{context.test.__slash__.id}/logfile.log``).
 
+
 Test Ordinals
 ~~~~~~~~~~~~~
 
@@ -38,6 +39,13 @@ The Session Log
 Another important config path is :ref:`conf.log.session_subpath`. In this subpath, a special log file will be kept logging all records that get emitted when there's no active test found. This can happen between tests or on session start/end.
 
 The session log, by default, does not contain logs from tests, as they are redirected to test log files. However, setting the :ref:`conf.log.unified_session_log` to ``True`` will cause the session log to contain *all* logs from all tests.
+
+The Error Log
+~~~~~~~~~~~~~
+
+You can optionally control a separate log file in which only errors and failures are to be logged, through the :ref:`conf.log.errors_subpath` configuration variable. 
+
+If set, this variable will hold the subpath (with optional formatting as described above) for a file which will contain only added errors throughout the tests and/or session. This is useful to quickly sift through your runs to only spot the errors, without having to skim through overly verbose debug logs.
 
 Last Log Symlinks
 -----------------

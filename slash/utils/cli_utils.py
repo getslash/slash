@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import os
 import sys
@@ -164,3 +165,10 @@ def make_styler(style):
     return lambda s: '{0}{1}{2}'.format(style, s, COLOR_RESET)
 
 UNDERLINED = '\x1b[4m'
+
+
+def error_abort(message, *args):
+    if args:
+        message = message.format(*args)
+    print(message, file=sys.stderr)
+    sys.exit(-1)

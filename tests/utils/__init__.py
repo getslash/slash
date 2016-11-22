@@ -121,9 +121,17 @@ def run_tests_assert_success(test_class_path_or_iterator, session=None):
 
 run_tests_assert_success.__test__ = False
 
-
 def make_runnable_tests(thing):
     return slash.loader.Loader().get_runnables(thing)
+
+
+def resolve_and_run(thing):
+    slash.context.session.fixture_store.resolve()
+    with slash.context.session.get_started_context():
+        tests = make_runnable_tests(thing)
+        slash.runner.run_tests(tests)
+
+    return list(slash.context.session.results.iter_test_results())
 
 
 def without_pyc(filename):

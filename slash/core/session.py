@@ -4,7 +4,7 @@ import time
 import uuid
 from contextlib import contextmanager
 
-from .. import ctx, hooks, log
+from .. import ctx, hooks, log, exceptions
 from .cleanup_manager import CleanupManager
 from ..exception_handling import handling_exceptions
 from ..interfaces import Activatable
@@ -42,6 +42,14 @@ class Session(Activatable):
             reporter = NullReporter()
         self.reporter = reporter
         self.cleanups = CleanupManager()
+
+        self._skip_exc_types = (exceptions.SkipTest,)
+
+    def register_skip_exception(self, exc_type):
+        self._skip_exc_types += (exc_type,)
+
+    def get_skip_exception_types(self):
+        return self._skip_exc_types
 
     @property
     def started(self):

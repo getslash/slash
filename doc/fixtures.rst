@@ -152,6 +152,33 @@ Slash also supports *session* and *module* scoped fixtures. *Session fixtures* l
 		    @this.add_cleanup
 		    def cleanup():
 		        print('Hurray! We are finished with this module')
+
+
+Test Start/End for Widely Scoped Fixtures
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a fixture is scoped wider than a single test, it is useful to add custom callbacks to the fixtures to be called when a test starts or ends. This is done via the ``this.test_start`` and ``this.test_end`` callbacks, which are specific to the current fixture.
+
+.. code-block:: python
+       
+    @slash.fixture(scope='module')
+    def background_process(this):
+        process = SomeComplexBackgroundProcess()
+	
+	@this.test_start
+	def on_test_start():
+	    process.make_sure_still_running()
+
+	@this.test_end
+	def on_test_end():
+	    process.make_sure_no_errors()
+
+	process.start()
+
+	this.add_cleanup(process.stop)
+
+
+.. note:: Exceptions propagating out of the ``test_start`` or ``test_end`` hooks will fail the test, possibly preventing it from starting properly
 		    
 
 Autouse Fixtures
@@ -262,9 +289,9 @@ is equivalent to this form:
 Listing Available Fixtures
 --------------------------
 
-Slash can be invoked with the ``fixtures`` command, which gets a path to a testing directory. This command lists the available fixtures for the specified testing directory:
+Slash can be invoked with the ``list`` command and the ``--only-fixtures`` flag, which takes a path to a testing directory. This command gets the available fixtures for the specified testing directory:
 
-    $ slash fixtures path/to/tests
+    $ slash list --only-fixtures path/to/tests
 
     temp_dir
         Create a temporary directory

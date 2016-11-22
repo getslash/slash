@@ -57,6 +57,18 @@ def test_fixture_id_remains_even_when_context_popped(store):
     assert store.get_fixture_by_id(fixture_id) is fixture_obj
 
 
+def test_namespace_get_fixture_by_name_default(store):
+    obj = object()
+    assert store.get_current_namespace().get_fixture_by_name('nonexisting', default=obj) is obj
+
+
+def test_namespace_get_fixture_by_name_no_default(store):
+    ns = store.get_current_namespace()
+    with pytest.raises(UnknownFixtures):
+        ns.get_fixture_by_name('nonexisting')
+
+
+
 def test_variations_no_names(store):
     assert list(store.iter_parametrization_variations([])) == [{}]
 

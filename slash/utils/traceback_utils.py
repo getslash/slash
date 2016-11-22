@@ -175,7 +175,12 @@ class DistilledFrame(object):
         if local_name != 'self':
             return
 
-        for attr in getattr(local_value, '__dict__', {}):
+        try:
+            obj_dict = getattr(local_value, '__dict__', {})
+        except Exception:       # pylint: disable=broad-except
+            obj_dict = {}
+
+        for attr in obj_dict:
             if attr.startswith('__') and attr.endswith('__'):
                 continue
             try:

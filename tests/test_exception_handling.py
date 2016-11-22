@@ -1,10 +1,12 @@
 import sys
 import gossip
 import pytest
+import inspect
+import traceback
 import slash
 from slash import exception_handling
-from slash._compat import ExitStack
-from slash.exceptions import SkipTest
+from slash._compat import ExitStack, PYPY
+from slash.exceptions import SkipTest, TestFailed
 from slash.utils import debug
 
 from .utils import CustomException, TestCase
@@ -29,15 +31,17 @@ def test_passthrough_types():
 
     value = CustomException()
 
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.handling_exceptions(passthrough_types=(CustomException,)):
-            raise value
+    with slash.Session():
+        with pytest.raises(CustomException) as caught:
+            with exception_handling.handling_exceptions(passthrough_types=(CustomException,)):
+                raise value
     assert value is caught.value
     assert not exception_handling.is_exception_handled(value)
 
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)):
-            raise value
+    with slash.Session():
+        with pytest.raises(CustomException) as caught:
+            with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)):
+                raise value
     assert value is caught.value
     assert exception_handling.is_exception_handled(value)
 
@@ -45,14 +49,56 @@ def test_passthrough_types():
 def test_swallow_types():
     value = CustomException()
 
-    with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
-        raise value
+    with slash.Session():
+        with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
+            raise value
+    assert sys.exc_info() == exception_handling.NO_EXC_INFO
+
+
+class FakeTracebackTest(TestCase):
+    def setUp(self):
+        super(FakeTracebackTest, self).setUp()
+        self.override_config("debug.enabled", True)
+        self.forge.replace_with(debug, "launch_debugger", self.verify_fake_traceback_debugger)
+        self.debugger_called = False
+        self._tb_len = 0
+
+    @pytest.mark.skipif(PYPY, reason='Cannot run on PyPy')
+    def test_fake_traceback(self):
+        with slash.Session(), pytest.raises(ZeroDivisionError):
+            with exception_handling.handling_exceptions(fake_traceback=False):
+                self._expected_line_number = inspect.currentframe().f_lineno + 1
+                a = 1 / 0
+                return a
+
+        with slash.Session(), pytest.raises(ZeroDivisionError):
+            with exception_handling.handling_exceptions():
+                self._expected_line_number = inspect.currentframe().f_lineno + 1
+                a = 1 / 0
+                return a
+
+    def verify_fake_traceback_debugger(self, exc_info):
+        assert traceback.extract_tb(exc_info[2])[-1][1] == self._expected_line_number
+        if not self._tb_len:
+            # First attempt, no fake traceback
+            self._tb_len = self._get_tb_len(exc_info[2])
+            assert self._tb_len != 0
+        else:
+            # Second attempt, with fake traceback
+            assert self._tb_len < self._get_tb_len(exc_info[2])
+
+    def _get_tb_len(self, tb):
+        tb_len = 0
+        while tb:
+            tb_len += 1
+            tb = tb.tb_next
+        return tb_len
 
 
 def test_handling_exceptions():
     value = CustomException()
 
-    with pytest.raises(CustomException) as caught:
+    with slash.Session(), pytest.raises(CustomException) as caught:
         with exception_handling.handling_exceptions():
             with exception_handling.handling_exceptions():
                 with exception_handling.handling_exceptions():
@@ -66,7 +112,7 @@ def test_reraise_after_exc_info_reset():
     def exception_hook():       # pylint: disable=unused-variable
         sys.exc_clear()
 
-    with pytest.raises(CustomException):
+    with slash.Session(), pytest.raises(CustomException):
         with exception_handling.handling_exceptions():
             raise CustomException()
 
@@ -99,7 +145,7 @@ class DebuggingTest(TestCase):
         self.assertTrue(self.debugger_called)
 
     def _raise_exception_in_context(self, exception_type):
-        with self.assertRaises(exception_type):
+        with slash.Session(), self.assertRaises(exception_type):
             with exception_handling.handling_exceptions():
                 raise exception_type()
 
@@ -135,6 +181,29 @@ def test_disable_exception_swallowing_decorator():
         with exception_handling.get_exception_swallowing_context():
             func()
     assert caught.value is raised
+
+
+@pytest.mark.parametrize('message', [None, 'My custom message'])
+@pytest.mark.parametrize('exc_types', [CustomException, (CustomException, ZeroDivisionError)])
+def test_assert_raises(exc_types, message):
+    raised = CustomException()
+    with slash.Session():
+        with slash.assert_raises(exc_types, msg=message) as caught:
+            raise raised
+    assert sys.exc_info() == exception_handling.NO_EXC_INFO
+    assert caught.exception is raised
+
+
+@pytest.mark.parametrize('message', [None, 'My custom message'])
+def test_assert_raises_that_not_raises(message):
+    expected_substring = message or 'not raised'
+    try:
+        with slash.assert_raises(Exception, msg=message):
+            pass
+    except TestFailed as e:
+        assert expected_substring in str(e)
+    else:
+        raise Exception('TestFailed exception was not raised :()')
 
 
 @pytest.mark.parametrize('with_session', [True, False])

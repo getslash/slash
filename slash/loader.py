@@ -14,6 +14,7 @@ from .conf import config
 from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
+from . import hooks
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory
 from .core.function_test import FunctionTestFactory
@@ -39,13 +40,14 @@ class Loader(object):
             self._matchers = None
         self._local_config = LocalConfig()
 
-    def get_runnables(self, paths, sort_key=None):
+    def get_runnables(self, paths):
         assert context.session is not None
-        iterator = (t for repetition in range(config.root.run.repeat_all)
-                    for t in self._get_iterator(paths))
-        returned = self._collect(iterator)
-        if sort_key is not None:
-            returned.sort(key=sort_key)
+
+        sources = (t for repetition in range(config.root.run.repeat_all)
+                   for t in self._generate_test_sources(paths))
+        returned = self._collect(sources)
+        hooks.tests_loaded(tests=returned) # pylint: disable=no-member
+        returned.sort(key=lambda test: test.__slash__.get_sort_key())
         return returned
 
     def _collect(self, iterator):
@@ -60,18 +62,23 @@ class Loader(object):
         context.session.increment_total_num_tests(len(returned))
         return returned
 
-    def _get_iterator(self, thing):
-        if isinstance(thing, (list, GeneratorType, itertools.chain)):
-            return itertools.chain.from_iterable(self._get_iterator(x) for x in thing)
-        if isinstance(thing, string_types):
-            return self._iter_test_address(thing)
-        if isinstance(thing, RunnableTest):
-            return [thing]
+    def _generate_test_sources(self, thing, matcher=None):
 
-        if not isinstance(thing, RunnableTestFactory):
+        if isinstance(thing, tuple):
+            assert len(thing) == 2, '_generate_test_sources on tuples requires a tuple of (loadable_obj, matcher)'
+            iterator = self._generate_test_sources(thing[0], matcher=thing[1])
+
+        elif isinstance(thing, (list, GeneratorType, itertools.chain)):
+            iterator = itertools.chain.from_iterable(self._generate_test_sources(x) for x in thing)
+        elif isinstance(thing, string_types):
+            iterator = self._iter_test_address(thing)
+        elif isinstance(thing, RunnableTest):
+            iterator = [thing]
+        elif not isinstance(thing, RunnableTestFactory):
             thing = self._get_runnable_test_factory(thing)
+            iterator = thing.generate_tests(fixture_store=context.session.fixture_store)
 
-        return thing.generate_tests(fixture_store=context.session.fixture_store)
+        return (t for t in iterator if matcher is None or matcher.matches(t.__slash__))
 
 
     def _iter_test_address(self, address):
@@ -133,20 +140,19 @@ class Loader(object):
 
     @contextmanager
     def _adding_local_fixtures(self, file_path, module):
-        context.session.fixture_store.push_namespace()
-        try:
+        with context.session.fixture_store.new_namespace_context():
             self._local_config.push_path(os.path.dirname(file_path))
             try:
                 context.session.fixture_store.add_fixtures_from_dict(
                     self._local_config.get_dict())
-                context.session.fixture_store.add_fixtures_from_dict(
-                    vars(module))
-                context.session.fixture_store.resolve()
-                yield
+                with context.session.fixture_store.new_namespace_context():
+                    context.session.fixture_store.add_fixtures_from_dict(
+                        vars(module))
+                    context.session.fixture_store.resolve()
+                    yield
             finally:
                 self._local_config.pop_path()
-        finally:
-            context.session.fixture_store.pop_namespace()
+
 
     def _is_excluded(self, test):
         if self._matchers is None:

@@ -13,6 +13,9 @@ class Namespace(object):
         self._parent = parent
         self._fixture_names = {}
 
+    def get_parent(self):
+        return self._parent
+
     def iter_fixtures(self):
         while self is not None:
             for fixture_id in itervalues(self._fixture_names):
@@ -28,13 +31,17 @@ class Namespace(object):
                 yield k
             self = self._parent
 
-    def get_fixture_by_name(self, name):
+    def get_fixture_by_name(self, name, default=NOTHING):
         while self is not None:
             fixture_id = self._fixture_names.get(name, NOTHING)
             if fixture_id is NOTHING:
                 self = self._parent
                 continue
             return self._store.get_fixture_by_id(fixture_id)
+
+        if default is not NOTHING:
+            return default
+
         raise UnknownFixtures('Fixture {0!r} not found!'.format(name))
 
     def add_name(self, name, fixture_id):
