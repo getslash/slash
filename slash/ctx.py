@@ -66,6 +66,11 @@ class _ContextStack(object):
             raise AttributeError(attr)
         return getattr(self._stack[-1], attr)
 
+    def __dir__(self):
+        if self._stack:
+            return dir(self._stack[-1])
+        return []
+
     def __setattr__(self, attr, value):
         if attr.startswith("_"):
             return super(_ContextStack, self).__setattr__(attr, value)

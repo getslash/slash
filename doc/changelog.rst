@@ -1,6 +1,29 @@
 Changelog
 =========
 
+* :release:`1.1.0 <22-11-2016>`
+* :feature:`485` xunit plugin now saves the run results even when the session doesn't end gracefully (Thanks @eplaut)
+* :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
+* :bug:`483 major` Properly handle possible exceptions when examining traceback object attributes
+* :feature:`484` ``slash list`` now indicates fixtures that are overriding outer fixtures (e.g. from ``slashconf.py``)
+* :feature:`417` ``add_error``/``add_failure`` can now receive both message and exc_info information
+* :feature:`359` Add trace logging of fixture values, including dependent fixtures
+* :feature:`362` Add ability to intervene during test loading and change run order. This is done with a new ``tests_loaded`` hook and a new field in the test metadata controlling the sort order. See `the cookbook <http://slash.readthedocs.io/en/master/cookbook.html#controlling-test-execution-order>`_ for more details
+* :feature:`352` Suite files can now contain filters on specific items via a comment beginning with ``filter:``, e.g. ``/path/to/test.py # filter: x and not y``
+* :feature:`287` Add support for "facts" in test results, intended for coverage reports over relatively narrow sets of values (like OS, product configuration etc.)
+* :feature:`195` Added ``this.test_start`` and ``this.test_end`` to enable fixture-specific test start and end hooks while they're active
+* :feature:`384` Accumulate logs in the configuration phase of sessions and emit them to the session log. Until now this happened before logging gets configured so the logs would get lost
+* :feature:`400` ``slash.skipped`` decorator is now implemented through the requirements mechanism. This saves a lot of time in unnecessary setup, and allows multiple skips to be assigned to a single test
+* :feature:`462` Add ``log.errors_subpath`` to enable log files only recording added errors and failures.
+* :feature:`403` add ``slash list-plugins`` to show available plugins and related information
+* :feature:`461` ``yield_fixture`` now honors the ``scope`` argument
+* :feature:`468` Slash now detects tests that accidentally contain ``yield`` statements and fails accordingly
+* :bug:`479 major` When installing and activating plugins and activation fails due to incompatibility, the erroneous plugins are now automatically uninstalled
+* :bug:`477 major` Fix assert_raises with message for un-raised exceptions
+* :bug:`464 major` Fix exc_info leaks outside of ``assert_raises`` & ``handling_exceptions``
+* :feature:`-` Added the ``entering_debugger`` hook to be called before actually entering a debugger
+* :feature:`344` Exceptions recorded with ``handling_exceptions`` context now properly report the stack frames above the call
+* :feature:`466` Add --relative-paths flag to ``slash list``
 * :release:`1.0.2 <19-10-2016>`
 * :bug:`481` Fixed tuple parameters for fixtures
 * :release:`1.0.1 <07-08-2016>`

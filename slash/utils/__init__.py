@@ -1,7 +1,8 @@
 import functools
 
 from ..ctx import context
-from ..core.markers import repeat as repeat_marker
+from ..core.markers import repeat_marker
+from ..core import requirements
 from ..exceptions import SkipTest
 
 
@@ -23,18 +24,19 @@ def skipped(thing, reason=None):
     """
     A decorator for skipping methods and classes
     """
-    from ..core.test import Test
-
     if isinstance(thing, str):
         return functools.partial(skipped, reason=thing)
-    if isinstance(thing, type) and issubclass(thing, Test):
-        thing.skip_all(reason)
-        return thing
 
-    @functools.wraps(thing)
-    def new_func(*_, **__):  # pylint: disable=unused-argument
-        skip_test(reason)
-    return new_func
+    return requirements.requires(requirements.Skip(reason))(thing)
+
+def register_skip_exception(exception_type):
+    """
+    Registers a custom exception type to be recognized a test skip. This makes the exception
+    behave just as if the test called ``skip_test``
+
+    .. note:: this must be called within an active session
+    """
+    context.session.register_skip_exception(exception_type)
 
 
 def add_error(msg=None, frame_correction=0, exc_info=None):

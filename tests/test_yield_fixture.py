@@ -62,3 +62,23 @@ def test_yield_fixture_with_this_argument():
 
         with s.get_started_context():
             slash.runner.run_tests(make_runnable_tests(test_something))
+
+
+def test_yield_fixture_with_scope_argument():
+    value = str(uuid4())
+
+    with slash.Session() as s:
+
+
+        @s.fixture_store.add_fixture
+        @slash.yield_fixture(scope='session')
+        def fixture():
+            yield value
+
+        def test_something(fixture):
+            assert fixture == value
+
+        s.fixture_store.resolve()
+
+        with s.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))

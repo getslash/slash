@@ -1,5 +1,7 @@
+import itertools
 import sys
 
+_sort_key_generator = itertools.count()
 
 class Metadata(object):
 
@@ -15,6 +17,7 @@ class Metadata(object):
         #: The test's unique id
         self.id = None
         self.tags = test.get_tags()
+        self._sort_key = next(_sort_key_generator)
         if factory is not None:
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
@@ -48,6 +51,12 @@ class Metadata(object):
                 self._class_name = None
 
         self._interactive = False
+
+    def set_sort_key(self, key):
+        self._sort_key = key
+
+    def get_sort_key(self):
+        return self._sort_key
 
     def set_test_full_name(self, name):
         assert hasattr(self, 'address')

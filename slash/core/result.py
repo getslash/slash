@@ -3,6 +3,7 @@ import itertools
 import sys
 from numbers import Number
 
+import gossip
 import logbook
 
 from .._compat import itervalues, OrderedDict
@@ -10,7 +11,7 @@ from ..ctx import context
 from .. import hooks
 from .details import Details
 from .error import Error
-from ..exceptions import FAILURE_EXCEPTION_TYPES, SkipTest
+from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 
@@ -33,10 +34,14 @@ class Result(object):
         self._skips = []
         #: a :class:`slash.core.details.Details` instance for storing additional test details
         self.details = Details()
+        self.facts = Details(set_callback=self._fact_set_callback)
         self._started = False
         self._finished = False
         self._interrupted = False
         self._log_path = None
+
+    def _fact_set_callback(self, fact_name, fact_value):
+        gossip.trigger('slash.fact_set', name=fact_name, value=fact_value)
 
     def add_exception(self, exc_info=None):
         """Adds the currently active exception, assuming it wasn't already added to a result
@@ -51,8 +56,8 @@ class Result(object):
         _ADDED_TO_RESULT.mark_exception(exc_value)
         if isinstance(exc_value, FAILURE_EXCEPTION_TYPES):
             self.add_failure()
-        elif isinstance(exc_value, SkipTest):
-            self.add_skip(exc_value.reason)
+        elif isinstance(exc_value, context.session.get_skip_exception_types()):
+            self.add_skip(getattr(exc_value, 'reason', str(exc_value)))
         elif issubclass(exc_class, Exception):
             #skip keyboardinterrupt and system exit
             self.add_error(exc_info=exc_info)
@@ -150,7 +155,7 @@ class Result(object):
             if is_failure:
                 # force the error object to be marked as failure
                 error.mark_as_failure()
-            _logger.debug('Error added: {0}', error)
+            _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'to_error_log': 1})
             error_list.append(error)
             hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             return error

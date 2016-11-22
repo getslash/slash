@@ -41,11 +41,14 @@ Table Of Contents
    customizing_slash
    configuration
    logging
+   details
    hooks
    plugins
+   builtin_plugins
    internals
    features
    advanced_usage
+   cookbook
    api
    changelog
    development

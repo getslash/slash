@@ -84,7 +84,7 @@ def generator_fixture(func):
 
     return fixture(new_func)
 
-def yield_fixture(func):
+def yield_fixture(func=None, **kw):
     """Builds a fixture out of a generator. The pre-yield part of the generator is used as the setup, where the
     yielded value becomes the fixture value. The post-yield part is added as a cleanup:
 
@@ -96,8 +96,11 @@ def yield_fixture(func):
     ...     m.turn_off()
     """
 
+    if func is None:
+        return functools.partial(yield_fixture, **kw)
+
     func = func
-    @fixture
+    @fixture(**kw)
     @wraps(func)
     def new_func(**kwargs):
         f = func(**kwargs)

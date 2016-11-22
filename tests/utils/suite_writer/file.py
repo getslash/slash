@@ -1,9 +1,9 @@
+import os
 from uuid import uuid4
 import itertools
 from contextlib import contextmanager
 
 from .code_element import CodeElement
-from .element import Element
 from .fixture import Fixture
 from .generator_fixture import GeneratorFixture
 from .nonmethod_test import NonMethodTest
@@ -21,6 +21,10 @@ class File(TestContainer, CodeElement):
         if relpath is None:
             relpath = 'test_{0}.py'.format(self.id)
         self._relpath = relpath
+
+    @property
+    def name(self):
+        return os.path.basename(self._relpath)
 
     def add_hook_event(self, hook_name, extra_args=(), evt_name='evt'):
         self.append_line('@slash.hooks.{0}.register'.format(hook_name))

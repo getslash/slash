@@ -2,4 +2,4 @@
 -e .
 releases
 alabaster
-Sphinx
+Sphinx>1.4

@@ -75,8 +75,8 @@ class TestTest(TestCase):
                 events.append("after")
         with slash.Session():
             [test] = make_runnable_tests(Test)
-        with self.assertRaises(CustomException):
-            test.run()
+            with self.assertRaises(CustomException):
+                test.run()
         self.assertEquals(events, ["before", "test", "after"])
 
 class AbstractTestTest(TestCase):

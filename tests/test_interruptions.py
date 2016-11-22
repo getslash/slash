@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument,unused-variable
+# pylint: disable=unused-argument,unused-variable,redefined-outer-name
 import gossip
 import pytest
 

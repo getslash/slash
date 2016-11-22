@@ -82,3 +82,43 @@ You can specify dependent parameters in a way that forces them to receive relate
        @slash.parametrize(('fruit', 'color'), [('apple', 'red'), ('apple', 'green'), ('banana', 'yellow')])
        def test_fruits(fruit, color):
            ... # <-- this never gets a yellow apple
+
+Excluding Parameter Values
+--------------------------
+
+.. index::
+   single: exclude
+   single: slash.exclude
+
+
+You can easily skip specific values from parametrizations in tests through ``slash.exclude``:
+
+.. code-block:: python
+       
+       import slash
+
+       SUPPORTED_SIZES = [10, 15, 20, 25]
+
+       @slash.parametrize('size', SUPPORTED_SIZES)
+       @slash.exclude('size', [10, 20])
+       def test_size(size): # <-- will be skipped for sizes 10 and 20
+           ...
+
+This also works for parameters of fixtures (for more information about fixtures see :ref:`the fixtures chapter <fixtures>`)
+
+.. code-block:: python
+       
+       import slash
+
+       SUPPORTED_SIZES = [10, 15, 20, 25]
+
+       @slash.exclude('car.size', [10, 20])
+       def test_car(car):
+           ...
+
+       @slash.parametrize('size', SUPPORTED_SIZES)
+       @slash.fixture
+       def car(size): # <-- will be skipped for sizes 10 and 20
+           ...
+
+

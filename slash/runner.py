@@ -8,9 +8,11 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, SkipTest, INTERRUPTION_EXCEPTIONS
+from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
+from .core.exclusions import is_excluded
+from .core import requirements
 from .utils.interactive import notify_if_slow_context
 from .utils.iteration import PeekableIterator
 
@@ -44,7 +46,7 @@ def run_tests(iterable, stop_on_error=None):
                 context.session.reporter.report_file_start(test_filename)
                 last_filename = test_filename
             context.session.reporter.report_test_start(test)
-            _logger.notice("{0}", test.__slash__.address)
+            _logger.notice("{0}", test.__slash__.address, extra={'to_error_log': 1})
 
             _run_single_test(test, test_iterator)
 
@@ -87,15 +89,10 @@ def _run_single_test(test, test_iterator):
 
         with handling_exceptions():
 
-            unmet_reqs = test.get_unmet_requirements()
 
-            if unmet_reqs:
-                skip_msg = 'Unmet requirements: {0}'.format(', '.join(str(reason or req) for req, reason in unmet_reqs))
-                _logger.debug('Requirements not met for {0}. Not running', test)
-                context.result.add_skip(skip_msg)
-                hooks.test_avoided(reason=skip_msg) # pylint: disable=no-member
+            should_run = _process_requirements_and_exclusions(test)
+            if not should_run:
                 return
-
 
             result.mark_started()
             with TestStartEndController(result) as controller:
@@ -109,7 +106,7 @@ def _run_single_test(test, test_iterator):
                                     test.run()
                             finally:
                                 context.session.scope_manager.end_test(test)
-                    except SkipTest:
+                    except context.session.get_skip_exception_types():
                         pass
 
                     _fire_test_summary_hooks(test, result)
@@ -119,12 +116,41 @@ def _run_single_test(test, test_iterator):
                         with handling_exceptions(swallow=True):
                             context.session.scope_manager.flush_remaining_scopes()
 
-                except SkipTest:
+                except context.session.get_skip_exception_types():
                     pass
                 except INTERRUPTION_EXCEPTIONS:
                     with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
                         hooks.test_interrupt() # pylint: disable=no-member
                     raise
+
+def _process_requirements_and_exclusions(test):
+    """Returns whether or not a test should run based on requirements and exclusions, also triggers skips and relevant hooks
+    """
+    unmet_reqs = test.get_unmet_requirements()
+    if not unmet_reqs:
+        return _process_exclusions(test)
+
+
+    messages = set()
+    for req, message in unmet_reqs:
+        if isinstance(req, requirements.Skip):
+            context.result.add_skip(req.reason)
+            msg = 'Skipped' if not req.reason else req.reason
+        else:
+            msg = 'Unmet requirement: {}'.format(message or req)
+            context.result.add_skip(msg)
+        messages.add(msg)
+
+    hooks.test_avoided(reason=', '.join(messages)) # pylint: disable=no-member
+    return False
+
+def _process_exclusions(test):
+    if is_excluded(test):
+        context.result.add_skip('Excluded')
+        hooks.test_avoided(reason='Excluded') # pylint: disable=no-member
+        return False
+    return True
+
 
 class TestStartEndController(object):
 

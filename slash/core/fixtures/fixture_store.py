@@ -1,19 +1,24 @@
 import collections
 import sys
+from contextlib import contextmanager
 
+import logbook
 from orderedset import OrderedSet
 
-from ..._compat import iteritems, itervalues, OrderedDict, reraise
+from ..._compat import OrderedDict, iteritems, itervalues, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
-from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore
+from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures
 from ...utils.python import get_arguments
+from ..variation_factory import VariationFactory
+from .active_fixture import ActiveFixture
 from .fixture import Fixture
 from .namespace import Namespace
 from .parameters import Parametrization, iter_parametrization_fixtures
-from .utils import get_scope_by_name, nofixtures, get_real_fixture_name_from_argument
-from ..variation_factory import VariationFactory
-from .active_fixture import ActiveFixture
+from .utils import (get_real_fixture_name_from_argument, get_scope_by_name,
+                    nofixtures)
+
+_logger = logbook.Logger(__name__)
 
 class FixtureStore(object):
 
@@ -46,7 +51,12 @@ class FixtureStore(object):
         for fid in self.get_all_needed_fixture_ids(fixtureobj):
             yield self.get_fixture_by_id(fid)
 
-    def call_with_fixtures(self, test_func, namespace):
+    def iter_active_fixtures(self):
+        for _, fixtures in self._active_fixtures_by_scope.items():
+            for f in fixtures.values():
+                yield f
+
+    def call_with_fixtures(self, test_func, namespace, trigger_test_start=False, trigger_test_end=False):
 
         if not nofixtures.is_marked(test_func):
             fixture_names = self.get_required_fixture_names(test_func)
@@ -54,7 +64,17 @@ class FixtureStore(object):
         else:
             kwargs = {}
 
-        return test_func(**kwargs)
+        if trigger_test_start:
+            for fixture in self.iter_active_fixtures():
+                fixture.call_test_start()
+
+        returned = test_func(**kwargs)
+
+        if trigger_test_end:
+            for fixture in self.iter_active_fixtures():
+                fixture.call_test_end()
+
+        return returned
 
     def get_required_fixture_names(self, test_func):
         """Returns a list of fixture names needed by test_func.
@@ -78,6 +98,23 @@ class FixtureStore(object):
         assert isinstance(names, list)
         return set(itervalues(self.get_fixture_dict(names, namespace=namespace, get_values=False)))
 
+    def resolve_name(self, parameter_name, start_point):
+        parts = parameter_name.split('.')[::-1]
+
+        if not parts:
+            raise UnknownFixtures(parameter_name)
+
+        while parts:
+            current_name = parts.pop()
+            param_fixtures = dict(iter_parametrization_fixtures(start_point))
+            if current_name in param_fixtures:
+                if parts: # we cannot decend further than a parameter
+                    raise UnknownFixtures(parameter_name)
+                start_point = param_fixtures[current_name]
+            else:
+                start_point = self.get_fixture_by_name(current_name)
+        return start_point
+
     def __iter__(self):
         return itervalues(self._fixtures_by_id)
 
@@ -86,6 +123,15 @@ class FixtureStore(object):
 
     def pop_namespace(self):
         return self._namespaces.pop(-1)
+
+    @contextmanager
+    def new_namespace_context(self):
+        self.push_namespace()
+        try:
+            yield
+        finally:
+            self.pop_namespace()
+
 
     def get_current_namespace(self):
         return self._namespaces[-1]
@@ -214,20 +260,21 @@ class FixtureStore(object):
         if name is None:
             name = fixture.info.name
 
-        value = self._fill_fixture_value(name, fixture)
+        value = self._compute_fixture_value(name, fixture)
         return value
 
-    def get_value(self, variation, parameter):
-        returned = self.get_value_by_id(variation, parameter.info.id)
-        if isinstance(parameter, Parametrization):
-            returned = parameter.transform(returned)
-        return returned
+    def get_value(self, variation, parameter_or_fixture):
+        fixture_id = parameter_or_fixture.info.id
 
-    def get_value_by_id(self, variation, fixture_or_parametrization_id):
-        f = self.get_fixture_by_id(fixture_or_parametrization_id)
-        if isinstance(f, Parametrization):
-            return f.values[variation.param_value_indices[fixture_or_parametrization_id]]
-        return self.get_fixture_value(f)
+        fixtureobj = self.get_fixture_by_id(parameter_or_fixture.info.id)
+        if isinstance(fixtureobj, Parametrization):
+            value = parameter_or_fixture.values[variation.param_value_indices[fixture_id]]
+        else:
+            value = self.get_fixture_value(parameter_or_fixture)
+
+        if isinstance(parameter_or_fixture, Parametrization):
+            value = parameter_or_fixture.transform(value)
+        return value
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
 
@@ -243,7 +290,10 @@ class FixtureStore(object):
 
         return variation_factory.iter_variations()
 
-    def _fill_fixture_value(self, name, fixture):
+    def _compute_fixture_value(self, name, fixture, relative_name=None):
+        if relative_name is None:
+            relative_name = name
+
         if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
                 'Fixture {0!r} is a part of a dependency cycle!'.format(name))
@@ -255,7 +305,7 @@ class FixtureStore(object):
 
         self._computing.add(fixture.info.id)
         try:
-            fixture_value = self._activate_fixture(fixture)
+            fixture_value = self._call_fixture(fixture, relative_name=relative_name)
         except:
             exc_info = sys.exc_info()
             self._deactivate_fixture(fixture)
@@ -265,7 +315,8 @@ class FixtureStore(object):
 
         return fixture_value
 
-    def _activate_fixture(self, fixture):
+    def _call_fixture(self, fixture, relative_name):
+        assert relative_name
         active_fixture = ActiveFixture(fixture)
 
         kwargs = {}
@@ -274,8 +325,9 @@ class FixtureStore(object):
             raise UnresolvedFixtureStore('Fixture {0} is unresolved!'.format(fixture.info.name))
 
         for required_name, fixture_id in iteritems(fixture.fixture_kwargs):
-            kwargs[required_name] = self._fill_fixture_value(
-                required_name, self.get_fixture_by_id(fixture_id))
+            kwargs[required_name] = self._compute_fixture_value(
+                required_name, self.get_fixture_by_id(fixture_id),
+                relative_name='{} -> {}'.format(relative_name, required_name))
 
 
         assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]
@@ -286,6 +338,7 @@ class FixtureStore(object):
             returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
         finally:
             slash_context.fixture = prev_context_fixture
+        _logger.trace(' -- {} = {!r}', relative_name, returned)
         return returned
 
     def _deactivate_fixture(self, fixture):

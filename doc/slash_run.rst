@@ -25,6 +25,16 @@ You can also read tests from file or files which contain paths to run. Whitespac
 
   $ slash run -f file1.txt -f file2.txt
 
+Lines in suite files can optionally contain filters, restricting the tests actually loaded from them::
+
+  # my_suite_file.txt
+  # this is the first test file
+  /path/to/tests.py
+  # when running the following file, tests with "dangerous" in their name will not be loaded
+  /path/to/other_tests.py # filter: not dangerous
+
+.. seealso:: The filter syntax is exactly like ``-k`` described below
+
 Debugging & Failures
 --------------------
 

@@ -12,6 +12,9 @@ class Include(object):
             self.pattern = self.pattern.split(':', 1)[1]
 
     def matches(self, metadata):
+        if isinstance(metadata, str):
+            return self.pattern in metadata
+
         if metadata.tags.matches_pattern(self.pattern):
             return True
         if self.only_tags:
@@ -26,9 +29,14 @@ class BinaryMatching(object):
 
     aggregator = None
 
-    def __init__(self, t):
+    def __init__(self, matchers):
         super(BinaryMatching, self).__init__()
-        self.matchers = t[0][0::2]
+        self.matchers = matchers
+
+    @classmethod
+    def from_tokens(cls, t):
+        return cls(t[0][0::2])
+
 
     def matches(self, metadata):
         return self.aggregator(matcher.matches(metadata) for matcher in self.matchers)  # pylint: disable=not-callable
@@ -57,8 +65,8 @@ matcher.setParseAction(Include)
 
 boolExpr = infixNotation(matcher, [
     ("not", 1, opAssoc.RIGHT, Exclude),
-    ("and", 2, opAssoc.LEFT, AndMatching),
-    ("or", 2, opAssoc.LEFT, OrMatching),
+    ("and", 2, opAssoc.LEFT, AndMatching.from_tokens),
+    ("or", 2, opAssoc.LEFT, OrMatching.from_tokens),
 ])
 
 

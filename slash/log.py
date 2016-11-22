@@ -151,6 +151,7 @@ class SessionLogging(object):
             stack.enter_context(handler.applicationbound())
             stack.enter_context(self.console_handler.applicationbound())
             stack.enter_context(self.warnings_handler.applicationbound())
+            stack.enter_context(self._get_error_logging_context())
             stack.enter_context(self._get_silenced_logs_context())
             if config.root.log.unittest_mode:
                 stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.DEBUG))
@@ -161,21 +162,34 @@ class SessionLogging(object):
 
             yield handler, path
 
+    def _get_error_logging_context(self):
+        path = config.root.log.errors_subpath
+        def _error_added_filter(record, handler): # pylint: disable=unused-argument
+            return record.extra.get('to_error_log')
+
+        handler, _ = self._get_file_log_handler(path, symlink=None, bubble=True, filter=_error_added_filter)
+        return handler.applicationbound()
+
+
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:
             return ExitStack()
         return SilencedLoggersHandler(config.root.log.silence_loggers).applicationbound()
 
-    def _get_file_log_handler(self, subpath, symlink):
+    def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=None):
         root_path = config.root.log.root
-        if root_path is None:
+        if root_path is None or subpath is None:
             log_path = None
-            handler = logbook.NullHandler()
+            if bubble:
+                handler = NoopHandler()
+            else:
+                handler = logbook.NullHandler(filter=filter)
         else:
-            log_path = self._normalize_path(os.path.join(root_path, subpath.format(context=_NormalizedObject(context))))
+            log_path = self._normalize_path(os.path.join(root_path, _format_log_path(subpath)))
             ensure_containing_directory(log_path)
-            handler = self._get_file_handler_class()(log_path, bubble=False)
-            self._try_create_symlink(log_path, symlink)
+            handler = self._get_file_handler_class()(log_path, bubble=bubble, filter=filter)
+            if symlink:
+                self._try_create_symlink(log_path, symlink)
             self._set_formatting(handler, config.root.log.format)
         return handler, log_path
 
@@ -219,6 +233,19 @@ class SilencedLoggersHandler(logbook.Handler):
     def should_handle(self, record):
         return record.channel in self._silenced_names
 
+class NoopHandler(object):
+
+    # Logbook's NullHandler does not bubble by default. This is dummy handler that
+    # does not interfere with the stack at all
+    def applicationbound(self):
+        return ExitStack()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        pass
+
 def add_log_handler(handler):
     """
     Adds a log handler to be entered for sessions and for tests
@@ -250,3 +277,31 @@ class _BubblingWrapper(logbook.Handler):
         self._handler = handler
         self.should_handle = self._handler.should_handle
         self.handle = self._handler.handle
+
+
+def _format_log_path(p):
+    return p.format(context=_NormalizedObject(context))
+
+
+class RetainedLogHandler(logbook.TestHandler):
+    """A logbook handler that retains the emitted logs in order to
+    flush them later to a handler.
+
+    This is useful to keep logs that are emitted during session configuration phase, and not lose
+    them from the session log
+    """
+    def __init__(self, *args, **kwargs):
+        super(RetainedLogHandler, self).__init__(*args, **kwargs)
+        self._enabled = True
+
+    def emit(self, record):
+        if self._enabled:
+            return super(RetainedLogHandler, self).emit(record)
+
+    def flush_to_handler(self, handler):
+        for r in self.records:
+            handler.emit(r)
+        del self.records[:]
+
+    def disable(self):
+        self._enabled = False

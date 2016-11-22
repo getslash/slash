@@ -1,4 +1,5 @@
 import os
+import sys
 
 from emport import import_file
 from sentinels import NOTHING
@@ -7,7 +8,7 @@ import gossip
 import gossip.hooks
 
 from .. import hooks
-from .._compat import itervalues
+from .._compat import itervalues, reraise
 from ..conf import config
 from ..utils.marks import mark, try_get_mark
 from .interface import PluginInterface
@@ -61,11 +62,24 @@ class PluginManager(object):
         for active_name in self._active:
             yield (active_name, self._installed[active_name])
 
+    def get_future_active_plugins(self):
+        """
+        Returns a dictionary of plugins intended to be active once the 'pending activation' mechanism
+        is finished
+        """
+        returned = self.get_active_plugins()
+        for name in self._pending_activation:
+            returned[name] = self.get_plugin(name)
+        for name in self._pending_deactivation:
+            returned.pop(name, None)
+        return returned
+
     def get_plugin(self, plugin_name):
         """
         Retrieves a registered plugin by name, or raises a LookupError
         """
         return self._installed[plugin_name]
+
 
     def install(self, plugin, activate=False, activate_later=False):
         """
@@ -82,7 +96,12 @@ class PluginManager(object):
                 'session': gossip.Toggle(),
             }
         if activate:
-            self.activate(plugin_name)
+            try:
+                self.activate(plugin_name)
+            except IncompatiblePlugin:
+                exc_info = sys.exc_info()
+                self.uninstall(plugin)
+                reraise(*exc_info)
         if activate_later:
             self.activate_later(plugin_name)
 
