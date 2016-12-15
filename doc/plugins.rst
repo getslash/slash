@@ -39,7 +39,9 @@ To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <sl
 Plugin Activation
 -----------------
 
-Plugins are activated via :func:`slash.plugins.manager.activate <slash.plugins.PluginManager.activate>`. During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
+Plugins are activated via :func:`slash.plugins.manager.activate <slash.plugins.PluginManager.activate>` and deactivated via :func:`slash.plugins.manager.deactivate <slash.plugins.PluginManager.deactivate>`.
+
+During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
 
 .. note:: by default, all method names in a plugin are assumed to belong to the *slash* gossip group. This means that the method ``session_start`` will register on ``slash.session_start``. You can override this behavior by using :func:`slash.plugins.registers_on`:
   
@@ -149,3 +151,11 @@ The idea is to have plugins specify what they need and what they provide in term
 
 
 .. note:: The ``@slash.plugins.needs`` / ``@slash.plugins.provides`` decorators can also be specified on the plugin class itself, automatically marking all hook methods
+
+
+Plugin Manager
+--------------
+
+As mentioned above, the Plugin Manager provides API to activate (or deacativate) and install (or uninstall) plugins,
+Additionally, it provides access to instances of registered plugins by their name via :func:`slash.plugins.manager.get_plugin <slash.plugins.PluginManager.get_plugin>`.
+This could be used to access plugin attributes whose modification (e.g. by fixtures) can alter the plugin's behavior.
