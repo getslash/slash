@@ -156,6 +156,6 @@ The idea is to have plugins specify what they need and what they provide in term
 Plugin Manager
 --------------
 
-As mentioned above, the Plugin Manager provides API to activate (or deacativate) and install (or uninstall) plugins,
+As mentioned above, the Plugin Manager provides API to activate (or deacativate) and install (or uninstall) plugins.
 Additionally, it provides access to instances of registered plugins by their name via :func:`slash.plugins.manager.get_plugin <slash.plugins.PluginManager.get_plugin>`.
 This could be used to access plugin attributes whose modification (e.g. by fixtures) can alter the plugin's behavior.
