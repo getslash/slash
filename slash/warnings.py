@@ -21,7 +21,7 @@ class SessionWarnings(object):
         with warning_callback_context(self._capture_native_warning):
             yield
 
-    def _capture_native_warning(self, message, category, filename, lineno):
+    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
         self.warnings.append(RecordedWarning.from_native_warning(message, category, filename, lineno))
 
     def add(self, warning):
