@@ -26,11 +26,13 @@ def run_tests(iterable, stop_on_error=None):
     Runs tests from an iterable using the current session
     """
     # pylint: disable=maybe-no-member
+    def should_stop_on_error():
+        if stop_on_error is None:
+            return config.root.run.stop_on_error
+        return stop_on_error
+
     if context.session is None or not context.session.started:
         raise NoActiveSession("A session is not currently started")
-
-    if stop_on_error is None:
-        stop_on_error = config.root.run.stop_on_error
 
     test_iterator = PeekableIterator(iterable)
     last_filename = None
@@ -58,7 +60,7 @@ def run_tests(iterable, stop_on_error=None):
             if result.has_fatal_exception():
                 _logger.debug("Stopping on fatal exception")
                 break
-            if not result.is_success(allow_skips=True) and stop_on_error:
+            if not result.is_success(allow_skips=True) and should_stop_on_error():
                 _logger.debug("Stopping (run.stop_on_error==True)")
                 break
         else:
