@@ -20,7 +20,7 @@ def _interact(ns):
             context.result.add_error('Terminated')
             shell.exit_now = True
 
-    embed(user_ns=ns, custom_exceptions=((Exception, TerminatedException), _handle_exception))
+    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception))
 
 
 def _is_exception_in_ipython_eval(exc_tb):
