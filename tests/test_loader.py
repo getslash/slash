@@ -18,6 +18,16 @@ def test_total_num_tests(suite):
         assert s.get_total_num_tests() == len(suite)
 
 
+def test_loader_skips_empty_dirs(tmpdir):
+    tests_dir = tmpdir.join('tests')
+    with tests_dir.join('.dir').join('test_something.py').open('w', ensure=True) as f:
+        f.write('def test_something():\n    pass')
+
+    with Session():
+        runnables = Loader().get_runnables(str(tests_dir))
+    assert runnables == []
+
+
 @pytest.mark.parametrize('specific_method', [True, False])
 @pytest.mark.parametrize('with_parameters', [True, False])
 def test_iter_specific_factory(suite, suite_test, specific_method, with_parameters):
