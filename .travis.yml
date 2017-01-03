@@ -14,6 +14,8 @@ script:
   - .env/bin/python scripts/test_and_pylint.py
 after_success:
   - .env/bin/coveralls
+after_failure:
+  - .env/bin/pip freeze
 deploy:
   provider: pypi
   user: vmalloc
