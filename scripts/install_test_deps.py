@@ -21,7 +21,6 @@ if __name__ == '__main__':
         "pyforge",
     ]
     if not _PYPY:
-        deps.append("lxml<3.6.3")
         if sys.version_info < (2, 7):
             deps.append("pylint<1.4.0")
         else:
