@@ -1,6 +1,8 @@
 import os
+from uuid import uuid4
 
 import pytest
+
 from slash import Session
 from slash.exceptions import CannotLoadTests
 from slash.loader import Loader
@@ -16,6 +18,26 @@ def test_total_num_tests(suite):
     with Session() as s:
         Loader().get_runnables(path)
         assert s.get_total_num_tests() == len(suite)
+
+
+def test_loader_sort_filenames(tmpdir):
+
+    tests_dir = tmpdir.join(str(uuid4()))
+
+    filenames = []
+
+    for _ in range(10):
+        filename = str(uuid4()).replace('-', '') + '.py'
+
+        with tests_dir.join(filename).open('w', ensure=True) as f:
+            f.write('def test_something():\n    pass')
+
+        filenames.append(filename)
+
+    with Session():
+        runnables = Loader().get_runnables(str(tests_dir))
+
+    assert [os.path.basename(runnable.__slash__.file_path) for runnable in runnables] == sorted(filenames)
 
 
 def test_loader_skips_empty_dirs(tmpdir):
