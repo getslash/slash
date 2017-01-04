@@ -20,6 +20,7 @@ def _define(hook_name, **kwargs):
 
 _define('session_start', doc="Called right after session starts")
 _define('session_end', doc="Called right before the session ends, regardless of the reason for termination")
+_define('session_interrupt', doc='Called when the session is interrupted unexpectedly')
 
 _define('tests_loaded', doc='Called when Slash finishes loading a batch of tests for execution (not necessarily al tests)', arg_names=('tests',))
 

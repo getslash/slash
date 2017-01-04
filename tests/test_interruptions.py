@@ -3,6 +3,9 @@ import gossip
 import pytest
 
 import slash
+import slash.hooks
+
+from .conftest import Checkpoint
 
 
 def test_interruption(interrupted_suite, interrupted_index):
@@ -75,6 +78,29 @@ def test_test_end_called_for_interrupted_test(interrupted_suite, interrupted_tes
     result = s[interrupted_test]
 
     assert result.test_metadata.id in ended
+
+
+def test_session_interruption_in_start(suite, suite_test, session_interrupt):
+
+    @suite.slashconf.append_body
+    def __code__():
+        @slash.hooks.session_start.register # pylint: disable=no-member
+        def session_cleanup():
+            raise KeyboardInterrupt()
+
+    for test in suite:
+        test.expect_deselect()
+
+    suite.run(expect_interruption=True)
+
+    assert session_interrupt.called_count == 1
+
+
+@pytest.fixture
+def session_interrupt():
+    callback = Checkpoint()
+    slash.hooks.session_interrupt.register(callback) # pylint: disable=no-member
+    return callback
 
 
 @pytest.fixture
