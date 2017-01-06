@@ -54,14 +54,20 @@ class _IgnoredState(threading.local):
 _ignored_state = _IgnoredState()
 
 
-@contextmanager
-def thread_ignore_exception_context(exc_type):
-    prev = _ignored_state.ignored_exception_types
-    _ignored_state.ignored_exception_types = list(_ignored_state.ignored_exception_types) + [exc_type]
-    try:
-        yield
-    finally:
-        _ignored_state.ignored_exception_types = prev
+class thread_ignore_exception_context(object):
+
+    def __init__(self, exc_type):
+        super(thread_ignore_exception_context, self).__init__()
+        self._exc_type = exc_type
+        self._prev = None
+
+    def __enter__(self):
+        self._prev = _ignored_state.ignored_exception_types
+        _ignored_state.ignored_exception_types = list(_ignored_state.ignored_exception_types) + [self._exc_type]
+
+    def __exit__(self, *_):
+        _ignored_state.ignored_exception_types = self._prev
+        self._prev = None
 
 
 def handling_exceptions(fake_traceback=True, **kwargs):
