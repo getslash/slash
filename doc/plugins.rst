@@ -90,10 +90,10 @@ In many cases you would like to receive options from the command line. Plugins c
 
  class ResultsReportingPlugin(PluginInterface):
  
-     def configure_arg_parser(self, parser):
+     def configure_argument_parser(self, parser):
          parser.add_argument("--output-filename", help="File to write results to")
  
-     def configure_parsed_args(self, args):
+     def configure_from_parsed_args(self, args):
          self.output_filename = args.output_filename
 
 Plugin Configuration
