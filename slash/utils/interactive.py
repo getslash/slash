@@ -50,11 +50,13 @@ def generate_interactive_test():
     return returned
 
 @contextmanager
-def notify_if_slow_context(message, slow_seconds=1):
+def notify_if_slow_context(message, slow_seconds=1, end_message=None):
     evt = threading.Event()
+    evt.should_report_end_msg = False
     def notifier():
         if not evt.wait(timeout=slow_seconds) and context.session is not None:
             context.session.reporter.report_message(message)
+            evt.should_report_end_msg = True
     thread = threading.Thread(target=notifier)
     thread.start()
     try:
@@ -62,3 +64,5 @@ def notify_if_slow_context(message, slow_seconds=1):
     finally:
         evt.set()
         thread.join()
+        if evt.should_report_end_msg and end_message is not None:
+            context.session.reporter.report_message(end_message)
