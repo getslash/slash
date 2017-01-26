@@ -1,5 +1,6 @@
 import functools
 import itertools
+import os
 import sys
 from numbers import Number
 
@@ -39,6 +40,7 @@ class Result(object):
         self._finished = False
         self._interrupted = False
         self._log_path = None
+        self._extra_logs = []
 
     def _fact_set_callback(self, fact_name, fact_value):
         gossip.trigger('slash.fact_set', name=fact_name, value=fact_value)
@@ -68,10 +70,34 @@ class Result(object):
         return bool(self._failures or self._errors)
 
     def get_log_path(self):
+        """Returns log path
+        """
         return self._log_path
 
     def set_log_path(self, path):
+        """Set log path
+        """
         self._log_path = path
+
+    def get_log_dir(self):
+        """Returns log's directory.
+        """
+        if self._log_path is None:
+            return None
+        return os.path.dirname(self._log_path)
+
+    def add_extra_log_path(self, path):
+        """Add additional log path. This path will be added to the list returns by get_log_paths
+        """
+        self._extra_logs.append(path)
+
+    def get_log_paths(self):
+        """Returns a list of all log paths
+        """
+        logs = []
+        if self._log_path:
+            logs.append(self._log_path)
+        return logs + list(self._extra_logs)
 
     def is_started(self):
         return self._started
