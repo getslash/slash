@@ -49,6 +49,7 @@ Table Of Contents
    features
    advanced_usage
    cookbook
+   faq
    api
    changelog
    development
