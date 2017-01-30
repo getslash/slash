@@ -28,6 +28,9 @@ class Suite(object):
         self.debug_info = debug_info
         self.clear()
 
+    def disable_debug_info(self):
+        self.debug_info = False
+
     def deselect_all(self, exclude=()):
         for test in self:
             if test in exclude:
