@@ -6,78 +6,152 @@ from contextlib import contextmanager
 from . import hooks as trigger_hook
 from . import log
 from . import site
-from .core.session import Session
+from . import plugins
+from ._compat import ExitStack
 from .conf import config
-from .exceptions import TerminatedException
+from .core.session import Session
+from .reporting.console_reporter import ConsoleReporter
+from .exceptions import TerminatedException, SlashException
 from .exception_handling import handling_exceptions
 from .loader import Loader
-from .reporting.console_reporter import ConsoleReporter
-from .reporting.null_reporter import NullReporter
 from .utils import cli_utils
+from .utils.debug import debug_if_needed
+
+_logger = logbook.Logger(__name__)
 
 
 class Application(object):
-    def __init__(self, parser, args, report_stream, report=True):
+
+    def __init__(self):
         super(Application, self).__init__()
-        self.parser = parser
-        self.args = args
-        self.report_stream = report_stream
+        self._test_loader = Loader()
+        self.set_report_stream(sys.stderr)
+        self._argv = None
+        self._reset_parser()
+        self._positional_args = None
+        self._parsed_args = None
+        self._interactive_enabled = False
         self.test_loader = Loader()
-        if report:
-            reporter = ConsoleReporter(level=config.root.log.console_level, stream=report_stream)
-        else:
-            reporter = NullReporter() # pylint: disable=redefined-variable-type
+        self.session = None
+        self._interrupted = False
+        self._exit_code = 0
 
-        self.session = Session(reporter=reporter, console_stream=report_stream)
+    @property
+    def exit_code(self):
+        return self._exit_code
 
-    def error(self, message, usage=True):
-        if usage:
-            self.parser.error(message)
-        else:
-            sys.exit('Error: {0}'.format(message))
+    def set_exit_code(self, exit_code):
+        self._exit_code = exit_code
 
-@contextmanager
-def get_application_context(parser=None, argv=None, args=(), report_stream=sys.stderr, enable_interactive=False, positionals_metavar=None, report=True):
+    @property
+    def interrupted(self):
+        return self._interrupted
 
-    prelude_log_handler = log.RetainedLogHandler(bubble=True, level=logbook.TRACE)
+    @property
+    def positional_args(self):
+        return self._positional_args
 
-    with prelude_log_handler.applicationbound(), _handling_sigterm_context():
-        site.load()
-        args = list(args)
-        if enable_interactive:
-            args.append(
-                cli_utils.Argument("-i", "--interactive", help="Enter an interactive shell",
-                                   action="store_true", default=False)
-            )
-        with cli_utils.get_cli_environment_context(argv=argv, extra_args=args, positionals_metavar=positionals_metavar) as (parser, parsed_args):
-            app = Application(parser=parser, args=parsed_args, report_stream=report_stream, report=report)
+    @property
+    def parsed_args(self):
+        return self._parsed_args
 
-            _check_unknown_switches(app)
-            with app.session:
-                _emit_prelude_logs(prelude_log_handler, app.session)
-                yield app
-                trigger_hook.result_summary()  # pylint: disable=no-member
+    def enable_interactive(self):
+        self.arg_parser.add_argument(
+            '-i', '--interactive', help='Enter an interactive shell',
+            action="store_true", default=False)
 
-def _emit_prelude_logs(handler, session):
-    handler.disable()
-    if session.logging.session_log_handler is not None:
-        handler.flush_to_handler(session.logging.session_log_handler)
+    def _reset_parser(self):
+        self.arg_parser = cli_utils.SlashArgumentParser()
+
+    def set_argv(self, argv):
+        self._argv = list(argv)
+
+    def _get_argv(self):
+        if self._argv is None:
+            return sys.argv[1:]
+        return self._argv[:]
+
+    def set_report_stream(self, stream):
+        if stream is not None:
+            self._report_stream = stream
+
+    def __enter__(self):
+        self._exit_stack = ExitStack()
+        self._exit_stack.__enter__()
+        try:
+            self._exit_stack.enter_context(self._prelude_logging_context())
+            self._exit_stack.enter_context(self._sigterm_context())
+            site.load()
+
+            cli_utils.configure_arg_parser_by_plugins(self.arg_parser)
+            cli_utils.configure_arg_parser_by_config(self.arg_parser)
+            argv = cli_utils.add_pending_plugins_from_commandline(self._get_argv())
+
+            self._parsed_args, self._positional_args = self.arg_parser.parse_known_args(argv)
+
+            self._exit_stack.enter_context(
+                cli_utils.get_modified_configuration_from_args_context(self.arg_parser, self._parsed_args)
+                )
+
+            self.session = Session(
+                reporter=ConsoleReporter(level=config.root.log.console_level,
+                                         stream=self._report_stream),
+                console_stream=self._report_stream)
+
+            trigger_hook.configure() # pylint: disable=no-member
+            plugins.manager.activate_pending_plugins()
+            cli_utils.configure_plugins_from_args(self._parsed_args)
 
 
-def _check_unknown_switches(app):
-    unknown = [arg for arg in app.args.positionals if arg.startswith("-")]
-    if unknown:
-        app.error("Unknown flags: {0}".format(", ".join(unknown)))
+            self._exit_stack.enter_context(self.session)
+            self._emit_prelude_logs()
+            return self
 
-@contextmanager
-def _handling_sigterm_context():
+        except:
+            self.__exit__(*sys.exc_info())
+            raise
 
-    def handle_sigterm(*_):
-        with handling_exceptions():
-            raise TerminatedException('Terminated by signal')
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        exc_info = (exc_type, exc_value, exc_tb)
+        debug_if_needed(exc_info)
+        if exc_value is not None:
+            self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else -1
 
-    prev = signal.signal(signal.SIGTERM, handle_sigterm)
-    try:
-        yield
-    finally:
-        signal.signal(signal.SIGTERM, prev)
+        if isinstance(exc_value, SlashException):
+            # TODO: log traceback as debug
+            self.session.reporter.report_error_message(str(exc_value))
+
+        elif isinstance(exc_value, Exception):
+            # TODO: log traceback as error
+            self.session.reporter.report_error_message('Unexpected error: {}'.format(exc_value))
+
+        if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
+            self._interrupted = True
+
+        if exc_type is not None:
+            trigger_hook.result_summary() # pylint: disable=no-member
+        self._exit_stack.__exit__(exc_type, exc_value, exc_tb)
+        self._exit_stack = None
+        self._reset_parser()
+        return True
+
+    def _prelude_logging_context(self):
+        self._prelude_log_handler = log.RetainedLogHandler(bubble=True, level=logbook.TRACE)
+        return self._prelude_log_handler.applicationbound()
+
+    def _emit_prelude_logs(self):
+        self._prelude_log_handler.disable()
+        if self.session.logging.session_log_handler is not None:
+            self._prelude_log_handler.flush_to_handler(self.session.logging.session_log_handler)
+
+    @contextmanager
+    def _sigterm_context(self):
+        def handle_sigterm(*_):
+            with handling_exceptions():
+                raise TerminatedException('Terminated by signal')
+
+        prev = signal.signal(signal.SIGTERM, handle_sigterm)
+        try:
+            yield
+        finally:
+            signal.signal(signal.SIGTERM, prev)

@@ -18,6 +18,7 @@ def test_errors_during_initialization_hoook(suite, init_hook):
 
 @pytest.fixture(params=[
     slash.hooks.session_start,
+    slash.hooks.configure,
 ])
 def init_hook(request):
     return request.param

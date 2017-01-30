@@ -8,6 +8,8 @@ import sys
 
 import colorama
 import slash
+import slash.site
+import slash.loader
 from slash.exceptions import CannotLoadTests
 from slash.utils.cli_utils import UNDERLINED, make_styler, error_abort, Printer
 from slash.utils.python import get_underlying_func

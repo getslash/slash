@@ -134,17 +134,14 @@ class Suite(object):
             if args is None:
                 args = [path]
             args.extend(additional_args)
-            try:
-                with self._custom_slashrc(path):
-                    returned.exit_code = slash_run(
-                        args, report_stream=report_stream,
-                        app_callback=captured.append,
-                    )
-            except (KeyboardInterrupt, SystemExit, TerminatedException) as e:
-                if isinstance(e, KeyboardInterrupt):
-                    assert expect_interruption, 'KeyboardInterrupt unexpectedly raised'
-                returned.exit_code = -1
-                returned.error_message = str(e)
+            with self._custom_slashrc(path):
+                app = slash_run(
+                    args, report_stream=report_stream,
+                    app_callback=captured.append,
+                )
+                returned.exit_code = app.exit_code
+            if app.interrupted:
+                assert expect_interruption, 'Unexpectedly interrupted'
             else:
                 assert not expect_interruption, 'KeyboardInterrupt did not happen'
 

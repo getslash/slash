@@ -113,7 +113,7 @@ class Loader(object):
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
-                msg = "Path {0} could not be found".format(path)
+                msg = "Path {!r} could not be found".format(path)
                 with handling_exceptions():
                     raise CannotLoadTests(msg)
         for path in paths:
