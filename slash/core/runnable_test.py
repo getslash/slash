@@ -14,6 +14,10 @@ class RunnableTest(object):
         self._fixture_namespace = fixture_namespace
         self._variation = variation
 
+    @property
+    def id(self):
+        return self.__slash__.id
+
     def get_variation(self):
         return self._variation
 

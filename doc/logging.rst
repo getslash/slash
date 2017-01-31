@@ -23,7 +23,7 @@ Console logs are colorized according to their level by default. This is done usi
 Controlling the Log Subdir Template
 -----------------------------------
 
-The filenames created under the root are controlled with the :ref:`conf.log.subpath` config variable, which can be also a format string receiving the *context* variable from slash (e.g. ``sessions/{context.session.id}/{context.test.__slash__.id}/logfile.log``).
+The filenames created under the root are controlled with the :ref:`conf.log.subpath` config variable, which can be also a format string receiving the *context* variable from slash (e.g. ``sessions/{context.session.id}/{context.test.id}/logfile.log``).
 
 
 Test Ordinals
@@ -31,7 +31,7 @@ Test Ordinals
 
 You can use :attr:`slash.core.metadata.Metadata.test_index0` to include an ordinal prefix in log directories, for example setting :ref:`conf.log.subpath` to:: 
 
-    {context.session.id}/{context.test.__slash__.test_index0:03}-{context.test.__slash__.id}.log
+    {context.session.id}/{context.test.__slash__.test_index0:03}-{context.test.id}.log
 
 The Session Log
 ~~~~~~~~~~~~~~~
