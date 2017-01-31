@@ -167,9 +167,10 @@ class SessionLogging(object):
         def _error_added_filter(record, handler): # pylint: disable=unused-argument
             return record.extra.get('to_error_log')
 
-        handler, _ = self._get_file_log_handler(path, symlink=None, bubble=True, filter=_error_added_filter)
+        handler, log_path = self._get_file_log_handler(path, symlink=None, bubble=True, filter=_error_added_filter)
+        if log_path and self.session.results.current is self.session.results.global_result:
+            self.session.results.global_result.add_extra_log_path(log_path)
         return handler.applicationbound()
-
 
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:

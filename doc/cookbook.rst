@@ -14,3 +14,23 @@ Slash offers a hook called ``tests_loaded`` which can be used, among else, to co
 	       test.__slash__.set_sort_key(index)
 
 The above code is best placed in a ``slashconf.py`` file at the root of your test repository.
+
+
+Adding Multiple Log Files to the Current Result
+-----------------------------------------------
+
+Slash result objects contain the main path of the log file created by Slash (if logging is properly configured for the current run).
+
+In some cases it may be desirable to include multiple log files for the current test. This can be useful, for example, if the current test runs additional tools or processes emitting additional logs:
+
+.. code-block:: python
+
+    class MyPlugin(slash.plugins.PluginInterface):
+        def get_name(self):
+            return "my_plugin"
+        def get_config(self):
+            retrun {'extra_log_path': ''}
+        def session_start(self):
+            log_path = slash.config.root.plugin_config.my_plugin.extra_log_path
+            if log_path:
+                slash.context.session.results.global_result.add_extra_log_path(log_path)
