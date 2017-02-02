@@ -2,6 +2,7 @@ import pytest
 import operator
 
 from slash._compat import reduce
+from slash.exceptions import InvalidFixtureName
 
 
 def test_fixtures(suite, suite_test, defined_fixture):
@@ -103,3 +104,13 @@ def test_fixture_and_parameter(suite, suite_test, get_fixture_location):
     suite_test.add_parameter()
     suite_test.depend_on_fixture(fixture)
     suite.run()
+
+
+def test_fixture_which_name_startswith_test(suite):
+    fixture = suite.slashconf.add_fixture(name='test_my_fixture')
+    suite[-1].depend_on_fixture(fixture)
+    for test in suite:
+        test.expect_deselect()
+    summary = suite.run()
+    assert not summary.ok()
+    assert 'Invalid fixture name' in summary.get_console_output()

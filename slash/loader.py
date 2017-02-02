@@ -16,7 +16,7 @@ from .ctx import context
 from .core.local_config import LocalConfig
 from . import hooks
 from .core.runnable_test import RunnableTest
-from .core.test import Test, TestTestFactory
+from .core.test import Test, TestTestFactory, is_valid_test_name
 from .core.function_test import FunctionTestFactory
 from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
@@ -187,7 +187,7 @@ class Loader(object):
             return TestTestFactory(thing)
 
         if isinstance(thing, FunctionType):
-            if thing.__name__.startswith('test_'):
+            if is_valid_test_name(thing.__name__):
                 return FunctionTestFactory(thing)
 
         return None
