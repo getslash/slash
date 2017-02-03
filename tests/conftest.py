@@ -291,3 +291,11 @@ def session_log(logs_dir):
 @pytest.fixture
 def unique_string1():
     return str(uuid4())
+
+
+@pytest.fixture(params=[True, False])
+def yield_fixture_decorator(request):
+    should_use_explicitly = request.param
+    if should_use_explicitly:
+        return slash.yield_fixture
+    return slash.fixture

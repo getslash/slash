@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`467` Automatically detect yielded fixtures
 * :feature:`507` Test id can now be obtained via ``slash.context.test.id``
 * :bug:`510 major` Explicitly fail fixtures which name is valid for tests (currently: test_ prefix)
 * :feature:`511` Support adding external logs ``Result.add_extra_log_path`` which will be retrieved by ``Result.get_log_paths()``
