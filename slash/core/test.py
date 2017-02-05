@@ -154,3 +154,7 @@ def is_abstract_base_class(cls):
     .. seealso:: :func:`abstract_test_class`
     """
     return bool(cls.__dict__.get("__slash_abstract__", False))
+
+
+def is_valid_test_name(name):
+    return name.startswith('test_')

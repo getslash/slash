@@ -42,6 +42,10 @@ class InvalidFixtureScope(FixtureException):
     pass
 
 
+class InvalidFixtureName(FixtureException):
+    pass
+
+
 class IncorrectScope(SlashException):
     pass
 

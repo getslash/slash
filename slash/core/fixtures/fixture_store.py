@@ -8,9 +8,10 @@ from orderedset import OrderedSet
 from ..._compat import OrderedDict, iteritems, itervalues, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
-from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures
+from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureName
 from ...utils.python import get_arguments
 from ..variation_factory import VariationFactory
+from ..test import is_valid_test_name
 from .active_fixture import ActiveFixture
 from .fixture import Fixture
 from .namespace import Namespace
@@ -215,6 +216,8 @@ class FixtureStore(object):
         existing_fixture = self._fixtures_by_id.get(fixture_info.id)
         if existing_fixture is not None:
             return existing_fixture.fixture_func
+        if is_valid_test_name(fixture_info.name):
+            raise InvalidFixtureName('Invalid fixture name: {0.name}'.format(fixture_info))
         fixture_object = Fixture(self, fixture_func)
         current_namespace = self._namespaces[-1]
         current_namespace.add_name(fixture_info.name, fixture_info.id)
