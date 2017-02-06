@@ -7,7 +7,7 @@ from .conftest import Checkpoint
 from .utils import make_runnable_tests
 
 
-def test_yield_fixture():
+def test_yield_fixture(yield_fixture_decorator):
     iterations = [uuid4() for i in range(3)]
     start_checkpoints, end_checkpoints = [
         {iteration: Checkpoint() for iteration in iterations}
@@ -25,7 +25,7 @@ def test_yield_fixture():
 
         @s.fixture_store.add_fixture
         @slash.parametrize('iteration', list(iterations))
-        @slash.yield_fixture
+        @yield_fixture_decorator
         def fixture(iteration, other_fixture):
             assert other_fixture == inner_fixture_value
             start_checkpoints[iteration]()
@@ -42,7 +42,7 @@ def test_yield_fixture():
         assert s.results.is_success(allow_skips=False)
 
 
-def test_yield_fixture_with_this_argument():
+def test_yield_fixture_with_this_argument(yield_fixture_decorator):
     iterations = [uuid4() for i in range(3)]
     value = uuid4()
 
@@ -51,7 +51,7 @@ def test_yield_fixture_with_this_argument():
 
         @s.fixture_store.add_fixture
         @slash.parametrize('iteration', list(iterations))
-        @slash.yield_fixture
+        @yield_fixture_decorator
         def fixture(this, iteration):
             yield value
 
@@ -64,14 +64,14 @@ def test_yield_fixture_with_this_argument():
             slash.runner.run_tests(make_runnable_tests(test_something))
 
 
-def test_yield_fixture_with_scope_argument():
+def test_yield_fixture_with_scope_argument(yield_fixture_decorator):
     value = str(uuid4())
 
     with slash.Session() as s:
 
 
         @s.fixture_store.add_fixture
-        @slash.yield_fixture(scope='session')
+        @yield_fixture_decorator(scope='session')
         def fixture():
             yield value
 
