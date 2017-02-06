@@ -3,7 +3,7 @@ Changelog
 
 * :feature:`467` Yield fixtures are now automatically detected by Slash -- using ``yield_fixture`` explicitly is no longer required.
 * :feature:`507` Test id can now be obtained via ``slash.context.test.id``
-* :bug:`510 major` Explicitly fail fixtures which name is valid for tests (currently: test_ prefix)
+* :bug:`510 major` Explicitly fail fixtures which name is valid for tests (currently: ``test_`` prefix)
 * :feature:`511` Support adding external logs ``Result.add_extra_log_path`` which will be retrieved by ``Result.get_log_paths()``
 * :feature:`502` Added ``session_interrupt`` hook for when sessions are interrupted
 * :release:`1.1.0 <22-11-2016>`
