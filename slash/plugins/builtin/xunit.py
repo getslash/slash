@@ -4,7 +4,7 @@ import sys
 from ..interface import PluginInterface
 from ...ctx import context
 from ...utils.traceback_utils import get_traceback_string
-from ...utils.conf_utils import Cmdline
+from ...utils.conf_utils import Cmdline, Doc
 from slash import config as slash_config
 from slash import context
 from xml.etree.ElementTree import (
@@ -30,7 +30,9 @@ class Plugin(PluginInterface):
         return "xunit"
 
     def get_config(self):
-        return {"filename": "testsuite.xml" // Cmdline(arg="--xunit-filename")}
+        return {
+            "filename": "testsuite.xml" // Cmdline(arg="--xunit-filename") // Doc('Name of XML xUnit file to create'),
+        }
 
     def session_start(self):
         self._start_time = datetime.datetime.now()
