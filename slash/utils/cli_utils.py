@@ -167,6 +167,20 @@ def make_styler(style):
 UNDERLINED = '\x1b[4m'
 
 
+class Printer(object):
+
+    def __init__(self, report_stread, enable_output=True):
+        self._stream = report_stread
+        self._output_enabled = enable_output
+
+    def _colored_print(self, *args):
+        print(*args, file=self._stream)
+
+    def __call__(self, *args):
+        if self._output_enabled:
+            self._colored_print(*args)
+
+
 def error_abort(message, *args):
     if args:
         message = message.format(*args)

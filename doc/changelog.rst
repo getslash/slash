@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`519` Add ``--no-output`` flag for ``slash list``
 * :feature:`467` Yield fixtures are now automatically detected by Slash -- using ``yield_fixture`` explicitly is no longer required.
 * :feature:`507` Test id can now be obtained via ``slash.context.test.id``
 * :bug:`510 major` Explicitly fail fixtures which name is valid for tests (currently: ``test_`` prefix)

@@ -5,12 +5,11 @@ import inspect
 import itertools
 import os
 import sys
-from functools import partial
 
 import colorama
 import slash
 from slash.exceptions import CannotLoadTests
-from slash.utils.cli_utils import UNDERLINED, make_styler, error_abort
+from slash.utils.cli_utils import UNDERLINED, make_styler, error_abort, Printer
 from slash.utils.python import get_underlying_func
 from slash.utils.suite_files import iter_suite_file_paths
 
@@ -30,12 +29,12 @@ def _get_parser():
     parser.add_argument('--no-params', dest='show_params', action='store_false', default=True)
     parser.add_argument('--allow-empty', dest='allow_empty', action='store_true', default=False)
     parser.add_argument('-r', '--relative-paths', action='store_true', default=False)
+    parser.add_argument('--no-output', dest='show_output', action='store_false', default=True)
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
 
 
 def slash_list(args, report_stream=sys.stdout):
-    _print = partial(print, file=report_stream)
 
     parser = _get_parser()
     parsed_args = parser.parse_args(args)
@@ -43,6 +42,7 @@ def slash_list(args, report_stream=sys.stdout):
     if not parsed_args.paths and not parsed_args.suite_files:
         parser.error('Neither test paths nor suite files were specified')
 
+    _print = Printer(report_stream, enable_output=parsed_args.show_output)
     try:
         with slash.Session() as session:
             slash.site.load()
