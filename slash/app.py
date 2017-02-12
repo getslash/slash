@@ -14,6 +14,7 @@ from .reporting.console_reporter import ConsoleReporter
 from .exceptions import TerminatedException, SlashException
 from .exception_handling import handling_exceptions
 from .loader import Loader
+from .log import ConsoleHandler
 from .utils import cli_utils
 from .utils.debug import debug_if_needed
 
@@ -74,6 +75,7 @@ class Application(object):
     def set_report_stream(self, stream):
         if stream is not None:
             self._report_stream = stream
+            self._console_handler = ConsoleHandler(stream=stream)
 
     def __enter__(self):
         self._exit_stack = ExitStack()
@@ -108,6 +110,7 @@ class Application(object):
             return self
 
         except:
+            self._emit_prelude_logs()
             self.__exit__(*sys.exc_info())
             raise
 
@@ -141,8 +144,10 @@ class Application(object):
 
     def _emit_prelude_logs(self):
         self._prelude_log_handler.disable()
-        if self.session.logging.session_log_handler is not None:
-            self._prelude_log_handler.flush_to_handler(self.session.logging.session_log_handler)
+        handler = self.session.logging.session_log_handler
+        if handler is None:
+            handler = self._console_handler
+        self._prelude_log_handler.flush_to_handler(handler)
 
     @contextmanager
     def _sigterm_context(self):
