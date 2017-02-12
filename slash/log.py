@@ -304,7 +304,8 @@ class RetainedLogHandler(logbook.TestHandler):
 
     def flush_to_handler(self, handler):
         for r in self.records:
-            handler.emit(r)
+            if handler.should_handle(r):
+                handler.emit(r)
         del self.records[:]
 
     def disable(self):

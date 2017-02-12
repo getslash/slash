@@ -75,7 +75,7 @@ class Application(object):
     def set_report_stream(self, stream):
         if stream is not None:
             self._report_stream = stream
-            self._console_handler = ConsoleHandler(stream=stream)
+            self._console_handler = ConsoleHandler(stream=stream, level=logbook.ERROR)
 
     def __enter__(self):
         self._exit_stack = ExitStack()
@@ -121,11 +121,10 @@ class Application(object):
             self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else -1
 
         if isinstance(exc_value, SlashException):
-            # TODO: log traceback as debug
             self.session.reporter.report_error_message(str(exc_value))
 
         elif isinstance(exc_value, Exception):
-            # TODO: log traceback as error
+            _logger.error('Unexpected error occurred', exc_info=exc_info)
             self.session.reporter.report_error_message('Unexpected error: {}'.format(exc_value))
 
         if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
