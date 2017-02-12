@@ -154,4 +154,9 @@ class Application(object):
         try:
             yield
         finally:
-            signal.signal(signal.SIGTERM, prev)
+            try:
+                signal.signal(signal.SIGTERM, prev)
+            except TypeError as e:
+                #workaround for a strange issue on app cleanup. See https://bugs.python.org/issue23548
+                if 'signal handler must be signal.SIG_IGN' not in str(e):
+                    raise
