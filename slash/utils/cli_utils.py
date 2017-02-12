@@ -7,7 +7,7 @@ from contextlib import contextmanager
 import colorama
 
 from .. import conf, plugins
-from .._compat import cStringIO, iteritems, itervalues
+from .._compat import iteritems, itervalues
 
 
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
@@ -95,7 +95,7 @@ class SlashArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
         super(SlashArgumentParser, self).__init__(
             prog=self._deduce_program_name(),
-            usage='{} [options]'.format( self._deduce_program_name()),
+            usage='{} [options]'.format(self._deduce_program_name()),
             *args, **kwargs)
 
         self._positionals_metavar = None

@@ -1,13 +1,11 @@
 import itertools
 import functools
 import sys
-from contextlib import contextmanager
 
 import logbook
 
 from ..app import Application
 from ..conf import config
-from ..exceptions import SlashException
 from ..exception_handling import handling_exceptions
 from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume,
                         save_resume_state)
