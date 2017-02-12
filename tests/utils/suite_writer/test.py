@@ -80,13 +80,6 @@ class Test(Function, Element):
         self._write_event(code_formatter, 'test_end')
         super(Test, self)._write_epilogue(code_formatter)
 
-    def _write_cleanups(self, code_formatter):
-        for index, cleanup_event in enumerate(self._cleanups, 1):
-            code_formatter.writeln('@slash.add_cleanup')
-            code_formatter.writeln('def _cleanup{0}():'.format(index))
-            with code_formatter.indented():
-                code_formatter.writeln('__ut__.events.add({0!r})'.format(cleanup_event))
-
     def _get_function_name(self):
         return 'test_{0}'.format(self.id)
 

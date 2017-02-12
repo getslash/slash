@@ -1,4 +1,4 @@
-# pylint: disable=unused-variable, unused-argument
+# pylint: disable=unused-variable, unused-argument, redefined-outer-name
 import collections
 import copy
 from uuid import uuid4

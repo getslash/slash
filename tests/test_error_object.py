@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name,unused-variable
 import json
 import os
 
@@ -54,7 +55,7 @@ def test_to_list(error):
 
 
 def test_frame_locals_no_assertion_markers(assertion_error):
-    for var_name, var in assertion_error.cause.locals.items():
+    for var_name, _ in assertion_error.cause.locals.items():
         assert "@" not in var_name
 
 

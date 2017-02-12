@@ -1,4 +1,4 @@
-#pylint: disable=unused-argument, unused-variable
+# pylint: disable=unused-argument, unused-variable
 from slash._compat import ExitStack
 import slash
 from slash import plugins
@@ -27,7 +27,7 @@ class BeforeTestCleanupException(Exception):
 
 
 def test_test_skip_hook(suite, suite_test, checkpoint):
-    slash.hooks.test_skip.register(checkpoint)
+    slash.hooks.test_skip.register(checkpoint)  # pylint: disable=no-member
 
     suite_test.when_run.skip()
 
@@ -57,7 +57,7 @@ def test_last_test_end_after_session_cleanup(suite, last_suite_test):
     test = last_suite_test
     @test.append_body
     def __code__(): # pylint: disable=unused-variable
-        import gossip # pylint: disable=reimported
+        import gossip # pylint: disable=redefined-outer-name,reimported
         # pylint: disable=undefined-variable,unused-variable
         def session_cleanup_callback():
             __ut__.events.add('session_cleanup')
@@ -86,7 +86,7 @@ def test_no_error_hooks_called_on_success(suite):
 def test_hook__error_added_during_test(suite, request, checkpoint, suite_test):
 
     request.addfinalizer(
-        hooks.error_added.register(checkpoint)
+        hooks.error_added.register(checkpoint)  # pylint: disable=no-member
         .unregister)
 
     suite_test.when_run.raise_exception()
@@ -100,7 +100,7 @@ def test_hook__error_added_during_test(suite, request, checkpoint, suite_test):
 def test_hook__error_added_after_test(suite, request, checkpoint, suite_test):
 
     request.addfinalizer(
-        hooks.error_added.register(checkpoint)
+        hooks.error_added.register(checkpoint)  # pylint: disable=no-member
         .unregister)
 
     summary = suite.run()
@@ -117,7 +117,7 @@ def test_hook__error_added_after_test(suite, request, checkpoint, suite_test):
 
 def test_hook__test_interrupt(suite, request, checkpoint):
     request.addfinalizer(
-        hooks.test_interrupt.register(checkpoint)
+        hooks.test_interrupt.register(checkpoint)  # pylint: disable=no-member
         .unregister)
 
     test_index = int(len(suite) / 2)
@@ -132,7 +132,7 @@ def test_hook__test_interrupt(suite, request, checkpoint):
 
 def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_test):
     request.addfinalizer(
-        hooks.test_failure.register(checkpoint)
+        hooks.test_failure.register(checkpoint)  # pylint: disable=no-member
         .unregister)
 
     suite_test.append_line('slash.add_failure("failure")')
@@ -173,7 +173,7 @@ def test_debugger_called_on_hooks(hook_exception, request, forge, config_overrid
     assert checkpoint.called == debug_enabled
     if debug_enabled:
         assert checkpoint.args[0][0] is exception_type
-        assert type(checkpoint.args[0][1]) is exception_type
+        assert type(checkpoint.args[0][1]) is exception_type  # pylint: disable=unidiomatic-typecheck
 
 
 def test_before_cleanup_hook(request, forge):
@@ -230,6 +230,7 @@ class HookCallingTest(TestCase):
         self.addCleanup(plugins.manager.uninstall, self.plugin2)
 
     def test_hook_calling_order(self):
+        # pylint: disable=no-member
         # expect:
         with self.forge.any_order():
             self.plugin1.activate()

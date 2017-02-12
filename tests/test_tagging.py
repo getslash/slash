@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import itertools
 
 import pytest
@@ -38,6 +39,7 @@ def test_tags_addition_regular():
     assert tags3 is not tags1
     assert tags3 is not tags2
 
+    # pylint: disable=protected-access
     assert tags1._tags == {'a': 'b'}
     assert tags2._tags == {'c': 'd'}
     assert tags3._tags == {'a': 'b', 'c': 'd'}
@@ -47,7 +49,7 @@ def test_setting_getting_tags_on_metadata(taggable):
 
     slash.tag('tagname')(taggable)
 
-    with slash.Session() as s:
+    with slash.Session() as s:  # pylint: disable=unused-variable
         tests = Loader().get_runnables(taggable)
     assert tests
     for t in tests:
@@ -122,7 +124,7 @@ def taggable(request):
     if request.param == 'class':
         class TaggableTest(slash.Test):
 
-            def test_1():
+            def test_1():  # pylint: disable=no-method-argument
                 pass
         return TaggableTest
     elif request.param == 'function':

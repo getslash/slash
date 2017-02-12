@@ -10,7 +10,7 @@ _HERE = os.path.abspath(os.path.dirname(__file__))
 _DOCS_ROOT = os.path.abspath(os.path.join(_HERE, "..", "doc"))
 
 
-def test_sphinx_doctest(doctest_path):
+def test_sphinx_doctest(doctest_path):  # pylint: disable=redefined-outer-name
     globs = {'print_function': print_function, 'slash': slash}
     result = doctest.testfile(doctest_path, module_relative=False, globs=globs)
     assert not result.failed

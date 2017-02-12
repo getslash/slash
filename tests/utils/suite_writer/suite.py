@@ -8,7 +8,6 @@ import gossip
 
 from slash._compat import StringIO
 from slash.conf import config
-from slash.exceptions import TerminatedException
 from slash.frontend.slash_run import slash_run
 
 from ..code_formatter import CodeFormatter
@@ -38,7 +37,7 @@ class Suite(object):
             test.expect_deselect()
 
     def populate(self, num_tests=10):
-        for i in range(num_tests):
+        for _ in range(num_tests):
             self.add_test()
 
     def clear(self):
@@ -79,7 +78,7 @@ class Suite(object):
             self._slashrc = File(self, relpath='.slashrc')
         return self._slashrc
 
-    def add_test(self, type=None, file=None):
+    def add_test(self, type=None, file=None):  # pylint: disable=unused-argument
         if type is None:
             type = self.strategy.get_test_type()
         if type == 'function':
@@ -204,7 +203,7 @@ class Suite(object):
             files = itertools.chain(files, [self._slashrc])
 
 
-        # TODO: clean up paths
+        # TODO: clean up paths  # pylint: disable=fixme
         for file in files:
             with open(os.path.join(path, file.get_relative_path()), 'w') as f:
                 formatter = CodeFormatter(f)

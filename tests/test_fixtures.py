@@ -2,7 +2,6 @@ import pytest
 import operator
 
 from slash._compat import reduce
-from slash.exceptions import InvalidFixtureName
 
 
 def test_fixtures(suite, suite_test, defined_fixture):

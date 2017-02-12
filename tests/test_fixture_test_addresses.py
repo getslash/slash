@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import itertools
 
 import pytest
@@ -21,11 +22,12 @@ def test_fixtures_representation_strings(results, a_values, fixture_values, file
 def test_fixtures_avoid_non_printable_reprs_strs(non_printable):
     with slash.Session():
 
+        # pylint: disable=unused-argument
         @slash.parametrize('param', [non_printable])
         def test_something(param):
             pass
 
-        [loaded_test] = make_runnable_tests([test_something])
+        [loaded_test] = make_runnable_tests([test_something])  # pylint: disable=unbalanced-tuple-unpacking
 
     assert '/' not in loaded_test.__slash__.address_in_file
     assert repr(non_printable) not in loaded_test.__slash__.address_in_file

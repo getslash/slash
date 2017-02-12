@@ -3,8 +3,6 @@ import pytest
 import slash
 import slash.core.requirements
 
-from slash.loader import Loader
-
 from .utils import make_runnable_tests
 
 
@@ -73,9 +71,9 @@ def test_requirements_on_class():
             pass
 
     with slash.Session():
-        [test] = make_runnable_tests(Test)
+        [test] = make_runnable_tests(Test)  # pylint: disable=unbalanced-tuple-unpacking
 
-    assert [r._req for r in test.get_requirements()] == [req1, req2]
+    assert [r._req for r in test.get_requirements()] == [req1, req2]  # pylint: disable=protected-access
 
 
 def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
@@ -85,7 +83,7 @@ def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
 
 
     @gossip.register('slash.test_avoided')
-    def test_avoided(reason):
+    def test_avoided(reason):  # pylint: disable=unused-variable
         slash.context.result.data['avoided'] = {'reason': reason,
                                                 'test_name': slash.context.test.__slash__.address}
 

@@ -1,4 +1,4 @@
-import py.code
+import py.code  # pylint: disable=no-name-in-module, import-error
 
 from slash._compat import StringIO
 from .element import Element
@@ -33,17 +33,17 @@ class CodeElement(Element):
             for i in range(20):
                 some_other_code()
         """
-        source_lines = str(py.code.Code(code_element).source()).splitlines()
+        source_lines = str(py.code.Code(code_element).source()).splitlines()  # pylint: disable=no-member
         assert source_lines[0].startswith('@')
         assert source_lines[1].startswith('def ')
         assert source_lines[2][0].isspace()
-        for line in str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines():
+        for line in str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines():  # pylint: disable=no-member
             self._body.append(line)
 
     include = append_body
 
-    @contextmanager
-    def _body_context(self, code_formatter):
+    @contextmanager  # pylint: disable=unused-argument
+    def _body_context(self, code_formatter):  # pylint: disable=unused-argument
         yield
 
     def _write_body(self, code_formatter):

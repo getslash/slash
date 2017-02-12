@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from __future__ import print_function
 
 import os
@@ -5,7 +6,7 @@ import shutil
 from tempfile import mkdtemp
 
 import pytest
-from slash.utils import suite_files, pattern_matching
+from slash.utils import suite_files
 
 
 def test_iter_suite_paths_files_abspaths(filename, paths):
@@ -26,7 +27,7 @@ def test_iter_suite_paths_files_relpath(filename, paths):
     assert [p for p, _ in suite_files.iter_suite_file_paths([filename])] == [os.path.abspath(p) for p in paths]
 
 
-def test_suite_files(suite, suite_test, suite_file):
+def test_suite_files(suite, suite_test, suite_file):  # pylint: disable=unused-argument
     suite.run(args=[])
 
 
@@ -38,7 +39,7 @@ def test_suite_file_with_filter(suite, suite_test, suite_file):
 
 
 def test_parse_filter_string():
-    path, filter = suite_files._parse_path_and_filter('some_path.py # filter: bla')
+    path, filter = suite_files._parse_path_and_filter('some_path.py # filter: bla')  # pylint: disable=protected-access
     assert path == 'some_path.py'
     assert filter is not None
     assert filter.matches('bla')
@@ -51,7 +52,7 @@ def test_parse_filter_string():
     'some_path.py#',
 ])
 def test_parse_filter_string_no_filter(string):
-    path, filter = suite_files._parse_path_and_filter(string)
+    path, filter = suite_files._parse_path_and_filter(string)  # pylint: disable=protected-access
     assert path == 'some_path.py'
     assert filter is None
 
@@ -123,7 +124,7 @@ def paths(request, tmpdir, use_relpath_for_dir):
         dirname = mkdtemp()
 
         @request.addfinalizer
-        def cleanup():
+        def cleanup():  # pylint: disable=unused-variable
             shutil.rmtree(dirname)
     returned.append(dirname)
 

@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import os
 
 from slash import plugins
@@ -5,8 +6,7 @@ from slash import plugins
 import pytest
 
 
-
-def test_plugin_discovery(no_plugins, root_path, expected_names, config_override):
+def test_plugin_discovery(no_plugins, root_path, expected_names, config_override):  # pylint: disable=unused-argument
     config_override("plugins.search_paths", [root_path])
     plugins.manager.discover()
     assert set(plugins.manager.get_installed_plugins().keys()) == expected_names

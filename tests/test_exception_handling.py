@@ -110,7 +110,7 @@ def test_handling_exceptions():
 def test_reraise_after_exc_info_reset():
     @gossip.register('slash.exception_caught_before_debugger')
     def exception_hook():       # pylint: disable=unused-variable
-        sys.exc_clear()
+        sys.exc_clear()  # pylint: disable=no-member
 
     with slash.Session(), pytest.raises(CustomException):
         with exception_handling.handling_exceptions():
@@ -125,7 +125,7 @@ class DebuggingTest(TestCase):
         self.forge.replace_with(debug, "launch_debugger", self.dummy_debugger)
         self.debugger_called = False
 
-    def dummy_debugger(self, *args, **kwargs):
+    def dummy_debugger(self, *args, **kwargs):  # pylint: disable=unused-argument
         self.debugger_called = True
 
     def test_debugging_not_configured(self):

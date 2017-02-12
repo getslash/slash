@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import functools
 import itertools
 import random
@@ -30,16 +31,16 @@ def test_safe_repr_fixtures(fixture_store):
     @fixture_store.add_fixture
     @slash.fixture
     @slash.parametrize('value', first_param_values)
-    def first_fixture(value):
+    def first_fixture(value):  # pylint: disable=unused-variable
         return value
 
     @fixture_store.add_fixture
     @slash.fixture
     @slash.parametrize('value', second_param_values)
-    def second_fixture(value):
+    def second_fixture(value):  # pylint: disable=unused-variable
         return value
 
-    def test_func(first_fixture, second_fixture):
+    def test_func(first_fixture, second_fixture):  # pylint: disable=unused-argument
         pass
 
     fixture_store.resolve()
@@ -61,7 +62,7 @@ def parametrized_func(params, param_names):
     with formatter.indented():
         formatter.writeln('pass')
     globs = {}
-    exec(buff.getvalue(), globs)
+    exec(buff.getvalue(), globs)  # pylint: disable=exec-used
     returned = globs['f']
     for param_name in param_names:
         returned = slash.parametrize(

@@ -1,4 +1,4 @@
-#pylint: disable=unused-variable, unused-argument
+# pylint: disable=unused-variable, unused-argument
 import slash
 
 from .utils import resolve_and_run

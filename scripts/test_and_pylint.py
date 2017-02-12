@@ -23,5 +23,6 @@ if __name__ == '__main__':
         if _SUPPORTS_PYLINT:
             _cmd("pylint --rcfile=.pylintrc setup.py")
             _cmd("pylint --rcfile=.pylintrc slash")
+            _cmd("pylint --rcfile=.pylintrc tests")
     except subprocess.CalledProcessError as e:
         sys.exit(e.returncode)

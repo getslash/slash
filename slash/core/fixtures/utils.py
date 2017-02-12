@@ -26,7 +26,8 @@ def fixture(func=None, name=None, scope=None, autouse=False):
     return _ensure_fixture_info(func=func, name=name, scope=scope, autouse=autouse)
 
 nofixtures = function_marker('__slash_nofixtures__')
-nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fixture deduction. Slash will not attempt to parse needed fixtures from its argument list'
+nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fixture deduction. ' + \
+                     'Slash will not attempt to parse needed fixtures from its argument list'
 
 
 class FixtureInfo(object):

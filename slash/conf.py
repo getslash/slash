@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 import logbook
 from confetti import Config
 from .utils.conf_utils import Doc, Cmdline

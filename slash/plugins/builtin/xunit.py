@@ -59,7 +59,9 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype, error):
         exc_type, exc_value, _ = exc_info = sys.exc_info()
-        self._add_element(errortype, {'type': exc_type.__name__ if exc_type else errortype, 'message': error.message}, text=get_traceback_string(exc_info) if exc_value is not None else None)
+        self._add_element(errortype,
+                          {'type': exc_type.__name__ if exc_type else errortype, 'message': error.message},
+                          text=get_traceback_string(exc_info) if exc_value is not None else None)
 
     def _add_element(self, tag, attrib, text=None):
         if not context.test:

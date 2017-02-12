@@ -17,7 +17,8 @@ def _decrease(value):
     return value - 1
 
 class _Cmdline(object):
-    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False, append=None, increase_doc=None, decrease_doc=None):
+    def __init__(self, arg=None, on=None, off=None, increase=None, decrease=None, metavar="PARAM", required=False, append=None,
+                 increase_doc=None, decrease_doc=None):
         super(_Cmdline, self).__init__()
         dest = next(_dest_generator)
         self.callback_dest = dest + ":callbacks"

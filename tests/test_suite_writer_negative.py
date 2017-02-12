@@ -4,6 +4,8 @@ from contextlib import contextmanager
 
 import pytest
 
+# pylint: disable=redefined-outer-name
+
 
 def test_expect_failure_not_met(suite, test):
     test.expect_failure()
@@ -30,6 +32,6 @@ def test(suite):
 @pytest.fixture
 def suite():
     s = Suite()
-    for i in range(10):
+    for _ in range(10):
         s.add_test()
     return s

@@ -1,7 +1,7 @@
 import pytest
 import slash
 
-from .utils import TestCase, run_tests_in_session
+from .utils import run_tests_in_session
 
 
 @pytest.mark.parametrize("args", [(), ("message",)])

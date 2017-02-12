@@ -127,12 +127,12 @@ def test_result_test_garbage_collected(gc_marker):
         def test_something(self):
             pass
 
-    with slash.Session() as s:
+    with slash.Session() as s:  # pylint: disable=unused-variable
         loader = slash.loader.Loader()
         tests = loader.get_runnables(SomeTest)
         # we use list(genexp) to prevent 't' from leaking
         marks = list(gc_marker.mark(t) for t in tests)
-        session = run_tests_assert_success(
+        session = run_tests_assert_success(  # pylint: disable=unused-variable
             tests + loader.get_runnables(OtherTest))
         del tests
     gc.collect()
@@ -202,12 +202,12 @@ class SessionResultTest(TestCase):
             result.mark_finished()
         self.result = SessionResults(Session())
         for index, r in enumerate(self.results):
-            self.result._results_dict[index] = r
+            self.result._results_dict[index] = r  # pylint: disable=protected-access
 
     def test_counts(self):
-        self.assertEquals(self.result.get_num_results(), len(self.results))
-        self.assertEquals(self.result.get_num_successful(), 2)
+        self.assertEqual(self.result.get_num_results(), len(self.results))
+        self.assertEqual(self.result.get_num_successful(), 2)
         # errors take precedence over failures
-        self.assertEquals(self.result.get_num_errors(), 3)
-        self.assertEquals(self.result.get_num_skipped(), 2)
-        self.assertEquals(self.result.get_num_failures(), 1)
+        self.assertEqual(self.result.get_num_errors(), 3)
+        self.assertEqual(self.result.get_num_skipped(), 2)
+        self.assertEqual(self.result.get_num_failures(), 1)
