@@ -35,6 +35,16 @@ def test_slash_list_without_any_tests(allow_empty):
     assert rc == expected_rc
 
 
+def test_slash_list_tests_without_tags(suite):
+    suite.debug_info = False
+    path = suite.commit()
+    report_stream = StringIO()
+    args = [path, '--show-tags', '--no-output']
+    slash_list(args, report_stream)
+    output = report_stream.getvalue()
+    assert not output
+
+
 @pytest.mark.parametrize('should_show_tags', [True, False])
 def test_slash_list_tests_with_or_without_tags(suite, should_show_tags, suite_test):
     suite_test.add_decorator('slash.tag("bla")')
@@ -65,6 +75,7 @@ def test_slash_list_tests_relative_or_not(suite, relative):
     assert output_lines
     for filename in output_lines:
         assert os.path.isabs(filename) == (not relative)
+
 
 def _strip(line):
     return re.sub(r'\x1b\[.+?m', '', line).strip()
