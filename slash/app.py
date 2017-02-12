@@ -34,8 +34,12 @@ class Application(object):
         self._interactive_enabled = False
         self.test_loader = Loader()
         self.session = None
+        self._working_directory = None
         self._interrupted = False
         self._exit_code = 0
+
+    def set_working_directory(self, path):
+        self._working_directory = path
 
     @property
     def exit_code(self):
@@ -75,6 +79,7 @@ class Application(object):
     def set_report_stream(self, stream):
         if stream is not None:
             self._report_stream = stream
+            self._reporter = ConsoleReporter(level=logbook.ERROR, stream=stream)
             self._console_handler = ConsoleHandler(stream=stream, level=logbook.ERROR)
 
     def __enter__(self):
@@ -83,7 +88,7 @@ class Application(object):
         try:
             self._exit_stack.enter_context(self._prelude_logging_context())
             self._exit_stack.enter_context(self._sigterm_context())
-            site.load()
+            site.load(working_directory=self._working_directory)
 
             cli_utils.configure_arg_parser_by_plugins(self.arg_parser)
             cli_utils.configure_arg_parser_by_config(self.arg_parser)
@@ -95,10 +100,9 @@ class Application(object):
                 cli_utils.get_modified_configuration_from_args_context(self.arg_parser, self._parsed_args)
                 )
 
-            self.session = Session(
-                reporter=ConsoleReporter(level=config.root.log.console_level,
-                                         stream=self._report_stream),
-                console_stream=self._report_stream)
+            self._reporter = ConsoleReporter(level=config.root.log.console_level,
+                                             stream=self._report_stream)
+            self.session = Session(reporter=self._reporter, console_stream=self._report_stream)
 
             trigger_hook.configure() # pylint: disable=no-member
             plugins.manager.activate_pending_plugins()
@@ -121,11 +125,11 @@ class Application(object):
             self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else -1
 
         if isinstance(exc_value, SlashException):
-            self.session.reporter.report_error_message(str(exc_value))
+            self._reporter.report_error_message(str(exc_value))
 
         elif isinstance(exc_value, Exception):
             _logger.error('Unexpected error occurred', exc_info=exc_info)
-            self.session.reporter.report_error_message('Unexpected error: {}'.format(exc_value))
+            self._reporter.report_error_message('Unexpected error: {}'.format(exc_value))
 
         if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
             self._interrupted = True
@@ -143,7 +147,9 @@ class Application(object):
 
     def _emit_prelude_logs(self):
         self._prelude_log_handler.disable()
-        handler = self.session.logging.session_log_handler
+        handler = None
+        if self.session is not None:
+            handler = self.session.logging.session_log_handler
         if handler is None:
             handler = self._console_handler
         self._prelude_log_handler.flush_to_handler(handler)

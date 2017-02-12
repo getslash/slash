@@ -16,6 +16,17 @@ def test_errors_during_initialization_hoook(suite, init_hook):
     assert exit_code != 0
 
 
+def test_slashrc_errors(suite):
+    @suite.slashrc.include
+    def __code__():
+        1 / 0
+
+    exit_code, output = _console_run(suite)
+    assert exit_code != 0
+    assert 'unexpected error' in output.lower()
+    assert 'division by zero' in output.lower()
+
+
 @pytest.fixture(params=[
     slash.hooks.session_start,
     slash.hooks.configure,
@@ -28,5 +39,5 @@ def _console_run(suite):
     suite.disable_debug_info()
     path = suite.commit()
     stream = cStringIO()
-    exit_code = slash_run([path], report_stream=stream)
+    exit_code = slash_run([path], report_stream=stream, working_directory=path)
     return exit_code, stream.getvalue()

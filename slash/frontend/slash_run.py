@@ -17,11 +17,13 @@ from ..utils.suite_files import iter_suite_file_paths
 
 _logger = logbook.Logger(__name__)
 
-def slash_run(args, report_stream=None, resume=False, app_callback=None):
+def slash_run(args, report_stream=None, resume=False, app_callback=None, working_directory=None):
     if report_stream is None:
         report_stream = sys.stderr
     app = Application()
     app.arg_parser.set_positional_metavar('TEST')
+    if working_directory is not None:
+        app.set_working_directory(working_directory)
     app.set_argv(args)
     app.set_report_stream(report_stream)
     app.enable_interactive()
