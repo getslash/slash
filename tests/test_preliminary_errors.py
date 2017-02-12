@@ -23,8 +23,10 @@ def test_slashrc_errors(suite):
 
     exit_code, output = _console_run(suite)
     assert exit_code != 0
-    assert 'unexpected error' in output.lower()
-    assert 'division by zero' in output.lower()
+    output = output.lower()
+    assert 'unexpected error' in output
+    assert 'division' in output
+    assert 'zero' in output
 
 
 @pytest.fixture(params=[

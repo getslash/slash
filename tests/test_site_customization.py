@@ -19,7 +19,7 @@ class SlashRunSiteCustomizationTest(TestCase):
         self.forge.replace_with(sys, "stderr", cStringIO())
 
     def test_slash_run_calls_site_load(self):
-        slash.site.load()
+        slash.site.load(working_directory=None)
         self.forge.replay()
         app = slash_run.slash_run([])
         assert app.exit_code != 0
