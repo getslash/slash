@@ -6,6 +6,7 @@ from functools import partial
 
 import colorama
 import slash
+import slash.site
 from slash.utils.cli_utils import make_styler
 
 _config_name_style = make_styler(colorama.Fore.WHITE + colorama.Style.BRIGHT) # pylint: disable=no-member
@@ -30,3 +31,4 @@ def list_config(args, report_stream=sys.stdout):
             _print(_INDENT, 'default:', _default_style(value.get_value()))
             if value.metadata and 'doc' in value.metadata:
                 _print(_INDENT, value.metadata['doc'])
+    return 0
