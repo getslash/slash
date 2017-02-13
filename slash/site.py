@@ -5,7 +5,7 @@ import requests
 
 from .conf import config
 
-def load(thing=None):
+def load(thing=None, working_directory=None):
     """
     Loads site files (customization files) from various locations.
 
@@ -14,20 +14,23 @@ def load(thing=None):
     With a specific argument, load that argument as a customization file (real file or URL).
     """
     if thing is None:
-        return _load_defaults()
+        return _load_defaults(working_directory=working_directory)
     _load_filename_or_url(thing)
 
-def _load_defaults():
+def _load_defaults(working_directory=None):
     _load_slashrc()
-    _load_local_slashrc()
+    _load_local_slashrc(working_directory=working_directory)
     _load_environment()
     _load_entry_points()
 
 def _load_slashrc():
     _load_file_if_exists(os.path.expanduser(config.root.run.user_customization_file_path))
 
-def _load_local_slashrc():
-    _load_file_if_exists(os.path.abspath(os.path.expanduser(config.root.run.project_customization_file_path)))
+def _load_local_slashrc(working_directory=None):
+    path = os.path.expanduser(config.root.run.project_customization_file_path)
+    if not os.path.isabs(path) and working_directory is not None:
+        path = os.path.join(working_directory, path)
+    _load_file_if_exists(os.path.abspath(path))
 
 def _load_file_if_exists(path):
     if os.path.isfile(path):

@@ -93,9 +93,12 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         return line
 
     def emit(self, record):
-        context.session.reporter.notify_before_console_output()
+        reporter = None if context.session is None else context.session.reporter
+        if reporter is not None:
+            reporter.notify_before_console_output()
         returned = super(ConsoleHandler, self).emit(record)
-        context.session.reporter.notify_after_console_output()
+        if reporter is not None:
+            reporter.notify_after_console_output()
         return returned
 
 class SessionLogging(object):
@@ -301,7 +304,8 @@ class RetainedLogHandler(logbook.TestHandler):
 
     def flush_to_handler(self, handler):
         for r in self.records:
-            handler.emit(r)
+            if handler.should_handle(r):
+                handler.emit(r)
         del self.records[:]
 
     def disable(self):

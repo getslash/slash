@@ -9,23 +9,28 @@ from slash.frontend import slash_run
 import requests
 import pkg_resources
 
+
 class SlashRunSiteCustomizationTest(TestCase):
     "Make sure ``slash run`` calls site.load()"
+
     def setUp(self):
         super(SlashRunSiteCustomizationTest, self).setUp()
         self.forge.replace(slash.site, "load")
         self.forge.replace_with(sys, "stderr", cStringIO())
+
     def test_slash_run_calls_site_load(self):
-        slash.site.load()
+        slash.site.load(working_directory=None)
         self.forge.replay()
-        with self.assertRaises(SystemExit):
-            slash_run.slash_run([])
+        app = slash_run.slash_run([])
+        assert app.exit_code != 0
 
 _customization_index = 0
 _loaded_customizations = []
 
+
 def _apply_customization(index=0):
     _loaded_customizations.append(index)
+
 
 class CustomizationTest(TestCase):
 
@@ -84,7 +89,7 @@ class CustomizationTest(TestCase):
         self.forge.replace(pkg_resources, "iter_entry_points")
         entry_point = self.forge.create_wildcard_mock()
         pkg_resources.iter_entry_points("slash.site.customize").and_return(iter([entry_point]))
-        unused = self.get_customization_source() # expect a single customization
+        unused = self.get_customization_source()  # expect a single customization
         entry_point.load().and_return(_apply_customization)
         self.forge.replay()
         self.assert_customization_loaded()

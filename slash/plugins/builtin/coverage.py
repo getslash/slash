@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from slash import config as slash_config
 
-from ...utils.conf_utils import Cmdline
+from ...utils.conf_utils import Cmdline, Doc
 from ..interface import PluginInterface
 
 _DATA_FILENAME = '.coverage'
@@ -18,11 +18,11 @@ class Plugin(PluginInterface):
 
     def get_config(self):
         return {
-            'config_filename': False // Cmdline(arg='--cov-config'),
-            'report_type': 'html' // Cmdline(arg='--cov-report'),
+            'config_filename': False // Cmdline(arg='--cov-config') // Doc('Coverage configuration file'),
+            'report_type': 'html' // Cmdline(arg='--cov-report') // Doc('Coverage report format'),
             'report': True,
-            'append': False // Cmdline(on='--cov-append'),
-            'sources': [] // Cmdline(append='--cov'),
+            'append': False // Cmdline(on='--cov-append') // Doc('Append coverage data to existing file'),
+            'sources': [] // Cmdline(append='--cov') // Doc('Modules or packages for which to track coverage'),
         }
 
     def activate(self):

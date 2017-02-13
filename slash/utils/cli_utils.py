@@ -6,52 +6,14 @@ from contextlib import contextmanager
 
 import colorama
 
-from .. import conf, plugins, hooks
-from .._compat import cStringIO, iteritems, itervalues
-from ..plugins import UnknownPlugin
+from .. import conf, plugins
+from .._compat import iteritems, itervalues
 
-
-@contextmanager
-def get_cli_environment_context(argv=None, config=conf.config, extra_args=(), positionals_metavar=None):
-    if argv is None:
-        argv = sys.argv[1:]
-    parser = SlashArgumentParser(prog=_deduce_program_name(), positionals_metavar=positionals_metavar)
-    if extra_args:
-        _populate_extra_args(parser, extra_args)
-    _configure_parser_by_plugins(parser)
-    _configure_parser_by_config(parser, config)
-
-    try:
-        argv = _add_pending_plugins_from_commandline(argv)
-    except UnknownPlugin as e:
-        parser.error(str(e))
-
-    if positionals_metavar is not None:
-        parsed_args, positionals = parser.parse_known_args(argv)
-    else:
-        parsed_args = parser.parse_args(argv)
-        positionals = []
-
-    with _get_modified_configuration_from_args_context(parser, config, parsed_args):
-        hooks.configure() # pylint: disable=no-member
-        plugins.manager.activate_pending_plugins()
-        parsed_args.positionals = positionals
-        _configure_plugins_from_args(parsed_args)
-        yield parser, parsed_args
-
-def _deduce_program_name():
-    returned = os.path.basename(sys.argv[0])
-    if len(sys.argv) > 1:
-        returned += " {0}".format(sys.argv[1])
-    return returned
-
-def _populate_extra_args(parser, extra_args):
-    for argument in extra_args:
-        parser.add_argument(*argument.args, **argument.kwargs)
 
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
 _PLUGIN_DEACTIVATION_PREFIX = "--without-"
-def _add_pending_plugins_from_commandline(argv):
+
+def add_pending_plugins_from_commandline(argv):
     returned_argv = []
     for arg in argv:
         if arg.startswith(_PLUGIN_DEACTIVATION_PREFIX):
@@ -64,23 +26,36 @@ def _add_pending_plugins_from_commandline(argv):
             returned_argv.append(arg)
     return returned_argv
 
-def _configure_parser_by_plugins(parser):
+def configure_arg_parser_by_plugins(parser):
     for plugin in itervalues(plugins.manager.get_installed_plugins()):
         group = parser.add_argument_group('Options for --with-{0}'.format(plugin.get_name()))
         plugin.configure_argument_parser(group)
 
-def _configure_plugins_from_args(args):
-    for plugin in itervalues(plugins.manager.get_active_plugins()):
-        plugin.configure_from_parsed_args(args)
+def configure_arg_parser_by_config(parser, config=None):
+    if config is None:
+        config = conf.config
 
-def _configure_parser_by_config(parser, config):
+    plugin_groups = {}
+
     parser.add_argument(
         "-o", dest="config_overrides", metavar="PATH=VALUE", action="append",
         default=[],
         help="Provide overrides for configuration"
     )
     for path, node, cmdline in _iter_cmdline_config(config):
-        cmdline.configure_parser(parser, path, node)
+        if path.startswith('plugin_config.'):
+            plugin_name = path.split('.')[1]
+            subparser = plugin_groups.get(plugin_name)
+            if subparser is None:
+                subparser = plugin_groups[plugin_name] = parser.add_argument_group(
+                    'options for the {0} plugin (--with-{0})'.format(plugin_name))
+        else:
+            subparser = parser
+        cmdline.configure_parser(subparser, path, node)
+
+def configure_plugins_from_args(args):
+    for plugin in itervalues(plugins.manager.get_active_plugins()):
+        plugin.configure_from_parsed_args(args)
 
 def _iter_cmdline_config(config):
     for path, cfg in config.traverse_leaves():
@@ -90,7 +65,9 @@ def _iter_cmdline_config(config):
         yield path, cfg, cmdline
 
 @contextmanager
-def _get_modified_configuration_from_args_context(parser, config, args):
+def get_modified_configuration_from_args_context(parser, args, config=None):
+    if config is None:
+        config = conf.config
     to_restore = []
     try:
         for path, cfg, cmdline in _iter_cmdline_config(config):
@@ -116,32 +93,22 @@ def _get_modified_configuration_from_args_context(parser, config, args):
 class SlashArgumentParser(argparse.ArgumentParser):
 
     def __init__(self, *args, **kwargs):
-        positionals_metavar = kwargs.pop("positionals_metavar", None)
-        super(SlashArgumentParser, self).__init__(*args, **kwargs)
-        self._positionals_metavar = positionals_metavar
+        super(SlashArgumentParser, self).__init__(
+            prog=self._deduce_program_name(),
+            usage='{} [options]'.format(self._deduce_program_name()),
+            *args, **kwargs)
 
+        self._positionals_metavar = None
 
-    def format_help(self):
-        returned = cStringIO()
-        helpstring = super(SlashArgumentParser, self).format_help()
-        helpstring = self._tweak_usage_positional_metavars(helpstring)
-        returned.write(helpstring)
-        return returned.getvalue()
-
-    def _tweak_usage_positional_metavars(self, usage):
-        """
-        Adds fake positionals metavar at the end of the usage line
-        """
-        if self._positionals_metavar is None:
-            return usage
-
-        returned = ""
-        added_metavars = False
-        for line in cStringIO(usage):
-            if not added_metavars and not line.strip():
-                returned = returned[:-1] + " [{0} [{0} ...]] \n".format(self._positionals_metavar)
-            returned += line
+    def _deduce_program_name(self):
+        returned = os.path.basename(sys.argv[0])
+        if len(sys.argv) > 1:
+            returned += " {0}".format(sys.argv[1])
         return returned
+
+    def set_positional_metavar(self, metavar):
+        self._positionals_metavar = metavar
+        self.usage += ' {0} [{0} [...]]'.format(metavar)
 
     def _iter_available_plugins(self):
         active_plugin_names = set(plugins.manager.get_active_plugins())

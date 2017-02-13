@@ -12,21 +12,13 @@ from slash.frontend.main import main_entry_point
 from .utils import no_op, NullFile, TestCase
 
 
-class SlashRunTestBase(TestCase):
-
-    def setUp(self):
-        super(SlashRunTestBase, self).setUp()
-        self.override_config("run.session_state_path",
-                             os.path.join(self.get_new_path(), "session_data"))
+def test_slash_run_fails_fast_for_missing_files():
+    result = slash_run.slash_run(
+        ["/non/existing/path"], report_stream=NullFile())
+    assert result != 0, "slash run unexpectedly succeeded for a missing path"
 
 
-class MissingFilesTest(SlashRunTestBase):
-
-    def test_slash_run_fails_fast_for_missing_files(self):
-        result = slash_run.slash_run(
-            ["/non/existing/path"], report_stream=NullFile())
-        self.assertNotEquals(
-            result, 0, "slash run unexpectedly succeeded for a missing path")
+################################################################################
 
 
 class ArgumentParsingTest(TestCase):
@@ -44,7 +36,7 @@ class ArgumentParsingTest(TestCase):
 
     def _collect_tests_stub(self, app, args):
         self.assertTrue(config.root.debug.enabled)
-        self.assertEquals(app.args.positionals, ["test1.py", "test2.py"])
+        self.assertEquals(app.positional_args, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully
         self.callback_success = True
         return []
@@ -53,6 +45,7 @@ class ArgumentParsingTest(TestCase):
 
         self.forge.replace_with(
             slash_run, "_collect_tests", self._collect_tests_stub)
+
         self.forge.replace_with(
             sys, "argv", "/path/to/slash run -vv test1.py -x test2.py --pdb".split())
         with self.assertRaises(SystemExit) as caught:
@@ -174,3 +167,9 @@ def suite_path(suite):
     returned = suite.commit()
     assert os.path.isdir(returned)
     return returned
+
+@pytest.fixture(autouse=True)
+def session_state_path(config_override, tmpdir):
+    path = tmpdir.join('session_state_dir').join('session_data')
+    config_override("run.session_state_path", str(path))
+    return path

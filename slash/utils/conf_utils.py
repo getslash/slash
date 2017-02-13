@@ -37,7 +37,7 @@ class _Cmdline(object):
         """
         Add all required flags to a parser to support updating the config value from commandline
         """
-        description = node.metadata.get('doc', path)
+        description = node.metadata.get('doc', '(Config: {})'.format(path))
         if self.arg is not None:
             parser.add_argument(self.arg,
                                 dest=self.arg_dest,
