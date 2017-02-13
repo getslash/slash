@@ -31,6 +31,7 @@ class Application(object):
         self._reset_parser()
         self._positional_args = None
         self._parsed_args = None
+        self._reporter = None
         self._interactive_enabled = False
         self.test_loader = Loader()
         self.session = None
@@ -79,8 +80,20 @@ class Application(object):
     def set_report_stream(self, stream):
         if stream is not None:
             self._report_stream = stream
-            self._reporter = ConsoleReporter(level=logbook.ERROR, stream=stream)
+            self._default_reporter = ConsoleReporter(level=logbook.ERROR, stream=stream)
             self._console_handler = ConsoleHandler(stream=stream, level=logbook.ERROR)
+
+    def set_reporter(self, reporter):
+        self._reporter = reporter
+
+    def get_reporter(self):
+        returned = self._reporter
+        if returned is None:
+            returned = ConsoleReporter(
+                level=config.root.log.console_level,
+                stream=self._report_stream)
+
+        return returned
 
     def __enter__(self):
         self._exit_stack = ExitStack()
@@ -100,9 +113,7 @@ class Application(object):
                 cli_utils.get_modified_configuration_from_args_context(self.arg_parser, self._parsed_args)
                 )
 
-            self._reporter = ConsoleReporter(level=config.root.log.console_level,
-                                             stream=self._report_stream)
-            self.session = Session(reporter=self._reporter, console_stream=self._report_stream)
+            self.session = Session(reporter=self.get_reporter(), console_stream=self._report_stream)
 
             trigger_hook.configure() # pylint: disable=no-member
             plugins.manager.activate_pending_plugins()
@@ -125,11 +136,11 @@ class Application(object):
             self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else -1
 
         if isinstance(exc_value, SlashException):
-            self._reporter.report_error_message(str(exc_value))
+            self.get_reporter().report_error_message(str(exc_value))
 
         elif isinstance(exc_value, Exception):
             _logger.error('Unexpected error occurred', exc_info=exc_info)
-            self._reporter.report_error_message('Unexpected error: {}'.format(exc_value))
+            self.get_reporter().report_error_message('Unexpected error: {}'.format(exc_value))
 
         if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
             self._interrupted = True
