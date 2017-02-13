@@ -9,11 +9,12 @@ python:
 # command to run tests, e.g. python setup.py test
 install: 
   - pip install virtualenv
+  - pip install codecov
 script: 
   - make env
   - .env/bin/python scripts/test_and_pylint.py
 after_success:
-  - .env/bin/coveralls
+  - codecov
 after_failure:
   - .env/bin/pip freeze
 deploy:
