@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 
 from .utils.suite_writer import Suite
@@ -41,6 +42,6 @@ def test_events_tuple():
 @pytest.fixture
 def suite():
     s = Suite()
-    for i in range(10):
+    for _ in range(10):
         s.add_test()
     return s

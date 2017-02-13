@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import collections
 import functools
 import itertools
@@ -6,7 +7,6 @@ import pytest
 import slash
 from slash._compat import iteritems
 from slash.core.scope_manager import ScopeManager
-from slash.loader import Loader
 from .utils import make_runnable_tests
 from .utils.suite_writer import Suite
 
@@ -19,10 +19,10 @@ def test_requirement_mismatch_end_of_module():
     num_files = 3
     num_tests_per_file = 5
 
-    for i in range(num_files):
+    for i in range(num_files):  # pylint: disable=unused-variable
         file1 = suite.add_file()
 
-        for i in range(num_tests_per_file):
+        for j in range(num_tests_per_file):  # pylint: disable=unused-variable
             file1.add_function_test()
 
         t = file1.add_function_test()
@@ -33,6 +33,7 @@ def test_requirement_mismatch_end_of_module():
 
 
 def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
+    # pylint: disable=protected-access
     last_scopes = None
     for module_index, tests in enumerate(tests_by_module):
         for test_index, test in enumerate(tests):
@@ -81,8 +82,8 @@ def tests_by_module():
         for module_index in range(num_modules):
             module_name = '__module_{0}'.format(module_index)
             returned.append([])
-            for test_index in range(num_tests_per_module):
-                [test] = make_runnable_tests(test_func)
+            for test_index in range(num_tests_per_module):  # pylint: disable=unused-variable
+                [test] = make_runnable_tests(test_func)  # pylint: disable=unbalanced-tuple-unpacking
                 assert test.__slash__.module_name
                 test.__slash__.module_name = module_name
                 returned[-1].append(test)

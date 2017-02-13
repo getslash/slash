@@ -1,5 +1,5 @@
+# pylint: disable=redefined-outer-name
 import pytest
-import slash
 from slash.core.cleanup_manager import CleanupManager
 
 from .conftest import Checkpoint

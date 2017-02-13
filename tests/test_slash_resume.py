@@ -1,5 +1,5 @@
+# pylint: disable=redefined-outer-name
 import os
-import time
 from tempfile import mkdtemp
 
 import pytest
@@ -23,14 +23,14 @@ def test_resume_no_session():
 
 def test_max_resumed_sessions(suite, patched_resume_dir):
     for i in range(1, _MAX_NUM_SAVED_SESSIONS + 2):
-        summary = suite.run()
+        summary = suite.run()  # pylint: disable=unused-variable
         assert len(os.listdir(patched_resume_dir)) == min(_MAX_NUM_SAVED_SESSIONS, i)
 
 
 def test_get_last_resumeable_session(suite):
     suite[len(suite) // 2].when_run.fail()
     prev_id = None
-    for i in range(5):
+    for i in range(5):  # pylint: disable=unused-variable
         results = suite.run()
         assert results.session.id != prev_id
         prev_id = results.session.id

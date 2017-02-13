@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import itertools
 
 import pytest
@@ -33,7 +34,7 @@ def test_iteration_unsupported_sizing():
     for i in iteration(x for x in itertools.count()):
         assert i.first
         with pytest.raises(NotImplementedError):
-            i.last
+            i.last  # pylint: disable=pointless-statement
         assert i.last_counter0 is None
         assert i.last_counter1 is None
         break
@@ -44,14 +45,14 @@ def test_peekable_iterator(objects):
     for i, x in enumerate(it):
         assert x is objects[i]
         # no matter how many times we peek, we get the same result
-        for peek_num in range(3):
+        for _ in range(3):
             if i == len(objects) - 1:
                 assert not it.has_next()
                 with pytest.raises(StopIteration):
                     it.peek()
                 assert it.peek_or_none() is None
             else:
-                assert (it.has_next())
+                assert it.has_next()
                 assert it.peek() is objects[(i + 1)]
                 assert it.peek_or_none() is objects[(i + 1)]
 
@@ -78,4 +79,4 @@ def use_iterator(request):
 def objects(use_iterator):
     if use_iterator:
         return range(10)
-    return [object() for i in range(10)]
+    return [object() for _ in range(10)]

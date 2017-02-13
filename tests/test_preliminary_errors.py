@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 
 import slash
@@ -8,7 +9,7 @@ from slash.frontend.slash_run import slash_run
 def test_errors_during_initialization_hoook(suite, init_hook):
 
     @init_hook.register
-    def callback():
+    def callback():  # pylint: disable=unused-variable
         raise slash.exceptions.SlashException('some error')
 
     exit_code, output = _console_run(suite)
@@ -18,8 +19,8 @@ def test_errors_during_initialization_hoook(suite, init_hook):
 
 def test_slashrc_errors(suite):
     @suite.slashrc.include
-    def __code__():
-        1 / 0
+    def __code__():  # pylint: disable=unused-variable
+        1 / 0  # pylint: disable=pointless-statement
 
     exit_code, output = _console_run(suite)
     assert exit_code != 0
@@ -30,8 +31,8 @@ def test_slashrc_errors(suite):
 
 
 @pytest.fixture(params=[
-    slash.hooks.session_start,
-    slash.hooks.configure,
+    slash.hooks.session_start,  # pylint: disable=no-member
+    slash.hooks.configure,  # pylint: disable=no-member
 ])
 def init_hook(request):
     return request.param

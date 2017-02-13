@@ -40,15 +40,15 @@ class ArgumentParsingTest(OutputCaptureTest):
 
     def test_config_arg_flag(self):
         with self._cli(["--arg-value=x"]):
-            self.assertEquals(self.config["arg_value"], "x")
+            self.assertEqual(self.config["arg_value"], "x")
 
     def test_config_increase(self):
         with self._cli(["--increase"]):
-            self.assertEquals(self.config["int_value"], 1)
+            self.assertEqual(self.config["int_value"], 1)
 
     def test_config_decrease(self):
         with self._cli(["--decrease"]):
-            self.assertEquals(self.config["int_value"], -1)
+            self.assertEqual(self.config["int_value"], -1)
 
     def test_config_off_flag(self):
         with self._cli(["--no-flag1"]):
@@ -62,21 +62,21 @@ class ArgumentParsingTest(OutputCaptureTest):
 
     def test_config_append_flag(self):
         with self._cli(["--append", "a", "--append=b"]):
-            self.assertEquals(self.config["list"], ["existing_item", "a", "b"])
+            self.assertEqual(self.config["list"], ["existing_item", "a", "b"])
 
     def test_config_assign_flag(self):
         with self._cli(["-o", "string_value=hello", "-o", "int_value=666"]):
-            self.assertEquals(self.config.root.string_value, "hello")
-            self.assertEquals(self.config.root.int_value, 666)
+            self.assertEqual(self.config.root.string_value, "hello")
+            self.assertEqual(self.config.root.int_value, 666)
 
     def test_config_assign_wrong_path_restores_config(self):
         "Given a bad override, the get_parsed_config_args_context() should leave the configuration untouched"
         with self.assertRaises(SystemExit) as caught:
             with self._cli(["-o", "string_value=bla", "-o", "int_value=hello"]):
                 pass
-        self.assertNotEquals(caught.exception.code, 0)
-        self.assertEquals(self.config.root.int_value, 0)
-        self.assertEquals(self.config.root.string_value, "")
+        self.assertNotEqual(caught.exception.code, 0)
+        self.assertEqual(self.config.root.int_value, 0)
+        self.assertEqual(self.config.root.string_value, "")
 
 
 class PluginCommandLineArgumentsTest(OutputCaptureTest):

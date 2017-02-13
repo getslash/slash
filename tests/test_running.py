@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0201
+# pylint: disable=attribute-defined-outside-init,redefined-outer-name
 import functools
 
 import pytest
@@ -111,9 +111,10 @@ def test_debug_if_needed(request, config_override, suite, suite_test):
 
     debugged = {'value': False}
 
-    def _debug_if_needed(exc_info):
+    def _debug_if_needed(exc_info):  # pylint: disable=unused-argument
         debugged['value'] = True
 
+    # pylint: disable=protected-access
     request.addfinalizer(functools.partial(
         setattr, slash.utils.debug, '_KNOWN_DEBUGGERS', slash.utils.debug._KNOWN_DEBUGGERS))
     slash.utils.debug._KNOWN_DEBUGGERS = [_debug_if_needed]

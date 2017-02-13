@@ -93,7 +93,7 @@ class NamedPlugin(PluginInterface):
         return type(self).__name__
 
 
-def no_op(*args, **kwargs):
+def no_op(*args, **kwargs):  # pylint: disable=unused-argument
     pass
 
 

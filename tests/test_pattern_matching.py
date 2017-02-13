@@ -7,7 +7,7 @@ def test_string_patterns(suite, config_override):
 
     config_override("run.filter_strings", [selected_test.id])
 
-    for i, test in enumerate(suite):
+    for i, test in enumerate(suite):  # pylint: disable=unused-variable
         if test is not selected_test:
             test.expect_deselect()
 
@@ -20,7 +20,7 @@ def test_string_patterns_and(suite, config_override):
 
     config_override("run.filter_strings", [selected_test.id, other_test.id])
 
-    for i, test in enumerate(suite):
+    for i, test in enumerate(suite):  # pylint: disable=unused-variable
         test.expect_deselect()
 
     suite.run()

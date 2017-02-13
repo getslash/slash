@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from __future__ import print_function
 
 import os
@@ -34,9 +35,9 @@ class ArgumentParsingTest(TestCase):
 
     callback_success = False
 
-    def _collect_tests_stub(self, app, args):
+    def _collect_tests_stub(self, app, args):  # pylint: disable=unused-argument
         self.assertTrue(config.root.debug.enabled)
-        self.assertEquals(app.positional_args, ["test1.py", "test2.py"])
+        self.assertEqual(app.positional_args, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully
         self.callback_success = True
         return []
@@ -56,7 +57,7 @@ class ArgumentParsingTest(TestCase):
             code = caught.exception
         else:
             code = caught.exception.code
-        self.assertEquals(code, 0)
+        self.assertEqual(code, 0)
 
 
 class SlashHelpTest(ArgumentParsingTest):
@@ -102,7 +103,7 @@ def test_slash_run_success_if_skips(suite):
 
 def test_slash_run_from_file(tmpdir, suite):
 
-    for i in range(20):
+    for _ in range(20):
         suite.add_test()
 
     suite_path = suite.commit()
@@ -135,13 +136,13 @@ def test_slash_run_from_file(tmpdir, suite):
 @pytest.mark.parametrize('failure_type', ['fail', 'error'])
 def test_slash_run_directory_failure(suite, failure_type):
     getattr(suite[1].when_run, failure_type)()
-    path = suite.commit()
+    path = suite.commit()  # pylint: disable=unused-variable
     assert suite.run().exit_code != 0
 
 
 def test_slash_run_specific_file(suite):
 
-    for i in range(5):
+    for _ in range(5):
         suite.add_test()
     suite_path = suite.commit()
 

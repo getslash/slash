@@ -1,9 +1,9 @@
-#pylint: disable=unused-argument, unused-variable
+# pylint: disable=unused-argument, unused-variable, redefined-outer-name
 import slash
 import gossip
 import pytest
 
-from .utils import NamedPlugin, CustomException, raises_maybe, make_runnable_tests
+from .utils import NamedPlugin, CustomException, make_runnable_tests
 
 
 @pytest.mark.parametrize('has_start', [True, False])

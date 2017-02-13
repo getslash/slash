@@ -1,5 +1,4 @@
 import re
-import pytest
 
 
 def test_cyclic_fixture_detection(suite, suite_test):

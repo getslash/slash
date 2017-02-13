@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name,unused-variable,unused-argument
 import pytest
 
 
@@ -12,7 +13,7 @@ _MODULE_SCOPE_ADDER = 'slash.add_cleanup({0}, scope="module")'
 def test_cleanups_from_test_start(suite):
 
     num_tests = 5
-    for i in range(num_tests):
+    for _ in range(num_tests):
         suite.add_test()
 
     events = []
@@ -69,11 +70,11 @@ def test_cleanups_within_cleanups_preserve_scope(checkpoint1):
     """
 
     @slash.parametrize('x', [1, 2])
-    def test_something(x): # pylint: disable=unused-argument
+    def test_something(x):
         pass
 
     with slash.Session() as s:
-        [fake_test1, fake_test2] = Loader().get_runnables(test_something) # pylint: disable=unbalanced-tuple-unpacking
+        [fake_test1, fake_test2] = Loader().get_runnables(test_something)  # pylint: disable=unbalanced-tuple-unpacking
 
         s.scope_manager.begin_test(fake_test1)
 

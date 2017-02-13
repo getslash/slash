@@ -1,6 +1,5 @@
 import colorama
 from .utils import TestCase
-from slash.utils.color_string import ColorString
 from slash.utils.color_string import ColorString, ColorStringBase
 
 
@@ -9,9 +8,9 @@ class ColoredStringTest(TestCase):
     def test_colored_string(self):
         orig = "some string"
         colored = ColorString(orig, 'red')
-        self.assertEquals(str(orig), str(colored))
-        self.assertEquals(repr(orig), repr(colored))
-        self.assertEquals(
+        self.assertEqual(str(orig), str(colored))
+        self.assertEqual(repr(orig), repr(colored))
+        self.assertEqual(
             colored.get_colored(), colorama.Fore.RED + orig + colorama.Fore.RESET)
 
     def test_get_formatter(self):
@@ -23,14 +22,14 @@ class ColoredStringTest(TestCase):
         for modifier in [
                 (lambda s: s.ljust(20)),
         ]:
-            self.assertEquals(modifier(ColorString("string", "red")).get_colored(),
+            self.assertEqual(modifier(ColorString("string", "red")).get_colored(),
                               ColorString(modifier("string"), "red").get_colored())
 
     def test_len(self):
         for x in ["test", "me", "here!!!"]:
-            self.assertEquals(len(ColorString(x, "red")), len(x))
+            self.assertEqual(len(ColorString(x, "red")), len(x))
 
-        self.assertEquals(len("hello" + ColorString(" there", "red")), len("hello there"))
+        self.assertEqual(len("hello" + ColorString(" there", "red")), len("hello there"))
 
     def test_formatting(self):
         orig = "value1=%s, value2=%s"
@@ -44,8 +43,8 @@ class ColoredStringTest(TestCase):
             orig_formatted
         )
         self.assertIsInstance(colored_formatted, ColorString)
-        self.assertEquals(colored_formatted._color, 'red')
-        self.assertEquals(colored_formatted._string, orig_formatted)
+        self.assertEqual(colored_formatted._color, 'red')  # pylint: disable=protected-access
+        self.assertEqual(colored_formatted._string, orig_formatted)  # pylint: disable=protected-access
 
     def test_concatenation_postfix(self):
         self.assert_colored(
@@ -72,6 +71,6 @@ class ColoredStringTest(TestCase):
 
     def assert_colored(self, s, colored, uncolored):
         self.assertIsInstance(s, ColorStringBase)
-        self.assertEquals(str(s), str(uncolored))
-        self.assertEquals(repr(s), repr(uncolored))
-        self.assertEquals(s.get_colored(), colored)
+        self.assertEqual(str(s), str(uncolored))
+        self.assertEqual(repr(s), repr(uncolored))
+        self.assertEqual(s.get_colored(), colored)

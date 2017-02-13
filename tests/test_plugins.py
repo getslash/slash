@@ -1,4 +1,4 @@
-#pylint: disable=unused-argument
+# pylint: disable=unused-argument
 import os
 
 import gossip
@@ -8,13 +8,13 @@ from slash._compat import PY2
 from slash import hooks, plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
-from .utils import CustomException, NamedPlugin
+from .utils import NamedPlugin
 
 
 
 def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
 
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=unused-variable
     class SamplePlugin(PluginInterface):
 
         def get_name(self):
@@ -31,7 +31,7 @@ def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
 
 def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
 
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=unused-variable
     class SamplePlugin(PluginInterface):
 
         def get_name(self):
@@ -47,7 +47,7 @@ def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoin
 
 
 def test_class_variables_allowed(restore_plugins_on_cleanup):
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=unused-variable
     class SamplePlugin(PluginInterface):
 
         ATTRIBUTE = 'some_value'
@@ -94,10 +94,10 @@ def test_custom_hook_registration(request):
         plugins.manager.uninstall(p)
 
     registrations = gossip.get_hook(hook_name).get_registrations()
-    assert 1 == len(registrations)
+    assert len(registrations) == 1
     [r] = registrations
     if PY2:
-        assert r.func.__func__ is MyPlugin.unknown.__func__
+        assert r.func.__func__ is MyPlugin.unknown.__func__  # pylint: disable=no-member
     else:
         assert r.func.__func__ is MyPlugin.unknown
 
@@ -148,9 +148,9 @@ def test_register_custom_hooks_strict_group():
 
 def test_builtin_plugins_hooks_start_condition():
     "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
-    for hook_name, hook in hooks.get_all_hooks():
+    for hook_name, hook in hooks.get_all_hooks():  # pylint: disable=unused-variable
         for registration in hook.get_registrations():
-            assert registration.token.startswith('slash.'), 'Callback {0}.{1} is not a builtin!'.format(hook_name, identifier)
+            assert registration.token.startswith('slash.'), 'Callback {0} is not a builtin!'.format(hook.full_name)
 
 def test_builtin_plugins_are_installed():
     installed = plugins.manager.get_installed_plugins()
@@ -192,21 +192,21 @@ def test_install_uninstall(no_plugins):
 @pytest.mark.parametrize('cond', [True, False])
 def test_register_if(no_plugins, checkpoint, cond):
 
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=unused-variable
     class CustomPlugin(NamedPlugin):
 
         @slash.plugins.register_if(cond)
         def test_start(self):
             checkpoint()
 
-    slash.hooks.test_start()
+    slash.hooks.test_start()  # pylint: disable=no-member
 
     assert checkpoint.called == cond
 
 
 def test_register_if_nonexistent_hook(no_plugins, checkpoint):
 
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=unused-variable
     class CustomPlugin(NamedPlugin):
 
         @slash.plugins.register_if(False)

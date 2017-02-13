@@ -61,7 +61,7 @@ def test_before_after_parameters(cartesian):
     class Parameterized(slash.Test):
 
         @slash.parameters.iterate(a=cartesian.before_a.make_set())
-        def before(self, a):
+        def before(self, a):  # pylint: disable=arguments-differ
             _set("before_a", a)
 
         @slash.parameters.iterate(b=cartesian.b.make_set(), c=cartesian.c.make_set())
@@ -70,7 +70,7 @@ def test_before_after_parameters(cartesian):
             _set("c", c)
 
         @slash.parameters.iterate(d=cartesian.after_d.make_set())
-        def after(self, d):
+        def after(self, d):  # pylint: disable=arguments-differ
             _set("after_d", d)
 
     session = run_tests_assert_success(Parameterized)
@@ -84,13 +84,13 @@ def test_before_parameters_inheritence(cartesian, with_override):
     class BaseTest(slash.Test):
 
         @slash.parameters.iterate(a=cartesian.before_1_a.make_set())
-        def before(self, a):
+        def before(self, a):  # pylint: disable=arguments-differ
             _set("before_1_a", a)
 
     class DerivedTest(BaseTest):
 
         @slash.parameters.iterate(a=cartesian.before_2_a.make_set(), b=cartesian.before_2_b.make_set())
-        def before(self, a, b):
+        def before(self, a, b):  # pylint: disable=arguments-differ
             if with_override:
                 super(DerivedTest, self).before(a=a)
             else:
@@ -127,6 +127,7 @@ def test_parametrization_tuples():
 def test_parametrization_tuples_invalid_length():
 
     with pytest.raises(RuntimeError) as caught:
+        # pylint: disable=unused-argument, unused-variable
         @slash.parametrize(('a', 'b'), [(1, 2), (1,), (11, 22)])
         def test_something(a, b, c):
             pass
@@ -137,6 +138,7 @@ def test_parametrization_tuples_invalid_length():
 def test_parametrization_tuples_invalid_type():
 
     with pytest.raises(RuntimeError) as caught:
+        # pylint: disable=unused-argument, unused-variable
         @slash.parametrize(('a', 'b'), [(1, 2), 200, (11, 22)])
         def test_something(a, b, c):
             pass

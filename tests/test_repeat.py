@@ -37,4 +37,4 @@ def test_repeat_all_global(suite, config_override):
     summary = suite.run()
 
     indices = [res.data['index'] for res in summary.session.results.iter_test_results()]
-    assert indices == [x for x in range(len(suite)) for repetition in range(num_repetitions)]
+    assert indices == [x for x in range(len(suite)) for _ in range(num_repetitions)]

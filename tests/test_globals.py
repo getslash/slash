@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 import slash
 from slash import context, Session

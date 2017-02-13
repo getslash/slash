@@ -1,3 +1,4 @@
+# pylint: disable=global-statement,global-variable-not-assigned
 from .utils import TestCase
 import os
 import sys
@@ -89,7 +90,7 @@ class CustomizationTest(TestCase):
         self.forge.replace(pkg_resources, "iter_entry_points")
         entry_point = self.forge.create_wildcard_mock()
         pkg_resources.iter_entry_points("slash.site.customize").and_return(iter([entry_point]))
-        unused = self.get_customization_source()  # expect a single customization
+        unused = self.get_customization_source()  # expect a single customization  # pylint: disable=unused-variable
         entry_point.load().and_return(_apply_customization)
         self.forge.replay()
         self.assert_customization_loaded()
@@ -98,4 +99,4 @@ class CustomizationTest(TestCase):
         global _loaded_customizations
         global _customization_index
         slash.site.load()
-        self.assertEquals(_loaded_customizations, list(range(_customization_index)))
+        self.assertEqual(_loaded_customizations, list(range(_customization_index)))

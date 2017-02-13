@@ -1,11 +1,10 @@
-# pylint: disable=unused-variable,redefined-outer-name
+# pylint: disable=unused-variable,redefined-outer-name,unused-argument
 import inspect
 import itertools
 from uuid import uuid1
 
 import pytest
 import slash
-from slash._compat import OrderedDict
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
 from slash.core.fixtures.parameters import bound_parametrizations_context, iter_parametrization_fixtures
 from slash.core.fixtures.fixture_store import FixtureStore
@@ -156,9 +155,9 @@ def test_variation_equality(store):
     prev_variation = None
     for variation in store.iter_parametrization_variations(fixture_ids=[store.get_fixture_by_name('fixture').info.id]):
         assert variation == variation
-        assert not (variation != variation)
+        assert not (variation != variation)  # pylint: disable=superfluous-parens
         assert variation != prev_variation
-        assert not (variation == prev_variation)
+        assert not (variation == prev_variation)  # pylint: disable=superfluous-parens
         prev_variation = variation
 
 
@@ -239,18 +238,18 @@ def test_get_all_needed_fixture_ids(store):
     @store.add_fixture
     @slash.fixture
     @slash.parametrize('param', [1, 2, 3])
-    def fixture1(param):
+    def fixture1(param):  # pylint: disable=unused-argument
         pass
 
     @store.add_fixture
     @slash.fixture
-    def fixture2(fixture1):
+    def fixture2(fixture1):  # pylint: disable=unused-argument
         pass
 
     @store.add_fixture
     @slash.fixture
     @slash.parametrize('param', [4, 5, 6])
-    def fixture3(fixture2, param):
+    def fixture3(fixture2, param):  # pylint: disable=unused-argument
         pass
 
     fixtureobj = store.get_fixture_by_id(fixture3.__slash_fixture__.id)
@@ -268,7 +267,7 @@ def test_get_all_needed_fixture_ids_of_parametrization(store):
     @store.add_fixture
     @slash.fixture
     @slash.parametrize('param', [1, 2, 3])
-    def fixture1(param):
+    def fixture1(param):  # pylint: disable=unused-argument
         pass
 
     fixtureobj = store.get_fixture_by_id(fixture1.__slash_fixture__.id)
@@ -403,7 +402,7 @@ def test_fixture_decorator():
 
     assert slash.fixture(func) is func
 
-    assert func.__slash_fixture__ is not None
+    assert func.__slash_fixture__ is not None  # pylint: disable=no-member
 
 
 def test_fixture_decorator_multiple_calls(fixture_func):
@@ -414,7 +413,7 @@ def test_fixture_decorator_multiple_calls(fixture_func):
 
 
 def test_fixture_required_fixtures(fixture_func):
-    #pylint: disable=deprecated-method
+    # pylint: disable=deprecated-method
     assert set(fixture_func.__slash_fixture__.required_args) == set(inspect.getargspec(fixture_func).args)
 
 
@@ -423,6 +422,7 @@ def test_fixture_name(fixture_func, fixture_func_name):
 
 
 def test_fixture_store_add(fixture_func, fixture_func_name):
+    # pylint: disable=no-member
     f = FixtureStore()
     assert f.add_fixture(fixture_func) is fixture_func
     assert f.get_fixture_by_name(
@@ -441,7 +441,7 @@ def test_nofixtures_decorator_methods(store):
 
     class TestClass(slash.Test):
         @slash.nofixtures
-        def before(self, a, b, c):
+        def before(self, a, b, c):  # pylint: disable=arguments-differ
             pass
 
     [var] = store.iter_parametrization_variations(methods=[('before', TestClass.before)])

@@ -1,9 +1,9 @@
+# pylint: disable=redefined-outer-name
 import logbook
 
 import pytest
 import slash
 from slash._compat import StringIO
-from slash.log import ConsoleHandler
 
 
 @pytest.mark.parametrize('use_truncation', [True, False])

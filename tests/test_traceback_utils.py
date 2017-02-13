@@ -61,7 +61,7 @@ def test_self_attribute_throws():
 
         def __getattribute__(self, attr):
             if attr == '__dict__':
-                1/0
+                1/0  # pylint: disable=pointless-statement
             return super(DangerousObject, self).__getattribute__(attr)
 
         def method(self):

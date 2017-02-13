@@ -1,5 +1,3 @@
-import itertools
-
 import pytest
 import slash.plugins
 from slash.plugins import PluginInterface
@@ -9,7 +7,7 @@ from slash.plugins import PluginInterface
 @pytest.mark.parametrize('provides_decorate_method', [True, False])
 def test_needs_provides_plugin_name(needs_decorate_method, provides_decorate_method, checkpoint1, checkpoint2):
 
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=abstract-method, unused-variable
     @_maybe_decorate(slash.plugins.needs('p'), not needs_decorate_method)
     @autoname
     class NeedsPlugin(PluginInterface):
@@ -18,7 +16,7 @@ def test_needs_provides_plugin_name(needs_decorate_method, provides_decorate_met
         def session_start(self):
             checkpoint2()
 
-    @slash.plugins.active
+    @slash.plugins.active  # pylint: disable=abstract-method, unused-variable
     @_maybe_decorate(slash.plugins.provides('p'), not provides_decorate_method)
     @autoname
     class ProvidesPlugin(PluginInterface):
@@ -27,7 +25,7 @@ def test_needs_provides_plugin_name(needs_decorate_method, provides_decorate_met
         def session_start(self):
             checkpoint1()
 
-    slash.hooks.session_start()
+    slash.hooks.session_start()  # pylint: disable=no-member
     assert checkpoint1.timestamp < checkpoint2.timestamp
 
 

@@ -1,6 +1,5 @@
 # pylint: disable=redefined-outer-name
 import os
-import sys
 
 import pytest
 import slash
@@ -18,8 +17,8 @@ def test_session_errors(suite, xunit_filename):
     # pylint: disable=unused-argument
 
     @suite.slashconf.append_body
-    def __code__():
-        1/0
+    def __code__():  # pylint: disable=unused-variable
+        1/0  # pylint: disable=pointless-statement
 
     for test in suite:
         # tests are not going to even be loaded
@@ -45,7 +44,7 @@ def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
 @pytest.mark.parametrize('errtype', ['error', 'failure'])
 def test_xunit_plugin_add_failure_error(suite, suite_test, xunit_filename, errtype):
     num_errors = 3
-    for i in range(num_errors):
+    for _ in range(num_errors):
         suite_test.append_line('slash.add_{0}("some message")'.format(errtype))
     if errtype == 'error':
         suite_test.expect_error()
@@ -66,7 +65,7 @@ def test_xunit_plugin_add_failure_error(suite, suite_test, xunit_filename, errty
 def _get_testcase_xml(suite_test, filename):
     with open(filename) as f:
         xml = ElementTree.parse(f)
-    match = [testcase for testcase in xml.getroot().getchildren() if testcase.get('name').split('_')[-1] == suite_test.id]
+    match = [testcase for testcase in list(xml.getroot()) if testcase.get('name').split('_')[-1] == suite_test.id]
     assert len(match) == 1
     return match[0]
 
@@ -76,13 +75,14 @@ def details():
     return {'detail1': 'value1', 'detail2': 'value2'}
 
 
-@pytest.fixture
-def results(suite, suite_test, test_event, xunit_filename): #pylint: disable=unused-argument
+@pytest.fixture  # pylint: disable=unused-argument
+def results(suite, suite_test, test_event, xunit_filename): # pylint: disable=unused-argument
     test_event(suite_test)
     summary = suite.run()
     assert 'Traceback' not in summary.get_console_output()
 
-@pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason', 'error', 'failure', 'add_error', 'add_failure'])
+@pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason',
+                        'error', 'failure', 'add_error', 'add_failure'])
 def test_event(request):
     flavor = request.param
 
@@ -109,15 +109,15 @@ def test_event(request):
     return func
 
 
-@pytest.fixture
-def xunit_filename(tmpdir, request, config_override):
+@pytest.fixture  # pylint: disable=unused-argument
+def xunit_filename(tmpdir, request, config_override):  # pylint: disable=unused-argument
     xunit_filename = str(tmpdir.join('xunit.xml'))
     slash.plugins.manager.activate('xunit')
 
     slash.config.root.plugin_config.xunit.filename = xunit_filename
 
     @request.addfinalizer
-    def deactivate():
+    def deactivate():  # pylint: disable=unused-variable
         slash.plugins.manager.deactivate('xunit')
 
     return xunit_filename
@@ -132,7 +132,7 @@ def validate_xml(xml_filename):
 
     _validate_counters(root)
 
-    for child in root.getchildren():
+    for child in list(root):
         assert child.tag == 'testcase'
         assert child.get('name')
         assert child.get('time')
