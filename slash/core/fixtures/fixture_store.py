@@ -37,9 +37,6 @@ class FixtureStore(object):
     def get_active_fixture(self, fixture):
         return self._active_fixtures_by_scope[fixture.info.scope].get(fixture.info.id)
 
-    def get_variation_id(self, variation):
-        return {name: self._compute_id(variation, p) for name, p in variation.name_bindings.items()}
-
     def _compute_id(self, variation, p):
         if isinstance(p, Parametrization):
             return variation.param_value_indices[p.info.id]
@@ -133,7 +130,6 @@ class FixtureStore(object):
         finally:
             self.pop_namespace()
 
-
     def get_current_namespace(self):
         return self._namespaces[-1]
 
@@ -171,8 +167,11 @@ class FixtureStore(object):
             if fixture.parametrization_ids:
                 assert isinstance(fixture.parametrization_ids, OrderedSet)
                 returned.update(fixture.parametrization_ids)
-            if fixture.fixture_kwargs:
-                for needed_id in itervalues(fixture.fixture_kwargs):
+            if fixture.keyword_arguments:
+                for needed in itervalues(fixture.keyword_arguments):
+                    if needed.is_parameter():
+                        continue
+                    needed_id = needed.info.id
                     if needed_id in visited:
                         self._raise_cyclic_dependency_error(fixtureobj, path, needed_id)
                     stack.append((needed_id, path + [needed_id], visited | set([needed_id])))
@@ -194,7 +193,7 @@ class FixtureStore(object):
         scope = get_scope_by_name(scope)
         for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
             if s <= scope:
-                for active_fixture in list(active_fixtures.values())[::-1]:
+                for active_fixture in reversed(list(active_fixtures.values())):
                     with handling_exceptions(swallow=True):
                         self._deactivate_fixture(active_fixture.fixture)
                 assert not active_fixtures
@@ -281,6 +280,9 @@ class FixtureStore(object):
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
 
+        if self._unresolved_fixture_ids:
+            raise UnresolvedFixtureStore()
+
         variation_factory = VariationFactory(self)
         for fixture_id in fixture_ids:
             variation_factory.add_needed_fixture_id(fixture_id)
@@ -296,6 +298,8 @@ class FixtureStore(object):
     def _compute_fixture_value(self, name, fixture, relative_name=None):
         if relative_name is None:
             relative_name = name
+
+        assert not fixture.is_parameter()
 
         if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
@@ -324,12 +328,14 @@ class FixtureStore(object):
 
         kwargs = {}
 
-        if fixture.fixture_kwargs is None:
+        if fixture.keyword_arguments is None:
             raise UnresolvedFixtureStore('Fixture {0} is unresolved!'.format(fixture.info.name))
 
-        for required_name, fixture_id in iteritems(fixture.fixture_kwargs):
+        for required_name, needed_fixture in iteritems(fixture.keyword_arguments):
+            if needed_fixture.is_parameter():
+                continue
             kwargs[required_name] = self._compute_fixture_value(
-                required_name, self.get_fixture_by_id(fixture_id),
+                required_name, needed_fixture,
                 relative_name='{} -> {}'.format(relative_name, required_name))
 
 

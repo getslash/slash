@@ -67,10 +67,8 @@ def bound_parametrizations_context(variation, fixture_store, fixture_namespace):
     _current_variation = variation
     try:
         fixture_store.activate_autouse_fixtures_in_namespace(fixture_namespace)
-        _current_variation.populate_values()
         yield
     finally:
-        _current_variation.forget_values()
         _current_variation = None
 
 
@@ -140,6 +138,15 @@ class Parametrization(FixtureBase):
         self.info = info
         self.scope = get_scope_by_name('test')
         self.transform = transform
+
+    def get_value_by_index(self, index):
+        return self.transform(self.values[index])
+
+    def is_parameter(self):
+        return True
+
+    def is_fixture(self):
+        return False
 
     def get_value(self, kwargs, active_fixture):
         raise NotImplementedError()  # pragma: no cover

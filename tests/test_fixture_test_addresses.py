@@ -3,7 +3,7 @@ import itertools
 
 import pytest
 import slash
-from slash._compat import ExitStack, xrange
+from slash._compat import ExitStack
 
 from .utils import run_tests_assert_success, make_runnable_tests
 from .utils.code_formatter import CodeFormatter
@@ -14,8 +14,9 @@ def test_fixtures_representation_strings(results, a_values, fixture_values, file
     if is_class:
         prefix += 'Test.'
     assert len(results) == len(a_values) * len(fixture_values)
-    assert set(result.test_metadata.address for result in results) == set(
-        '{0}test_1(a={1},fixture=fixture{2})'.format(prefix, i, j) for i, j in itertools.product(a_values, xrange(len(fixture_values))))
+    assert set(result.test_metadata.address for result in results) == {
+        '{0}test_1(a={1},fixture.value={2})'.format(prefix, i, j) for i, j in itertools.product(a_values, fixture_values)
+    }
 
 
 @pytest.mark.parametrize('non_printable', ['string/with/slashes', object()])

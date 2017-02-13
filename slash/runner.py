@@ -40,7 +40,6 @@ def run_tests(iterable, stop_on_error=None):
         for test in test_iterator:
             if config.root.run.dump_variation:
                 _dump_variation(test)
-            test.get_variation().populate_early_known_values()
             _set_test_metadata(test)
             test_filename = test.__slash__.file_path
             if last_filename != test_filename:
@@ -78,7 +77,7 @@ def run_tests(iterable, stop_on_error=None):
 
 def _dump_variation(test):
     _logger.trace('Variation information:\n{}',
-                  '\n'.join('\t{}: {!r}'.format(k, v) for k, v in sorted(test.get_variation().verbose_id.items())))
+                  '\n'.join('\t{}: {!r}'.format(k, v) for k, v in sorted(test.get_variation().id.items())))
 
 
 def _run_single_test(test, test_iterator):

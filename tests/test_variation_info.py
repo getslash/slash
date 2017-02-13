@@ -22,12 +22,12 @@ def test_variation_info_single_value_id_none(results):
     for res in results.test_single_param_fixture:
         assert res.test_metadata.variation.id is not None
         assert res.test_metadata.variation.values == {}
-        assert res.data['captured_values']['fixture'] is _object1
+        assert 'fixture' not in res.data['captured_values']
 
 def test_unique_variation_ids(results):
     all_results = [res for result_set in results.values() for res in result_set]
     ids = {_freeze(res.test_metadata.variation.id) for res in all_results}
-    assert len(ids) == len(all_results)
+    assert len(ids) == len(all_results) - 1 # we subtract one because no params and a single fixture have the same id
     assert None not in ids
 
 
@@ -61,6 +61,84 @@ def test_parametrization_info_availabe_on_test_start(checkpoint):
 
 
 
+def test_parametrization_info_values_include_nested_fixture_values():
+
+    value1 = str(uuid4())
+    value2 = str(uuid4())
+
+    @gossip.register('slash.test_start')
+    def test_start_hook():
+        slash.context.result.data['variation_values'] = slash.context.test.__slash__.variation.values.copy()
+
+    @slash.parametrize('param', ['some_value'])
+    def test_something(param, some_fixture):
+        pass
+
+    with slash.Session() as s:
+
+        @s.fixture_store.add_fixture
+        @slash.fixture
+        @slash.parametrize('value', [value1, value2])
+        def some_fixture(value):
+            pass
+
+        s.fixture_store.resolve()
+
+        with s.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))
+
+    assert s.results.is_success(allow_skips=False)
+    all_values = []
+    for result in s.results.iter_test_results():
+        values = result.data['variation_values']
+        all_values.append(values['some_fixture.value'])
+
+    assert len(all_values) == 2
+    assert set(all_values) == {value1, value2}
+
+
+def test_variation_identification():
+    value1 = str(uuid4())
+    value2 = str(uuid4())
+
+    @gossip.register('slash.test_start')
+    def test_start_hook():
+        variation = slash.context.test.__slash__.variation
+        slash.context.result.data['variation_info'] = {
+            'id': variation.id.copy(),
+            'values': variation.values.copy(),
+        }
+
+
+    @slash.parametrize('param', ['some_value'])
+    def test_something(param, some_fixture):
+        pass
+
+    with slash.Session() as s:
+
+        @s.fixture_store.add_fixture
+        @slash.fixture
+        @slash.parametrize('value', [value1])
+        def some_fixture(value):
+            return value2
+
+        s.fixture_store.resolve()
+
+        with s.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))
+
+    assert s.results.is_success(allow_skips=False)
+    [info] = [result.data['variation_info'] for result in s.results.iter_test_results()]
+    assert info['id']['param'] == 0
+    assert info['values']['param'] == 'some_value'
+    assert info['id']['some_fixture.value'] == 0
+    assert 'some_fixture' not in info['values']
+    assert info['values']['some_fixture.value'] == value1
+
+
+
+
+
 def _freeze(dictionary):
     return frozenset(dictionary.items())
 
@@ -71,8 +149,10 @@ def test_variation_tuples(results):
     assert values['y'] == 2
 
 def test_nested_fixture_ids(results):
-    ids = {res.data['captured_values']['outer_fixture'] for res in results.test_nested_fixture}
-    assert ids == {'outer_inner{}'.format(i+1) for i in range(3)}
+    ids = {res.data['captured_values']['outer_fixture.outer_param'] for res in results.test_nested_fixture}
+    assert ids == {666}
+    for res in results.test_nested_fixture:
+        assert 'outer_fixture' not in res.data['captured_values']
 
 def test_fixture_and_toggle(results):
     assert len(results.test_fixture_and_toggle) == 2
@@ -123,7 +203,8 @@ def results():
 
         @s.fixture_store.add_fixture
         @slash.fixture
-        def outer_fixture(inner_fixture):
+        @slash.parametrize('outer_param', [666])
+        def outer_fixture(inner_fixture, outer_param):
             return 'outer_{}'.format(inner_fixture)
 
         s.fixture_store.resolve()

@@ -116,7 +116,7 @@ class Test(RunnableTest):
             _call_with_fixtures(self.before, trigger_test_start=True)
             try:
                 with handling_exceptions():
-                    result = _call_with_fixtures(method)
+                    result = _call_with_fixtures(method, trigger_test_start=True)
                     if isinstance(result, GeneratorType):
                         raise InvalidTest('{} is a generator. Running generators is not supported'.format(method))
 
