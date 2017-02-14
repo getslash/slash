@@ -16,7 +16,7 @@ from .utils import no_op, NullFile, TestCase
 def test_slash_run_fails_fast_for_missing_files():
     result = slash_run.slash_run(
         ["/non/existing/path"], report_stream=NullFile())
-    assert result != 0, "slash run unexpectedly succeeded for a missing path"
+    assert result.exit_code != 0, "slash run unexpectedly succeeded for a missing path"
 
 
 ################################################################################
