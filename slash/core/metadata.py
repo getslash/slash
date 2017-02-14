@@ -39,8 +39,10 @@ class Metadata(object):
         #: String identifying the test, to be used when logging or displaying results in the console
         #: generally it is composed of the file path and the address inside the file
         self.address = '{0}:{1}'.format(self.file_path, self.address_in_file)
+        self.resume_repr = self.address
         if self.variation:
             self.address += '({})'.format(self.variation.safe_repr)
+            self.resume_repr += str(self.variation.resume_dict)
         if factory is not None:
             self._class_name = factory.get_class_name()
         else:

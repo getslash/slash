@@ -8,8 +8,7 @@ from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
 from ..exceptions import CannotLoadTests
-from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume,
-                        save_resume_state)
+from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, save_resume_state)
 from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
 from ..utils.suite_files import iter_suite_file_paths
@@ -26,6 +25,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
     app.set_argv(args)
     app.set_report_stream(report_stream)
     app.enable_interactive()
+    collected = []
     try:
         with app:
             if app_callback is not None:
@@ -46,7 +46,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                     run_tests(collected)
 
             finally:
-                save_resume_state(app.session.results)
+                save_resume_state(app.session.results, collected)
 
             if app.exit_code == 0 and not app.session.results.is_success(allow_skips=True):
                 app.set_exit_code(-1)
@@ -83,4 +83,3 @@ def _extend_paths_from_suite_files(paths):
     paths = list(paths)
     paths.extend(iter_suite_file_paths(suite_files))
     return paths
-

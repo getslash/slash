@@ -23,6 +23,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
+from ast import literal_eval
 
 _logger = Logger(__name__)
 
@@ -108,8 +109,9 @@ class Loader(object):
         test_address_in_file = test.__slash__.address_in_file
         if address_in_file == test_address_in_file:
             return True
-        if '(' in test_address_in_file:
-            if address_in_file == test_address_in_file[:test_address_in_file.index('(')]:
+        if '{' in address_in_file and test_address_in_file == address_in_file[:address_in_file.index('{')]:
+            params = address_in_file[address_in_file.index('{'):]
+            if literal_eval(params) == test.get_variation().resume_dict:
                 return True
 
         return False

@@ -1,79 +1,83 @@
-import itertools
-import json
 import os
-
 import logbook
-
-from .utils.path import ensure_directory
-
-_logger = logbook.Logger(__name__)
+from sqlalchemy import Column, DateTime, String, Integer
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
+from datetime import datetime
 
 _RESUME_DIR = os.path.expanduser("~/.slash/session_states")
-_RESUME_COUNTER = itertools.count()
-_MAX_NUM_SAVED_SESSIONS = 10
+_DB_NAME = 'resume_state.db'
+_logger = logbook.Logger(__name__)
+Base = declarative_base()
+session = sessionmaker()
+is_db_initialized = False
 
-LATEST = object()
+class ResumeState(Base):
+    __tablename__ = 'resume_state'
+    id = Column(Integer, primary_key=True)
+    session_id = Column(String, nullable=False, index=True)
+    test_name = Column(String, nullable=False)
 
+class SessionMetadata(Base):
+    __tablename__ = 'session_metadata'
+    session_id = Column(String, primary_key=True)
+    src_folder = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime, nullable=False, index=True)
 
-def save_resume_state(session_result):
-    resume_filename = _generate_resume_filename(session_result.session.id)
-    tmp_filename = resume_filename + ".tmp"
-    ensure_directory(os.path.dirname(tmp_filename))
-    with open(tmp_filename, "w") as f:
-        json.dump({
-            "tests": [
-                {"address": str(result.test_metadata.address), "needs_rerun":
-                 result.is_failure() or result.is_error() or not result.is_started()}
-                for result in session_result.iter_test_results()
-            ],
-        }, f)
-    os.rename(tmp_filename, resume_filename)
-    _logger.debug('Saved resume state to {0}', resume_filename)
-    _cleanup_old_files()
+def init_db():
+    engine = create_engine('sqlite:///{0}/{1}'.format(_RESUME_DIR, _DB_NAME))
+    session.configure(bind=engine)
+    Base.metadata.create_all(engine)
 
+@contextmanager
+def connecting_to_db():
+    global is_db_initialized
+    if not is_db_initialized:
+        init_db()
+        is_db_initialized = True
+    new_session = session()
+    try:
+        yield new_session
+        new_session.commit()
+    except:
+        raise
+    finally:
+        new_session.close()
+
+def save_resume_state(session_result, collected):
+    metadata = SessionMetadata(
+                    session_id=session_result.session.id,
+                    src_folder=os.getcwd(),
+                    created_at=datetime.now())
+
+    passed_tests_names = [result.test_metadata.resume_repr for result in session_result.iter_test_results() if result.is_success_finished()]
+    collected_test_names = [test.__slash__.resume_repr for test in collected]
+    failed_test_names = list(set(collected_test_names) - set(passed_tests_names))
+    session_tests = [ResumeState(session_id=session_result.session.id, test_name=test_name) for test_name in failed_test_names]
+
+    with connecting_to_db() as conn:
+        conn.add(metadata)
+        conn.add_all(session_tests)
+    _logger.debug('Saved resume state to DB')
 
 def get_last_resumeable_session_id():
-    files = _get_resume_state_files_by_mtime()
-    if not files:
-        raise CannotResume("No resume files found")
-    return _get_session_id_from_filename(files[0][1])
-
-def _get_session_id_from_filename(filename):
-    return os.path.basename(filename).split("_", 1)[1].rsplit(".", 1)[0]
-
-
-def _cleanup_old_files():
-    for _, deleted_filename in _get_resume_state_files_by_mtime()[_MAX_NUM_SAVED_SESSIONS:]:
-        _logger.debug('Deleting old statefile {0!r}...', deleted_filename)
-        os.unlink(deleted_filename)
-
-def _get_resume_state_files_by_mtime():
-    return sorted(
-        ((os.stat(f).st_mtime, f) for f in
-         [os.path.join(_RESUME_DIR, f) for f in os.listdir(_RESUME_DIR)]),
-        reverse=True)
-
+    current_folder = os.getcwd()
+    with connecting_to_db() as conn:
+        session_id = conn.query(SessionMetadata).filter(SessionMetadata.src_folder == current_folder).order_by(SessionMetadata.created_at.desc()).first()
+        if not session_id:
+            raise CannotResume("No sessions found for folder {0}".format(current_folder))
+        return session_id.session_id
 
 def get_tests_to_resume(session_id):
-    resume_filename = _find_resume_file_by_session_id(session_id)
-    try:
-        with open(resume_filename) as f:
-            state = json.load(f)
-
-    except (IOError, OSError) as e:
-        raise CannotResume(
-            "Cannot resume session {0} ({1})".format(session_id, e))
-
-    return [test["address"] for test in state["tests"] if test["needs_rerun"]]
-
-def _generate_resume_filename(session_id):
-    return os.path.join(_RESUME_DIR, "{0:03}_{1}".format(next(_RESUME_COUNTER), session_id)) + ".json"
-
-def _find_resume_file_by_session_id(session_id):
-    for _, filename in _get_resume_state_files_by_mtime():
-        if _get_session_id_from_filename(filename) == session_id:
-            return filename
-    raise CannotResume("Could not find resume file for session {0}".format(session_id))
+    session_tests = []
+    with connecting_to_db() as conn:
+        session_tests_query = conn.query(ResumeState).filter(ResumeState.session_id == session_id)
+        session_tests = [test.test_name for test in session_tests_query.all()]
+    if not session_tests:
+        raise CannotResume("Could not find resume data for session {0}".format(session_id))
+    return session_tests
 
 class CannotResume(Exception):
     pass

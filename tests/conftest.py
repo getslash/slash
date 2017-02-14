@@ -127,6 +127,7 @@ def fix_resume_path(request):
     # pylint: disable=protected-access
     prev = resuming._RESUME_DIR
     resuming._RESUME_DIR = tempfile.mkdtemp()
+    resuming.is_db_initialized = False
 
     @request.addfinalizer
     def cleanup():  # pylint: disable=unused-variable
