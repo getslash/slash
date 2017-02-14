@@ -1,14 +1,15 @@
 import itertools
 import traceback
 import os
+import sys
 from types import FunctionType, GeneratorType
 from contextlib import contextmanager
 
+import dessert
 from emport import import_file
 from logbook import Logger
+from sentinels import NOTHING
 
-import dessert
-import sys
 
 from .conf import config
 from ._compat import string_types
@@ -34,11 +35,18 @@ class Loader(object):
 
     def __init__(self):
         super(Loader, self).__init__()
-        if config.root.run.filter_strings:
-            self._matchers = [Matcher(s) for s in config.root.run.filter_strings]
-        else:
-            self._matchers = None
         self._local_config = LocalConfig()
+
+    _cached_matchers = NOTHING
+
+    def _get_matchers(self):
+        if self._cached_matchers is NOTHING:
+            if config.root.run.filter_strings:
+                self._cached_matchers = [Matcher(s) for s in config.root.run.filter_strings]
+            else:
+                self._cached_matchers = None
+        return self._cached_matchers
+
 
     def get_runnables(self, paths):
         assert context.session is not None
@@ -155,9 +163,10 @@ class Loader(object):
 
 
     def _is_excluded(self, test):
-        if self._matchers is None:
+        matchers = self._get_matchers()
+        if matchers is None:
             return False
-        return not all(m.matches(test.__slash__) for m in self._matchers)
+        return not all(m.matches(test.__slash__) for m in matchers)
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")

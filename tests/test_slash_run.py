@@ -19,6 +19,14 @@ def test_slash_run_fails_fast_for_missing_files():
     assert result.exit_code != 0, "slash run unexpectedly succeeded for a missing path"
 
 
+def test_slash_run_filter_strings(suite, suite_test):
+    for test in suite:
+        if test is not suite_test:
+            test.expect_deselect()
+
+    suite.run(additional_args=['-k', suite_test.name])
+
+
 ################################################################################
 
 
