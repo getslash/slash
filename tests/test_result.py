@@ -149,6 +149,12 @@ def test_add_error_traceback_for_manually_added_errors(suite, suite_test):
     assert err.traceback
 
 
+def test_is_global_result(suite, suite_test):
+    suite_test.append_line('assert not slash.context.result.is_global_result()')
+    result = suite.run()
+    assert result.session.results.global_result.is_global_result()
+
+
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
 @pytest.mark.parametrize('errors_subpath', [None, 'my_errors.log'])
 def test_log_paths(log_path, errors_subpath, config_override, logs_dir):

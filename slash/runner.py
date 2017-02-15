@@ -8,12 +8,11 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
+from .exceptions import NoActiveSession
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.exclusions import is_excluded
 from .core import requirements
-from .utils.interactive import notify_if_slow_context
 from .utils.iteration import PeekableIterator
 
 
@@ -120,10 +119,6 @@ def _run_single_test(test, test_iterator):
 
                 except context.session.get_skip_exception_types():
                     pass
-                except INTERRUPTION_EXCEPTIONS:
-                    with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
-                        hooks.test_interrupt() # pylint: disable=no-member
-                    raise
 
 def _process_requirements_and_exclusions(test):
     """Returns whether or not a test should run based on requirements and exclusions, also triggers skips and relevant hooks

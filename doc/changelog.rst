@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`516 major` Fire test_interrupt earlier and properly mark session as interrupted when a test is interrupted
 * :feature:`512` ``slash list-config`` now receives a path filter for config paths to display
 * :feature:`519` Add ``--no-output`` flag for ``slash list``
 * :feature:`497` Major overhaul of CLI mechanics -- improve help message and usage, as well as cleaner error exits during the session configuration phase
