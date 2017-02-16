@@ -15,6 +15,7 @@ from .error import Error
 from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
+from ..utils.interactive import notify_if_slow_context
 
 _logger = logbook.Logger(__name__)
 
@@ -45,6 +46,9 @@ class Result(object):
     def _fact_set_callback(self, fact_name, fact_value):
         gossip.trigger('slash.fact_set', name=fact_name, value=fact_value)
 
+    def is_global_result(self):
+        return False
+
     def add_exception(self, exc_info=None):
         """Adds the currently active exception, assuming it wasn't already added to a result
         """
@@ -64,7 +68,20 @@ class Result(object):
             #skip keyboardinterrupt and system exit
             self.add_error(exc_info=exc_info)
         else:
-            self.mark_interrupted()
+            # Assume interrupted
+            session_result = context.session.results.global_result
+            interrupted_session = session_result.is_interrupted()
+
+            if not self.is_global_result():
+                # Test was interrupted
+                interrupted_test = self.is_interrupted()
+                self.mark_interrupted()
+                if not interrupted_test:
+                    with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."):
+                        hooks.test_interrupt() # pylint: disable=no-member
+
+            if not interrupted_session:
+                session_result.mark_interrupted()
 
     def has_errors_or_failures(self):
         return bool(self._failures or self._errors)
@@ -224,7 +241,10 @@ class Result(object):
 
 
 class GlobalResult(Result):
-    pass
+
+    def is_global_result(self):
+        return True
+
 
 
 class SessionResults(object):

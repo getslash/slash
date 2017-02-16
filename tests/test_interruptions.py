@@ -96,10 +96,38 @@ def test_session_interruption_in_start(suite, suite_test, session_interrupt):
     assert session_interrupt.called_count == 1
 
 
+def test_interrupt_hooks_should_be_called_once(suite, suite_test, is_last_test, session_interrupt, test_interrupt_callback):
+
+    @suite_test.append_body
+    def __code__():
+        @slash.add_critical_cleanup
+        def cleanup():
+            raise KeyboardInterrupt('A')
+        raise KeyboardInterrupt('B')
+
+    suite_test.expect_interruption()
+
+    for t in suite.iter_all_after(suite_test, assert_has_more=not is_last_test):
+        t.expect_deselect()
+
+    result = suite.run(expect_interruption=True)
+
+    assert test_interrupt_callback.called_count == 1
+    assert session_interrupt.called_count == 1
+    assert result.session.results.global_result.is_interrupted()
+
+
 @pytest.fixture
 def session_interrupt():
     callback = Checkpoint()
     slash.hooks.session_interrupt.register(callback) # pylint: disable=no-member
+    return callback
+
+
+@pytest.fixture
+def test_interrupt_callback():
+    callback = Checkpoint()
+    slash.hooks.test_interrupt.register(callback) # pylint: disable=no-member
     return callback
 
 
