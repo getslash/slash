@@ -192,9 +192,10 @@ class PluginManager(object):
         """
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
+        token = self._get_token(plugin_name)
 
         if plugin_name in self._active:
-            gossip.get_global_group().unregister_token(self._get_token(plugin_name))
+            gossip.get_global_group().unregister_token(token)
             self._active.discard(plugin_name)
             plugin.deactivate()
 
@@ -229,6 +230,10 @@ class PluginManager(object):
         global_provides = try_get_mark(plugin, 'plugin_provides', [])
 
         has_session_end = has_session_start = False
+
+        register_no_op_hooks = set()
+        if global_provides:
+            register_no_op_hooks = set([hook.full_name for hook in gossip.get_group('slash').get_hooks()])
 
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
@@ -269,7 +274,10 @@ class PluginManager(object):
             except LookupError:
                 unknown.append(hook_name)
                 continue
+
             assert hook is not None
+            register_no_op_hooks.discard(hook_name)
+
             kwargs = {
                 'needs': plugin_needs,
                 'provides': plugin_provides,
@@ -285,7 +293,14 @@ class PluginManager(object):
             returned.append((hook, method, kwargs))
 
         if has_session_end and not has_session_start:
-            returned.append((gossip.get_hook('slash.session_start'), lambda: None, {'toggles_on': plugin.__toggles__['session']}))
+            hook = gossip.get_hook('slash.session_start')
+            returned.append((hook.register, lambda: None, {'toggles_on': plugin.__toggles__['session']}))
+            register_no_op_hooks.discard(hook.full_name)
+
+        for hook_name in register_no_op_hooks:
+            hook = gossip.get_hook(hook_name)
+            hook.register_no_op(provides=global_provides, token=self._get_token(plugin_name))
+
         if unknown:
             raise IncompatiblePlugin("Unknown hooks: {0}".format(", ".join(unknown)))
         return returned
