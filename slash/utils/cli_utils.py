@@ -128,24 +128,66 @@ class Argument(object):
 COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member
 
 
+class ColorizedString(str):
+
+    def __new__(cls, *args, **kwargs):
+        style = kwargs.pop('style', None)
+        returned = str.__new__(cls, *args, **kwargs)
+        returned.style = style
+        return returned
+
+    def colorize(self):
+        if self.style:
+            return '{}{}{}'.format(self.style, self, COLOR_RESET)
+        return str(self)
+
+class Styler(object):
+    should_colorize = None
+
+    def __init__(self, style):
+        self._style = style
+        self._str = None
+
+    def __call__(self, string):
+        if self.should_colorize:
+            return '{0}{1}{2}'.format(self._style, string, COLOR_RESET)
+        return string
+
 def make_styler(style):
-    return lambda s: '{0}{1}{2}'.format(style, s, COLOR_RESET)
+    return lambda string: ColorizedString(string, style=style)
 
 UNDERLINED = '\x1b[4m'
 
 
 class Printer(object):
 
-    def __init__(self, report_stread, enable_output=True):
+    def __init__(self, report_stread, enable_output=True, force_color=False, enable_color=True):
         self._stream = report_stread
         self._output_enabled = enable_output
+        self._force_color = force_color
+        self._color_enabled = enable_color
 
-    def _colored_print(self, *args):
-        print(*args, file=self._stream)
+    def disable_coloring(self):
+        self._color_enabled = False
 
-    def __call__(self, *args):
+    def force_color(self):
+        self._force_color = True
+
+    def set_colors(self, should_colorize):
+        self._should_colorize = should_colorize if should_colorize is not None else self._stream.isatty()
+        Styler.should_colorize = self._should_colorize
+
+    def _colored_print(self, *args, **print_kwargs):
+        self._print(*(getattr(arg, 'colorize', arg.__str__)() for arg in args), **print_kwargs)
+
+    def _print(self, *args, **print_kwargs):
+        print(*args, file=self._stream, **print_kwargs)
+
+    def __call__(self, *args, **print_kwargs):
         if self._output_enabled:
-            self._colored_print(*args)
+            should_color = self._force_color or (self._color_enabled and self._stream.isatty())
+            print_func = self._colored_print if should_color else self._print
+            print_func(*args, **print_kwargs)
 
 
 def error_abort(message, *args):
