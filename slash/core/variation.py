@@ -25,7 +25,6 @@ class Variation(object):
         self.values = {}
         self.id = self._store.get_variation_id(self)
         self.safe_repr = self._get_safe_repr()
-        self.resume_dict = self._get_resume_dict()
         self.verbose_id = verbose_id
 
     def _get_safe_repr(self):
@@ -36,9 +35,6 @@ class Variation(object):
             else:
                 returned[name] = '{}{}'.format(name, self.id[name])
         return ','.join('{}={}'.format(key, returned[key]) for key in sorted(returned))
-
-    def _get_resume_dict(self):
-        return {name:self.id[name] for name in self.name_bindings}
 
     def _format_parameter_safe(self, name, p):
         param_index = self.param_value_indices[p.info.id]

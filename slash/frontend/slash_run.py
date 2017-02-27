@@ -8,7 +8,7 @@ from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
 from ..exceptions import CannotLoadTests
-from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, save_resume_state)
+from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, save_resume_state, clean_old_entries)
 from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
 from ..utils.suite_files import iter_suite_file_paths
@@ -47,7 +47,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
 
             finally:
                 save_resume_state(app.session.results, collected)
-
+                clean_old_entries()
             if app.exit_code == 0 and not app.session.results.is_success(allow_skips=True):
                 app.set_exit_code(-1)
     except Exception:         # pylint: disable=broad-except

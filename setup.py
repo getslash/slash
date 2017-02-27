@@ -20,6 +20,7 @@ install_requires = [
     "Logbook>=0.11.2",
     "orderedset>=2.0.0",
     "requests>=1.1.0",
+    "SQLAlchemy",
     "raven",
     "py>=1.4.20",
     "pyparsing",

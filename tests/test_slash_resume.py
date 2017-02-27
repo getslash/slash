@@ -1,16 +1,8 @@
 # pylint: disable=redefined-outer-name
-import os
 import pytest
-from tempfile import mkdtemp
+import slash.resuming
 from slash.resuming import (CannotResume, get_last_resumeable_session_id, get_tests_to_resume)
 
-@pytest.fixture()
-def set_resume_cwd(request):
-    prev = os.getcwd()
-
-    @request.addfinalizer
-    def cleanup():
-        os.chdir(prev)
 
 def test_resume_no_session():
     with pytest.raises(CannotResume):
@@ -36,27 +28,35 @@ def test_resume(suite):
 
     assert len(resumed) + result.session.results.get_num_started() - 1 == len(suite)
 
-def test_resume_with_parametrization(suite):
+def test_resume_with_parametrization(suite, suite_test):
     num_values1 = 3
     num_values2 = 5
-    test = suite.add_test(type='method')
-    test.add_parameter(num_values=num_values1)
-    test.add_parameter(num_values=num_values2)
+    suite_test.add_parameter(num_values=num_values1)
+    suite_test.add_parameter(num_values=num_values2)
     fail_index = len(suite) // 2
     suite[fail_index].when_run.fail()
     summary = suite.run()
-
-    assert len(summary.get_all_results_for_test(test)) == num_values1 * num_values2
     resumed = get_tests_to_resume(summary.session.id)
-    assert len(resumed) == 1
 
-def test_different_folder_no_resume_session_id(suite, set_resume_cwd):
+    assert len(summary.get_all_results_for_test(suite_test)) == num_values1 * num_values2
+    assert len(resumed) == 1
+    assert resumed[0].function_name == suite[fail_index].name
+
+def test_different_folder_no_resume_session_id(suite, tmpdir):  # pylint: disable=unused-argument
     fail_index = len(suite) // 2
     suite[fail_index].when_run.fail()
     suite.run()
     sessoin_id = get_last_resumeable_session_id()
-    assert sessoin_id
 
-    os.chdir(os.path.dirname(mkdtemp()))
+    assert sessoin_id
+    with tmpdir.ensure_dir().as_cwd():
+        with pytest.raises(CannotResume):
+            sessoin_id = get_last_resumeable_session_id()
+
+def test_delete_old_sessions(suite):
+    result = suite.run()
+    assert result.session.id == get_last_resumeable_session_id()
+    slash.resuming._MAX_DAYS_SAVED_SESSIONS = 0 # pylint: disable=protected-access
+    result = suite.run()
     with pytest.raises(CannotResume):
-        sessoin_id = get_last_resumeable_session_id()
+        get_last_resumeable_session_id()

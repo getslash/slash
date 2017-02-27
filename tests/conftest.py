@@ -2,7 +2,6 @@
 import itertools
 import os
 import random
-import shutil
 import tempfile
 from uuid import uuid4
 
@@ -12,7 +11,6 @@ import gossip
 import pytest
 import slash
 import slash.plugins
-from slash import resuming
 from slash.loader import Loader
 from slash.core.result import GlobalResult, Result
 
@@ -120,20 +118,6 @@ class Checkpoint(object):
     @property
     def called(self):
         return self.called_count > 0
-
-
-@pytest.fixture(autouse=True, scope="function")
-def fix_resume_path(request):
-    # pylint: disable=protected-access
-    prev = resuming._RESUME_DIR
-    resuming._RESUME_DIR = tempfile.mkdtemp()
-    resuming.is_db_initialized = False
-
-    @request.addfinalizer
-    def cleanup():  # pylint: disable=unused-variable
-        shutil.rmtree(resuming._RESUME_DIR)
-        resuming._RESUME_DIR = prev
-
 
 @pytest.fixture
 def suite_test(suite, test_type, is_last_test):
