@@ -39,8 +39,7 @@ def test_fixtures_avoid_non_printable_reprs_strs(non_printable):
 def results(filename):
 
     with slash.Session() as s:
-        tests = slash.loader.Loader().get_runnables(filename)
-        session = run_tests_assert_success(tests, session=s)
+        session = run_tests_assert_success(filename, session=s)
     return list(session.results.iter_test_results())
 
 

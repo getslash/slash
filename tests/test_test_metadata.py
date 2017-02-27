@@ -105,8 +105,13 @@ def test_class_name_with_dot_parameters():
 
 
 class TestMetadataTest(TestCase):
+    loaded_tests = []
 
     def setUp(self):
+        @slash.hooks.register
+        def tests_loaded(tests): # pylint: disable=unused-variable
+            TestMetadataTest.loaded_tests = tests
+
         super(TestMetadataTest, self).setUp()
         self.root = self.get_new_path()
         self.filename = os.path.join(self.root, "testfile.py")
@@ -114,8 +119,8 @@ class TestMetadataTest(TestCase):
             f.write(_TEST_FILE_TEMPLATE)
 
         with slash.Session() as s:
-            self.tests = slash.loader.Loader().get_runnables(self.filename)
-            self.session = run_tests_assert_success(self.tests, session=s)
+            self.session = run_tests_assert_success(self.filename, session=s)
+            self.tests = self.loaded_tests
         self.results = list(self.session.results.iter_test_results())
         self.results.sort(key=lambda result: str(result.test_metadata))
 

@@ -34,7 +34,7 @@ def test_scope_management_with_hook_error_test_end():
         tests = slash.loader.Loader().get_runnables(test_something)
         assert tests
         with pytest.raises(CustomException):
-            run_tests_in_session(tests, session=session)
+            run_tests_in_session(test_something, session=session)
 
     assert len(events) == 1
     assert len(tests) > 1

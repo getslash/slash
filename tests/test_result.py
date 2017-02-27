@@ -127,14 +127,19 @@ def test_result_test_garbage_collected(gc_marker):
         def test_something(self):
             pass
 
+    marks = []
+    runnable_tests = []
+    test_funcs = [SomeTest, OtherTest]
+
+    @slash.hooks.register
+    def tests_loaded(tests): # pylint: disable=unused-variable
+        runnable_tests.extend(tests)
+        marks.extend(list(gc_marker.mark(t) for t in runnable_tests[:-1]))
+
     with slash.Session() as s:  # pylint: disable=unused-variable
-        loader = slash.loader.Loader()
-        tests = loader.get_runnables(SomeTest)
-        # we use list(genexp) to prevent 't' from leaking
-        marks = list(gc_marker.mark(t) for t in tests)
-        session = run_tests_assert_success(  # pylint: disable=unused-variable
-            tests + loader.get_runnables(OtherTest))
-        del tests
+        session = run_tests_assert_success(test_funcs)  # pylint: disable=unused-variable
+        del runnable_tests[:]
+
     gc.collect()
     for mark in marks:
         assert mark.destroyed

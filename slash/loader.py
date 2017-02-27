@@ -64,6 +64,8 @@ class Loader(object):
         context.reporter.report_collection_start()
         try:
             for x in iterator:
+                assert x.__slash__.id is None
+                x.__slash__.id = context.session.id_space.allocate()
                 returned.append(x)
                 context.reporter.report_test_collected(returned, x)
         finally:
