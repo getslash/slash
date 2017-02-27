@@ -203,8 +203,6 @@ def _mark_unrun_tests(test_iterator):
 def _get_test_context(test, logging=True):
     ensure_test_metadata(test)
 
-    assert test.__slash__.id is None
-    test.__slash__.id = context.session.id_space.allocate()
     with _set_current_test_context(test):
         result = context.session.results.create_result(test)
         prev_result = context.result

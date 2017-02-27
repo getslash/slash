@@ -2,8 +2,6 @@ import itertools
 import functools
 import sys
 
-import logbook
-
 from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
@@ -13,8 +11,7 @@ from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume,
 from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
 from ..utils.suite_files import iter_suite_file_paths
-
-_logger = logbook.Logger(__name__)
+from ..plugins import manager
 
 def slash_run(args, report_stream=None, resume=False, app_callback=None, working_directory=None):
     if report_stream is None:
@@ -43,6 +40,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                     if app.parsed_args.interactive:
                         collected = itertools.chain([generate_interactive_test()], collected)
                 with app.session.get_started_context():
+                    report_tests_to_backslash(collected)
                     run_tests(collected)
 
             finally:
@@ -57,6 +55,12 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
     return app
 
 slash_resume = functools.partial(slash_run, resume=True)
+
+def report_tests_to_backslash(tests):
+    active_plugins = manager.get_active_plugins()
+    backslash_plugin = active_plugins.get('backslash', None)
+    if backslash_plugin and hasattr(backslash_plugin, 'report_planned_tests'):
+        backslash_plugin.report_planned_tests(tests)
 
 def _collect_tests(app, args):  # pylint: disable=unused-argument
     paths = app.positional_args
@@ -83,4 +87,3 @@ def _extend_paths_from_suite_files(paths):
     paths = list(paths)
     paths.extend(iter_suite_file_paths(suite_files))
     return paths
-
