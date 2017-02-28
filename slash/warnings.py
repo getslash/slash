@@ -1,6 +1,9 @@
+from __future__ import absolute_import
+
 import collections
 
 import logbook
+import warnings
 
 from . import hooks
 from .utils.warning_capture import warning_callback_context
@@ -18,6 +21,7 @@ class SessionWarnings(object):
 
     @contextmanager
     def capture_context(self):
+        warnings.simplefilter('always')
         with warning_callback_context(self._capture_native_warning):
             yield
 
