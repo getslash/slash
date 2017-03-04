@@ -20,7 +20,7 @@ def test_warning_capture_context():
 
 def test_session_adds_simple_filter(request):
     @request.addfinalizer
-    def cleanup():
+    def cleanup():              # pylint: disable=unused-variable
         warnings.simplefilter('default')
     warnings.simplefilter('ignore')
     with Session() as s:
