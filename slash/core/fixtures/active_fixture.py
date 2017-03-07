@@ -10,6 +10,7 @@ class ActiveFixture(object):
         self._test_start_callbacks = []
         self._test_end_callbacks = []
         self._cleanups = []
+        self._test_start_called = False
 
     def test_start(self, callback):
         self._test_start_callbacks.append(callback)
@@ -18,11 +19,16 @@ class ActiveFixture(object):
         self._test_end_callbacks.append(callback)
 
     def call_test_start(self):
+        if self._test_start_called:
+            return
+
+        self._test_start_called = True
         with handling_exceptions():
             for callback in self._test_start_callbacks:
                 callback()
 
     def call_test_end(self):
+        self._test_start_called = False
         with handling_exceptions():
             for callback in self._test_end_callbacks:
                 callback()

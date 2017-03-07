@@ -50,9 +50,10 @@ def test_safe_repr_fixtures(fixture_store):
 
     assert len(variations) == len(first_param_values) * len(second_param_values)
 
-    assert set(str(variation.safe_repr) for variation in variations) == set(
-        'first_fixture=first_fixture{0},second_fixture=second_fixture{1}'.format(i, j)
-        for i, j in itertools.product(range(len(first_param_values)), range(len(second_param_values))))
+    assert set(str(variation.safe_repr) for variation in variations) == {
+        'first_fixture.value={0},second_fixture.value={1}'.format(i, j)
+        for i, j in itertools.product(first_param_values, second_param_values)
+    }
 
 @pytest.fixture
 def parametrized_func(params, param_names):

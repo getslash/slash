@@ -5,8 +5,8 @@ def test_fixture_start_end_test(suite, suite_test, scope):
 
     fixture = suite.slashconf.add_fixture(scope=scope)
 
-    start_event = fixture.add_deferred_event('this.test_start')
-    end_event = fixture.add_deferred_event('this.test_end')
+    start_event = fixture.add_deferred_event('this.test_start', name='fixture_test_start')
+    end_event = fixture.add_deferred_event('this.test_end', name='fixture_test_end')
     test_event = suite_test.add_event()
 
     suite_test.depend_on_fixture(fixture)
