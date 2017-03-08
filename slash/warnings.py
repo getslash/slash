@@ -22,6 +22,7 @@ class SessionWarnings(object):
     @contextmanager
     def capture_context(self):
         warnings.simplefilter('always')
+        warnings.filterwarnings('ignore', category=ImportWarning)
         with warning_callback_context(self._capture_native_warning):
             yield
 
