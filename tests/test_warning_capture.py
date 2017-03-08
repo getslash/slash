@@ -1,5 +1,6 @@
 import warnings
 
+import slash
 from slash import Session
 
 from slash.utils.warning_capture import warning_callback_context
@@ -27,6 +28,18 @@ def test_session_adds_simple_filter(request):
         warnings.warn('bla')
 
     assert len(s.warnings.warnings) == 1
+
+def test_session_warning_calls_hook():
+    notified = []
+
+    @slash.hooks.warning_added.register
+    def warning_added(warning):
+        notified.append(warning)
+
+    with Session() as session:
+        warnings.warn('bla')
+
+    assert list(session.warnings) == notified != []
 
 
 class Warning(object):
