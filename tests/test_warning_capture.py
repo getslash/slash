@@ -32,8 +32,8 @@ def test_session_adds_simple_filter(request):
 def test_session_warning_calls_hook():
     notified = []
 
-    @slash.hooks.warning_added.register
-    def warning_added(warning):
+    @slash.hooks.warning_added.register # pylint: disable=no-member
+    def warning_added(warning):         # pylint: disable=unused-variable
         notified.append(warning)
 
     with Session() as session:

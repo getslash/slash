@@ -28,8 +28,7 @@ class SessionWarnings(object):
 
     def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
         warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
-        hooks.warning_added(warning=warning)
-        self.warnings.append(warning)
+        self.add(warning)
 
     def add(self, warning):
         hooks.warning_added(warning=warning) # pylint: disable=no-member
