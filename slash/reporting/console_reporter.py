@@ -48,7 +48,7 @@ class TerminalWriterWrapper(object):
         fullwidth = self._writer.fullwidth
         if sys.platform == "win32":
             # see py.io documentation for an explanation
-            fullwidth -= 1
+            fullwidth -= 1 # pragma: no cover
 
         return fullwidth
 

@@ -1,5 +1,7 @@
 import warnings
 
+import pytest
+
 import slash
 from slash import Session
 
@@ -41,6 +43,22 @@ def test_session_warning_calls_hook():
 
     assert list(session.warnings) == notified != []
 
+
+def test_cant_reenter_twice():
+    ctx = warning_callback_context(no_op)
+    with ctx:
+        with pytest.raises(RuntimeError):
+            with ctx:
+                pass
+
+def test_cant_exit_no_enter():
+    ctx = warning_callback_context(no_op)
+    with pytest.raises(RuntimeError):
+        ctx.__exit__(None, None, None)
+
+
+def no_op(*args, **kwargs):     # pylint: disable=unused-argument
+    pass
 
 class Warning(object):
 
