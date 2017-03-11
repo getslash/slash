@@ -7,7 +7,7 @@ from contextlib import contextmanager
 import colorama
 
 from .. import conf, plugins
-from .._compat import iteritems, itervalues
+from .._compat import itervalues
 
 
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
@@ -110,20 +110,6 @@ class SlashArgumentParser(argparse.ArgumentParser):
         self._positionals_metavar = metavar
         self.usage += ' {0} [{0} [...]]'.format(metavar)
 
-    def _iter_available_plugins(self):
-        active_plugin_names = set(plugins.manager.get_active_plugins())
-        for plugin_name, plugin in iteritems(plugins.manager.get_installed_plugins()):
-            if plugin_name not in active_plugin_names:
-                yield plugin_name, plugin
-
-class Argument(object):
-    """
-    helper to defer initialization of cmdline parsers to later stages
-    """
-    def __init__(self, *args, **kwargs):
-        super(Argument, self).__init__()
-        self.args = args
-        self.kwargs = kwargs
 
 COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member
 
@@ -141,18 +127,6 @@ class ColorizedString(str):
             return '{}{}{}'.format(self.style, self, COLOR_RESET)
         return str(self)
 
-class Styler(object):
-    should_colorize = None
-
-    def __init__(self, style):
-        self._style = style
-        self._str = None
-
-    def __call__(self, string):
-        if self.should_colorize:
-            return '{0}{1}{2}'.format(self._style, string, COLOR_RESET)
-        return string
-
 def make_styler(style):
     return lambda string: ColorizedString(string, style=style)
 
@@ -166,16 +140,6 @@ class Printer(object):
         self._output_enabled = enable_output
         self._force_color = force_color
         self._color_enabled = enable_color
-
-    def disable_coloring(self):
-        self._color_enabled = False
-
-    def force_color(self):
-        self._force_color = True
-
-    def set_colors(self, should_colorize):
-        self._should_colorize = should_colorize if should_colorize is not None else self._stream.isatty()
-        Styler.should_colorize = self._should_colorize
 
     def _colored_print(self, *args, **print_kwargs):
         self._print(*(getattr(arg, 'colorize', arg.__str__)() for arg in args), **print_kwargs)

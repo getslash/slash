@@ -62,14 +62,12 @@ class _ContextStack(object):
         self._stack = [NullContext()]
 
     def __getattr__(self, attr):
-        if not self._stack:
-            raise AttributeError(attr)
+        assert self._stack
         return getattr(self._stack[-1], attr)
 
     def __dir__(self):
-        if self._stack:
-            return dir(self._stack[-1])
-        return []
+        assert self._stack
+        return dir(self._stack[-1])
 
     def __setattr__(self, attr, value):
         if attr.startswith("_"):
