@@ -21,6 +21,9 @@ class ExtHookTest(TestCase):
         module = __import__("slash.ext.{0}".format(self.module_name), fromlist=[''])
         self.assertEqual(module.value, self.expected_value)
 
+    def test_slash_ext(self):
+        from slash import ext   # pylint: disable=unused-variable
+
     def test_ext_hook_import_nonexistent(self):
         with self.assertRaises(ImportError):
             from slash.ext import nonexistent  # pylint: disable=unused-variable, no-name-in-module

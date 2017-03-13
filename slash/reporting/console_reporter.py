@@ -22,6 +22,7 @@ NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH
 def theme(name):
     return dict((x, True) for x in config['log']['console_theme'][name].split('/'))
 
+
 def from_verbosity(level):
     def decorator(func):
         @wraps(func)
@@ -48,7 +49,7 @@ class TerminalWriterWrapper(object):
         fullwidth = self._writer.fullwidth
         if sys.platform == "win32":
             # see py.io documentation for an explanation
-            fullwidth -= 1
+            fullwidth -= 1  # pragma: no cover
 
         return fullwidth
 
@@ -94,9 +95,6 @@ class TerminalWriterWrapper(object):
     def line(self, *args, **kw):
         self._writer.line(*args, **kw)
         self._line = ''
-
-    def get_line_in_progress(self):
-        return self._line
 
     def clear_line_in_progress(self):
         if self._line and self._writer.hasmarkup:
@@ -282,7 +280,6 @@ class ConsoleReporter(ReporterInterface):
                     self._indent_with(err.message, 4), **theme('tb-error'))
                 self._terminal.write('\n')
 
-
     def _report_additional_test_details(self, result):
         if result.is_success():
             return
@@ -387,7 +384,7 @@ class ConsoleReporter(ReporterInterface):
     def report_test_failure_added(self, test, error):
         self._report_test_error_failure_added(test, error, 'F')
 
-    def _report_test_error_failure_added(self, test, e, errtype): # pylint: disable=unused-argument
+    def _report_test_error_failure_added(self, test, e, errtype):  # pylint: disable=unused-argument
         if test is None:
             if not isinstance(e.exception, CLI_ABORT_EXCEPTIONS):
                 self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
@@ -413,7 +410,6 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.write('ERROR: {0}'.format(message), **theme('inline-error'))
         self._terminal.write('\n')
         self.notify_after_console_output()
-
 
     def _format_duration(self, duration):
         seconds = duration % 60

@@ -28,7 +28,7 @@ class Plugin(PluginInterface):
     def activate(self):
         try:
             import coverage
-        except ImportError:
+        except ImportError: # pragma: no cover
             raise RuntimeError('The coverage plugin requires the coverage package to be installed. Please run `pip install coverage` to install it')
 
         sources = slash_config.root.plugin_config.coverage.sources or None

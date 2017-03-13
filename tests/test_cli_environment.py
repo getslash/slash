@@ -78,6 +78,12 @@ class ArgumentParsingTest(OutputCaptureTest):
         self.assertEqual(self.config.root.int_value, 0)
         self.assertEqual(self.config.root.string_value, "")
 
+    def test_config_assign_missing_assignment(self):
+        with self.assertRaises(SystemExit) as caught:
+            with self._cli(['-o', 'blap']):
+                pass
+        self.assertNotEqual(caught.exception.code, 0)
+
 
 class PluginCommandLineArgumentsTest(OutputCaptureTest):
 

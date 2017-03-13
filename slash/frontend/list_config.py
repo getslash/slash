@@ -23,7 +23,7 @@ def list_config(args, report_stream=sys.stdout):
     args = _parse_args(args)
     _print = Printer(report_stream, force_color=args.force_color, enable_color=args.enable_color)
 
-    filters = _pare_filters(args.paths)
+    filters = _parse_filters(args.paths)
 
     with slash.Session():
         slash.site.load()
@@ -38,7 +38,7 @@ def list_config(args, report_stream=sys.stdout):
     return 0
 
 
-def _pare_filters(paths):
+def _parse_filters(paths):
     returned = set()
     for p in paths:
         returned.update(_iter_subpaths(p))
