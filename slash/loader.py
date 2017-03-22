@@ -23,6 +23,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
+from .resuming import ResumedTestData
 
 _logger = Logger(__name__)
 
@@ -82,12 +83,21 @@ class Loader(object):
             iterator = self._iter_test_address(thing)
         elif isinstance(thing, RunnableTest):
             iterator = [thing]
+        elif isinstance(thing, ResumedTestData):
+            iterator = self._iter_test_resume(thing)
         elif not isinstance(thing, RunnableTestFactory):
             thing = self._get_runnable_test_factory(thing)
             iterator = thing.generate_tests(fixture_store=context.session.fixture_store)
 
         return (t for t in iterator if matcher is None or matcher.matches(t.__slash__))
 
+    def _iter_test_resume(self, resume_state):
+        for test in self._iter_path(resume_state.file_name):
+            if resume_state.function_name == test.__slash__.address_in_file:
+                if resume_state.variation:
+                    if not resume_state.variation == test.get_variation().id:
+                        continue
+                yield test
 
     def _iter_test_address(self, address):
         if ':' in address:
@@ -111,7 +121,6 @@ class Loader(object):
         if '(' in test_address_in_file:
             if address_in_file == test_address_in_file[:test_address_in_file.index('(')]:
                 return True
-
         return False
 
     def _iter_path(self, path):
