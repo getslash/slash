@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`476` ``slash resume`` was greatly improved, and can now also fetch resumed tests from a recorded session in Backslash, if its plugin is configured
 * :feature:`524` ``slash list``, ``slash list-config`` and ``slash list-plugins`` now supports ``--force-color``/``--no-color`` flags. The default changed from colored to colored only for tty.
 * :bug:`516 major` Fire test_interrupt earlier and properly mark session as interrupted when a test is interrupted
 * :feature:`513` Add deep parametrization info (including nested fixtures) to the metadata variation info
