@@ -167,8 +167,10 @@ def make_styler(style):
 UNDERLINED = '\x1b[4m'
 
 
-def error_abort(message, *args):
+def error_abort(message, *args, **kwargs):
+    stream = kwargs.pop('stream', sys.stderr)
+    assert not kwargs
     if args:
         message = message.format(*args)
-    print(message, file=sys.stderr)
+    print(message, file=stream)
     sys.exit(-1)
