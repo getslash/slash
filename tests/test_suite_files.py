@@ -104,13 +104,52 @@ def test_files_containing_files(filename, paths, use_relpath):
     assert [p for p, _ in suite_files.iter_suite_file_paths([filename])] == paths + paths[::-1]
 
 
+def test_slash_run_with_suite_file(suite, suite_test, tmpdir):
+    path = suite.commit()
+    with tmpdir.join('suitefile').open('w') as suite_file:  # pylint: disable=redefined-outer-name
+        _fill_suite_file(path, [suite_test], suite_file=suite_file)
+
+    for t in suite:
+        if t is not suite_test:
+            t.expect_deselect()
+
+    suite.run(args=[], additional_args=['-f', suite_file.name])
+
+
+def test_slash_run_with_suite_file_invalid_test(suite, suite_test, tmpdir):
+    path = suite.commit()
+
+    additional_test = suite[0]
+    assert additional_test is not suite_test
+
+    with tmpdir.join('suitefile').open('w') as suite_file:  # pylint: disable=redefined-outer-name
+        _fill_suite_file(path, [additional_test], suite_file=suite_file, corrupt=False)
+        _fill_suite_file(path, [suite_test], suite_file=suite_file, corrupt=True)
+
+    for t in suite:
+        t.expect_deselect()
+
+    summary = suite.run(args=[], additional_args=['-f', suite_file.name])
+    assert summary.exit_code != 0
+    assert 'Cannot find test' in summary.get_console_output()
+    assert 'CORRUPT' in summary.get_console_output()
+
+
+def _fill_suite_file(root_path, tests, suite_file, corrupt=False):  # pylint: disable=redefined-outer-name
+    for test in tests:
+        suite_file.write(test.get_full_address(root_path))
+        if corrupt:
+            suite_file.write('CORRUPT')
+        suite_file.write('\n')
+
+
 @pytest.fixture
 def filename(tmpdir):
     return str(tmpdir.join('filename.txt'))
 
 
 @pytest.fixture
-def paths(request, tmpdir, use_relpath_for_dir):
+def paths(request, tmpdir, use_relpath_for_dir): # pylint: disable=redefined-outer-name
     basenames = ['file{0}.py'.format(i) for i in range(10)]
     basenames.extend(['file100.py:SomeClass',
                       'file101.py:Someclass.test_method'])

@@ -10,7 +10,7 @@ from functools import partial
 import colorama
 import slash
 from slash.exceptions import CannotLoadTests
-from slash.utils.cli_utils import UNDERLINED, make_styler, error_abort
+from slash.utils.cli_utils import UNDERLINED, make_styler
 from slash.utils.python import get_underlying_func
 from slash.utils.suite_files import iter_suite_file_paths
 
@@ -34,7 +34,7 @@ def _get_parser():
     return parser
 
 
-def slash_list(args, report_stream=sys.stdout):
+def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
     _print = partial(print, file=report_stream)
 
     parser = _get_parser()
@@ -61,7 +61,8 @@ def slash_list(args, report_stream=sys.stdout):
         if len(runnables):
             return 0
     except CannotLoadTests as e:
-        error_abort('Could not load tests ({})'.format(e))
+        print('Could not load tests ({})'.format(e), file=error_stream)
+        return -1
     print('No tests were found!', file=sys.stderr)
     return not int(parsed_args.allow_empty)
 

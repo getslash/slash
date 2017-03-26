@@ -47,6 +47,7 @@ def test_loader_skips_empty_dirs(tmpdir):
 
     with Session():
         runnables = Loader().get_runnables(str(tests_dir))
+
     assert runnables == []
 
 
