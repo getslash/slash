@@ -154,8 +154,10 @@ class Printer(object):
             print_func(*args, **print_kwargs)
 
 
-def error_abort(message, *args):
+def error_abort(message, *args, **kwargs):
+    stream = kwargs.pop('stream', sys.stderr)
+    assert not kwargs
     if args:
         message = message.format(*args)
-    print(message, file=sys.stderr)
+    print(message, file=stream)
     sys.exit(-1)

@@ -1,5 +1,8 @@
+from __future__ import print_function
+import functools
 import os
 import re
+
 from slash.frontend.slash_list import slash_list
 from slash._compat import StringIO
 from .utils.suite_writer import Suite
@@ -75,6 +78,55 @@ def test_slash_list_tests_relative_or_not(suite, relative):
     assert output_lines
     for filename in output_lines:
         assert os.path.isabs(filename) == (not relative)
+
+
+@pytest.mark.parametrize('invalid', [None, 'test', 'method'])
+@pytest.mark.parametrize('allow_empty', [True, False])
+def test_slash_list_suite_file_incorrect_names(tmpdir, invalid, allow_empty):
+
+    with tmpdir.join('test_file.py').open('w') as f:
+        _print = functools.partial(print, file=f)
+
+        _print('import slash')
+        _print('class TestSomething(slash.Test):')
+        _print('    def test_method(self):')
+        _print('        pass')
+        _print()
+        _print('def test_function():')
+        _print('    pass')
+
+    function_name_remainder = method_name_remainder = ''
+
+    if invalid == 'test':
+        function_name_remainder = 'f'
+    elif invalid == 'method':
+        method_name_remainder = 'm'
+    elif invalid is not None:
+        raise NotImplementedError() # pragma: no cover
+
+    error_stream = StringIO()
+
+    with tmpdir.join('suitefile').open('w') as suite_file:
+        _print = functools.partial(print, file=suite_file)
+        _print('{}:TestSomething.test_method{}'.format(f.name, method_name_remainder))
+        _print('{}:test_function{}'.format(f.name, function_name_remainder))
+
+    args = ['-f', suite_file.name]
+    if allow_empty:
+        args.append('--allow-empty') # make sure allow-empty does not affect invalid name lookup
+    result = slash_list(args, error_stream=error_stream)
+
+    if invalid is None:
+        assert result == 0
+    else:
+        assert result != 0
+        assert 'Could not load tests' in error_stream.getvalue()
+        if invalid == 'test':
+            assert 'test_functionf' in error_stream.getvalue()
+        elif invalid == 'method':
+            assert 'test_methodm' in error_stream.getvalue()
+        else:
+            raise NotImplementedError() # pragma: no cover
 
 
 def _strip(line):
