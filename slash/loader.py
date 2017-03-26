@@ -106,11 +106,23 @@ class Loader(object):
             path = address
             address_in_file = None
 
-        for test in self._iter_path(path):
+
+        tests = list(self._iter_path(path))
+
+        # special case for directories where we couldn't load any tests (without filter)
+        if not tests and address_in_file is None:
+            return
+
+        matched = False
+        for test in tests:
+
             if address_in_file is not None:
                 if not self._address_in_file_matches(address_in_file, test):
                     continue
+            matched = True
             yield test
+        if not matched:
+            raise CannotLoadTests('Cannot find test(s) for {!r}'.format(address))
 
     def _address_in_file_matches(self, address_in_file, test):
         if address_in_file == test.__slash__.factory_name:
