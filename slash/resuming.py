@@ -65,8 +65,9 @@ def clean_old_entries():
     with connecting_to_db() as conn:
         old_sessions_query = conn.query(SessionMetadata).filter \
                                                     (SessionMetadata.created_at < datetime.now() - timedelta(days=_MAX_DAYS_SAVED_SESSIONS))
-        stale_sessions_ids = [session.session_id for session in old_sessions_query.all()]
-        conn.query(ResumeState).filter(ResumeState.session_id.in_(stale_sessions_ids)).delete(synchronize_session=False)
+        old_sessions_ids = [session.session_id for session in old_sessions_query.all()]
+        if old_sessions_ids:
+            conn.query(ResumeState).filter(ResumeState.session_id.in_(old_sessions_ids)).delete(synchronize_session=False)
         old_sessions_query.delete(synchronize_session=False)
 
 def save_resume_state(session_result, collected):
