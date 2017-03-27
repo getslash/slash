@@ -47,6 +47,7 @@ def main():
 
 def slash_version(_):
     print('Slash v{0}'.format(__version__))
+    return 0
 
 ################################## Boilerplate ################################
 _DEFAULT_LOG_LEVEL = logbook.WARNING
