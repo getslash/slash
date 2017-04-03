@@ -3,6 +3,8 @@ import functools
 import inspect
 import sys
 import ast
+import pickle
+
 from sentinels import NOTHING
 
 from .._compat import reraise, PY2, PYPY
@@ -34,6 +36,18 @@ def wraps(func, preserve=()):
             setattr(decorator, p, orig)
     return decorator
 
+
+def try_pickle(data):
+    try:
+        return pickle.dumps(data)
+    except TypeError:
+        return None
+
+def try_unpickle(thing):
+    if PY2:
+        return pickle.loads(thing)
+    else:
+        return pickle.loads(thing.data)
 
 def get_underlying_func(func):
     while True:

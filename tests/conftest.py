@@ -152,6 +152,20 @@ def suite():
     returned.populate()
     return returned
 
+@pytest.fixture
+def parallel_suite_test(parallel_suite, test_type, is_last_test):
+    returned = parallel_suite.add_test(type=test_type)
+    if not is_last_test:
+        _ = parallel_suite.add_test(type=test_type)
+
+    return returned
+
+@pytest.fixture
+def parallel_suite():
+    returned = Suite(debug_info=False, is_parallel=True)
+    returned.populate()
+    return returned
+
 
 @pytest.fixture
 def slash_session():

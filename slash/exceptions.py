@@ -16,6 +16,10 @@ class NoActiveSession(SlashException):
     pass
 
 
+class ParallelServerIsDown(SlashException):
+    pass
+
+
 class CannotLoadTests(SlashException):
     pass
 
