@@ -1,7 +1,6 @@
 import itertools
 from contextlib import contextmanager
 from uuid import uuid4
-
 from .code_element import CodeElement
 from .parameter import Parameter
 
@@ -121,12 +120,16 @@ class Function(CodeElement):
             p.write_decorator(code_formatter)
 
     def _write_parameter_values(self, code_formatter):
-        if not self.suite.debug_info:
+        if (not self.suite.debug_info) and (not self.suite.is_parallel):
             return
 
         for p in self._iter_notify_parameters():
-            code_formatter.writeln('__ut__.notify_parameter_value({0!r}, {1})'.format(
-                p.id, p.name))
+            if self.suite.is_parallel:
+                code_formatter.writeln("slash.context.result.data.setdefault('param_values', {{}})[{0!r}] = {1}".format(
+                    p.id, p.name))
+            else:
+                code_formatter.writeln('__ut__.notify_parameter_value({0!r}, {1})'.format(
+                    p.id, p.name))
 
     def _iter_notify_parameters(self):
         return itertools.chain(

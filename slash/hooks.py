@@ -38,6 +38,7 @@ _define('test_success', doc="Called on test success")
 _define('test_error', doc="Called on test error")
 _define('test_failure', doc="Called on test failure")
 _define('test_skip', doc="Called on test skip", arg_names=("reason",))
+_define('worker_connected', doc="Called on new worker startup", arg_names=("session_id",))
 
 _define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
 _define('fact_set', doc='Called when a fact is set for a test', arg_names=['name', 'value'])

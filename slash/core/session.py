@@ -34,6 +34,7 @@ class Session(Activatable):
         self._complete = False
         self._active = False
         self._active_context = None
+        self.parallel_manager = None
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)
@@ -51,6 +52,9 @@ class Session(Activatable):
 
     def get_skip_exception_types(self):
         return self._skip_exc_types
+
+    def is_master(self):
+        return not self.parallel_manager is None
 
     @property
     def started(self):

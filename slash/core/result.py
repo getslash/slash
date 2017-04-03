@@ -3,10 +3,9 @@ import itertools
 import os
 import sys
 from numbers import Number
-
 import gossip
 import logbook
-
+import pickle
 from .._compat import itervalues, OrderedDict
 from ..ctx import context
 from .. import hooks
@@ -16,6 +15,7 @@ from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
+from ..utils.python import try_pickle, try_unpickle
 
 _logger = logbook.Logger(__name__)
 
@@ -49,6 +49,40 @@ class Result(object):
     def is_global_result(self):
         return False
 
+    def serialize(self):
+        pickled_data = try_pickle(self.data)
+        pickled_details = try_pickle(self.details)
+
+        return {
+                'is_success_finished': self.is_success_finished(),
+                'is_started' : self.is_started(),
+                'is_finished' : self.is_finished(),
+                'is_interrupted' : self.is_interrupted(),
+                'errors' : pickle.dumps(self._errors),
+                'failures' : pickle.dumps(self._failures),
+                'skips' : pickle.dumps(self._skips),
+                'data' : pickled_data,
+                'details' : pickled_details
+            }
+
+    def deserialize(self, result_dict):
+        for failure in try_unpickle(result_dict['failures']):
+            self.add_failure(failure)
+        for error in try_unpickle(result_dict['errors']):
+            self.add_error(error)
+        for skip in try_unpickle(result_dict['skips']):
+            self.add_skip(skip)
+        if result_dict['is_started']:
+            self.mark_started()
+        if result_dict['is_finished']:
+            self.mark_finished()
+        if result_dict['is_interrupted']:
+            self.mark_interrupted()
+        if result_dict['data']:
+            self.data = try_unpickle(result_dict['data'])
+        if result_dict['details']:
+            self.details = try_unpickle(result_dict['details'])
+
     def add_exception(self, exc_info=None):
         """Adds the currently active exception, assuming it wasn't already added to a result
         """
@@ -76,7 +110,7 @@ class Result(object):
                 # Test was interrupted
                 interrupted_test = self.is_interrupted()
                 self.mark_interrupted()
-                if not interrupted_test:
+                if not interrupted_test and not context.session.is_master():
                     with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."):
                         hooks.test_interrupt() # pylint: disable=no-member
 
@@ -200,7 +234,8 @@ class Result(object):
                 error.mark_as_failure()
             _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'to_error_log': 1})
             error_list.append(error)
-            hooks.error_added(result=self, error=error)  # pylint: disable=no-member
+            if not context.session or not context.session.is_master():
+                hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)

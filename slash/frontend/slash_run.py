@@ -1,7 +1,6 @@
 import itertools
 import functools
 import sys
-
 from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
@@ -11,6 +10,9 @@ from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
 from ..utils.suite_files import iter_suite_file_paths
 from ..plugins import manager
+from ..parallel.parallel_manager import ParallelManager
+from ..parallel.worker import Worker
+
 
 def slash_run(args, report_stream=None, resume=False, app_callback=None, working_directory=None):
     if report_stream is None:
@@ -43,7 +45,16 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 collected = list(collected)
                 with app.session.get_started_context():
                     report_tests_to_backslash(collected)
-                    run_tests(collected)
+                    if config.root.run.parallel:
+                        if config.root.run.worker_id is not None:
+                            worker = Worker(config.root.run.worker_id, app.session.id, collected)
+                            worker.start()
+                        else:
+                            app.session.parallel_manager = ParallelManager(args)
+                            app.session.parallel_manager.start_server_in_thread(collected)
+                            app.session.parallel_manager.start_workers()
+                    else:
+                        run_tests(collected)
 
             finally:
                 save_resume_state(app.session.results, collected)
