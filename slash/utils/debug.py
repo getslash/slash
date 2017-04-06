@@ -39,14 +39,21 @@ def _tb_type_value(exc_info):  # pragma: no cover
 
 _KNOWN_DEBUGGERS = [
     # order is important here!
-    _debugger("pudb.post_mortem", _tb_type_value),
-    _debugger("ipdb.post_mortem", _only_tb),
-    _debugger("pdb.post_mortem", _only_tb),
-    ]
+    {"name": "pudb", "debug_func_str": "pudb.post_mortem", "exc_info_transform": _tb_type_value},
+    {"name": "ipdb", "debug_func_str": "ipdb.post_mortem", "exc_info_transform": _only_tb},
+    {"name": "pdb", "debug_func_str": "pdb.post_mortem", "exc_info_transform": _only_tb},
 
+]
+
+
+def set_prefered_debugger(debugger_name):
+    for i, debugger in enumerate(_KNOWN_DEBUGGERS):
+        if debugger["name"] == debugger_name:
+            _KNOWN_DEBUGGERS.pop(i)
+            _KNOWN_DEBUGGERS.insert(0,debugger)
+            break
 
 def debug_if_needed(exc_info=None):
-
     if not config.root.debug.enabled:
         return
     if exc_info is None:
@@ -63,7 +70,11 @@ def debug_if_needed(exc_info=None):
 def launch_debugger(exc_info):
     trigger_hook.entering_debugger(exc_info=exc_info) # pylint: disable=no-member
 
-    for debug_func in _KNOWN_DEBUGGERS:
+    if config.root.debug.prefered:
+        set_prefered_debugger(config.root.debug.prefered)
+
+    for debugger in _KNOWN_DEBUGGERS:
+        debug_func = _debugger(debugger["debug_func_str"], debugger["exc_info_transform"])
         try:
             debug_func(exc_info)
         except NotImplementedError:   # pragma: no cover
