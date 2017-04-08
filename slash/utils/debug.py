@@ -8,8 +8,10 @@ from ..conf import config
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..ctx import context
 
+import warnings
 
-def _debugger(debug_function_str, exc_info_transform=None):  # pragma: no cover
+
+def _debugger(debug_function_str, exc_info_transform=None, name=None):  # pragma: no cover
     module_name, function_name = debug_function_str.rsplit(".", 1)
     def debugger(exc_info):
         try:
@@ -23,6 +25,7 @@ def _debugger(debug_function_str, exc_info_transform=None):  # pragma: no cover
         _notify_going_into_debugger(orig_exc_info)
         func(*exc_info)
     debugger.__name__ = debug_function_str
+    debugger.__external_name__ = name
     return debugger
 
 def _notify_going_into_debugger(exc_info):
@@ -39,9 +42,9 @@ def _tb_type_value(exc_info):  # pragma: no cover
 
 _KNOWN_DEBUGGERS = [
     # order is important here!
-    _debugger("pudb.post_mortem", _tb_type_value),
-    _debugger("ipdb.post_mortem", _only_tb),
-    _debugger("pdb.post_mortem", _only_tb),
+    _debugger("pudb.post_mortem", _tb_type_value, name='pudb'),
+    _debugger("ipdb.post_mortem", _only_tb, name='ipdb'),
+    _debugger("pdb.post_mortem", _only_tb, name='pdb'),
     ]
 
 
@@ -63,10 +66,23 @@ def debug_if_needed(exc_info=None):
 def launch_debugger(exc_info):
     trigger_hook.entering_debugger(exc_info=exc_info) # pylint: disable=no-member
 
-    for debug_func in _KNOWN_DEBUGGERS:
+    debugger_name = config.root.debug.debugger
+
+    debuggers = list(_KNOWN_DEBUGGERS)
+    if debugger_name is not None:
+        for index, debugger in enumerate(debuggers):
+            if debugger_name == debugger.__external_name__:
+                debuggers.insert(0, debuggers.pop(index))
+                break
+        else:
+            warnings.warn('Specified debugger {!r} is not a known debugger name'.format(debugger_name))
+
+    for debug_func in debuggers:
         try:
             debug_func(exc_info)
         except NotImplementedError:   # pragma: no cover
+            if debug_func.__external_name__ == debugger_name:
+                warnings.warn('Specified debugger {!r} is not available'.format(debugger_name))
             continue
         else:
             break
