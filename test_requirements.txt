@@ -1,0 +1,10 @@
+coverage
+coveralls
+munch
+pytest
+pytest-xdist
+pytest-capturelog
+pytest-cov
+pytest-timeout
+pyforge
+pylint>=1.7
