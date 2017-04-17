@@ -7,7 +7,7 @@ test: env
 	.env/bin/py.test --cov=slash --cov-report=html tests
 
 pylint: env
-	.env/bin/pylint --rcfile=.pylintrc slash tests setup.py
+	.env/bin/pylint -j 4 --rcfile=.pylintrc slash tests setup.py
 
 env: .env/.up-to-date
 
