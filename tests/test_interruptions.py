@@ -56,7 +56,7 @@ def test_sigterm_on_hook(suite, hook_name):
     def session_start():  # pylint: disable=unused-variable
         raise slash.exceptions.TerminatedException('Terminated by signal')
 
-    assert len(suite)
+    assert suite
     for index, test in enumerate(suite):
         if index == 0 and hook_name == 'test_start':
             # first test should be interrupted...

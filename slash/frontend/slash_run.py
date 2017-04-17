@@ -66,12 +66,11 @@ def _collect_tests(app, args):  # pylint: disable=unused-argument
     if not paths and not app.parsed_args.interactive:
         paths = config.root.run.default_sources
 
-
     if not paths and not app.parsed_args.interactive:
         raise CannotLoadTests("No tests specified")
 
     collected = app.test_loader.get_runnables(paths)
-    if len(collected) == 0 and not app.parsed_args.interactive:
+    if not collected and not app.parsed_args.interactive:
         raise CannotLoadTests("No tests could be collected")
 
     return collected
