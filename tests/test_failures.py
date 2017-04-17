@@ -46,7 +46,7 @@ def test_add_failure_error_object_marked_as_failure():
     with slash.Session() as s:
         with s.get_started_context():
             slash.add_failure('msg')
-        [failure] = slash.context.result.get_failures()
+        [failure] = slash.context.result.get_failures() # pylint: disable=unbalanced-tuple-unpacking
     assert failure.is_failure()
 
 

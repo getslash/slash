@@ -62,13 +62,14 @@ def connecting_to_db():
         max_retries = 3
         for i in range(max_retries):
             try:
-                new_session.commit()
+                new_session.commit() # pylint: disable=no-member
             except OperationalError:
                 if i == max_retries - 1:
                     raise
 
 
 def clean_old_entries():
+    # pylint: disable=no-member
     with connecting_to_db() as conn:
         old_sessions_query = conn.query(SessionMetadata).filter \
             (SessionMetadata.created_at < datetime.now() - timedelta(days=_MAX_DAYS_SAVED_SESSIONS))
@@ -96,14 +97,15 @@ def save_resume_state(session_result, collected):
         tests_to_resume.append(test_to_resume)
 
     with connecting_to_db() as conn:
-        conn.add(session_metadata)
-        conn.add_all(tests_to_resume)
+        conn.add(session_metadata) # pylint: disable=no-member
+        conn.add_all(tests_to_resume) # pylint: disable=no-member
     _logger.debug('Saved resume state to DB')
 
 
 def get_last_resumeable_session_id():
     current_folder = os.path.abspath(os.getcwd())
     with connecting_to_db() as conn:
+         # pylint: disable=no-member
         session_id = conn.query(SessionMetadata).filter(SessionMetadata.src_folder == current_folder) \
                                                 .order_by(SessionMetadata.created_at.desc()).first()
         if not session_id:
@@ -114,6 +116,7 @@ def get_last_resumeable_session_id():
 def get_tests_to_resume(session_id):
     returned = []
     with connecting_to_db() as conn:
+         # pylint: disable=no-member
         session_metadata = conn.query(SessionMetadata).filter(SessionMetadata.session_id == session_id).first()
         if session_metadata:
             session_tests = conn.query(ResumeState).filter(ResumeState.session_id == session_id).all()

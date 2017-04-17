@@ -79,7 +79,7 @@ class _ContextStack(object):
         return ctx
 
     def pop(self):
-        assert len(self._stack) != 0
+        assert self._stack
         if len(self._stack) == 1:
             raise RuntimeError("No more contexts to pop")
         return self._stack.pop(-1)

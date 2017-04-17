@@ -5,9 +5,6 @@ class FixtureBase(object):
     parametrization_ids = None
     names = None
 
-    def __init__(self):
-        super(FixtureBase, self).__init__()
-
     def get_value(self, kwargs, active_fixture):
         raise NotImplementedError()  # pragma: no cover
 
