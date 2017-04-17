@@ -19,6 +19,7 @@ Base = declarative_base()
 _session = sessionmaker()
 _db_initialized = False
 
+
 class ResumeState(Base):
     __tablename__ = 'resume_state'
     id = Column(Integer, primary_key=True)
@@ -27,23 +28,28 @@ class ResumeState(Base):
     function_name = Column(String, nullable=False, index=True)
     variation = Column(String, index=True)
 
+
 class SessionMetadata(Base):
     __tablename__ = 'session_metadata'
     session_id = Column(String, primary_key=True)
     src_folder = Column(String, nullable=False, index=True)
     created_at = Column(DateTime, nullable=False, index=True)
 
+
 class ResumedTestData(object):
+
     def __init__(self, file_name, function_name, variation=None):
         self.file_name = file_name
         self.function_name = function_name
         self.variation = variation
+
 
 def _init_db():
     ensure_directory(_RESUME_DIR)
     engine = create_engine('sqlite:///{0}/{1}'.format(_RESUME_DIR, _DB_NAME))
     _session.configure(bind=engine)
     Base.metadata.create_all(engine)
+
 
 @contextmanager
 def connecting_to_db():
@@ -61,20 +67,22 @@ def connecting_to_db():
                 if i == max_retries - 1:
                     raise
 
+
 def clean_old_entries():
     with connecting_to_db() as conn:
         old_sessions_query = conn.query(SessionMetadata).filter \
-                                                    (SessionMetadata.created_at < datetime.now() - timedelta(days=_MAX_DAYS_SAVED_SESSIONS))
+            (SessionMetadata.created_at < datetime.now() - timedelta(days=_MAX_DAYS_SAVED_SESSIONS))
         old_sessions_ids = [session.session_id for session in old_sessions_query.all()]
         if old_sessions_ids:
             conn.query(ResumeState).filter(ResumeState.session_id.in_(old_sessions_ids)).delete(synchronize_session=False)
         old_sessions_query.delete(synchronize_session=False)
 
+
 def save_resume_state(session_result, collected):
     session_metadata = SessionMetadata(
-                    session_id=session_result.session.id,
-                    src_folder=os.path.abspath(os.getcwd()),
-                    created_at=datetime.now())
+        session_id=session_result.session.id,
+        src_folder=os.path.abspath(os.getcwd()),
+        created_at=datetime.now())
 
     passed_tests_names = [result.test_metadata for result in session_result.iter_test_results() if result.is_success_finished()]
     collected_test_names = [test.__slash__ for test in collected]
@@ -92,6 +100,7 @@ def save_resume_state(session_result, collected):
         conn.add_all(tests_to_resume)
     _logger.debug('Saved resume state to DB')
 
+
 def get_last_resumeable_session_id():
     current_folder = os.path.abspath(os.getcwd())
     with connecting_to_db() as conn:
@@ -100,6 +109,7 @@ def get_last_resumeable_session_id():
         if not session_id:
             raise CannotResume("No sessions found for folder {0}".format(current_folder))
         return session_id.session_id
+
 
 def get_tests_to_resume(session_id):
     returned = []
@@ -120,6 +130,7 @@ def get_tests_to_resume(session_id):
         returned = resume_remote_session(session_id)
     return returned
 
+
 def resume_remote_session(session_id):
     active_plugins = manager.get_active_plugins()
     backslash_plugin = active_plugins.get('backslash', None)
@@ -132,6 +143,7 @@ def resume_remote_session(session_id):
     remote_tests = backslash_plugin.get_tests_to_resume(session_id)
     returned = [ResumedTestData(test.info['file_name'], test.info['name'], test.variation) for test in remote_tests]
     return returned
+
 
 class CannotResume(Exception):
     pass
