@@ -1,6 +1,8 @@
 import itertools
 import sys
 
+from ..ctx import context
+
 _sort_key_generator = itertools.count()
 
 class Metadata(object):
@@ -51,6 +53,11 @@ class Metadata(object):
                 self._class_name = None
 
         self._interactive = False
+
+    def allocate_id(self):
+        assert self.id is None
+        self.id = context.session.id_space.allocate()
+
 
     def set_sort_key(self, key):
         self._sort_key = key

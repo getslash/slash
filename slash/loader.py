@@ -65,7 +65,7 @@ class Loader(object):
         try:
             for x in iterator:
                 assert x.__slash__.id is None
-                x.__slash__.id = context.session.id_space.allocate()
+                x.__slash__.allocate_id()
                 returned.append(x)
                 context.reporter.report_test_collected(returned, x)
         finally:
