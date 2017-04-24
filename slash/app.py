@@ -32,7 +32,6 @@ class Application(object):
         self._positional_args = None
         self._parsed_args = None
         self._reporter = None
-        self._interactive_enabled = False
         self.test_loader = Loader()
         self.session = None
         self._working_directory = None
