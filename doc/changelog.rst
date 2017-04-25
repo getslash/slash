@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`508` Added optional ``end_message`` argument to ``notify_if_slow_context``, allowing better verbosity of long operations
 * :bug:`490` Fixed behavior of plugin dependencies in cases involving mixed usage of plugin-level and hook-level dependencies
 * :feature:`544` Added ``debug.debugger`` configuration to enable specifying preferred debugger. You can now pass ``-o debug.debugger=ipdb`` to prefer ipdb over pudb, for example
 * :feature:`476` ``slash resume`` was greatly improved, and can now also fetch resumed tests from a recorded session in Backslash, if its plugin is configured
