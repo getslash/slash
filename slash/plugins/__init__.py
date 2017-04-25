@@ -294,7 +294,7 @@ class PluginManager(object):
 
         if has_session_end and not has_session_start:
             hook = gossip.get_hook('slash.session_start')
-            returned.append((hook.register, lambda: None, {'toggles_on': plugin.__toggles__['session']}))
+            returned.append((hook, lambda: None, {'toggles_on': plugin.__toggles__['session']}))
             register_no_op_hooks.discard(hook.full_name)
 
         for hook_name in register_no_op_hooks:
