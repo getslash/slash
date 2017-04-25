@@ -233,7 +233,7 @@ class PluginManager(object):
 
         register_no_op_hooks = set()
         if global_provides:
-            register_no_op_hooks = set([hook.full_name for hook in gossip.get_group('slash').get_hooks()])
+            register_no_op_hooks.update(hook.full_name for hook in gossip.get_group('slash').get_hooks())
 
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
