@@ -1,6 +1,7 @@
 *.pyc
 .vagrant
 *.egg-info
+.eggs
 build
 .tox
 flycheck-*

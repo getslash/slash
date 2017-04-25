@@ -1,0 +1,20 @@
+ptyprocess; implementation_name=='pypy' and python_version<'2.7'
+
+arrow
+colorama
+confetti>=2.4.1
+dessert>=1.0.2
+emport>=1.1.3
+gossip>=2.2.0
+Logbook>=0.11.2
+orderedset>=2.0.0
+requests>=1.1.0
+SQLAlchemy
+raven
+py>=1.4.20
+pyparsing
+
+IPython==1.2.1; implementation_name=='pypy'
+IPython; implementation_name!='pypy'
+
+contextlib2; python_version<'3.3'
