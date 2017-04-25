@@ -22,7 +22,6 @@ Search Paths
 
 First, the paths in ``plugins.search_paths`` are searched for python files. For each file, a function called ``install_plugins`` is called (assuming it exists), and this gives the file a chance to install its plugins.
 
-*TODO* more ways of installing.
 
 Plugin Installation
 -------------------
@@ -130,10 +129,33 @@ As more logic is added into plugins it becomes more likely for exceptions to occ
 Plugin Dependencies
 -------------------
 
-You can manage plugin dependencies through the `gossip dependency mechanism <http://gossip.readthedocs.org/en/latest/hook_dependencies.html>`_. The easiest way is using the needs/provides model, also supported by Slash plugins.
+Slash supports defining dependencies between plugins, in a mechanism closely related to to `gossip's hook dependencies <http://gossip.readthedocs.org/en/latest/hook_dependencies.html>`_. The purpose of these dependencies is to make sure a certain hook registration in a specific plugin (or all such hooks for that matter) is called before or after equivalent hooks on other plugins.
 
-The idea is to have plugins specify what they need and what they provide in terms of tokens (basically arbitrary strings that have a meaning to the reader). Slash, by using *gossip* will take care of the invocation order to preserve the constraint:
+Notable examples of why you might want this include, among many other cases:
 
+* Plugins reporting test status needing a state computed by other plugins
+* Error handling plugins wanting to be called first in certain events
+* Log collection plugins wanting to be called only after all interesting code paths are logged
+
+
+Defining Plugin Dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Defining dependencies is done primarily with two decorators Slash
+provides: ``@slash.plugins.needs`` and
+``@slash.plugins.provides``. Both of these decorators use string
+identifiers to denote the dependencies used. These identifiers are
+arbitrary, and can be basically any string, as long as it matches
+between the dependent plugin and the providing plugin.
+
+Several use cases exist:
+
+Hook-Level Dependencies
++++++++++++++++++++++++
+
+Adding the ``slash.plugins.needs`` or ``slash.plugins.provides``
+decorator to a specific hook method on a plugin indicates that we
+would like to depend on or be the dependency accordingly. For example:
 
 .. code-block:: python
        
@@ -149,8 +171,45 @@ The idea is to have plugins specify what they need and what they provide in term
            def test_start(self):
 	       slash.logger.debug('Test has started with the awesome id of {!r}', slash.context.test.awesome_id)
 
+In the above example, the ``test_start`` hook on
+``TestIdentificationLoggingPlugin`` needs the ``test_start`` of
+``TestIdentificationPlugin`` to be called first, and thus **requires**
+the ``'awesome_test_id'`` identifier which is provided by the latter.
 
-.. note:: The ``@slash.plugins.needs`` / ``@slash.plugins.provides`` decorators can also be specified on the plugin class itself, automatically marking all hook methods
+
+Plugin-Level Dependencies
++++++++++++++++++++++++++
+
+Much like hook-level dependencies, you can decorate the entire plugin
+with the ``needs`` and ``provides`` decorators, creating a dependency
+on all hooks provided by the plugin:
+
+.. code-block:: python
+       
+       @slash.plugins.provides('awesome_test_id')
+       class TestIdentificationPlugin(PluginInterface):
+
+           def test_start(self):
+	       slash.context.test.awesome_test_id = awesome_id_allocation_service()
+
+       @slash.plugins.needs('awesome_test_id')
+       class TestIdentificationLoggingPlugin(PluginInterface):
+
+           def test_start(self):
+	       slash.logger.debug('Test has started with the awesome id of {!r}', slash.context.test.awesome_id)
+
+The above example is equivalent to the previous one, only now future
+hooks added to either of the plugins will automatically assume the
+same dependency specifications.
+
+.. note:: You can use ``provides`` and ``needs`` in more complex
+          cases, for example specifying ``needs`` on a specific hook
+          in one plugin, where the entire other plugin is decorated
+          with ``provides`` (at plugin-level). 
+
+.. note:: Plugin-level provides and needs also get transferred upon
+          inheritence, automatically adding the dependency
+          configuration to derived classes.
 
 
 Plugin Manager
@@ -159,3 +218,5 @@ Plugin Manager
 As mentioned above, the Plugin Manager provides API to activate (or deacativate) and install (or uninstall) plugins.
 Additionally, it provides access to instances of registered plugins by their name via :func:`slash.plugins.manager.get_plugin <slash.plugins.PluginManager.get_plugin>`.
 This could be used to access plugin attributes whose modification (e.g. by fixtures) can alter the plugin's behavior.
+
+..  LocalWords:  plugins Plugin plugin inheritence
