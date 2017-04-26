@@ -24,6 +24,30 @@ def test_stop_on_error_with_error_and_skip(suite, adder):
     assert result.has_errors_or_failures()
 
 
+@pytest.mark.parametrize('adder', ['add_failure', 'add_error'])
+def test_stop_on_error_from_previous_run(suite, adder):
+    test_a = suite[2]
+    test_b = suite[4]
+
+    # avoid slash.ctx here, because the stored object would be a proxy
+    test_a.append_line('slash.g.inject_to_result = slash.context.session.results.current')
+    test_b.append_line('slash.g.inject_to_result.{}("injected")'.format(adder))
+
+    if adder == 'add_error':
+        test_a.expect_error()
+    elif adder == 'add_failure':
+        test_a.expect_failure()
+    else:
+        raise NotImplementedError() # pragma: no cover
+
+    all_after = list(suite.iter_all_after(test_b))
+    assert all_after
+    for test in all_after:
+        test.expect_not_run()
+
+    suite.run(additional_args=['-x'])
+
+
 def test_run_tests_fails_without_active_session():
     with pytest.raises(NoActiveSession):
         run_tests([])
