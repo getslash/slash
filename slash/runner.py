@@ -58,7 +58,7 @@ def run_tests(iterable, stop_on_error=None):
             if result.has_fatal_exception():
                 _logger.debug("Stopping on fatal exception")
                 break
-            if not result.is_success(allow_skips=True) and should_stop_on_error():
+            if should_stop_on_error() and not context.session.results.is_success(allow_skips=True):
                 _logger.debug("Stopping (run.stop_on_error==True)")
                 break
         else:
