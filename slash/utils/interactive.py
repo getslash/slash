@@ -20,7 +20,7 @@ def _interact(ns):
             context.result.add_error('Terminated')
             shell.exit_now = True
 
-    embed(user_ns=ns, custom_exceptions=((Exception, TerminatedException), _handle_exception))
+    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception))
 
 
 def _is_exception_in_ipython_eval(exc_tb):
@@ -46,15 +46,18 @@ def _start_interactive_test():
 def generate_interactive_test():
     [returned] = FunctionTestFactory(_start_interactive_test).generate_tests(context.session.fixture_store)
     returned.__slash__ = metadata.Metadata(None, returned)
+    returned.__slash__.allocate_id()
     returned.__slash__.mark_interactive()
     return returned
 
 @contextmanager
-def notify_if_slow_context(message, slow_seconds=1):
+def notify_if_slow_context(message, slow_seconds=1, end_message=None):
     evt = threading.Event()
+    evt.should_report_end_msg = False
     def notifier():
         if not evt.wait(timeout=slow_seconds) and context.session is not None:
             context.session.reporter.report_message(message)
+            evt.should_report_end_msg = True
     thread = threading.Thread(target=notifier)
     thread.start()
     try:
@@ -62,3 +65,5 @@ def notify_if_slow_context(message, slow_seconds=1):
     finally:
         evt.set()
         thread.join()
+        if evt.should_report_end_msg and end_message is not None:
+            context.session.reporter.report_message(end_message)

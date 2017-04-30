@@ -12,7 +12,7 @@ class FormatterTest(TestCase):
         self.f = Formatter(self.buff)
 
     def assertOutput(self, v):
-        self.assertEquals(self.buff.getvalue(), v)
+        self.assertEqual(self.buff.getvalue(), v)
 
     def test_write_non_strings(self):
         class MyObject(object):

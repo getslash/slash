@@ -1,5 +1,6 @@
 import functools
 import itertools
+import inspect
 
 from sentinels import NOTHING
 
@@ -11,17 +12,22 @@ from ...utils.function_marker import function_marker
 _id_gen = itertools.count(1000)
 
 
+def _ensure_fixture_info(func, **kwargs):
+    if not hasattr(func, '__slash_fixture__'):
+        func.__slash_fixture__ = FixtureInfo(func, **kwargs)
+    return func
+
 def fixture(func=None, name=None, scope=None, autouse=False):
     if func is None:
         return functools.partial(fixture, name=name, scope=scope, autouse=autouse)
 
-    if not hasattr(func, '__slash_fixture__'):
-        func.__slash_fixture__ = FixtureInfo(func, name=name, scope=scope, autouse=autouse)
-
-    return func
+    if inspect.isgeneratorfunction(func):
+        return yield_fixture(func=func, name=name, scope=scope, autouse=autouse)
+    return _ensure_fixture_info(func=func, name=name, scope=scope, autouse=autouse)
 
 nofixtures = function_marker('__slash_nofixtures__')
-nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fixture deduction. Slash will not attempt to parse needed fixtures from its argument list'
+nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fixture deduction. ' + \
+                     'Slash will not attempt to parse needed fixtures from its argument list'
 
 
 class FixtureInfo(object):
@@ -81,8 +87,8 @@ def generator_fixture(func):
         return param
 
     new_func.__name__ = func.__name__
+    return _ensure_fixture_info(func=new_func)
 
-    return fixture(new_func)
 
 def yield_fixture(func=None, **kw):
     """Builds a fixture out of a generator. The pre-yield part of the generator is used as the setup, where the
@@ -99,8 +105,8 @@ def yield_fixture(func=None, **kw):
     if func is None:
         return functools.partial(yield_fixture, **kw)
 
-    func = func
-    @fixture(**kw)
+    func = _ensure_fixture_info(func=func, **kw)
+
     @wraps(func)
     def new_func(**kwargs):
         f = func(**kwargs)

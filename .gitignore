@@ -1,9 +1,11 @@
 *.pyc
 .vagrant
 *.egg-info
+.eggs
 build
 .tox
 flycheck-*
+flycheck_*
 dist
 .coverage
 .env

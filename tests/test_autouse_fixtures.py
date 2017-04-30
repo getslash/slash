@@ -1,3 +1,4 @@
+# pylint: disable=len-as-condition,redefined-outer-name
 import pytest
 
 from .utils.suite_writer import Suite
@@ -48,8 +49,8 @@ def test_autouse_called_first(scope, test_type, depend_explicitly):
     assert events[autouse_fixture_called].timestamp < events[regular_fixture_called].timestamp
 
 
-@pytest.fixture
-def tracked_suite(suite, suite_test):
+@pytest.fixture  # pylint: disable=unused-argument
+def tracked_suite(suite, suite_test):  # pylint: disable=unused-argument
     assert len(suite)
     for test in suite:
         test.prepend_line('slash.context.result.data["active_fixtures"] = __ut__.get_fixture_memento()')

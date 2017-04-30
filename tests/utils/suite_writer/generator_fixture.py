@@ -8,7 +8,7 @@ class GeneratorFixture(Function):
     def __init__(self, suite, file, num_values=3):
         super(GeneratorFixture, self).__init__(suite)
         self.file = file
-        self.values = [str(uuid4()) for i in range(num_values)]
+        self.values = [str(uuid4()) for _ in range(num_values)]
 
     def is_generator_fixture(self):
         return True

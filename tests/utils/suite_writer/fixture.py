@@ -1,13 +1,15 @@
+from uuid import uuid4
 import itertools
-from contextlib import contextmanager
 
 from .function import Function
 
 
 class Fixture(Function):
 
-    def __init__(self, suite, file, scope=None, autouse=False):
-        super(Fixture, self).__init__(suite)
+    def __init__(self, suite, file, scope=None, autouse=False, name=None):
+        if name is None:
+            name = 'fx_{}'.format(str(uuid4()).replace('-', '')[:6])
+        super(Fixture, self).__init__(suite, name=name)
         self.file = file
         self.scope = scope
         self.autouse = autouse
@@ -21,9 +23,6 @@ class Fixture(Function):
     def _write_decorators(self, code_formatter):
         self._write_fixture_decorator(code_formatter)
         super(Fixture, self)._write_decorators(code_formatter)
-
-    def _get_function_name(self):
-        return 'fx_{0}'.format(self.id)
 
     def _write_prologue(self, code_formatter):
         if not self.suite.debug_info:

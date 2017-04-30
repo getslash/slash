@@ -1,6 +1,24 @@
 Changelog
 =========
 
+* :release:`1.2.0 <30-04-2017>`
+* :bug:`551 major` Fix stopping on error behavior when errors are reported on previous tests
+* :feature:`529` Switch to PBR
+* :feature:`508` Added optional ``end_message`` argument to ``notify_if_slow_context``, allowing better verbosity of long operations
+* :bug:`490` Fixed behavior of plugin dependencies in cases involving mixed usage of plugin-level and hook-level dependencies
+* :feature:`544` Added ``debug.debugger`` configuration to enable specifying preferred debugger. You can now pass ``-o debug.debugger=ipdb`` to prefer ipdb over pudb, for example
+* :feature:`476` ``slash resume`` was greatly improved, and can now also fetch resumed tests from a recorded session in Backslash, if its plugin is configured
+* :feature:`524` ``slash list``, ``slash list-config`` and ``slash list-plugins`` now supports ``--force-color``/``--no-color`` flags. The default changed from colored to colored only for tty
+* :bug:`516 major` Fire test_interrupt earlier and properly mark session as interrupted when a test is interrupted
+* :feature:`513` Add deep parametrization info (including nested fixtures) to the metadata variation info
+* :feature:`512` ``slash list-config`` now receives a path filter for config paths to display
+* :feature:`519` Add ``--no-output`` flag for ``slash list``
+* :feature:`497` Major overhaul of CLI mechanics -- improve help message and usage, as well as cleaner error exits during the session configuration phase
+* :feature:`467` Yield fixtures are now automatically detected by Slash -- using ``yield_fixture`` explicitly is no longer required
+* :feature:`507` Test id can now be obtained via ``slash.context.test.id``
+* :bug:`510 major` Explicitly fail fixtures which name is valid for tests (currently: ``test_`` prefix)
+* :feature:`511` Support adding external logs ``Result.add_extra_log_path`` which will be retrieved by ``Result.get_log_paths()``
+* :feature:`502` Added ``session_interrupt`` hook for when sessions are interrupted
 * :release:`1.1.0 <22-11-2016>`
 * :feature:`485` xunit plugin now saves the run results even when the session doesn't end gracefully (Thanks @eplaut)
 * :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details

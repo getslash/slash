@@ -1,4 +1,4 @@
-import sys
+# pylint: disable=unused-argument, redefined-outer-name
 import logbook
 
 import pytest
@@ -17,7 +17,7 @@ def test_deprecation_message(capture):
     assert 'deprecated_func' in record.message
 
 def test_deprecation_lineno(capture):
-    expected_lineno = test_deprecation_lineno.__code__.co_firstlineno + 2
+    expected_lineno = test_deprecation_lineno.__code__.co_firstlineno + 2  # pylint: disable=no-member
     deprecated_func(1, 2)
     [record] = capture.records
     assert record.filename == __file__
@@ -96,7 +96,7 @@ def capture(request):
     handler.push_application()
 
     @request.addfinalizer
-    def pop():
+    def pop():  # pylint: disable=unused-variable
         handler.pop_application()
     return handler
 
@@ -107,7 +107,7 @@ class _WarningsHandler(logbook.TestHandler):
 
     def emit(self, record):
         # make sure lineno is cached
-        unused = record.lineno
+        unused = record.lineno  # pylint: disable=unused-variable
         return super(_WarningsHandler, self).emit(record)
 
 

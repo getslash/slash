@@ -1,3 +1,4 @@
+# pylint: disable=superfluous-parens,protected-access
 import re
 
 import pytest
@@ -67,10 +68,10 @@ def test_hook_registration(plugin):
     plugins.manager.install(plugin)
     _assert_hooks_not_registered(plugin)
     plugins.manager.activate(plugin)
-    hooks.session_start()
+    hooks.session_start()  # pylint: disable=no-member
     assert plugin.session_start_call_count == 1
     plugins.manager.deactivate(plugin)
-    hooks.session_start()
+    hooks.session_start()  # pylint: disable=no-member
     assert plugin.session_start_call_count == 1
 
 
@@ -84,7 +85,7 @@ def test_uninstall_also_deactivates(plugin):
     plugins.manager.install(plugin)
     plugins.manager.activate(plugin)
     plugins.manager.uninstall(plugin)
-    hooks.session_start()
+    hooks.session_start()  # pylint: disable=no-member
     assert plugin.session_start_call_count == 0
 
 
@@ -112,7 +113,7 @@ def test_unknown_hook_names(request):
     plugins.manager.install(plugin)
 
     @request.addfinalizer
-    def cleanup():
+    def cleanup():  # pylint: disable=unused-variable
         plugins.manager.uninstall(plugin)
 
     with pytest.raises(IncompatiblePlugin) as caught:
@@ -134,7 +135,7 @@ def test_custom_hook_names(request):
     hooks.add_custom_hook("custom_hook")
 
     @request.addfinalizer
-    def cleanup():
+    def cleanup():  # pylint: disable=unused-variable
         hooks.remove_custom_hook("custom_hook")
     plugin = Plugin()
     plugins.manager.install(plugin, activate=True)
@@ -194,6 +195,6 @@ def test_pending_deactivation_not_exists(plugin):
 
 
 def _assert_hooks_not_registered(plugin):
-    hooks.session_start()
+    hooks.session_start()  # pylint: disable=no-member
     assert plugin.session_start_call_count == 0, 'Hook unexpectedly registered!'
 

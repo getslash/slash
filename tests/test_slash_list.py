@@ -4,7 +4,7 @@ import os
 import re
 
 from slash.frontend.slash_list import slash_list
-from slash._compat import StringIO, ExitStack
+from slash._compat import StringIO
 from .utils.suite_writer import Suite
 
 import pytest
@@ -38,8 +38,18 @@ def test_slash_list_without_any_tests(allow_empty):
     assert rc == expected_rc
 
 
+def test_slash_list_tests_without_tags(suite):
+    suite.debug_info = False
+    path = suite.commit()
+    report_stream = StringIO()
+    args = [path, '--show-tags', '--no-output']
+    slash_list(args, report_stream)
+    output = report_stream.getvalue()
+    assert not output
+
+
 @pytest.mark.parametrize('should_show_tags', [True, False])
-def test_slash_list_tests(suite, should_show_tags, suite_test):
+def test_slash_list_tests_with_or_without_tags(suite, should_show_tags, suite_test):
     suite_test.add_decorator('slash.tag("bla")')
     suite.debug_info = False
     path = suite.commit()
@@ -53,7 +63,7 @@ def test_slash_list_tests(suite, should_show_tags, suite_test):
 
 
 @pytest.mark.parametrize('relative', [True, False])
-def test_slash_list_tests(suite, suite_test, relative):
+def test_slash_list_tests_relative_or_not(suite, relative):
     suite.debug_info = False
     path = suite.commit()
     report_stream = StringIO()

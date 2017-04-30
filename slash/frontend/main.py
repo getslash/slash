@@ -40,11 +40,14 @@ def main():
         module_name, func_name = module_name.split(":")
         module = __import__(module_name, fromlist=[""])
         func = getattr(module, func_name)
-        return func(args.argv)
-    return 0
+        returned = func(args.argv)
+        if not isinstance(returned, int):
+            returned = returned.exit_code
+    return returned
 
 def slash_version(_):
     print('Slash v{0}'.format(__version__))
+    return 0
 
 ################################## Boilerplate ################################
 _DEFAULT_LOG_LEVEL = logbook.WARNING

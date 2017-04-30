@@ -62,14 +62,12 @@ class _ContextStack(object):
         self._stack = [NullContext()]
 
     def __getattr__(self, attr):
-        if not self._stack:
-            raise AttributeError(attr)
+        assert self._stack
         return getattr(self._stack[-1], attr)
 
     def __dir__(self):
-        if self._stack:
-            return dir(self._stack[-1])
-        return []
+        assert self._stack
+        return dir(self._stack[-1])
 
     def __setattr__(self, attr, value):
         if attr.startswith("_"):
@@ -81,7 +79,7 @@ class _ContextStack(object):
         return ctx
 
     def pop(self):
-        assert len(self._stack) != 0
+        assert self._stack
         if len(self._stack) == 1:
             raise RuntimeError("No more contexts to pop")
         return self._stack.pop(-1)

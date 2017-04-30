@@ -1,5 +1,8 @@
 [MESSAGES CONTROL]
-disable=W0201,I0011,C0111,C0103,C0301,W0702,W0622,R,bad-continuation,wrong-import-order,wrong-import-position,ungrouped-imports,trailing-newlines
+disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,trailing-newlines,ungrouped-imports,wrong-import-order,wrong-import-position
 
 [REPORTS]
 reports=no
+
+[FORMAT]
+max-line-length=150

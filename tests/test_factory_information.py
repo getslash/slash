@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 
 import slash
@@ -16,8 +17,8 @@ def test_filename(factory, expected_filename):
 
 ################################################################################
 
-@pytest.fixture
-def factory(explicit, factory_class, factory_param):
+@pytest.fixture  # pylint: disable=unused-argument
+def factory(explicit, factory_class, factory_param):  # pylint: disable=unused-argument
     returned = factory_class(factory_param)
     return returned
 

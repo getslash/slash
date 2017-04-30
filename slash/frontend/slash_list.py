@@ -9,8 +9,10 @@ from functools import partial
 
 import colorama
 import slash
+import slash.site
+import slash.loader
 from slash.exceptions import CannotLoadTests
-from slash.utils.cli_utils import UNDERLINED, make_styler
+from slash.utils.cli_utils import UNDERLINED, make_styler, Printer
 from slash.utils.python import get_underlying_func
 from slash.utils.suite_files import iter_suite_file_paths
 
@@ -30,6 +32,10 @@ def _get_parser():
     parser.add_argument('--no-params', dest='show_params', action='store_false', default=True)
     parser.add_argument('--allow-empty', dest='allow_empty', action='store_true', default=False)
     parser.add_argument('-r', '--relative-paths', action='store_true', default=False)
+    parser.add_argument('--no-output', dest='show_output', action='store_false', default=True)
+    parser.add_argument('--force-color', dest='force_color', action='store_true', default=False)
+    parser.add_argument('--no-color', dest='enable_color', action='store_false', default=True)
+
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
 
@@ -43,6 +49,8 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
     if not parsed_args.paths and not parsed_args.suite_files:
         parser.error('Neither test paths nor suite files were specified')
 
+    _print = Printer(report_stream, enable_output=parsed_args.show_output, force_color=parsed_args.force_color,
+                     enable_color=parsed_args.enable_color)
     try:
         with slash.Session() as session:
             slash.site.load()
@@ -58,7 +66,7 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
             if parsed_args.only in (None, 'tests'):
                 _report_tests(parsed_args, runnables, _print)
 
-        if len(runnables):
+        if len(runnables):  # pylint: disable=len-as-condition
             return 0
     except CannotLoadTests as e:
         print('Could not load tests ({})'.format(e), file=error_stream)

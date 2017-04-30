@@ -1,8 +1,9 @@
+# pylint: disable=redefined-outer-name
 import itertools
 
 import pytest
 import slash
-from slash._compat import ExitStack, xrange
+from slash._compat import ExitStack
 
 from .utils import run_tests_assert_success, make_runnable_tests
 from .utils.code_formatter import CodeFormatter
@@ -13,19 +14,21 @@ def test_fixtures_representation_strings(results, a_values, fixture_values, file
     if is_class:
         prefix += 'Test.'
     assert len(results) == len(a_values) * len(fixture_values)
-    assert set(result.test_metadata.address for result in results) == set(
-        '{0}test_1(a={1},fixture=fixture{2})'.format(prefix, i, j) for i, j in itertools.product(a_values, xrange(len(fixture_values))))
+    assert set(result.test_metadata.address for result in results) == {
+        '{0}test_1(a={1},fixture.value={2})'.format(prefix, i, j) for i, j in itertools.product(a_values, fixture_values)
+    }
 
 
 @pytest.mark.parametrize('non_printable', ['string/with/slashes', object()])
 def test_fixtures_avoid_non_printable_reprs_strs(non_printable):
     with slash.Session():
 
+        # pylint: disable=unused-argument
         @slash.parametrize('param', [non_printable])
         def test_something(param):
             pass
 
-        [loaded_test] = make_runnable_tests([test_something])
+        [loaded_test] = make_runnable_tests([test_something])  # pylint: disable=unbalanced-tuple-unpacking
 
     assert '/' not in loaded_test.__slash__.address_in_file
     assert repr(non_printable) not in loaded_test.__slash__.address_in_file
@@ -36,8 +39,7 @@ def test_fixtures_avoid_non_printable_reprs_strs(non_printable):
 def results(filename):
 
     with slash.Session() as s:
-        tests = slash.loader.Loader().get_runnables(filename)
-        session = run_tests_assert_success(tests, session=s)
+        session = run_tests_assert_success(filename, session=s)
     return list(session.results.iter_test_results())
 
 

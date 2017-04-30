@@ -1,6 +1,6 @@
+# pylint: disable=redefined-outer-name
 import collections
 import itertools
-import random
 from contextlib import contextmanager
 from uuid import uuid1
 
@@ -15,9 +15,9 @@ from .utils.code_formatter import CodeFormatter
 
 def test_fixture_scopes(fixture_tree):
     with fixture_tree.testing_scope('session'):
-        for i in range(3):
+        for i in range(3):  # pylint: disable=unused-variable
             with fixture_tree.testing_scope('module'):
-                for i in range(5):
+                for j in range(5):  # pylint: disable=unused-variable
                     with fixture_tree.testing_scope('test'):
                         fixture_tree.check_values()
 
@@ -185,7 +185,7 @@ class FixtureTree(object):
                 code.writeln('tree.cleanup({0!r})'.format(name))
             code.writeln('return tree.make_value({0!r})'.format(name))
         globs = {'tree': self}
-        exec(buff.getvalue(), globs)
+        exec(buff.getvalue(), globs)  # pylint: disable=exec-used
         return slash.fixture(scope=scope)(globs[name])
 
 @pytest.fixture(autouse=True)

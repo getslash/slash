@@ -1,6 +1,8 @@
+# pylint: disable=redefined-outer-name
 import pytest
 
 from .utils.suite_writer import Suite
+
 
 def test_fixture(suite):
     f = suite.slashconf.add_fixture()
@@ -25,6 +27,7 @@ def test_parametrized_fixture():
     assert len(summary.session.results) == len(p.values)
 
 def test_regular_test_parametrization(suite, test):
+    # pylint: disable=unused-variable
     p = test.add_parameter()
     res = suite.run()
 
@@ -41,6 +44,6 @@ def is_method(request):
 @pytest.fixture
 def suite():
     s = Suite()
-    for i in range(10):
+    for _ in range(10):
         s.add_test()
     return s

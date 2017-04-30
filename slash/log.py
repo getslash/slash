@@ -93,9 +93,12 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         return line
 
     def emit(self, record):
-        context.session.reporter.notify_before_console_output()
+        reporter = None if context.session is None else context.session.reporter
+        if reporter is not None:
+            reporter.notify_before_console_output()
         returned = super(ConsoleHandler, self).emit(record)
-        context.session.reporter.notify_after_console_output()
+        if reporter is not None:
+            reporter.notify_after_console_output()
         return returned
 
 class SessionLogging(object):
@@ -167,9 +170,10 @@ class SessionLogging(object):
         def _error_added_filter(record, handler): # pylint: disable=unused-argument
             return record.extra.get('to_error_log')
 
-        handler, _ = self._get_file_log_handler(path, symlink=None, bubble=True, filter=_error_added_filter)
+        handler, log_path = self._get_file_log_handler(path, symlink=None, bubble=True, filter=_error_added_filter)
+        if log_path and self.session.results.current is self.session.results.global_result:
+            self.session.results.global_result.add_extra_log_path(log_path)
         return handler.applicationbound()
-
 
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:
@@ -300,7 +304,8 @@ class RetainedLogHandler(logbook.TestHandler):
 
     def flush_to_handler(self, handler):
         for r in self.records:
-            handler.emit(r)
+            if handler.should_handle(r):
+                handler.emit(r)
         del self.records[:]
 
     def disable(self):

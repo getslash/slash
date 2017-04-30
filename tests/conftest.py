@@ -1,7 +1,7 @@
+# pylint: disable=redefined-outer-name
 import itertools
 import os
 import random
-import shutil
 import tempfile
 from uuid import uuid4
 
@@ -11,10 +11,8 @@ import gossip
 import pytest
 import slash
 import slash.plugins
-from slash import resuming
 from slash.loader import Loader
 from slash.core.result import GlobalResult, Result
-from slash import plugins
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
@@ -38,14 +36,14 @@ def no_user_config(request):
         tmpdir, 'slashrc')
 
     @request.addfinalizer
-    def cleanup():
+    def cleanup():  # pylint: disable=unused-variable
         os.rmdir(tmpdir)
 
 @pytest.fixture
 def no_plugins(request):
     slash.plugins.manager.uninstall_all()
     @request.addfinalizer
-    def cleanup():
+    def cleanup():  # pylint: disable=unused-variable
         slash.plugins.manager.uninstall_all()
         slash.plugins.manager.install_builtin_plugins()
 
@@ -56,7 +54,7 @@ def forge(request):
     returned = Forge()
 
     @request.addfinalizer
-    def cleanup():
+    def cleanup():  # pylint: disable=unused-variable
         returned.verify()
         returned.restore_all_replacements()
 
@@ -70,7 +68,7 @@ def config_override(request):
         prev_value = slash.config.get_config(path).get_value()
 
         @request.addfinalizer
-        def restore():
+        def restore():  # pylint: disable=unused-variable
             slash.config.assign_path(path, prev_value)
         slash.config.assign_path(path, value)
     return _override
@@ -121,18 +119,6 @@ class Checkpoint(object):
     def called(self):
         return self.called_count > 0
 
-
-@pytest.fixture(autouse=True, scope="function")
-def fix_resume_path(request):
-    prev = resuming._RESUME_DIR
-    resuming._RESUME_DIR = tempfile.mkdtemp()
-
-    @request.addfinalizer
-    def cleanup():
-        shutil.rmtree(resuming._RESUME_DIR)
-        resuming._RESUME_DIR = prev
-
-
 @pytest.fixture
 def suite_test(suite, test_type, is_last_test):
     returned = suite.add_test(type=test_type)
@@ -182,7 +168,7 @@ def active_slash_session(request):
     returned.__enter__()
 
     @request.addfinalizer
-    def finalize():
+    def finalize():  # pylint: disable=unused-variable
         returned.__exit__(None, None, None)
 
     return returned
@@ -206,7 +192,7 @@ def gc_marker():
 @pytest.fixture(autouse=True, scope="function")
 def reset_gossip(request):
     @request.addfinalizer
-    def cleanup():
+    def cleanup():  # pylint: disable=unused-variable
         for group in list(gossip.get_groups()):
             if group.name == 'slash':
                 continue
@@ -219,8 +205,8 @@ def reset_gossip(request):
                 hook.unregister_all()
 
 
-@pytest.fixture
-def plugin(no_plugins):
+@pytest.fixture  # pylint: disable=unused-argument
+def plugin(no_plugins):  # pylint: disable=unused-argument
 
     class StartSessionPlugin(slash.plugins.PluginInterface):
         _activate_called = False
@@ -258,8 +244,8 @@ def get_fixture_location(request):
 
 @pytest.fixture
 def restore_plugins_on_cleanup(request):
-    request.addfinalizer(plugins.manager.install_builtin_plugins)
-    request.addfinalizer(plugins.manager.uninstall_all)
+    request.addfinalizer(slash.plugins.manager.install_builtin_plugins)
+    request.addfinalizer(slash.plugins.manager.uninstall_all)
 
 
 @pytest.fixture
@@ -291,3 +277,11 @@ def session_log(logs_dir):
 @pytest.fixture
 def unique_string1():
     return str(uuid4())
+
+
+@pytest.fixture(params=[True, False])
+def yield_fixture_decorator(request):
+    should_use_explicitly = request.param
+    if should_use_explicitly:
+        return slash.yield_fixture
+    return slash.fixture

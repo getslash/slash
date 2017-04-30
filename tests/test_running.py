@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0201
+# pylint: disable=attribute-defined-outside-init,redefined-outer-name
 import functools
 
 import pytest
@@ -22,6 +22,30 @@ def test_stop_on_error_with_error_and_skip(suite, adder):
 
     assert result.has_skips()
     assert result.has_errors_or_failures()
+
+
+@pytest.mark.parametrize('adder', ['add_failure', 'add_error'])
+def test_stop_on_error_from_previous_run(suite, adder):
+    test_a = suite[2]
+    test_b = suite[4]
+
+    # avoid slash.ctx here, because the stored object would be a proxy
+    test_a.append_line('slash.g.inject_to_result = slash.context.session.results.current')
+    test_b.append_line('slash.g.inject_to_result.{}("injected")'.format(adder))
+
+    if adder == 'add_error':
+        test_a.expect_error()
+    elif adder == 'add_failure':
+        test_a.expect_failure()
+    else:
+        raise NotImplementedError() # pragma: no cover
+
+    all_after = list(suite.iter_all_after(test_b))
+    assert all_after
+    for test in all_after:
+        test.expect_not_run()
+
+    suite.run(additional_args=['-x'])
 
 
 def test_run_tests_fails_without_active_session():
@@ -76,7 +100,8 @@ def test_stop_on_fatal_exception(suite, suite_test, fatal_error_adder):
     suite.run()
 
 
-def test_stop_on_error(suite, suite_test, failure_type):
+@pytest.mark.parametrize('stop_through_config', [True, False])
+def test_stop_on_error(suite, suite_test, failure_type, stop_through_config, config_override):
     if failure_type == 'error':
         suite_test.when_run.error()
     elif failure_type == 'failure':
@@ -87,7 +112,13 @@ def test_stop_on_error(suite, suite_test, failure_type):
     for test in suite.iter_all_after(suite_test):
         test.expect_not_run()
 
-    suite.run(additional_args=['-x'])
+    if stop_through_config:
+        config_override('run.stop_on_error', True)
+        kwargs = {}
+    else:
+        config_override('run.stop_on_error', False)
+        kwargs = {'additional_args': ['-x']}
+    suite.run(**kwargs)
 
 
 def test_stop_on_error_unaffected_by_skips(suite, suite_test):
@@ -104,9 +135,10 @@ def test_debug_if_needed(request, config_override, suite, suite_test):
 
     debugged = {'value': False}
 
-    def _debug_if_needed(exc_info):
+    def _debug_if_needed(exc_info):  # pylint: disable=unused-argument
         debugged['value'] = True
 
+    # pylint: disable=protected-access
     request.addfinalizer(functools.partial(
         setattr, slash.utils.debug, '_KNOWN_DEBUGGERS', slash.utils.debug._KNOWN_DEBUGGERS))
     slash.utils.debug._KNOWN_DEBUGGERS = [_debug_if_needed]

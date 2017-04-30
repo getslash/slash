@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from uuid import uuid4
 
 import pytest
@@ -7,16 +8,16 @@ def test_unified_session_log_has_test_log(unified_log, log_marker):
     with open(unified_log) as f:
         assert log_marker in f.read()
 
-def test_unified_session_log_failure_log_still_in_test_log(unified_run, test_result, log_marker):
+def test_unified_session_log_failure_log_still_in_test_log(unified_run, test_result, log_marker):  # pylint: disable=unused-argument
     with open(test_result.get_log_path()) as f:
         assert log_marker in f.read()
 
 def test_warnings_propagation(unified_run):
-    assert len(unified_run.session.warnings) > 0
+    assert len(unified_run.session.warnings) > 0  # pylint: disable=len-as-condition
 
 
-@pytest.fixture
-def unified_log(unified_run, tmpdir):
+@pytest.fixture  # pylint: disable=unused-argument
+def unified_log(unified_run, tmpdir):  # pylint: disable=unused-argument
     return str(tmpdir.join('session.log'))
 
 @pytest.fixture

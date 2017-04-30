@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 import slash
 from slash import context, Session
@@ -14,6 +15,8 @@ def test_current_test():
         'assert slash.context.test == self')
     suite.add_test(type='method').prepend_line(
         'assert slash.context.test.__slash__.id == self.__slash__.id')
+    suite.add_test(type='method').prepend_line(
+        'assert slash.context.test_id == self.id')
 
     suite.run()
 

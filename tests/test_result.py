@@ -127,14 +127,19 @@ def test_result_test_garbage_collected(gc_marker):
         def test_something(self):
             pass
 
-    with slash.Session() as s:
-        loader = slash.loader.Loader()
-        tests = loader.get_runnables(SomeTest)
-        # we use list(genexp) to prevent 't' from leaking
-        marks = list(gc_marker.mark(t) for t in tests)
-        session = run_tests_assert_success(
-            tests + loader.get_runnables(OtherTest))
-        del tests
+    marks = []
+    runnable_tests = []
+    test_funcs = [SomeTest, OtherTest]
+
+    @slash.hooks.register
+    def tests_loaded(tests): # pylint: disable=unused-variable
+        runnable_tests.extend(tests)
+        marks.extend(list(gc_marker.mark(t) for t in runnable_tests[:-1]))
+
+    with slash.Session() as s:  # pylint: disable=unused-variable
+        session = run_tests_assert_success(test_funcs)  # pylint: disable=unused-variable
+        del runnable_tests[:]
+
     gc.collect()
     for mark in marks:
         assert mark.destroyed
@@ -147,6 +152,33 @@ def test_add_error_traceback_for_manually_added_errors(suite, suite_test):
     [result] = suite.run().get_all_results_for_test(suite_test)
     [err] = result.get_errors()
     assert err.traceback
+
+
+def test_is_global_result(suite, suite_test):
+    suite_test.append_line('assert not slash.context.result.is_global_result()')
+    result = suite.run()
+    assert result.session.results.global_result.is_global_result()
+
+
+@pytest.mark.parametrize('log_path', [None, 'a/b/c'])
+@pytest.mark.parametrize('errors_subpath', [None, 'my_errors.log'])
+def test_log_paths(log_path, errors_subpath, config_override, logs_dir):
+    # pylint: disable=protected-access
+    extra_logs = ['/my/extra/log_{}'.format(i) for i in range(2)]
+
+    config_override('log.errors_subpath', errors_subpath)
+    with slash.Session() as curr_session:
+        result = curr_session.results.global_result
+        result.set_log_path(log_path)
+        expected_logs = [log_path] if log_path else []
+        if errors_subpath:
+            expected_logs.append(logs_dir.join('files').join(errors_subpath))
+        assert result.get_log_path() is log_path
+        assert result.get_log_paths() == expected_logs
+        for extra_log in extra_logs:
+            result.add_extra_log_path(extra_log)
+        assert result.get_log_paths() == expected_logs + extra_logs
+
 
 
 class SessionResultTest(TestCase):
@@ -181,12 +213,12 @@ class SessionResultTest(TestCase):
             result.mark_finished()
         self.result = SessionResults(Session())
         for index, r in enumerate(self.results):
-            self.result._results_dict[index] = r
+            self.result._results_dict[index] = r  # pylint: disable=protected-access
 
     def test_counts(self):
-        self.assertEquals(self.result.get_num_results(), len(self.results))
-        self.assertEquals(self.result.get_num_successful(), 2)
+        self.assertEqual(self.result.get_num_results(), len(self.results))
+        self.assertEqual(self.result.get_num_successful(), 2)
         # errors take precedence over failures
-        self.assertEquals(self.result.get_num_errors(), 3)
-        self.assertEquals(self.result.get_num_skipped(), 2)
-        self.assertEquals(self.result.get_num_failures(), 1)
+        self.assertEqual(self.result.get_num_errors(), 3)
+        self.assertEqual(self.result.get_num_skipped(), 2)
+        self.assertEqual(self.result.get_num_failures(), 1)

@@ -1,4 +1,4 @@
-# pylint: disable=pointless-statement
+# pylint: disable=pointless-statement,redefined-outer-name
 import pytest
 import slash
 

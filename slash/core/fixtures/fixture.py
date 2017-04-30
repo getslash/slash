@@ -25,6 +25,14 @@ class Fixture(FixtureBase):
         self.scope = self.info.scope
         self.namespace = Namespace(store, store.get_current_namespace())
 
+    def is_parameter(self):
+        return False
+
+    def is_fixture(self):
+        return True
+
+    parametrization_ids = None
+
     def __repr__(self):
         return '<Function Fixture around {0}>'.format(self.fixture_func)
 
@@ -49,18 +57,18 @@ class Fixture(FixtureBase):
         return self.fixture_func(**kwargs)
 
     def _resolve(self, store):
-        assert self.fixture_kwargs is None
-
+        assert self.keyword_arguments is None
         assert self.parametrization_ids is None
         self.parametrization_ids = OrderedSet()
+        keyword_arguments = OrderedDict()
 
-        kwargs = OrderedDict()
         parametrized = set()
 
         for name, param in iter_parametrization_fixtures(self.fixture_func):
             store.register_fixture_id(param)
             parametrized.add(name)
             self.parametrization_ids.add(param.info.id)
+            keyword_arguments[name] = param
 
         for param_name, arg in self.info.required_args.items():
             if param_name in parametrized:
@@ -76,8 +84,9 @@ class Fixture(FixtureBase):
                     raise CyclicFixtureDependency('Cyclic fixture dependency detected in {0}: {1} depends on itself'.format(
                         self.info.func.__code__.co_filename,
                         self.info.name))
-                kwargs[param_name] = needed_fixture.info.id # pylint: disable=no-member
+                keyword_arguments[param_name] = needed_fixture
             except LookupError:
                 raise UnknownFixtures(param_name)
-        return kwargs
+
+        return keyword_arguments
 

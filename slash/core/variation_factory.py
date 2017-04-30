@@ -8,6 +8,8 @@ from .._compat import OrderedDict, izip, xrange
 from ..exceptions import FixtureException
 from ..utils.python import get_arguments
 from .fixtures.parameters import iter_parametrization_fixtures
+from .fixtures.fixture import Fixture
+from .fixtures.parameters import Parametrization
 from .fixtures.utils import nofixtures
 
 
@@ -19,8 +21,11 @@ class VariationFactory(object):
     def __init__(self, fixture_store):
         super(VariationFactory, self).__init__()
         self._store = fixture_store
-        self._needed_fixtures = list(fixture_store.iter_autouse_fixtures_in_namespace())
-        self._name_bindings = OrderedDict()
+        self._autouse_fixtures = list(fixture_store.iter_autouse_fixtures_in_namespace())
+        self._needed_fixtures = list(self._autouse_fixtures)
+
+        self._arg_name_bindings = OrderedDict()
+        self._param_name_bindings = OrderedDict()
         self._known_value_strings = collections.defaultdict(dict)
 
     def add_needed_fixture_id(self, fixture_id):
@@ -62,10 +67,32 @@ class VariationFactory(object):
 
 
             self._needed_fixtures.append(fixture)
+
             arg_name = argument.name
             if namespace is not None:
                 arg_name = '{0}:{1}'.format(namespace, arg_name)
-            self._name_bindings[arg_name] = fixture
+
+            self._populate_param_name_bindings(arg_name, fixture)
+            self._arg_name_bindings[arg_name] = fixture
+
+        for fixture in self._autouse_fixtures:
+            self._populate_param_name_bindings(fixture.info.name, fixture, prefix='::')
+
+    def _populate_param_name_bindings(self, arg_name, fixture_or_param, prefix=''):
+        visited = {fixture_or_param.info.id}
+        stack = [(prefix + arg_name, fixture_or_param)]
+        while stack:
+            name, fixture = stack.pop()
+            if isinstance(fixture, Fixture):
+                for sub_name, obj in fixture.keyword_arguments.items():
+                    if obj.info.id in visited:
+                        continue
+                    visited.add(obj.info.id)
+                    stack.append(('{}.{}'.format(name, sub_name), obj))
+            elif isinstance(fixture, Parametrization):
+                self._param_name_bindings[name] = fixture
+            else:
+                raise NotImplementedError() # pragma: no cover
 
     def iter_variations(self):
         needed_ids = OrderedSet()
@@ -75,15 +102,14 @@ class VariationFactory(object):
 
         parametrizations = [self._store.get_fixture_by_id(param_id) for param_id in needed_ids]
         if not needed_ids:
-            yield Variation(self._store, {}, self._name_bindings.copy())
+            yield Variation(self._store, {}, {})
             return
         for value_indices in itertools.product(*(xrange(len(p.values)) for p in parametrizations)):
             yield self._build_variation(parametrizations, value_indices)
 
     def _build_variation(self, parametrizations, value_indices):
-        verbose_id = {}
         value_index_by_id = {}
         for param, param_index in izip(parametrizations, value_indices):
             value_index_by_id[param.info.id] = param_index
-            verbose_id[param.info.path] = param.values[param_index]
-        return Variation(self._store, value_index_by_id, self._name_bindings.copy(), verbose_id=verbose_id)
+
+        return Variation(self._store, value_index_by_id, self._param_name_bindings)

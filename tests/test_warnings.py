@@ -1,4 +1,4 @@
-#pylint: disable=unused-variable
+# pylint: disable=unused-variable,redefined-outer-name
 import warnings
 from uuid import uuid4
 

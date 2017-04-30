@@ -8,4 +8,4 @@ class TestIDSpace(TestCase):
             with Session() as session:
                 ids.append(session.id)
                 ids.append(session.id_space.allocate())
-        self.assertEquals(len(ids), len(set(ids)), "IDs are not unique")
+        self.assertEqual(len(ids), len(set(ids)), "IDs are not unique")

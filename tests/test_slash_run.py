@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from __future__ import print_function
 
 import os
@@ -12,21 +13,21 @@ from slash.frontend.main import main_entry_point
 from .utils import no_op, NullFile, TestCase
 
 
-class SlashRunTestBase(TestCase):
-
-    def setUp(self):
-        super(SlashRunTestBase, self).setUp()
-        self.override_config("run.session_state_path",
-                             os.path.join(self.get_new_path(), "session_data"))
+def test_slash_run_fails_fast_for_missing_files():
+    result = slash_run.slash_run(
+        ["/non/existing/path"], report_stream=NullFile())
+    assert result.exit_code != 0, "slash run unexpectedly succeeded for a missing path"
 
 
-class MissingFilesTest(SlashRunTestBase):
+def test_slash_run_filter_strings(suite, suite_test):
+    for test in suite:
+        if test is not suite_test:
+            test.expect_deselect()
 
-    def test_slash_run_fails_fast_for_missing_files(self):
-        result = slash_run.slash_run(
-            ["/non/existing/path"], report_stream=NullFile())
-        self.assertNotEquals(
-            result, 0, "slash run unexpectedly succeeded for a missing path")
+    suite.run(additional_args=['-k', suite_test.name])
+
+
+################################################################################
 
 
 class ArgumentParsingTest(TestCase):
@@ -42,9 +43,9 @@ class ArgumentParsingTest(TestCase):
 
     callback_success = False
 
-    def _collect_tests_stub(self, app, args):
+    def _collect_tests_stub(self, app, args):  # pylint: disable=unused-argument
         self.assertTrue(config.root.debug.enabled)
-        self.assertEquals(app.args.positionals, ["test1.py", "test2.py"])
+        self.assertEqual(app.positional_args, ["test1.py", "test2.py"])
         # this must be last to make sure the stub ran successfully
         self.callback_success = True
         return []
@@ -53,6 +54,7 @@ class ArgumentParsingTest(TestCase):
 
         self.forge.replace_with(
             slash_run, "_collect_tests", self._collect_tests_stub)
+
         self.forge.replace_with(
             sys, "argv", "/path/to/slash run -vv test1.py -x test2.py --pdb".split())
         with self.assertRaises(SystemExit) as caught:
@@ -63,7 +65,7 @@ class ArgumentParsingTest(TestCase):
             code = caught.exception
         else:
             code = caught.exception.code
-        self.assertEquals(code, 0)
+        self.assertEqual(code, 0)
 
 
 class SlashHelpTest(ArgumentParsingTest):
@@ -109,7 +111,7 @@ def test_slash_run_success_if_skips(suite):
 
 def test_slash_run_from_file(tmpdir, suite):
 
-    for i in range(20):
+    for _ in range(20):
         suite.add_test()
 
     suite_path = suite.commit()
@@ -142,13 +144,13 @@ def test_slash_run_from_file(tmpdir, suite):
 @pytest.mark.parametrize('failure_type', ['fail', 'error'])
 def test_slash_run_directory_failure(suite, failure_type):
     getattr(suite[1].when_run, failure_type)()
-    path = suite.commit()
+    path = suite.commit()  # pylint: disable=unused-variable
     assert suite.run().exit_code != 0
 
 
 def test_slash_run_specific_file(suite):
 
-    for i in range(5):
+    for _ in range(5):
         suite.add_test()
     suite_path = suite.commit()
 
@@ -174,3 +176,9 @@ def suite_path(suite):
     returned = suite.commit()
     assert os.path.isdir(returned)
     return returned
+
+@pytest.fixture(autouse=True)
+def session_state_path(config_override, tmpdir):
+    path = tmpdir.join('session_state_dir').join('session_data')
+    config_override("run.session_state_path", str(path))
+    return path

@@ -23,11 +23,11 @@ def _validate_single_test(test, results):
 
     for param_values in _iter_param_value_sets(test):
 
-        for repetition in xrange(test.get_num_expected_repetitions()):
+        for repetition in xrange(test.get_num_expected_repetitions()):  # pylint: disable=unused-variable
 
             for index, result in enumerate(results):
 
-                if _result_matches(test, result, param_values):
+                if _result_matches(result, param_values):
 
                     results.pop(index)
 
@@ -63,7 +63,7 @@ def _find_all_parameters(func):
     return list(itervalues({p.id: p for p in params}))
 
 
-def _result_matches(test, result, param_values):
+def _result_matches(result, param_values):
     return result.data.get('param_values', {}) == param_values
 
 
@@ -94,7 +94,7 @@ def _group_results_by_test_id(suite, run_result):
     groups = {}
 
     for result in run_result.session.results:
-        if 'Interactive' ==  result.test_metadata.address:
+        if result.test_metadata.address == 'Interactive':
             continue
         test_id = get_test_id_from_test_address(result.test_metadata.address)
         assert tests_by_id[test_id].is_selected(), 'Test {} appears in results, although not expected!'.format(test_id)
@@ -111,4 +111,5 @@ def _group_results_by_test_id(suite, run_result):
 
 
 def get_test_id_from_test_address(addr):
-    return addr.rsplit('.', 1)[-1].split('_', 1)[1].split('(')[0]
+    _, addr = addr.split(':', 1)
+    return addr.split('_')[1].split('(')[0]

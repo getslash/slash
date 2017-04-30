@@ -12,9 +12,9 @@ class GlobalStorageTest(TestCase):
         def _on_session_start():
             self.assertIsNotNone(slash.g)
             slash.g.value = "value"
-            self.assertEquals(slash.g.value, "value")
+            self.assertEqual(slash.g.value, "value")
             self.hook_called = True
-        slash.hooks.session_start.register(_on_session_start, token=self.token)
+        slash.hooks.session_start.register(_on_session_start, token=self.token)  # pylint: disable=no-member
         self.addCleanup(
             gossip.unregister_token,
             self.token

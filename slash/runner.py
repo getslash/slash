@@ -8,12 +8,11 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession, INTERRUPTION_EXCEPTIONS
+from .exceptions import NoActiveSession
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.exclusions import is_excluded
 from .core import requirements
-from .utils.interactive import notify_if_slow_context
 from .utils.iteration import PeekableIterator
 
 
@@ -26,11 +25,13 @@ def run_tests(iterable, stop_on_error=None):
     Runs tests from an iterable using the current session
     """
     # pylint: disable=maybe-no-member
+    def should_stop_on_error():
+        if stop_on_error is None:
+            return config.root.run.stop_on_error
+        return stop_on_error
+
     if context.session is None or not context.session.started:
         raise NoActiveSession("A session is not currently started")
-
-    if stop_on_error is None:
-        stop_on_error = config.root.run.stop_on_error
 
     test_iterator = PeekableIterator(iterable)
     last_filename = None
@@ -39,14 +40,13 @@ def run_tests(iterable, stop_on_error=None):
         for test in test_iterator:
             if config.root.run.dump_variation:
                 _dump_variation(test)
-            test.get_variation().populate_early_known_values()
             _set_test_metadata(test)
             test_filename = test.__slash__.file_path
             if last_filename != test_filename:
                 context.session.reporter.report_file_start(test_filename)
                 last_filename = test_filename
             context.session.reporter.report_test_start(test)
-            _logger.notice("{0}", test.__slash__.address, extra={'to_error_log': 1})
+            _logger.notice("#{}: {}", test.__slash__.test_index1, test.__slash__.address, extra={'to_error_log': 1})
 
             _run_single_test(test, test_iterator)
 
@@ -58,7 +58,7 @@ def run_tests(iterable, stop_on_error=None):
             if result.has_fatal_exception():
                 _logger.debug("Stopping on fatal exception")
                 break
-            if not result.is_success(allow_skips=True) and stop_on_error:
+            if should_stop_on_error() and not context.session.results.is_success(allow_skips=True):
                 _logger.debug("Stopping (run.stop_on_error==True)")
                 break
         else:
@@ -77,7 +77,7 @@ def run_tests(iterable, stop_on_error=None):
 
 def _dump_variation(test):
     _logger.trace('Variation information:\n{}',
-                  '\n'.join('\t{}: {!r}'.format(k, v) for k, v in sorted(test.get_variation().verbose_id.items())))
+                  '\n'.join('\t{}: {!r}'.format(k, v) for k, v in sorted(test.get_variation().id.items())))
 
 
 def _run_single_test(test, test_iterator):
@@ -118,10 +118,6 @@ def _run_single_test(test, test_iterator):
 
                 except context.session.get_skip_exception_types():
                     pass
-                except INTERRUPTION_EXCEPTIONS:
-                    with notify_if_slow_context(message="Cleaning up due to interrupt. Please wait..."):
-                        hooks.test_interrupt() # pylint: disable=no-member
-                    raise
 
 def _process_requirements_and_exclusions(test):
     """Returns whether or not a test should run based on requirements and exclusions, also triggers skips and relevant hooks
@@ -207,8 +203,6 @@ def _mark_unrun_tests(test_iterator):
 def _get_test_context(test, logging=True):
     ensure_test_metadata(test)
 
-    assert test.__slash__.id is None
-    test.__slash__.id = context.session.id_space.allocate()
     with _set_current_test_context(test):
         result = context.session.results.create_result(test)
         prev_result = context.result

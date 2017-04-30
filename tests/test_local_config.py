@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from uuid import uuid1
 
 import pytest

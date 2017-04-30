@@ -171,11 +171,6 @@ def session():
 
 
 @pytest.fixture
-def files_dir(logs_dir):
-    return logs_dir.join("files")
-
-
-@pytest.fixture
 def errors_log_path(request, config_override, tmpdir, logs_dir):
     subpath = 'subdir/errors.log'
     config_override('log.errors_subpath', subpath)
@@ -247,10 +242,10 @@ class LoggingTest(TestCase):
         )
 
         self.addCleanup(gossip.unregister_token, _TOKEN)
-        slash.hooks.session_start.register(
+        slash.hooks.session_start.register(  # pylint: disable=no-member
             functools.partial(_mark, _SESSION_START_MARK), token=_TOKEN)
 
-        slash.hooks.session_end.register(
+        slash.hooks.session_end.register(  # pylint: disable=no-member
             functools.partial(_mark, _SESSION_END_MARK), token=_TOKEN)
         self.addCleanup(gossip.unregister_token, _TOKEN)
 
@@ -268,7 +263,7 @@ class LoggingTest(TestCase):
             if method_name.startswith("test")
         ]
         self.assertTrue(methods)
-        self.assertEquals(len(self.tests_metadata), len(methods))
+        self.assertEqual(len(self.tests_metadata), len(methods))
 
     def _test_test_logs_written(self):
         for test_metadata in self.tests_metadata:
@@ -352,6 +347,6 @@ class TestLocaltimeLogging(TestCase):
             "log.root", self.path)
 
     def test_local_time(self):
-        with slash.Session() as s:
+        with slash.Session() as session:  # pylint: disable=unused-variable
             slash.logger.info("Hello")
-        self.assertNotEquals(os.listdir(self.path), [])
+        self.assertNotEqual(os.listdir(self.path), [])

@@ -4,7 +4,7 @@ import sys
 from ..interface import PluginInterface
 from ...ctx import context
 from ...utils.traceback_utils import get_traceback_string
-from ...utils.conf_utils import Cmdline
+from ...utils.conf_utils import Cmdline, Doc
 from slash import config as slash_config
 from slash import context
 from xml.etree.ElementTree import (
@@ -30,7 +30,9 @@ class Plugin(PluginInterface):
         return "xunit"
 
     def get_config(self):
-        return {"filename": "testsuite.xml" // Cmdline(arg="--xunit-filename")}
+        return {
+            "filename": "testsuite.xml" // Cmdline(arg="--xunit-filename") // Doc('Name of XML xUnit file to create'),
+        }
 
     def session_start(self):
         self._start_time = datetime.datetime.now()
@@ -57,7 +59,9 @@ class Plugin(PluginInterface):
 
     def _add_error(self, errortype, error):
         exc_type, exc_value, _ = exc_info = sys.exc_info()
-        self._add_element(errortype, {'type': exc_type.__name__ if exc_type else errortype, 'message': error.message}, text=get_traceback_string(exc_info) if exc_value is not None else None)
+        self._add_element(errortype,
+                          {'type': exc_type.__name__ if exc_type else errortype, 'message': error.message},
+                          text=get_traceback_string(exc_info) if exc_value is not None else None)
 
     def _add_element(self, tag, attrib, text=None):
         if not context.test:

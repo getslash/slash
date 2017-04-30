@@ -237,20 +237,20 @@ Fortunately, Slash allows you to *alias* fixtures, using the :func:`slash.use` s
 Misc. Utilities
 ---------------
 
-Yield Fixtures
-~~~~~~~~~~~~~~
+Yielding Fixtures
+~~~~~~~~~~~~~~~~~
 
-:func:`slash.yield_fixture` allows you to create a fixture from a generator. In such fixtures, the yielded value becomes the fixture's return value, and the code after the yield becomes the "cleanup" code (similar to using ``this.add_cleanup``):
+Fixtures defined as generators are automatically detected by Slash. In this mode, the fixture is run as a generator, with the yielded value acting as the fixture value. Code after the yield is treated as cleanup code (similar to using ``this.add_cleanup``):
 
 .. code-block:: python
        
-       @slash.yield_fixture
+       @slash.fixture
        def microwave(model_name):
            m = Microwave(model_name)
 	   yield m
 	   m.turn_off()
 
-.. versionadded: 1.0
+.. versionadded: 1.2
 
 Generator Fixtures
 ~~~~~~~~~~~~~~~~~~

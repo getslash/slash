@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 import pytest
 from slash.utils.marks import get_marks, mark, try_get_mark
 

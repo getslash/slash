@@ -62,8 +62,4 @@ Each test being run contains the ``__slash__`` attribute, meant to store metadat
 Test ID
 ~~~~~~~
 
-Each test has a unique ID derived from the session id and the ordinal number of the test being run. This is saved as ``test.__slash__.id``.
-
-
-
-
+Each test has a unique ID derived from the session id and the ordinal number of the test being run. This is saved as ``test.__slash__.id`` and can be used (through property) as ``test.id``.

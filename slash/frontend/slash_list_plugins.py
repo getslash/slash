@@ -1,11 +1,8 @@
-from __future__ import print_function
-
 import argparse
 import sys
-from functools import partial
 
 import colorama
-from slash.utils.cli_utils import make_styler
+from slash.utils.cli_utils import make_styler, Printer
 
 from slash import site
 from slash.plugins import manager
@@ -19,14 +16,16 @@ _link_style = make_styler(colorama.Fore.CYAN)  # pylint: disable=no-member
 
 def _get_parser():
     parser = argparse.ArgumentParser('slash list-plugins [options]')
+    parser.add_argument('--force-color', dest='force_color', action='store_true', default=False)
+    parser.add_argument('--no-color', dest='enable_color', action='store_false', default=True)
     return parser
 
 
 def slash_list_plugins(args, report_stream=sys.stdout):
-    _print = partial(print, file=report_stream)
-
     parser = _get_parser()
-    _ = parser.parse_args(args)
+    parsed_args = parser.parse_args(args)
+
+    _print = Printer(report_stream, force_color=parsed_args.force_color, enable_color=parsed_args.enable_color)
 
     site.load()
 

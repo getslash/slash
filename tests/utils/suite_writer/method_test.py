@@ -1,10 +1,9 @@
 import itertools
-from contextlib import contextmanager
 
 from .test import Test
 
 
-class MethodTest(Test):
+class MethodTest(Test):  # pylint: disable=abstract-method
 
     def __init__(self, suite, cls):
         super(MethodTest, self).__init__(suite, cls.file)

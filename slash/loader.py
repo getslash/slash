@@ -1,14 +1,15 @@
 import itertools
 import traceback
 import os
+import sys
 from types import FunctionType, GeneratorType
 from contextlib import contextmanager
 
+import dessert
 from emport import import_file
 from logbook import Logger
+from sentinels import NOTHING
 
-import dessert
-import sys
 
 from .conf import config
 from ._compat import string_types
@@ -16,12 +17,13 @@ from .ctx import context
 from .core.local_config import LocalConfig
 from . import hooks
 from .core.runnable_test import RunnableTest
-from .core.test import Test, TestTestFactory
+from .core.test import Test, TestTestFactory, is_valid_test_name
 from .core.function_test import FunctionTestFactory
 from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
+from .resuming import ResumedTestData
 
 _logger = Logger(__name__)
 
@@ -34,11 +36,18 @@ class Loader(object):
 
     def __init__(self):
         super(Loader, self).__init__()
-        if config.root.run.filter_strings:
-            self._matchers = [Matcher(s) for s in config.root.run.filter_strings]
-        else:
-            self._matchers = None
         self._local_config = LocalConfig()
+
+    _cached_matchers = NOTHING
+
+    def _get_matchers(self):
+        if self._cached_matchers is NOTHING:
+            if config.root.run.filter_strings:
+                self._cached_matchers = [Matcher(s) for s in config.root.run.filter_strings]
+            else:
+                self._cached_matchers = None
+        return self._cached_matchers
+
 
     def get_runnables(self, paths):
         assert context.session is not None
@@ -55,6 +64,8 @@ class Loader(object):
         context.reporter.report_collection_start()
         try:
             for x in iterator:
+                assert x.__slash__.id is None
+                x.__slash__.allocate_id()
                 returned.append(x)
                 context.reporter.report_test_collected(returned, x)
         finally:
@@ -74,12 +85,21 @@ class Loader(object):
             iterator = self._iter_test_address(thing)
         elif isinstance(thing, RunnableTest):
             iterator = [thing]
+        elif isinstance(thing, ResumedTestData):
+            iterator = self._iter_test_resume(thing)
         elif not isinstance(thing, RunnableTestFactory):
             thing = self._get_runnable_test_factory(thing)
             iterator = thing.generate_tests(fixture_store=context.session.fixture_store)
 
         return (t for t in iterator if matcher is None or matcher.matches(t.__slash__))
 
+    def _iter_test_resume(self, resume_state):
+        for test in self._iter_path(resume_state.file_name):
+            if resume_state.function_name == test.__slash__.address_in_file:
+                if resume_state.variation:
+                    if not resume_state.variation == test.get_variation().id:
+                        continue
+                yield test
 
     def _iter_test_address(self, address):
         if ':' in address:
@@ -115,7 +135,6 @@ class Loader(object):
         if '(' in test_address_in_file:
             if address_in_file == test_address_in_file[:test_address_in_file.index('(')]:
                 return True
-
         return False
 
     def _iter_path(self, path):
@@ -125,7 +144,7 @@ class Loader(object):
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
-                msg = "Path {0} could not be found".format(path)
+                msg = "Path {!r} could not be found".format(path)
                 with handling_exceptions():
                     raise CannotLoadTests(msg)
         for path in paths:
@@ -167,9 +186,10 @@ class Loader(object):
 
 
     def _is_excluded(self, test):
-        if self._matchers is None:
+        matchers = self._get_matchers()
+        if matchers is None:
             return False
-        return not all(m.matches(test.__slash__) for m in self._matchers)
+        return not all(m.matches(test.__slash__) for m in matchers)
 
     def _is_file_wanted(self, filename):
         return filename.endswith(".py")
@@ -199,7 +219,7 @@ class Loader(object):
             return TestTestFactory(thing)
 
         if isinstance(thing, FunctionType):
-            if thing.__name__.startswith('test_'):
+            if is_valid_test_name(thing.__name__):
                 return FunctionTestFactory(thing)
 
         return None

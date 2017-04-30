@@ -8,7 +8,6 @@ import gossip
 
 from slash._compat import StringIO
 from slash.conf import config
-from slash.exceptions import TerminatedException
 from slash.frontend.slash_run import slash_run
 
 from ..code_formatter import CodeFormatter
@@ -28,6 +27,9 @@ class Suite(object):
         self.debug_info = debug_info
         self.clear()
 
+    def disable_debug_info(self):
+        self.debug_info = False
+
     def deselect_all(self, exclude=()):
         for test in self:
             if test in exclude:
@@ -35,7 +37,7 @@ class Suite(object):
             test.expect_deselect()
 
     def populate(self, num_tests=10):
-        for i in range(num_tests):
+        for _ in range(num_tests):
             self.add_test()
 
     def clear(self):
@@ -76,7 +78,7 @@ class Suite(object):
             self._slashrc = File(self, relpath='.slashrc')
         return self._slashrc
 
-    def add_test(self, type=None, file=None):
+    def add_test(self, type=None, file=None):  # pylint: disable=unused-argument
         if type is None:
             type = self.strategy.get_test_type()
         if type == 'function':
@@ -131,17 +133,14 @@ class Suite(object):
             if args is None:
                 args = [path]
             args.extend(additional_args)
-            try:
-                with self._custom_slashrc(path):
-                    returned.exit_code = slash_run(
-                        args, report_stream=report_stream,
-                        app_callback=captured.append,
-                    )
-            except (KeyboardInterrupt, SystemExit, TerminatedException) as e:
-                if isinstance(e, KeyboardInterrupt):
-                    assert expect_interruption, 'KeyboardInterrupt unexpectedly raised'
-                returned.exit_code = -1
-                returned.error_message = str(e)
+            with self._custom_slashrc(path):
+                app = slash_run(
+                    args, report_stream=report_stream,
+                    app_callback=captured.append,
+                )
+                returned.exit_code = app.exit_code
+            if app.interrupted:
+                assert expect_interruption, 'Unexpectedly interrupted'
             else:
                 assert not expect_interruption, 'KeyboardInterrupt did not happen'
 
@@ -204,7 +203,7 @@ class Suite(object):
             files = itertools.chain(files, [self._slashrc])
 
 
-        # TODO: clean up paths
+        # TODO: clean up paths  # pylint: disable=fixme
         for file in files:
             with open(os.path.join(path, file.get_relative_path()), 'w') as f:
                 formatter = CodeFormatter(f)

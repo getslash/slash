@@ -89,14 +89,14 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
         test_loader.get_runnables(["/non/existent/path"])
     errors = active_slash_session.results.global_result.get_errors()
     assert len(errors) == 1
-    [error] = errors
+    [error] = errors  # pylint: disable=unused-variable
 
 
 def test_import_errors_with_session():
 
     suite = Suite()
 
-    for i in range(20):
+    for _ in range(20):
         suite.add_test()
 
     problematic = suite.files[1]
@@ -107,7 +107,7 @@ def test_import_errors_with_session():
 
     summary = suite.run()
 
-    assert 0 != summary.exit_code
+    assert summary.exit_code != 0
 
     errs = summary.session.results.global_result.get_errors()
     for err in errs:

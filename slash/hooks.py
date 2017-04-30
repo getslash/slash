@@ -20,13 +20,14 @@ def _define(hook_name, **kwargs):
 
 _define('session_start', doc="Called right after session starts")
 _define('session_end', doc="Called right before the session ends, regardless of the reason for termination")
+_define('session_interrupt', doc='Called when the session is interrupted unexpectedly')
 
 _define('tests_loaded', doc='Called when Slash finishes loading a batch of tests for execution (not necessarily al tests)', arg_names=('tests',))
 
 _define('before_session_start', doc="Entry point which is called before session_start, useful for configuring plugins and other global resources")
 _define('after_session_start', doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
 
-_define('configure', doc='Configuration hook that happens during commandline parsing, and before plugins are activated. It is a convenient point to override plugin activation settings')
+_define('configure', doc='Configuration hook that happens during commandline parsing, and before plugins are activated. It is a convenient point to override plugin activation settings')  # pylint: disable=line-too-long
 
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
 _define('test_avoided', doc="Called when a test is skipped completely (not even started)", arg_names=('reason',))

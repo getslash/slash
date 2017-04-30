@@ -1,4 +1,4 @@
-#pylint: disable=unused-argument
+# pylint: disable=unused-argument,redefined-outer-name
 import gc
 
 import pytest
