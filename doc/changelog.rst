@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`1.2.0 <30-04-2017>`
 * :bug:`551 major` Fix stopping on error behavior when errors are reported on previous tests
 * :feature:`529` Switch to PBR
 * :feature:`508` Added optional ``end_message`` argument to ``notify_if_slow_context``, allowing better verbosity of long operations
