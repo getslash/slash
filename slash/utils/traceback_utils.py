@@ -11,6 +11,9 @@ from .._compat import PY2
 from .. import context
 from .python import get_underlying_func
 
+
+_MAX_VARIABLE_VALUE_LENGTH = 100
+
 _FILTERED_MEMBER_TYPES = [types.MethodType, types.FunctionType, type]
 if PY2:
     _FILTERED_MEMBER_TYPES.append(types.UnboundMethodType) # pylint: disable=no-member
@@ -197,6 +200,10 @@ class DistilledFrame(object):
 
 def _safe_repr(value):
     try:
-        return repr(value)
+        returned = repr(value)
     except Exception:  # pylint: disable=broad-except
         return "[Unprintable {0!r} object]".format(type(value).__name__)
+
+    if len(returned) > _MAX_VARIABLE_VALUE_LENGTH:
+        returned = returned[:_MAX_VARIABLE_VALUE_LENGTH - 3] + '...'
+    return returned
