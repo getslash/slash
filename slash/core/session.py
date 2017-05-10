@@ -3,7 +3,7 @@ import sys
 import time
 import uuid
 from contextlib import contextmanager
-
+from ..conf import config
 from .. import ctx, hooks, log, exceptions
 from .cleanup_manager import CleanupManager
 from ..exception_handling import handling_exceptions
@@ -35,6 +35,7 @@ class Session(Activatable):
         self._active = False
         self._active_context = None
         self.parallel_manager = None
+        self.master_session_id = config.root.run.master_session_id
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)

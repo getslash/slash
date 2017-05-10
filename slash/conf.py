@@ -71,6 +71,7 @@ config = Config({
         "parallel": 0 // Doc("Parallel execution") // Cmdline(arg='--parallel', metavar="NUM_WORKERS"),
         "server_addr": "localhost" // Doc("Server address") // Cmdline(arg='--addr', metavar="PARALLEL_SERVER_ADDRESS"),
         "server_port": 8000 // Doc("Server port") // Cmdline(arg='--port', metavar="PARALLEL_SERVER_PORT"),
+        "master_session_id": None // Doc("Master id") // Cmdline(arg='--master_session_id', metavar="MASTER_SESSION_ID"),
         "filter_strings": [] // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(append='-k', metavar='FILTER'),
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
         "repeat_all": 1 // Doc("Repeat all suite a specified amount of times") // Cmdline(arg='--repeat-all', metavar="NUM_TIMES"),

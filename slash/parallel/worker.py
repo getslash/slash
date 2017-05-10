@@ -4,6 +4,7 @@ import logbook
 import os
 from six.moves import xmlrpc_client
 from .server import NO_FREE_TESTS, FINISHED_ALL_TESTS, PROTOCOL_ERROR
+from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..hooks import register
 from ..ctx import context
 from ..runner import run_tests
@@ -47,33 +48,34 @@ class Worker(object):
         tr.start()
 
         should_stop = False
-        while not should_stop:
-            test_index = self.client.get_test(self.client_id)
-            if test_index == PROTOCOL_ERROR:
-                _logger.error("Worker_id {} recieved protocol error message, terminating".format(self.client_id))
-                break
-            elif test_index == FINISHED_ALL_TESTS:
-                _logger.debug("Got FINISHED_ALL_TESTS, Client {} disconnecting".format(self.client_id))
-                break
-            elif test_index == NO_FREE_TESTS:
-                time.sleep(5)
-                continue
-            else:
-                test = self.collected_tests[test_index]
-                try:
+        try:
+            while not should_stop:
+                test_index = self.client.get_test(self.client_id)
+                if test_index == PROTOCOL_ERROR:
+                    _logger.error("Worker_id {} recieved protocol error message, terminating".format(self.client_id))
+                    break
+                elif test_index == FINISHED_ALL_TESTS:
+                    _logger.debug("Got FINISHED_ALL_TESTS, Client {} disconnecting".format(self.client_id))
+                    break
+                elif test_index == NO_FREE_TESTS:
+                    time.sleep(5)
+                    continue
+                else:
+                    test = self.collected_tests[test_index]
                     run_tests([test])
-                except:
-                    _logger.error("Worker interrupted while executing test {}".format(test.__slash__.address))
-                finally:
                     result = context.session.results[test]
                     _logger.debug("Client {} finished test, sending results".format(self.client_id))
                     ret = self.client.finished_test(self.client_id, result.serialize())
                     if ret == PROTOCOL_ERROR:
                         _logger.error("Worker_id {} recieved protocol error message, terminating".format(self.client_id))
                         should_stop = True
-
-        self.client.disconnect(self.client_id)
-        context.session.mark_complete()
-        context.session.scope_manager.flush_remaining_scopes()
-        stop_event.set()
-        tr.join()
+        except INTERRUPTION_EXCEPTIONS:
+            _logger.error("Worker interrupted while executing test")
+            raise
+        else:
+            context.session.mark_complete()
+            self.client.disconnect(self.client_id)
+        finally:
+            context.session.scope_manager.flush_remaining_scopes()
+            stop_event.set()
+            tr.join()

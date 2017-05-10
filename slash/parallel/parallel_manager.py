@@ -10,6 +10,7 @@ from .. import log
 from ..exceptions import ParallelServerIsDown
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..conf import config
+from ..ctx import context
 from .server import Server
 
 _logger = logbook.Logger(__name__)
@@ -40,7 +41,8 @@ class ParallelManager(object):
         worker_id = str(self.max_worker_id)
         _logger.notice("Starting worker number {}".format(worker_id))
         with open(os.devnull, 'w') as devnull:
-            proc = subprocess.Popen(self.args[:] + ["--worker_id", worker_id], stdin=devnull, stdout=devnull, stderr=devnull)
+            proc = subprocess.Popen(self.args[:] + \
+                    ["--worker_id", worker_id, "--master_session_id", context.session.id], stdin=devnull, stdout=devnull, stderr=devnull)
             self.workers[worker_id] = proc
             self.max_worker_id += 1
 
