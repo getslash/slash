@@ -22,21 +22,21 @@ def test_more_tests_than_workers():
     run_specific_workers_and_tests_num(workers_num=2, tests_num=20)
 
 def test_many_workers():
-    run_specific_workers_and_tests_num(workers_num=10, tests_num=50)
+    run_specific_workers_and_tests_num(workers_num=6, tests_num=50)
 
 def test_zero_workers(parallel_suite):
     summary = parallel_suite.run(num_workers=0) #should act like regular run of slash, not parallel
     assert summary.session.results.is_success()
     assert summary.session.parallel_manager is None
 
-def test_test_causes_worker_exit(parallel_suite, parallel_suite_test):
-    parallel_suite_test.append_line("import os")
-    parallel_suite_test.append_line("os._exit(0)")
-    parallel_suite_test.expect_interruption()
+def test_test_causes_worker_exit(parallel_suite):
+    parallel_suite[0].append_line("import os")
+    parallel_suite[0].append_line("os._exit(0)")
+    parallel_suite[0].expect_interruption()
     workers_num = 1
     summary = parallel_suite.run(num_workers=workers_num)
     assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num + MAX_TEST_RETRIES + 1
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.is_interrupted()
     assert summary.session.results.get_num_successful() == len(parallel_suite) - 1
 
@@ -76,10 +76,10 @@ def test_test_success(parallel_suite):
     assert results.is_success()
     assert results.get_num_successful() == len(parallel_suite)
 
-def test_test_failure(parallel_suite, parallel_suite_test):
-    parallel_suite_test.when_run.fail()
+def test_test_failure(parallel_suite):
+    parallel_suite[0].when_run.fail()
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     [failures] = result.get_failures()
     assert 'AssertionError' in str(failures)
     assert 'assert False' in str(failures)
@@ -99,11 +99,18 @@ def test_stop_on_error(parallel_suite, parallel_suite_test):
             assert result.is_not_run()
     assert found_failure
 
-def test_test_error(parallel_suite, parallel_suite_test):
-    parallel_suite_test.append_line('slash.add_error()')
-    parallel_suite_test.expect_error()
+def test_pass_override_conf_flag(parallel_suite):
+    summary = parallel_suite.run(additional_args=['-o', 'run.server_port=8001'], num_workers=1)
+    results = summary.session.results
+    assert results.is_success()
+    assert results.get_num_successful() == len(parallel_suite)
+    assert summary.session.parallel_manager.server.port == 8001
+
+def test_test_error(parallel_suite):
+    parallel_suite[0].append_line('slash.add_error()')
+    parallel_suite[0].expect_error()
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     [err] = result.get_errors()
     assert 'RuntimeError' in str(err)
     assert 'add_error() must be called' in str(err)
@@ -164,33 +171,33 @@ def test_traceback_vars(parallel_suite):
             assert 'num' in result.get_failures()[0].traceback.frames[1].locals
     assert found_failure == 1
 
-def test_result_data_not_picklable(parallel_suite, parallel_suite_test):
-    parallel_suite_test.append_line("import socket")
-    parallel_suite_test.append_line("s = socket.socket()")
-    parallel_suite_test.append_line("slash.context.result.data.setdefault('socket', s)")
+def test_result_data_not_picklable(parallel_suite):
+    parallel_suite[0].append_line("import socket")
+    parallel_suite[0].append_line("s = socket.socket()")
+    parallel_suite[0].append_line("slash.context.result.data.setdefault('socket', s)")
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.data == {}
 
-def test_result_data_is_picklable(parallel_suite, parallel_suite_test):
-    parallel_suite_test.append_line("slash.context.result.data.setdefault('num', 1)")
+def test_result_data_is_picklable(parallel_suite):
+    parallel_suite[0].append_line("slash.context.result.data.setdefault('num', 1)")
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert 'num' in result.data
     assert result.data['num'] == 1
 
-def test_result_details_not_picklable(parallel_suite, parallel_suite_test):
-    parallel_suite_test.append_line("import socket")
-    parallel_suite_test.append_line("s = socket.socket()")
-    parallel_suite_test.append_line("slash.context.result.details.append('socket', s)")
+def test_result_details_not_picklable(parallel_suite):
+    parallel_suite[0].append_line("import socket")
+    parallel_suite[0].append_line("s = socket.socket()")
+    parallel_suite[0].append_line("slash.context.result.details.append('socket', s)")
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.details.all() == {}
 
-def test_result_details_is_picklable(parallel_suite, parallel_suite_test):
-    parallel_suite_test.append_line("slash.context.result.details.append('num', 1)")
+def test_result_details_is_picklable(parallel_suite):
+    parallel_suite[0].append_line("slash.context.result.details.append('num', 1)")
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     details = result.details.all()
     assert 'num' in details
     assert details['num'] == [1]
@@ -207,10 +214,10 @@ def test_requirements(parallel_suite):
     assert results.get_num_successful() == len(parallel_suite) - 1
     assert results.is_success(allow_skips=True)
 
-def test_is_test_code(parallel_suite, parallel_suite_test):
-    parallel_suite_test.when_run.error()
+def test_is_test_code(parallel_suite):
+    parallel_suite[0].when_run.error()
     summary = parallel_suite.run()
-    [result] = summary.get_all_results_for_test(parallel_suite_test)
+    [result] = summary.get_all_results_for_test(parallel_suite[0])
     [err] = result.get_errors()
     assert err.traceback.frames[-1].is_in_test_code()
     error_json = err.traceback.to_list()
