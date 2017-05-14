@@ -62,6 +62,14 @@ class CannotAddCleanup(SlashException):
     pass
 
 
+class TmuxSessionNotExist(SlashException):
+    pass
+
+
+class TmuxExecutableNotFound(SlashException):
+    pass
+
+
 class TestFailed(AssertionError):
 
     """

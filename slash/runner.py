@@ -64,10 +64,10 @@ def run_tests(iterable, stop_on_error=None):
         else:
             complete = True
     finally:
-        if config.root.run.worker_id is None:
+        if config.root.parallel.worker_id is None:
             context.session.scope_manager.flush_remaining_scopes()
 
-    if config.root.run.worker_id is None:
+    if config.root.parallel.worker_id is None:
         _mark_unrun_tests(test_iterator)
         if complete:
             context.session.mark_complete()
@@ -112,7 +112,7 @@ def _run_single_test(test, test_iterator):
                         pass
 
                     _fire_test_summary_hooks(test, result)
-                    if next_test is None and config.root.run.worker_id is None:
+                    if next_test is None and config.root.parallel.worker_id is None:
                         controller.end()
 
                         with handling_exceptions(swallow=True):

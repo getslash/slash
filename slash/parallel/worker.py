@@ -19,7 +19,7 @@ class Worker(object):
         self.client_id = client_id
         self.session_id = session_id
         self.collected_tests = collected_tests
-        self.server_addr = 'http://{0}:{1}'.format(config.root.run.server_addr, config.root.run.server_port)
+        self.server_addr = 'http://{0}:{1}'.format(config.root.parallel.server_addr, config.root.parallel.server_port)
 
     def keep_alive(self, stop_event):
         proxy = xmlrpc_client.ServerProxy(self.server_addr)
@@ -32,7 +32,8 @@ class Worker(object):
         self.client.report_warning(self.client_id, warning)
 
     def start(self):
-        os.setsid()
+        if not os.getpid() == os.getpgid(0):
+            os.setsid()
         register(self.warning_added)
         collection = [(test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id) for test in self.collected_tests]
         self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)

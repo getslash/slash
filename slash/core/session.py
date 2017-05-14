@@ -35,7 +35,7 @@ class Session(Activatable):
         self._active = False
         self._active_context = None
         self.parallel_manager = None
-        self.master_session_id = config.root.run.master_session_id
+        self.parent_session_id = config.root.parallel.parent_session_id
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)

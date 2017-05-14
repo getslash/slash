@@ -9,12 +9,14 @@ from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, sav
 from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
 from ..utils.suite_files import iter_suite_file_paths
+from ..utils.tmux_utils import run_slash_in_tmux
 from ..plugins import manager
 from ..parallel.parallel_manager import ParallelManager
 from ..parallel.worker import Worker
 
 
 def slash_run(args, report_stream=None, resume=False, app_callback=None, working_directory=None):
+
     if report_stream is None:
         report_stream = sys.stderr
     app = Application()
@@ -31,6 +33,8 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 app_callback(app)
             try:
                 with handling_exceptions():
+                    if config.root.run.tmux and config.root.parallel.worker_id is None:
+                        run_slash_in_tmux(args)
                     if resume:
                         session_ids = app.positional_args
                         if not session_ids:
@@ -45,9 +49,9 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 collected = list(collected)
                 with app.session.get_started_context():
                     report_tests_to_backslash(collected)
-                    if config.root.run.parallel:
-                        if config.root.run.worker_id is not None:
-                            worker = Worker(config.root.run.worker_id, app.session.id, collected)
+                    if config.root.parallel.workers_num:
+                        if config.root.parallel.worker_id is not None:
+                            worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
                             worker.start()
                         else:
                             app.session.parallel_manager = ParallelManager(args)
