@@ -32,8 +32,8 @@ def server_func(func):
 class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
-        self.host = config.root.run.server_addr
-        self.port = config.root.run.server_port
+        self.host = config.root.parallel.server_addr
+        self.port = config.root.parallel.server_port
         self.should_stop_on_error = config.root.run.stop_on_error
         self.tests = tests
         self.stop_on_error_and_error_found = False

@@ -100,7 +100,7 @@ def test_stop_on_error(parallel_suite, parallel_suite_test):
     assert found_failure
 
 def test_pass_override_conf_flag(parallel_suite):
-    summary = parallel_suite.run(additional_args=['-o', 'run.server_port=8001'], num_workers=1)
+    summary = parallel_suite.run(additional_args=['-o', 'parallel.server_port=8001'], num_workers=1)
     results = summary.session.results
     assert results.is_success()
     assert results.get_num_successful() == len(parallel_suite)
