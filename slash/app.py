@@ -1,6 +1,7 @@
 import logbook
 import signal
 import sys
+import dessert
 from contextlib import contextmanager
 
 from . import hooks as trigger_hook
@@ -100,7 +101,8 @@ class Application(object):
         try:
             self._exit_stack.enter_context(self._prelude_logging_context())
             self._exit_stack.enter_context(self._sigterm_context())
-            site.load(working_directory=self._working_directory)
+            with dessert.rewrite_assertions_context():
+                site.load(working_directory=self._working_directory)
 
             cli_utils.configure_arg_parser_by_plugins(self.arg_parser)
             cli_utils.configure_arg_parser_by_config(self.arg_parser)
