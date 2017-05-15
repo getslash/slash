@@ -1,7 +1,7 @@
 import os
-
 import dessert
 from emport import import_file
+from ..utils.python import check_duplicate_functions
 
 class LocalConfig(object):
 
@@ -9,6 +9,7 @@ class LocalConfig(object):
         super(LocalConfig, self).__init__()
         self._slashconf_vars_cache = {}
         self._configs = []
+        self.duplicate_funcs = set()
 
     def push_path(self, path):
         self._configs.append(self._build_config(path))
@@ -26,6 +27,7 @@ class LocalConfig(object):
             if slashconf_vars is None:
                 slashconf_path = os.path.join(dir_path, 'slashconf.py')
                 if os.path.isfile(slashconf_path):
+                    self.duplicate_funcs |= check_duplicate_functions(slashconf_path)
                     with dessert.rewrite_assertions_context():
                         slashconf_vars = self._slashconf_vars_cache[dir_path] = vars(import_file(slashconf_path))
 
