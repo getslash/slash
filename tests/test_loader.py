@@ -51,6 +51,32 @@ def test_loader_skips_empty_dirs(tmpdir):
     assert runnables == []
 
 
+def test_loader_warns_duplicate_test_funcs(tmpdir):
+    tests_dir = tmpdir.join('tests')
+    full_path = tests_dir.join('.dir').join('test_something.py')
+    test_name = 'test_something'
+    with full_path.open('w', ensure=True) as f:
+        f.write('def {0}():\n    assert True\n'.format(test_name))
+        f.write('def {0}():\n    assert True\n'.format(test_name))
+    with Session() as session:
+        Loader().get_runnables([str(full_path)])
+        assert len(session.warnings) == 1
+        assert 'Duplicate' in session.warnings.warnings[0].details['message']
+        assert test_name in session.warnings.warnings[0].details['message']
+
+
+def test_loader_warns_on_duplicate_fixtures(suite):
+    fixture_name = 'fixture_name'
+    fixture1 = suite.slashconf.add_fixture(name=fixture_name)
+    fixture1.append_line('assert this == slash.context.fixture')
+    fixture2 = suite.slashconf.add_fixture(name=fixture_name)
+    fixture2.append_line('assert this == slash.context.fixture')
+    summary = suite.run()
+    assert len(summary.session.warnings) == 1
+    assert 'Duplicate' in summary.session.warnings.warnings[0].details['message']
+    assert fixture_name in summary.session.warnings.warnings[0].details['message']
+
+
 @pytest.mark.parametrize('specific_method', [True, False])
 @pytest.mark.parametrize('with_parameters', [True, False])
 def test_iter_specific_factory(suite, suite_test, specific_method, with_parameters):

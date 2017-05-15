@@ -2,10 +2,25 @@ from collections import OrderedDict
 import functools
 import inspect
 import sys
-
+import ast
 from sentinels import NOTHING
 
 from .._compat import reraise, PY2, PYPY
+
+def check_duplicate_functions(path):
+    code = None
+    with open(path) as f:
+        code = f.read()
+    root = ast.parse(code)
+    func_names = set()
+    duplicates = set()
+    for node in root.body:
+        if isinstance(node, ast.FunctionDef):
+            if node.name in func_names:
+                duplicates.add((path, node.name, node.lineno))
+            else:
+                func_names.add(node.name)
+    return duplicates
 
 
 def wraps(func, preserve=()):

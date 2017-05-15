@@ -23,6 +23,7 @@ from .exception_handling import handling_exceptions
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
+from .utils.python import check_duplicate_functions
 from .resuming import ResumedTestData
 
 _logger = Logger(__name__)
@@ -37,6 +38,7 @@ class Loader(object):
     def __init__(self):
         super(Loader, self).__init__()
         self._local_config = LocalConfig()
+        self._duplicate_funcs = set()
 
     _cached_matchers = NOTHING
 
@@ -51,10 +53,12 @@ class Loader(object):
 
     def get_runnables(self, paths):
         assert context.session is not None
-
         sources = (t for repetition in range(config.root.run.repeat_all)
                    for t in self._generate_test_sources(paths))
         returned = self._collect(sources)
+        self._duplicate_funcs |= self._local_config.duplicate_funcs
+        for (path, name, line) in sorted(self._duplicate_funcs):
+            _logger.warning('Duplicate function definition, File: {}, Name: {}, Line: {}'.format(path, name, line))
         hooks.tests_loaded(tests=returned) # pylint: disable=no-member
         returned.sort(key=lambda test: test.__slash__.get_sort_key())
         return returned
@@ -141,6 +145,7 @@ class Loader(object):
         return self._iter_paths([path])
 
     def _iter_paths(self, paths):
+
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
@@ -163,6 +168,7 @@ class Loader(object):
                     raise CannotLoadTests(
                         "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
                 if module is not None:
+                    self._duplicate_funcs |= check_duplicate_functions(file_path)
                     with self._adding_local_fixtures(file_path, module):
                         for runnable in self._iter_runnable_tests_in_module(file_path, module):
                             if self._is_excluded(runnable):
