@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`556` Long variable representations are now capped by default when distilling tracebacks
 * :feature:`-` Assertions coming from plugins and modules loaded from the project's ``.slashrc`` now also have assertion rewriting introspection enabled
 * :release:`1.2.0 <30-04-2017>`
 * :bug:`551 major` Fix stopping on error behavior when errors are reported on previous tests
