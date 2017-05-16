@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Slash now detects test functions being redefined, hiding previous tests, and warns about it
 * :feature:`556` Long variable representations are now capped by default when distilling tracebacks
 * :feature:`-` Assertions coming from plugins and modules loaded from the project's ``.slashrc`` now also have assertion rewriting introspection enabled
 * :release:`1.2.0 <30-04-2017>`
