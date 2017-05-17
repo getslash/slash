@@ -1,9 +1,8 @@
 import threading
-import time
 import logbook
 import os
 from six.moves import xmlrpc_client
-from .server import NO_FREE_TESTS, FINISHED_ALL_TESTS, PROTOCOL_ERROR
+from .server import FINISHED_ALL_TESTS, PROTOCOL_ERROR
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..hooks import register
 from ..ctx import context
@@ -58,9 +57,6 @@ class Worker(object):
                 elif test_index == FINISHED_ALL_TESTS:
                     _logger.debug("Got FINISHED_ALL_TESTS, Client {} disconnecting".format(self.client_id))
                     break
-                elif test_index == NO_FREE_TESTS:
-                    time.sleep(5)
-                    continue
                 else:
                     test = self.collected_tests[test_index]
                     run_tests([test])

@@ -49,7 +49,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 collected = list(collected)
                 with app.session.get_started_context():
                     report_tests_to_backslash(collected)
-                    if config.root.parallel.workers_num:
+                    if config.root.parallel.num_workers:
                         if config.root.parallel.worker_id is not None:
                             worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
                             worker.start()

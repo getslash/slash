@@ -16,9 +16,7 @@ _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
 FINISHED_ALL_TESTS = "NO_MORE_TESTS"
-NO_FREE_TESTS = "PENDING"
 PROTOCOL_ERROR = "PROTOCOL_ERROR"
-MAX_TEST_RETRIES = 1
 
 def server_func(func):
     @functools.wraps(func)
@@ -33,7 +31,7 @@ class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
         self.host = config.root.parallel.server_addr
-        self.port = config.root.parallel.server_port
+        self.port = None
         self.should_stop_on_error = config.root.run.stop_on_error
         self.tests = tests
         self.stop_on_error_and_error_found = False
@@ -68,14 +66,10 @@ class Server(object):
         self.clients_last_communication_time.pop(client_id)
         test_index = self.executing_tests.get(client_id, None)
         if test_index is not None:
-            self.tests_restart_count[test_index] += 1
-            if self.tests_restart_count[test_index] > MAX_TEST_RETRIES:
-                _logger.error("Test {} causes recurrent interruptions, terminating it".format(self.tests[test_index].__slash__.address))
-                with _get_test_context(self.tests[test_index]) as result:
-                    result.mark_interrupted()
+            _logger.error("Worker {} interrupted while executing test {}".format(client_id, self.tests[test_index].__slash__.address))
+            with _get_test_context(self.tests[test_index]) as result:
+                result.mark_interrupted()
                 self.finished_tests.append(test_index)
-            else:
-                self.unstarted_tests.put(test_index)
 
     def _mark_unrun_tests(self):
         while self._has_unstarted_tests():
@@ -115,17 +109,15 @@ class Server(object):
         if not self.executing_tests[client_id] is None:
             _logger.error("Client_id {} requested new test without sending former result".format(client_id))
             return PROTOCOL_ERROR
-        if not self.has_more_tests():
-            _logger.debug("No more tests, sending end to client_id {}".format(client_id))
-            return FINISHED_ALL_TESTS
-        elif self._has_unstarted_tests():
+        if self._has_unstarted_tests():
             test_index = self.unstarted_tests.get()
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
             _logger.notice("#{}: {}, Client_id: {}", test_index, test.__slash__.address, client_id, extra={'to_error_log': 1})
             return test_index
         else:
-            return NO_FREE_TESTS
+            _logger.debug("No unstarted tests, sending end to client_id {}".format(client_id))
+            return FINISHED_ALL_TESTS
 
     @server_func
     def finished_test(self, client_id, result_dict):
@@ -136,6 +128,7 @@ class Server(object):
             self.executing_tests[client_id] = None
             with _get_test_context(self.tests[test_index]) as result:
                 result.deserialize(result_dict)
+                context.session.reporter.report_test_end(self.tests[test_index], result)
                 if not result.is_success(allow_skips=True) and self.should_stop_on_error:
                     _logger.debug("Stopping (run.stop_on_error==True)")
                     self.stop_on_error_and_error_found = True
@@ -153,7 +146,8 @@ class Server(object):
 
     def serve(self):
         try:
-            server = xmlrpc_server.SimpleXMLRPCServer((self.host, self.port), allow_none=True, logRequests=False)
+            server = xmlrpc_server.SimpleXMLRPCServer((self.host, config.root.parallel.server_port), allow_none=True, logRequests=False)
+            self.port = server.server_address[1]
             self.is_initialized = True
             server.register_instance(self)
             _logger.debug("Starting server loop")
