@@ -3,7 +3,6 @@ import os
 import signal
 from .utils.suite_writer import Suite
 from slash.resuming import get_tests_to_resume
-from slash.parallel.server import MAX_TEST_RETRIES
 
 #basic features of parallel
 def run_specific_workers_and_tests_num(workers_num, tests_num=10):
@@ -35,7 +34,7 @@ def test_test_causes_worker_exit(parallel_suite):
     parallel_suite[0].expect_interruption()
     workers_num = 1
     summary = parallel_suite.run(num_workers=workers_num)
-    assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num + MAX_TEST_RETRIES + 1
+    assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num + 1
     [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.is_interrupted()
     assert summary.session.results.get_num_successful() == len(parallel_suite) - 1

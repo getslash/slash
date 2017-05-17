@@ -110,7 +110,7 @@ class Result(object):
                 # Test was interrupted
                 interrupted_test = self.is_interrupted()
                 self.mark_interrupted()
-                if not interrupted_test and not context.session.is_master():
+                if not interrupted_test and not context.session.has_children():
                     with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."):
                         hooks.test_interrupt() # pylint: disable=no-member
 
@@ -234,7 +234,7 @@ class Result(object):
                 error.mark_as_failure()
             _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'to_error_log': 1})
             error_list.append(error)
-            if not context.session or not context.session.is_master():
+            if not context.session or not context.session.has_children():
                 hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             return error
         except Exception:

@@ -54,7 +54,7 @@ class Session(Activatable):
     def get_skip_exception_types(self):
         return self._skip_exc_types
 
-    def is_master(self):
+    def has_children(self):
         return not self.parallel_manager is None
 
     @property

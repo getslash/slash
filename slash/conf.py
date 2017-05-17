@@ -76,11 +76,11 @@ config = Config({
         "user_customization_file_path": "~/.slash/slashrc",
     },
     "parallel": {
-        "workers_num": 0 // Doc("Parallel execution") // Cmdline(arg='--parallel', metavar="NUM_WORKERS"),
-        "worker_id": None // Doc("Worker_id") // Cmdline(arg='--worker_id', metavar="WORKER_ID"),
-        "server_addr": "localhost" // Doc("Server address") // Cmdline(arg='--addr', metavar="PARALLEL_SERVER_ADDRESS"),
-        "server_port": 8000 // Doc("Server port") // Cmdline(arg='--port', metavar="PARALLEL_SERVER_PORT"),
-        "parent_session_id": None // Doc("Master id") // Cmdline(arg='--parent_session_id', metavar="MASTER_SESSION_ID"),
+        "num_workers": 0 // Doc("Parallel execution") // Cmdline(arg='--parallel', metavar="NUM_WORKERS"),
+        "worker_id": None // Doc("Worker_id") // Cmdline(arg='--parallel_worker_id', metavar="WORKER_ID"),
+        "server_addr": "localhost" // Doc("Server address") // Cmdline(arg='--parallel_addr', metavar="PARALLEL_SERVER_ADDRESS"),
+        "server_port": 0 // Doc("Server port") // Cmdline(arg='--parallel_port', metavar="PARALLEL_SERVER_PORT"),
+        "parent_session_id": None // Doc("Master id") // Cmdline(arg='--parallel_parent_session_id', metavar="MASTER_SESSION_ID"),
     },
     "sentry": {
         "dsn": None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "
