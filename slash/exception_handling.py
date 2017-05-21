@@ -83,7 +83,11 @@ def handling_exceptions(fake_traceback=True, **kwargs):
 
     if not PYPY and fake_traceback:
         # Only in CPython we're able to fake the original, full traceback
-        fake_tbs = create_traceback_proxy(frame_correction=2)
+        try:
+            fake_tbs = create_traceback_proxy(frame_correction=2)
+        except (KeyError, IndexError):
+            _logger.warn("Could not extract full traceback for exceptions handling")
+            fake_tbs = tuple()
     else:
         fake_tbs = tuple()
     swallow = kwargs.pop("swallow", False)
