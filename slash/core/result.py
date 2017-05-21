@@ -2,10 +2,9 @@ import functools
 import itertools
 import os
 import sys
-from numbers import Number
 import gossip
 import logbook
-import pickle
+from numbers import Number
 from .._compat import itervalues, OrderedDict
 from ..ctx import context
 from .. import hooks
@@ -15,7 +14,7 @@ from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
-from ..utils.python import try_pickle, try_unpickle
+from ..utils.python import try_pickle, unpickle
 
 _logger = logbook.Logger(__name__)
 
@@ -50,38 +49,25 @@ class Result(object):
         return False
 
     def serialize(self):
-        pickled_data = try_pickle(self.data)
-        pickled_details = try_pickle(self.details)
-
-        return {
-                'is_success_finished': self.is_success_finished(),
-                'is_started' : self.is_started(),
-                'is_finished' : self.is_finished(),
-                'is_interrupted' : self.is_interrupted(),
-                'errors' : pickle.dumps(self._errors),
-                'failures' : pickle.dumps(self._failures),
-                'skips' : pickle.dumps(self._skips),
-                'data' : pickled_data,
-                'details' : pickled_details
-            }
+        serialized_object = {}
+        for key, value in vars(self).items():
+            serialized_value = try_pickle(value)
+            if serialized_value is not None:
+                serialized_object[key] = serialized_value
+        return serialized_object
 
     def deserialize(self, result_dict):
-        for failure in try_unpickle(result_dict['failures']):
-            self.add_failure(failure)
-        for error in try_unpickle(result_dict['errors']):
-            self.add_error(error)
-        for skip in try_unpickle(result_dict['skips']):
-            self.add_skip(skip)
-        if result_dict['is_started']:
-            self.mark_started()
-        if result_dict['is_finished']:
-            self.mark_finished()
-        if result_dict['is_interrupted']:
-            self.mark_interrupted()
-        if result_dict['data']:
-            self.data = try_unpickle(result_dict['data'])
-        if result_dict['details']:
-            self.details = try_unpickle(result_dict['details'])
+        for key, value in result_dict.items():
+            try:
+                self.__dict__[key] = unpickle(value)
+            except TypeError:
+                _logger.error('Error when deserialize reult, skipping this value. key = {}'.format(key))
+        for failure in self._failures:
+            self.add_failure(failure, append=False)
+        for error in self._errors:
+            self.add_error(error, append=False)
+        for skip in self._skips:
+            self.add_skip(skip, append=False)
 
     def add_exception(self, exc_info=None):
         """Adds the currently active exception, assuming it wasn't already added to a result
@@ -202,17 +188,17 @@ class Result(object):
     def is_interrupted(self):
         return self._interrupted
 
-    def add_error(self, e=None, frame_correction=0, exc_info=None):
+    def add_error(self, e=None, frame_correction=0, exc_info=None, append=True):
         """Adds a failure to the result
         """
-        err = self._add_error(self._errors, e, frame_correction=frame_correction + 1, exc_info=exc_info)
+        err = self._add_error(self._errors, e, frame_correction=frame_correction + 1, exc_info=exc_info, append=append)
         context.reporter.report_test_error_added(context.test, err)
         return err
 
-    def add_failure(self, e=None, frame_correction=0, exc_info=None):
+    def add_failure(self, e=None, frame_correction=0, exc_info=None, append=True):
         """Adds a failure to the result
         """
-        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1, exc_info=exc_info, is_failure=True)
+        err = self._add_error(self._failures, e, frame_correction=frame_correction + 1, exc_info=exc_info, is_failure=True, append=append)
         context.reporter.report_test_failure_added(context.test, err)
         return err
 
@@ -221,7 +207,7 @@ class Result(object):
         """
         self.details.set(key, value)
 
-    def _add_error(self, error_list, error=None, frame_correction=0, exc_info=None, is_failure=False):
+    def _add_error(self, error_list, error=None, frame_correction=0, exc_info=None, is_failure=False, append=True):
         try:
             if error is None:
                 error = Error.capture_exception(exc_info=exc_info)
@@ -233,7 +219,8 @@ class Result(object):
                 # force the error object to be marked as failure
                 error.mark_as_failure()
             _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'to_error_log': 1})
-            error_list.append(error)
+            if append:
+                error_list.append(error)
             if not context.session or not context.session.has_children():
                 hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             return error
@@ -241,8 +228,9 @@ class Result(object):
             _logger.error("Failed to add error to result", exc_info=True)
             raise
 
-    def add_skip(self, reason):
-        self._skips.append(reason)
+    def add_skip(self, reason, append=True):
+        if append:
+            self._skips.append(reason)
         context.reporter.report_test_skip_added(context.test, reason)
 
     def get_errors(self):

@@ -122,7 +122,7 @@ class Suite(object):
     def __getitem__(self, idx):
         return self._notified[idx]
 
-    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True, num_workers=2):
+    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True, num_workers=1):
         if commit:
             self.commit()
         path = self._last_committed_path

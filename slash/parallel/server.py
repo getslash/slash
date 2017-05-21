@@ -4,7 +4,7 @@ import functools
 from six.moves import queue
 from datetime import datetime
 from six.moves import xmlrpc_server
-from ..utils.python import try_unpickle
+from ..utils.python import unpickle
 from .. import log
 from ..ctx import context
 from ..runner import _get_test_context
@@ -141,8 +141,11 @@ class Server(object):
     @server_func
     def report_warning(self, client_id, pickled_warning):
         _logger.notice("Client_id {} sent warning".format(client_id))
-        warning = try_unpickle(pickled_warning)
-        context.session.warnings.add(warning)
+        try:
+            warning = unpickle(pickled_warning)
+            context.session.warnings.add(warning)
+        except TypeError:
+            _logger.error('Error when deserializing warning, not adding it')
 
     def serve(self):
         try:
