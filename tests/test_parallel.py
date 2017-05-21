@@ -17,11 +17,8 @@ def run_specific_workers_and_tests_num(workers_num, tests_num=10):
 def test_one_worker():
     run_specific_workers_and_tests_num(workers_num=1)
 
-def test_more_tests_than_workers():
-    run_specific_workers_and_tests_num(workers_num=2, tests_num=20)
-
 def test_many_workers():
-    run_specific_workers_and_tests_num(workers_num=6, tests_num=50)
+    run_specific_workers_and_tests_num(workers_num=3, tests_num=50)
 
 def test_zero_workers(parallel_suite):
     summary = parallel_suite.run(num_workers=0) #should act like regular run of slash, not parallel
@@ -66,7 +63,7 @@ def test_server_fails(parallel_suite):
 
     for test in parallel_suite:
         test.expect_deselect()
-    parallel_suite.run(num_workers=2, expect_interruption=True)
+    parallel_suite.run(expect_interruption=True)
 
 
 #test slash features with parallel
@@ -85,7 +82,7 @@ def test_test_failure(parallel_suite):
 
 def test_stop_on_error(parallel_suite, parallel_suite_test):
     parallel_suite_test.when_run.fail()
-    summary = parallel_suite.run(additional_args=['-x'], num_workers=1, verify=False)
+    summary = parallel_suite.run(additional_args=['-x'], verify=False)
     [result] = summary.get_all_results_for_test(parallel_suite_test)
     assert result.is_failure()
 
@@ -99,7 +96,7 @@ def test_stop_on_error(parallel_suite, parallel_suite_test):
     assert found_failure
 
 def test_pass_override_conf_flag(parallel_suite):
-    summary = parallel_suite.run(additional_args=['-o', 'parallel.server_port=8001'], num_workers=1)
+    summary = parallel_suite.run(additional_args=['-o', 'parallel.server_port=8001'])
     results = summary.session.results
     assert results.is_success()
     assert results.get_num_successful() == len(parallel_suite)
@@ -114,10 +111,10 @@ def test_test_error(parallel_suite):
     assert 'RuntimeError' in str(err)
     assert 'add_error() must be called' in str(err)
 
-def test_test_interruption(parallel_suite, parallel_suite_test):
-    parallel_suite_test.when_run.interrupt()
+def test_test_interruption(parallel_suite):
+    parallel_suite[0].when_run.interrupt()
     summary = parallel_suite.run()
-    [interrupted_result] = summary.get_all_results_for_test(parallel_suite_test)
+    [interrupted_result] = summary.get_all_results_for_test(parallel_suite[0])
     assert interrupted_result.is_interrupted()
     for result in summary.session.results:
         if result != interrupted_result:
@@ -201,9 +198,10 @@ def test_result_details_is_picklable(parallel_suite):
     assert 'num' in details
     assert details['num'] == [1]
 
-def test_parameters(parallel_suite, parallel_suite_test):
-    parallel_suite_test.add_parameter(num_values=1)
-    parallel_suite.run()
+def test_parameters(parallel_suite):
+    parallel_suite[0].add_parameter(num_values=1)
+    summary = parallel_suite.run()
+    assert summary.session.results.is_success()
 
 def test_requirements(parallel_suite):
     parallel_suite[0].add_decorator('slash.requires(False)')

@@ -36,14 +36,15 @@ def wraps(func, preserve=()):
             setattr(decorator, p, orig)
     return decorator
 
-
 def try_pickle(data):
     try:
         return pickle.dumps(data)
-    except TypeError:
+    except (pickle.PicklingError, TypeError):
         return None
 
-def try_unpickle(thing):
+def unpickle(thing):
+    if not thing:
+        return thing
     if PY2:
         return pickle.loads(thing)
     else:
