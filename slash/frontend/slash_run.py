@@ -39,6 +39,8 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                         collected = _collect_tests(app, args)
                     if app.parsed_args.interactive:
                         collected = itertools.chain([generate_interactive_test()], collected)
+
+                collected = list(collected)
                 with app.session.get_started_context():
                     report_tests_to_backslash(collected)
                     run_tests(collected)
