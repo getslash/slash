@@ -106,11 +106,13 @@ class Loader(object):
                 yield test
 
     def _iter_test_address(self, address):
+        drive, address = os.path.splitdrive(address)
         if ':' in address:
             path, address_in_file = address.split(':', 1)
         else:
             path = address
             address_in_file = None
+        path = os.path.join(drive, path)
 
 
         tests = list(self._iter_path(path))
