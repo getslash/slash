@@ -57,8 +57,7 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
                 parsed_args.paths = config.root.run.default_sources
 
             if not parsed_args.paths and not parsed_args.suite_files:
-                parser.error(
-                    'Neither test paths nor suite files were specified')
+                parser.error('Neither test paths nor suite files were specified')
 
             loader = slash.loader.Loader()
             runnables = loader.get_runnables(itertools.chain(parsed_args.paths, iter_suite_file_paths(parsed_args.suite_files)))
