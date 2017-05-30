@@ -1,5 +1,4 @@
 # pylint: disable=unused-variable,redefined-outer-name,unused-argument
-import inspect
 import itertools
 from uuid import uuid1
 
@@ -8,6 +7,7 @@ import slash
 from slash.exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureScope
 from slash.core.fixtures.parameters import bound_parametrizations_context, iter_parametrization_fixtures
 from slash.core.fixtures.fixture_store import FixtureStore
+from slash.utils.python import get_arguments
 
 
 def test_fixture_initialization_order_is_preserved(store):
@@ -413,8 +413,7 @@ def test_fixture_decorator_multiple_calls(fixture_func):
 
 
 def test_fixture_required_fixtures(fixture_func):
-    # pylint: disable=deprecated-method
-    assert set(fixture_func.__slash_fixture__.required_args) == set(inspect.getargspec(fixture_func).args)
+    assert set(fixture_func.__slash_fixture__.required_args) == set(arg.name for arg in get_arguments(fixture_func))
 
 
 def test_fixture_name(fixture_func, fixture_func_name):
