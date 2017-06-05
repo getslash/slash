@@ -88,6 +88,7 @@ class Server(object):
     @server_func
     def connect(self, client_id, session_id):
         _logger.notice("Client_id {} connected with session_id {}".format(client_id, session_id))
+        context.session.logging.create_worker_symlink("worker_{}".format(client_id), session_id)
         hooks.worker_connected(session_id=session_id)  # pylint: disable=no-member
         self.worker_session_ids.append(session_id)
         self.executing_tests[client_id] = None
