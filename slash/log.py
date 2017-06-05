@@ -205,8 +205,15 @@ class SessionLogging(object):
     def _normalize_path(self, p):
         return os.path.expanduser(p)
 
+    def create_worker_symlink(self, worker_name, worker_session_id):
+        if config.root.log.root is None:
+            return
+        symlink = os.path.join(self.session.id, worker_name)
+        worker_dir = os.path.join(self._normalize_path(config.root.log.root), worker_session_id)
+        self._try_create_symlink(worker_dir, symlink)
+
     def _try_create_symlink(self, path, symlink):
-        if symlink is None or config.root.log.root is None:
+        if symlink is None or config.root.log.root is None or config.root.parallel.worker_id is not None:
             return
 
         symlink = self._normalize_path(symlink)

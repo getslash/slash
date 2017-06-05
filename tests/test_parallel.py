@@ -225,3 +225,27 @@ def test_parallel_resume(parallel_suite):
     result = parallel_suite.run()
     resumed = get_tests_to_resume(result.session.id)
     assert len(resumed) == 1
+
+
+def test_parallel_symlinks(parallel_suite, logs_dir):
+    workers_num = 2
+    files_dir = logs_dir.join("files")
+    links_dir = logs_dir.join("links")
+    session = parallel_suite.run(num_workers=workers_num, additional_args=['-l', str(files_dir)]).session
+    session_log_file = files_dir.join(session.id, "session.log")
+
+    assert session.results.is_success()
+    assert session_log_file.check()
+    assert links_dir.join("last-session").readlink() == session_log_file
+    assert links_dir.join("last-session-dir").readlink() == session_log_file.dirname
+
+    worker_session_ids = session.parallel_manager.server.worker_session_ids
+    file_names = [x.basename for x in links_dir.join("last-session-dir").listdir()]
+    for num in range(workers_num):
+        assert 'worker_{}'.format(num) in file_names
+
+    for file_name in links_dir.join("last-session-dir").listdir():
+        if file_name.islink() and 'worker' in file_name.basename:
+            last_token = file_name.readlink().split('/')[-1]
+            assert last_token in worker_session_ids
+            assert os.path.isdir(file_name.readlink())
