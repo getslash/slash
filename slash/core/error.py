@@ -7,11 +7,11 @@ from ..exception_handling import is_exception_fatal
 from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.traceback_utils import distill_traceback, distill_call_stack
 from ..utils.formatter import Formatter
-
+from ..utils.deprecation import deprecated
 
 class Error(object):
 
-    traceback = exception_type = exception = arg = _cached_detailed_traceback_str = None
+    traceback = exception_type = arg = _cached_detailed_traceback_str = None
 
     def __init__(self, msg=None, exc_info=None, frame_correction=0):
         super(Error, self).__init__()
@@ -24,12 +24,16 @@ class Error(object):
             self.arg = msg
             msg = repr(msg)
         self.message = msg
+        self.exception_str = exception = None
         if exc_info is not None:
-            self.exception_type, self.exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
+            self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
+            self.exception_str = exception.__repr__()
             self.traceback = distill_traceback(tb)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
         self._is_failure = False
+        self._fatal = exception is not None and is_exception_fatal(exception)
+        self._is_failure = isinstance(exception, FAILURE_EXCEPTION_TYPES)
 
     def has_custom_message(self):
         return self._has_custom_message
@@ -38,16 +42,19 @@ class Error(object):
         self._is_failure = True
 
     def is_fatal(self):
-        if self._fatal:
-            return True
-        return self.exception is not None and is_exception_fatal(self.exception)
+        return self._fatal
+
+    @property
+    @deprecated('Use error.exception_str', what='error.exception', since='1.2.3')
+    def exception(self):
+        return self.exception_str
 
     def mark_fatal(self):
         self._fatal = True
         return self
 
     def is_failure(self):
-        return self._is_failure or isinstance(self.exception, FAILURE_EXCEPTION_TYPES)
+        return self._is_failure
 
     @classmethod
     def capture_exception(cls, exc_info=None):
@@ -110,4 +117,3 @@ class Error(object):
     def get_detailed_str(self):
         return '{0}*** {1}'.format(
             self.get_detailed_traceback_str(), self)
-
