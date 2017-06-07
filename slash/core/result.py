@@ -4,6 +4,7 @@ import os
 import sys
 import gossip
 import logbook
+import pickle
 from numbers import Number
 from .._compat import itervalues, OrderedDict
 from ..ctx import context
@@ -14,7 +15,7 @@ from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
-from ..utils.python import try_pickle, unpickle
+from ..utils.python import unpickle
 
 _logger = logbook.Logger(__name__)
 
@@ -51,9 +52,10 @@ class Result(object):
     def serialize(self):
         serialized_object = {}
         for key, value in vars(self).items():
-            serialized_value = try_pickle(value)
-            if serialized_value is not None:
-                serialized_object[key] = serialized_value
+            try:
+                serialized_object[key] = pickle.dumps(value)
+            except (pickle.PicklingError, TypeError):
+                _logger.error('Failed serializing reult, skipping this value. key = {}'.format(key))
         return serialized_object
 
     def deserialize(self, result_dict):
