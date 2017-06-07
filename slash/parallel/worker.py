@@ -1,13 +1,13 @@
 import threading
 import logbook
 import os
+import pickle
 from six.moves import xmlrpc_client
 from .server import FINISHED_ALL_TESTS, PROTOCOL_ERROR
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..hooks import register
 from ..ctx import context
 from ..runner import run_tests
-from ..utils.python import try_pickle
 from ..conf import config
 
 _logger = logbook.Logger(__name__)
@@ -27,8 +27,11 @@ class Worker(object):
             stop_event.wait(1)
 
     def warning_added(self, warning):
-        warning = try_pickle(warning)
-        self.client.report_warning(self.client_id, warning)
+        try:
+            warning = pickle.dumps(warning)
+            self.client.report_warning(self.client_id, warning)
+        except (pickle.PicklingError, TypeError):
+            _logger.error("Failed to pickle warning. Message: {}, File: {}, Line: {}".format(warning.message, warning.filename, warning.lineno))
 
     def start(self):
         if not os.getpid() == os.getpgid(0):
