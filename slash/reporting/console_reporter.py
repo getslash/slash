@@ -368,7 +368,7 @@ class ConsoleReporter(ReporterInterface):
     def report_test_skip_added(self, test, reason):
         self._file_has_skips = True
         if self._verobsity_allows(VERBOSITIES.NOTICE):
-            self._terminal.write('Skipped: {0}\n'.format(reason), **theme('test-skip-message'))
+            self._terminal.write('Skipped: {}, Test: {}\n'.format(reason, test.__slash__), **theme('test-skip-message'))
         else:
             self._terminal.write('s', yellow=True)
 
@@ -393,7 +393,7 @@ class ConsoleReporter(ReporterInterface):
             if not self._verobsity_allows(VERBOSITIES.NOTICE):
                 self._terminal.write(errtype, red=True)
             else:
-                self._terminal.write('{0}: {1}\n'.format(errtype, e), **theme('inline-error'))
+                self._terminal.write('{}: {}, Test: {}\n'.format(errtype, e, test.__slash__), **theme('inline-error'))
 
     def report_fancy_message(self, headline, message):
         if self._verobsity_allows(VERBOSITIES.INFO):

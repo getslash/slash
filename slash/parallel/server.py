@@ -122,7 +122,7 @@ class Server(object):
 
     @server_func
     def finished_test(self, client_id, result_dict):
-        _logger.notice("Client_id {} finished_test".format(client_id))
+        _logger.debug("Client_id {} finished_test".format(client_id))
         test_index = self.executing_tests.get(client_id, None)
         if test_index is not None:
             self.finished_tests.append(test_index)

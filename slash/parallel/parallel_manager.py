@@ -86,6 +86,7 @@ class ParallelManager(object):
                         self.start_worker()
                 time.sleep(COMMUNICATION_TIMEOUT_SECS)
         except INTERRUPTION_EXCEPTIONS:
+            _logger.error("Server interrupted, stopping workers and terminating")
             if config.root.run.tmux:
                 kill_tmux_session()
             else:
