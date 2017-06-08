@@ -20,6 +20,10 @@ class ParallelServerIsDown(SlashException):
     pass
 
 
+class InteractiveParallelNotAllowed(SlashException):
+    pass
+
+
 class CannotLoadTests(SlashException):
     pass
 

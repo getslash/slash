@@ -3,6 +3,7 @@ import os
 import signal
 from .utils.suite_writer import Suite
 from slash.resuming import get_tests_to_resume
+from slash.exceptions import InteractiveParallelNotAllowed
 
 #basic features of parallel
 def run_specific_workers_and_tests_num(workers_num, tests_num=10):
@@ -249,3 +250,10 @@ def test_parallel_symlinks(parallel_suite, logs_dir):
             last_token = file_name.readlink().split('/')[-1]
             assert last_token in worker_session_ids
             assert os.path.isdir(file_name.readlink())
+
+def test_parallel_interactive_fails(parallel_suite):
+    summary = parallel_suite.run(additional_args=['-i'], verify=False)
+    results = list(summary.session.results.iter_all_results())
+    assert len(results) == 1
+    error = results[0].get_errors()[0]
+    assert error.exception_type == InteractiveParallelNotAllowed
