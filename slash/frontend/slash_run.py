@@ -4,7 +4,7 @@ import sys
 from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
-from ..exceptions import CannotLoadTests
+from ..exceptions import CannotLoadTests, InteractiveParallelNotAllowed
 from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, save_resume_state, clean_old_entries)
 from ..runner import run_tests
 from ..utils.interactive import generate_interactive_test
@@ -33,6 +33,8 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 app_callback(app)
             try:
                 with handling_exceptions():
+                    if config.root.parallel.num_workers and app.parsed_args.interactive:
+                        raise InteractiveParallelNotAllowed("Cannot run interactive mode in parallel")
                     if config.root.run.tmux and config.root.parallel.worker_id is None:
                         run_slash_in_tmux(args)
                     if resume:
