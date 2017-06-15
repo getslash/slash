@@ -229,10 +229,9 @@ def test_parallel_resume(parallel_suite):
 
 
 def test_parallel_symlinks(parallel_suite, logs_dir):
-    workers_num = 2
     files_dir = logs_dir.join("files")
     links_dir = logs_dir.join("links")
-    session = parallel_suite.run(num_workers=workers_num, additional_args=['-l', str(files_dir)]).session
+    session = parallel_suite.run(additional_args=['-l', str(files_dir)]).session
     session_log_file = files_dir.join(session.id, "session.log")
 
     assert session.results.is_success()
@@ -242,8 +241,7 @@ def test_parallel_symlinks(parallel_suite, logs_dir):
 
     worker_session_ids = session.parallel_manager.server.worker_session_ids
     file_names = [x.basename for x in links_dir.join("last-session-dir").listdir()]
-    for num in range(workers_num):
-        assert 'worker_{}'.format(num) in file_names
+    assert 'worker_1' in file_names
 
     for file_name in links_dir.join("last-session-dir").listdir():
         if file_name.islink() and 'worker' in file_name.basename:
@@ -251,9 +249,20 @@ def test_parallel_symlinks(parallel_suite, logs_dir):
             assert last_token in worker_session_ids
             assert os.path.isdir(file_name.readlink())
 
+
 def test_parallel_interactive_fails(parallel_suite):
     summary = parallel_suite.run(additional_args=['-i'], verify=False)
     results = list(summary.session.results.iter_all_results())
     assert len(results) == 1
     error = results[0].get_errors()[0]
     assert error.exception_type == InteractiveParallelNotAllowed
+
+
+def test_children_session_ids(parallel_suite):
+    workers_num = 2
+    summary = parallel_suite.run(num_workers=workers_num)
+    assert summary.session.results.is_success()
+    session_ids = summary.session.parallel_manager.server.worker_session_ids
+    session_ids.sort()
+    expected_session_ids = ["{}_{}".format(summary.session.id.split('_')[0], i + 1) for i in range(workers_num)]
+    assert session_ids == expected_session_ids

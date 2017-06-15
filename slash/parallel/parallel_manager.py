@@ -27,7 +27,7 @@ class ParallelManager(object):
         self.args = [sys.executable, '-m', 'slash.frontend.main', 'run', '--parallel_parent_session_id', context.session.id] + args
         self.workers_num = config.root.parallel.num_workers
         self.workers = {}
-        self.max_worker_id = 0
+        self.max_worker_id = 1
         self.server_thread = None
 
     def try_connect(self):
