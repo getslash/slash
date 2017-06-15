@@ -259,10 +259,8 @@ def test_parallel_interactive_fails(parallel_suite):
 
 
 def test_children_session_ids(parallel_suite):
-    workers_num = 2
-    summary = parallel_suite.run(num_workers=workers_num)
+    summary = parallel_suite.run()
     assert summary.session.results.is_success()
     session_ids = summary.session.parallel_manager.server.worker_session_ids
-    session_ids.sort()
-    expected_session_ids = ["{}_{}".format(summary.session.id.split('_')[0], i + 1) for i in range(workers_num)]
+    expected_session_ids = ["{}_1".format(summary.session.id.split('_')[0])]
     assert session_ids == expected_session_ids

@@ -33,9 +33,9 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 app_callback(app)
             try:
                 with handling_exceptions():
-                    if config.root.parallel.num_workers and app.parsed_args.interactive:
+                    if is_parallel() and app.parsed_args.interactive:
                         raise InteractiveParallelNotAllowed("Cannot run interactive mode in parallel")
-                    if config.root.run.tmux and config.root.parallel.worker_id is None:
+                    if config.root.run.tmux and not is_child():
                         run_slash_in_tmux(args)
                     if resume:
                         session_ids = app.positional_args
@@ -50,17 +50,17 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
 
                 collected = list(collected)
                 with app.session.get_started_context():
-                    report_tests_to_backslash(collected)
-                    if config.root.parallel.num_workers:
-                        if config.root.parallel.worker_id is not None:
-                            worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
-                            worker.start()
-                        else:
+                    if is_child():
+                        worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
+                        worker.start()
+                    else:
+                        report_tests_to_backslash(collected)
+                        if is_parent():
                             app.session.parallel_manager = ParallelManager(args)
                             app.session.parallel_manager.start_server_in_thread(collected)
                             app.session.parallel_manager.start_workers()
-                    else:
-                        run_tests(collected)
+                        else:
+                            run_tests(collected)
 
             finally:
                 save_resume_state(app.session.results, collected)
@@ -74,6 +74,15 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
     return app
 
 slash_resume = functools.partial(slash_run, resume=True)
+
+def is_parallel():
+    return config.root.parallel.num_workers
+
+def is_child():
+    return config.root.parallel.worker_id is not None
+
+def is_parent():
+    return is_parallel() and not is_child()
 
 def report_tests_to_backslash(tests):
     active_plugins = manager.get_active_plugins()
