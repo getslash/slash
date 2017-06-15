@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from munch import Munch
 import pytest
 import slash
@@ -35,7 +36,7 @@ def test_interactive_planned_tests(interactive_checkpoint, suite):
     counts = Munch(original=len(suite), got=None)
 
     @slash.hooks.register
-    def tests_loaded(tests):
+    def tests_loaded(tests):    # pylint: disable=unused-variable
         counts.got = len(tests)
 
     suite.run(additional_args=['-i'])
