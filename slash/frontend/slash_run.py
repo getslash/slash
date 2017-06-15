@@ -8,7 +8,6 @@ from ..exception_handling import handling_exceptions
 from ..exceptions import CannotLoadTests
 from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, save_resume_state, clean_old_entries)
 from ..runner import run_tests
-from ..utils.interactive import generate_interactive_test
 from ..utils.suite_files import iter_suite_file_paths
 from ..plugins import manager
 
@@ -34,11 +33,9 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                         if not session_ids:
                             session_ids = [get_last_resumeable_session_id()]
                         to_resume = [x for session_id in session_ids for x in get_tests_to_resume(session_id)]
-                        collected = app.test_loader.get_runnables(to_resume)
+                        collected = app.test_loader.get_runnables(to_resume, prepend_interactive=app.parsed_args.interactive)
                     else:
                         collected = _collect_tests(app, args)
-                    if app.parsed_args.interactive:
-                        collected = itertools.chain([generate_interactive_test()], collected)
 
                 collected = list(collected)
                 with app.session.get_started_context():
@@ -75,8 +72,8 @@ def _collect_tests(app, args):  # pylint: disable=unused-argument
     if not paths and not app.parsed_args.interactive:
         raise CannotLoadTests("No tests specified")
 
-    collected = app.test_loader.get_runnables(paths)
-    if not collected and not app.parsed_args.interactive:
+    collected = app.test_loader.get_runnables(paths, prepend_interactive=app.parsed_args.interactive)
+    if not collected:
         raise CannotLoadTests("No tests could be collected")
 
     return collected

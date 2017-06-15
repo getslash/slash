@@ -3,7 +3,7 @@ import sys
 
 from ..ctx import context
 
-_sort_key_generator = itertools.count()
+_sort_key_generator = itertools.count(1)
 
 class Metadata(object):
 
@@ -77,6 +77,7 @@ class Metadata(object):
         assert hasattr(self, 'file_path')
         self.file_path = '<Interactive>'
         self.factory_name = self.address = 'Interactive'
+        self.set_sort_key(0)
 
     @property
     def class_name(self):

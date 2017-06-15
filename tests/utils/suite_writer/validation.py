@@ -94,7 +94,7 @@ def _group_results_by_test_id(suite, run_result):
     groups = {}
 
     for result in run_result.session.results:
-        if result.test_metadata.address == 'Interactive':
+        if result.test_metadata.is_interactive():
             continue
         test_id = get_test_id_from_test_address(result.test_metadata.address)
         assert tests_by_id[test_id].is_selected(), 'Test {} appears in results, although not expected!'.format(test_id)

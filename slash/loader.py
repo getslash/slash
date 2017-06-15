@@ -24,6 +24,8 @@ from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
 from .resuming import ResumedTestData
+from .utils.interactive import generate_interactive_test
+
 
 _logger = Logger(__name__)
 
@@ -49,12 +51,16 @@ class Loader(object):
         return self._cached_matchers
 
 
-    def get_runnables(self, paths):
+    def get_runnables(self, paths, prepend_interactive=False):
         assert context.session is not None
 
         sources = (t for repetition in range(config.root.run.repeat_all)
                    for t in self._generate_test_sources(paths))
         returned = self._collect(sources)
+
+        if prepend_interactive:
+            returned.insert(0, generate_interactive_test())
+
         hooks.tests_loaded(tests=returned) # pylint: disable=no-member
         returned.sort(key=lambda test: test.__slash__.get_sort_key())
         return returned
