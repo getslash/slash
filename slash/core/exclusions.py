@@ -22,10 +22,13 @@ def is_excluded(test):
         return False
     exclusions = dict(exclusions)
     for parameter_name, values in exclusions.items():
-        param = context.session.fixture_store.resolve_name(parameter_name, start_point=test_func)
+        param = context.session.fixture_store.resolve_name(parameter_name, start_point=test_func, namespace=test.get_fixture_namespace())
         if not isinstance(param, Parametrization):
             raise UnknownFixtures('{!r} is not a parameter, and therefore cannot be the base for value exclusions'.format(parameter_name))
-        param_index = test.__slash__.variation.param_value_indices[param.info.id] #pylint: disable=no-member
+        try:
+            param_index = test.__slash__.variation.param_value_indices[param.info.id] #pylint: disable=no-member
+        except LookupError:
+            raise UnknownFixtures('{!r} cannot be excluded for {!r}'.format(parameter_name, test))
         value = param.transform(param.values[param_index]) #pylint: disable=no-member
         if value in values:
             return True

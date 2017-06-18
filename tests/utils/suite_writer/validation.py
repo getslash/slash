@@ -21,7 +21,11 @@ def validate_run(suite, run_result, expect_interruption):
 
 def _validate_single_test(test, results):
 
+    param_names = {p.id: p.name for p in _find_all_parameters(test)}
+
     for param_values in _iter_param_value_sets(test):
+
+        is_excluded = any((param_names[param_id], value) in test.excluded_param_values for param_id, value in param_values.items())
 
         for repetition in xrange(test.get_num_expected_repetitions()):  # pylint: disable=unused-variable
 
@@ -31,7 +35,10 @@ def _validate_single_test(test, results):
 
                     results.pop(index)
 
-                    _validate_single_test_result(test, result)
+                    if is_excluded:
+                        assert result.is_skip()
+                    else:
+                        _validate_single_test_result(test, result)
 
                     break
             else:
@@ -64,7 +71,11 @@ def _find_all_parameters(func):
 
 
 def _result_matches(result, param_values):
-    return result.data.get('param_values', {}) == param_values
+    values = result.test_metadata.variation.values.copy()
+    for param_name in list(values):
+        values[param_name.rsplit('_', 1)[-1]] = values.pop(param_name)
+
+    return values == param_values
 
 
 def _validate_single_test_result(test, result):
