@@ -1,12 +1,8 @@
 Changelog
 =========
 
-* :feature:`580` ``tests_loaded`` hooks now get called with a list of tests including the interactive test if applicable
-* :feature:`-` Slash now detects test functions being redefined, hiding previous tests, and warns about it
-* :feature:`556` Long variable representations are now capped by default when distilling tracebacks
-* :feature:`-` Assertions coming from plugins and modules loaded from the project's ``.slashrc`` now also have assertion rewriting introspection enabled
-* :bug:`- major` Honor run.default_sources configuration when using slash list (thanks Pierre-Luc Tessier Gagné)
-* :bug:`- major` Several Windows-specific fixes (thanks Pierre-Luc Tessier Gagné)
+* :bug:`581` Fix ``slash.exclude`` to work across fixture namespaces
+* :bug:`580` ``tests_loaded`` hooks now get called with a list of tests including the interactive test if applicable
 * :release:`1.2.2 <29-05-2017>`
 * :bug:`564` Fix test collection bug causing tests to not be loaded with some plugins
 * :release:`1.2.0 <30-04-2017>`
