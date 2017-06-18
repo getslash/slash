@@ -2,8 +2,9 @@ import threading
 import logbook
 import os
 import pickle
+import time
 from six.moves import xmlrpc_client
-from .server import FINISHED_ALL_TESTS, PROTOCOL_ERROR
+from .server import FINISHED_ALL_TESTS, PROTOCOL_ERROR, WAITING_FOR_CLIENTS
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..hooks import register
 from ..ctx import context
@@ -11,6 +12,7 @@ from ..runner import run_tests
 from ..conf import config
 
 _logger = logbook.Logger(__name__)
+WORKER_MAX_RETRIES = 20
 
 class Worker(object):
     def __init__(self, client_id, session_id, collected_tests):
@@ -49,12 +51,19 @@ class Worker(object):
         tr = threading.Thread(target=self.keep_alive, args=(stop_event,))
         tr.setDaemon(True)
         tr.start()
-
+        retries_num = 0
         should_stop = False
         try:
             while not should_stop:
                 test_index = self.client.get_test(self.client_id)
-                if test_index == PROTOCOL_ERROR:
+                if test_index == WAITING_FOR_CLIENTS:
+                    _logger.debug("Worker_id {} recieved waiting_for_clients, sleeping".format(self.client_id))
+                    retries_num += 1
+                    if retries_num > WORKER_MAX_RETRIES:
+                        _logger.error("Worker_id {} waited max retries, disconnecting".format(self.client_id))
+                        break
+                    time.sleep(0.05)
+                elif test_index == PROTOCOL_ERROR:
                     _logger.error("Worker_id {} recieved protocol error message, terminating".format(self.client_id))
                     break
                 elif test_index == FINISHED_ALL_TESTS:
