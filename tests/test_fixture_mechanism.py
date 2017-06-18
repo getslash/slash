@@ -93,7 +93,7 @@ def test_fixture_store_namespace_repr(store):
 
     ns = store.get_current_namespace()
     assert str(ns) == repr(ns)
-    assert repr(ns) == 'Fixtures: fixture0'
+    assert repr(ns) == 'Fixture NS#0: fixture0'
 
 
 def test_fixture_parameters(store):
