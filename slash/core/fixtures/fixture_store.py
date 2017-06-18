@@ -208,12 +208,15 @@ class FixtureStore(object):
             self._fixtures_by_id[parametrization.info.id] = parametrization
 
     def add_fixtures_from_dict(self, d):
-        for name, thing in iteritems(d):
+        for thing in itervalues(d):
             fixture_info = getattr(thing, '__slash_fixture__', None)
             if fixture_info is None:
                 continue
+            assert self.get_current_namespace() is self._namespaces[-1]
+            fixture_info = self.add_fixture(thing).__slash_fixture__
             self.get_current_namespace().add_name(
-                name, self.add_fixture(thing).__slash_fixture__.id)
+                fixture_info.name, fixture_info.id)
+
 
     def add_fixture(self, fixture_func):
         fixture_info = fixture_func.__slash_fixture__
