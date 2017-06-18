@@ -17,6 +17,7 @@ log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
 FINISHED_ALL_TESTS = "NO_MORE_TESTS"
 PROTOCOL_ERROR = "PROTOCOL_ERROR"
+WAITING_FOR_CLIENTS = "WAITING_FOR_CLIENTS"
 
 def server_func(func):
     @functools.wraps(func)
@@ -41,6 +42,7 @@ class Server(object):
         self.finished_tests = []
         self.unstarted_tests = queue.Queue()
         self.should_stop = False
+        self.all_clients_connected = False
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
         self.tests_restart_count = defaultdict(int)
@@ -92,6 +94,8 @@ class Server(object):
         hooks.worker_connected(session_id=session_id)  # pylint: disable=no-member
         self.worker_session_ids.append(session_id)
         self.executing_tests[client_id] = None
+        if len(self.clients_last_communication_time) >= config.root.parallel.num_workers:
+            self.all_clients_connected = True
 
     @server_func
     def validate_collection(self, client_id, client_collection):
@@ -107,6 +111,8 @@ class Server(object):
 
     @server_func
     def get_test(self, client_id):
+        if not self.all_clients_connected:
+            return WAITING_FOR_CLIENTS
         if not self.executing_tests[client_id] is None:
             _logger.error("Client_id {} requested new test without sending former result".format(client_id))
             return PROTOCOL_ERROR
