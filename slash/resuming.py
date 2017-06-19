@@ -43,6 +43,9 @@ class ResumedTestData(object):
         self.function_name = function_name
         self.variation = variation
 
+    def __repr__(self):
+        return '<ResumedTestData({!r}, {!r}, {!r})>'.format(self.file_name, self.function_name, self.variation)
+
 
 def _init_db():
     ensure_directory(_RESUME_DIR)

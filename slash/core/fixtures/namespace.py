@@ -9,9 +9,13 @@ class Namespace(object):
 
     def __init__(self, store, parent=None):
         super(Namespace, self).__init__()
+        self._level = 0 if parent is None else parent.get_level() + 1
         self._store = store
         self._parent = parent
         self._fixture_names = {}
+
+    def get_level(self):
+        return self._level
 
     def get_parent(self):
         return self._parent
@@ -23,7 +27,7 @@ class Namespace(object):
             self = self._parent
 
     def __repr__(self):
-        return 'Fixtures: {0}'.format(', '.join(self._iter_fixture_names()) or '**None**')
+        return 'Fixture NS#{}: {}'.format(self.get_level(), ', '.join(self._iter_fixture_names()) or '**None**')
 
     def _iter_fixture_names(self):
         while self is not None:

@@ -49,42 +49,43 @@ def test_resolve_fixture_object():
 def test_resolve_fixture_object_namespace_correctness():
     with slash.Session() as s:
 
-        @s.fixture_store.add_fixture
+        store = s.fixture_store
+
+        @store.add_fixture
         @slash.fixture
         def global_fixture_1(dependency_fixture):
             pass
 
-        @s.fixture_store.add_fixture
+        @store.add_fixture
         @slash.fixture
         def dependency_fixture():
             pass
 
-        s.fixture_store.push_namespace()
+        expected = dependency_fixture
 
-        @s.fixture_store.add_fixture
+        store.push_namespace()
+
+        @store.add_fixture
         @slash.fixture
         def local_fixture(global_fixture_1):
             pass
 
-        @s.fixture_store.add_fixture
+        @store.add_fixture
         @slash.fixture
         def dependency_fixture():         # pylint: disable=function-redefined
             pass
 
-        local_fixture = dependency_fixture
-
-
         def test_something(local_fixture):
             pass
 
-        s.fixture_store.resolve()
+        store.resolve()
 
         with s.get_started_context():
             tests = make_runnable_tests(test_something)
 
-        store = s.fixture_store
         test = tests[0]
-        assert store.resolve_name('local_fixture.global_fixture_1.dependency_fixture', test).info is local_fixture.__slash_fixture__
+        resolved = store.resolve_name('local_fixture.global_fixture_1.dependency_fixture', test, namespace=test.get_fixture_namespace()).info
+        assert resolved is expected.__slash_fixture__
 
 
 def test_invalid_name():

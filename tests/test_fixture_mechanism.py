@@ -93,7 +93,7 @@ def test_fixture_store_namespace_repr(store):
 
     ns = store.get_current_namespace()
     assert str(ns) == repr(ns)
-    assert repr(ns) == 'Fixtures: fixture0'
+    assert repr(ns) == 'Fixture NS#0: fixture0'
 
 
 def test_fixture_parameters(store):
@@ -459,6 +459,28 @@ def test_parametrized_fixture(store):
         pass
 
     store.resolve()
+
+
+@pytest.mark.parametrize('use_dict', [True, False])
+def test_fixture_name_override(store, use_dict):
+    @slash.fixture(name='custom')
+    def some_fixture():
+        pass
+
+    if use_dict:
+        store.add_fixtures_from_dict({
+            'some_fixture': some_fixture,
+            'bla': None,
+            'unused': 2,
+        })
+    else:
+        store.add_fixture(some_fixture)
+
+    store.resolve()
+
+    assert store.get_fixture_by_name('custom').fixture_func == some_fixture
+    with pytest.raises(UnknownFixtures):
+        assert store.get_fixture_by_name('some_fixture')
 
 
 

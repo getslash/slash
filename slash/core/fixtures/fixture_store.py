@@ -96,7 +96,11 @@ class FixtureStore(object):
         assert isinstance(names, list)
         return set(itervalues(self.get_fixture_dict(names, namespace=namespace, get_values=False)))
 
-    def resolve_name(self, parameter_name, start_point):
+    def resolve_name(self, parameter_name, start_point, namespace=None):
+
+        if namespace is None:
+            namespace = self.get_current_namespace()
+
         parts = parameter_name.split('.')[::-1]
 
         if not parts:
@@ -110,7 +114,8 @@ class FixtureStore(object):
                     raise UnknownFixtures(parameter_name)
                 start_point = param_fixtures[current_name]
             else:
-                start_point = self.get_fixture_by_name(current_name)
+                start_point = self.get_fixture_by_name(current_name, namespace=namespace)
+                namespace = start_point.namespace
         return start_point
 
     def __iter__(self):
@@ -203,12 +208,15 @@ class FixtureStore(object):
             self._fixtures_by_id[parametrization.info.id] = parametrization
 
     def add_fixtures_from_dict(self, d):
-        for name, thing in iteritems(d):
+        for thing in itervalues(d):
             fixture_info = getattr(thing, '__slash_fixture__', None)
             if fixture_info is None:
                 continue
+            assert self.get_current_namespace() is self._namespaces[-1]
+            fixture_info = self.add_fixture(thing).__slash_fixture__
             self.get_current_namespace().add_name(
-                name, self.add_fixture(thing).__slash_fixture__.id)
+                fixture_info.name, fixture_info.id)
+
 
     def add_fixture(self, fixture_func):
         fixture_info = fixture_func.__slash_fixture__
@@ -229,8 +237,10 @@ class FixtureStore(object):
         self._fixtures_by_id[f.info.id] = f
         self._unresolved_fixture_ids.add(f.info.id)
 
-    def get_fixture_by_name(self, name):
-        return self._namespaces[-1].get_fixture_by_name(name)
+    def get_fixture_by_name(self, name, namespace=None):
+        if namespace is None:
+            namespace = self._namespaces[-1]
+        return namespace.get_fixture_by_name(name)
 
     def get_fixture_by_argument(self, arg):
         return self.get_fixture_by_name(get_real_fixture_name_from_argument(arg))

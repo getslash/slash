@@ -16,6 +16,10 @@ class Test(Function, Element):
         self._selected = True
         self.when_run = WhenRunHelper(self)
         self._repetitions = 1
+        self.excluded_param_values = frozenset()
+
+    def exclude_param_value(self, param_name, param_value):
+        self.excluded_param_values |= {(param_name, param_value)}
 
     def get_full_address(self, root_path):
         filepath = os.path.join(root_path, self.file.name)

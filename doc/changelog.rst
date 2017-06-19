@@ -1,6 +1,11 @@
 Changelog
 =========
 
+* :release:`1.2.4 <19-06-2017>`
+* :bug:`581` Fix ``slash.exclude`` to work across fixture namespaces
+* :bug:`580` ``tests_loaded`` hooks now get called with a list of tests including the interactive test if applicable
+* :release:`1.2.2 <29-05-2017>`
+* :bug:`564` Fix test collection bug causing tests to not be loaded with some plugins
 * :release:`1.2.0 <30-04-2017>`
 * :bug:`551 major` Fix stopping on error behavior when errors are reported on previous tests
 * :feature:`529` Switch to PBR

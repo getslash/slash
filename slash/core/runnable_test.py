@@ -51,5 +51,8 @@ class RunnableTest(object):
     def get_required_fixture_objects(self):
         raise NotImplementedError() # pragma: no cover
 
+    def get_fixture_namespace(self):
+        return self._fixture_namespace
+
     def __repr__(self):
         return '<Runnable test {0!r}>'.format(self.__slash__)

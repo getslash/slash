@@ -1,4 +1,5 @@
 import itertools
+import re
 
 import logbook
 
@@ -21,7 +22,11 @@ def validate_run(suite, run_result, expect_interruption):
 
 def _validate_single_test(test, results):
 
+    param_names = {p.id: p.name for p in _find_all_parameters(test)}
+
     for param_values in _iter_param_value_sets(test):
+
+        is_excluded = any((param_names[param_id], value) in test.excluded_param_values for param_id, value in param_values.items())
 
         for repetition in xrange(test.get_num_expected_repetitions()):  # pylint: disable=unused-variable
 
@@ -31,7 +36,10 @@ def _validate_single_test(test, results):
 
                     results.pop(index)
 
-                    _validate_single_test_result(test, result)
+                    if is_excluded:
+                        assert result.is_skip()
+                    else:
+                        _validate_single_test_result(test, result)
 
                     break
             else:
@@ -64,7 +72,17 @@ def _find_all_parameters(func):
 
 
 def _result_matches(result, param_values):
-    return result.data.get('param_values', {}) == param_values
+    values = result.test_metadata.variation.values.copy()
+    for param_name in list(values):
+        # handle the case of a fixture with a single param, which is logically a parameter by itself
+        if re.match(r'^fx_\d+.param$', param_name):
+            values_name = param_name.split('_')[1].split('.')[0]
+        else:
+            values_name = param_name.rsplit('_', 1)[-1]
+
+        values[values_name] = values.pop(param_name)
+
+    return values == param_values
 
 
 def _validate_single_test_result(test, result):
@@ -94,7 +112,7 @@ def _group_results_by_test_id(suite, run_result):
     groups = {}
 
     for result in run_result.session.results:
-        if result.test_metadata.address == 'Interactive':
+        if result.test_metadata.is_interactive():
             continue
         test_id = get_test_id_from_test_address(result.test_metadata.address)
         assert tests_by_id[test_id].is_selected(), 'Test {} appears in results, although not expected!'.format(test_id)
