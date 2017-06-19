@@ -162,7 +162,8 @@ class Suite(object):
         def tests_loaded(tests):
             if do_sort:
                 for test in tests:
-                    test.__slash__.set_sort_key(self._get_test_id_from_runnable(test))
+                    if not test.__slash__.is_interactive():
+                        test.__slash__.set_sort_key(int(self._get_test_id_from_runnable(test)))
         try:
             yield
         finally:
