@@ -6,6 +6,8 @@ Changelog
 * :feature:`-` Assertions coming from plugins and modules loaded from the project's ``.slashrc`` now also have assertion rewriting introspection enabled
 * :bug:`- major` Honor run.default_sources configuration when using slash list (thanks Pierre-Luc Tessier Gagné)
 * :bug:`- major` Several Windows-specific fixes (thanks Pierre-Luc Tessier Gagné)
+* :release:`1.2.5 <19-06-2017>`
+* :bug:`-` Add exception_str shortcut for future compatibility on error objects
 * :release:`1.2.4 <19-06-2017>`
 * :bug:`581` Fix ``slash.exclude`` to work across fixture namespaces
 * :bug:`580` ``tests_loaded`` hooks now get called with a list of tests including the interactive test if applicable
