@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`1.2.4 <19-06-2017>`
 * :bug:`581` Fix ``slash.exclude`` to work across fixture namespaces
 * :bug:`580` ``tests_loaded`` hooks now get called with a list of tests including the interactive test if applicable
 * :release:`1.2.2 <29-05-2017>`
