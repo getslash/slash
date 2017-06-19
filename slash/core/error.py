@@ -24,8 +24,10 @@ class Error(object):
             self.arg = msg
             msg = repr(msg)
         self.message = msg
+        self.exception_str = None
         if exc_info is not None:
             self.exception_type, self.exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
+            self.exception_str = repr(self.exception)
             self.traceback = distill_traceback(tb)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
