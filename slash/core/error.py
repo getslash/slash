@@ -27,7 +27,7 @@ class Error(object):
         self.exception_str = exception = None
         if exc_info is not None:
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
-            self.exception_str = repr(self.exception)
+            self.exception_str = repr(exception)
             self.traceback = distill_traceback(tb)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
