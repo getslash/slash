@@ -1,4 +1,5 @@
 import itertools
+import re
 
 import logbook
 
@@ -73,7 +74,13 @@ def _find_all_parameters(func):
 def _result_matches(result, param_values):
     values = result.test_metadata.variation.values.copy()
     for param_name in list(values):
-        values[param_name.rsplit('_', 1)[-1]] = values.pop(param_name)
+        # handle the case of a fixture with a single param, which is logically a parameter by itself
+        if re.match(r'^fx_\d+.param$', param_name):
+            values_name = param_name.split('_')[1].split('.')[0]
+        else:
+            values_name = param_name.rsplit('_', 1)[-1]
+
+        values[values_name] = values.pop(param_name)
 
     return values == param_values
 
