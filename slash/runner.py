@@ -192,7 +192,8 @@ def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
 def _set_test_metadata(test):
     ensure_test_metadata(test)
     assert test.__slash__.test_index0 is None
-    test.__slash__.test_index0 = next(context.session.test_index_counter)
+    test.__slash__.test_index0 = next(context.session.test_index_counter) if config.root.parallel.worker_id is None \
+                                 else context.session.current_parallel_test_index
 
 
 def _mark_unrun_tests(test_iterator):

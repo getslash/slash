@@ -40,6 +40,7 @@ class Session(Activatable):
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)
+        self.current_parallel_test_index = None
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults(self)
         if reporter is None:
