@@ -71,6 +71,7 @@ class Worker(object):
                     break
                 else:
                     test = self.collected_tests[test_index]
+                    context.session.current_parallel_test_index = test_index
                     run_tests([test])
                     result = context.session.results[test]
                     _logger.debug("Client {} finished test, sending results".format(self.client_id))
