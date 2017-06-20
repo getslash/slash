@@ -120,7 +120,7 @@ class Server(object):
             test_index = self.unstarted_tests.get()
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
-            _logger.notice("#{}: {}, Client_id: {}", test.__slash__.test_index1, test.__slash__.address, client_id, extra={'to_error_log': 1})
+            _logger.notice("#{}: {}, Client_id: {}", test_index + 1, test.__slash__.address, client_id, extra={'to_error_log': 1})
             return test_index
         else:
             _logger.debug("No unstarted tests, sending end to client_id {}".format(client_id))
