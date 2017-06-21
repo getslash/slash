@@ -17,8 +17,9 @@ from ..utils.tmux_utils import create_new_window, kill_tmux_session
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
-COMMUNICATION_TIMEOUT_SECS = 5
-MAX_CONNECTION_RETRIES = 10
+TIME_BETWEEN_CHECKS = 5
+COMMUNICATION_TIMEOUT_SECS = 60
+MAX_CONNECTION_RETRIES = 200
 
 class ParallelManager(object):
     def __init__(self, args):
@@ -33,7 +34,7 @@ class ParallelManager(object):
     def try_connect(self):
         num_retries = 0
         while not self.server.is_initialized:
-            time.sleep(1)
+            time.sleep(0.1)
             if num_retries == MAX_CONNECTION_RETRIES:
                 raise ParallelServerIsDown("Cannot connect to XML_RPC server")
             num_retries += 1
@@ -84,7 +85,7 @@ class ParallelManager(object):
                             self.workers[worker_id].rename_window('stopped_client_{}'.format(worker_id))
                         self.server.report_client_failure(worker_id)
                         self.start_worker()
-                time.sleep(COMMUNICATION_TIMEOUT_SECS)
+                time.sleep(TIME_BETWEEN_CHECKS)
         except INTERRUPTION_EXCEPTIONS:
             _logger.error("Server interrupted, stopping workers and terminating")
             if config.root.run.tmux:
