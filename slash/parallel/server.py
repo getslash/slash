@@ -18,6 +18,8 @@ log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 FINISHED_ALL_TESTS = "NO_MORE_TESTS"
 PROTOCOL_ERROR = "PROTOCOL_ERROR"
 WAITING_FOR_CLIENTS = "WAITING_FOR_CLIENTS"
+SHOULD_TERMINATE = "SHOULD_TERMINATE"
+
 
 def server_func(func):
     @functools.wraps(func)
@@ -88,11 +90,12 @@ class Server(object):
         _logger.debug("Client_id {} sent keep_alive".format(client_id))
 
     @server_func
-    def connect(self, client_id, session_id):
-        _logger.notice("Client_id {} connected with session_id {}".format(client_id, session_id))
-        context.session.logging.create_worker_symlink("worker_{}".format(client_id), session_id)
-        hooks.worker_connected(session_id=session_id)  # pylint: disable=no-member
-        self.worker_session_ids.append(session_id)
+    def connect(self, client_id):
+        _logger.notice("Client_id {} connected".format(client_id))
+        client_session_id = '{}_{}'.format(context.session.id.split('_')[0], client_id)
+        context.session.logging.create_worker_symlink("worker_{}".format(client_id), client_session_id)
+        hooks.worker_connected(session_id=client_session_id)  # pylint: disable=no-member
+        self.worker_session_ids.append(client_session_id)
         self.executing_tests[client_id] = None
         if len(self.clients_last_communication_time) >= config.root.parallel.num_workers:
             self.all_clients_connected = True

@@ -45,11 +45,11 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                         collected = _collect_tests(app, args)
 
                 collected = list(collected)
-                with app.session.get_started_context():
-                    if is_child():
-                        worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
-                        worker.start()
-                    else:
+                if is_child():
+                    worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
+                    worker.start(app)
+                else:
+                    with app.session.get_started_context():
                         report_tests_to_backslash(collected)
                         if is_parent():
                             app.session.parallel_manager = ParallelManager(args)
