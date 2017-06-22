@@ -4,6 +4,7 @@ import signal
 from .utils.suite_writer import Suite
 from slash.resuming import get_tests_to_resume
 from slash.exceptions import InteractiveParallelNotAllowed
+from slash.parallel.server import ServerStates
 
 #basic features of parallel
 def run_specific_workers_and_tests_num(workers_num, tests_num=10):
@@ -27,20 +28,20 @@ def test_zero_workers(parallel_suite):
     assert summary.session.parallel_manager is None
 
 def test_test_causes_worker_exit(parallel_suite):
+    slash.config.root.parallel.communication_timeout_secs = 2
     parallel_suite[0].append_line("import os")
     parallel_suite[0].append_line("os._exit(0)")
     parallel_suite[0].expect_interruption()
     workers_num = 1
-    summary = parallel_suite.run(num_workers=workers_num)
-    assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num + 1
+    summary = parallel_suite.run(num_workers=workers_num, verify=False)
+    assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num
     [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.is_interrupted()
-    assert summary.session.results.get_num_successful() == len(parallel_suite) - 1
 
 def test_keepalive_works(parallel_suite):
+    slash.config.root.parallel.communication_timeout_secs = 2
     parallel_suite[0].append_line("import time")
-    parallel_suite[0].append_line("from slash.parallel.parallel_manager import MAX_CONNECTION_RETRIES")
-    parallel_suite[0].append_line("time.sleep(MAX_CONNECTION_RETRIES*2 + 5)")
+    parallel_suite[0].append_line("time.sleep(6)")
     workers_num = 1
     summary = parallel_suite.run(num_workers=workers_num)
     assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num
@@ -58,8 +59,7 @@ def test_server_fails(parallel_suite):
         for worker in slash.context.session.parallel_manager.workers.values():
             ret = worker.poll()
             assert not ret is None
-        assert slash.context.session.parallel_manager.server.should_stop
-        assert slash.context.session.parallel_manager.server.is_initialized
+        assert slash.context.session.parallel_manager.server.state == ServerStates.STOP_IMMEDIATELY
         assert not slash.context.session.parallel_manager.server.finished_tests
 
     for test in parallel_suite:
@@ -114,12 +114,12 @@ def test_test_error(parallel_suite):
 
 def test_test_interruption(parallel_suite):
     parallel_suite[0].when_run.interrupt()
-    summary = parallel_suite.run()
+    summary = parallel_suite.run(num_workers=1, verify=False)
     [interrupted_result] = summary.get_all_results_for_test(parallel_suite[0])
     assert interrupted_result.is_interrupted()
     for result in summary.session.results:
         if result != interrupted_result:
-            assert result.is_success()
+            assert result.is_success() or result.is_not_run()
 
 def test_test_skips(parallel_suite):
     parallel_suite[0].add_decorator('slash.skipped("reason")')

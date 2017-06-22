@@ -1,6 +1,7 @@
 import copy
 import logbook
 import functools
+from enum import Enum, auto
 from six.moves import queue
 from datetime import datetime
 from six.moves import xmlrpc_server
@@ -8,18 +9,21 @@ from ..utils.python import unpickle
 from .. import log
 from ..ctx import context
 from ..runner import _get_test_context
-from collections import defaultdict
 from .. import hooks
 from ..conf import config
-
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
-FINISHED_ALL_TESTS = "NO_MORE_TESTS"
+NO_MORE_TESTS = "NO_MORE_TESTS"
 PROTOCOL_ERROR = "PROTOCOL_ERROR"
 WAITING_FOR_CLIENTS = "WAITING_FOR_CLIENTS"
-SHOULD_TERMINATE = "SHOULD_TERMINATE"
 
+class ServerStates(Enum):
+    NOT_INITIALIZED = auto()
+    WAIT_FOR_CLIENTS = auto()
+    SERVE_TESTS = auto()
+    STOP_TESTS_SERVING = auto()
+    STOP_IMMEDIATELY = auto()
 
 def server_func(func):
     @functools.wraps(func)
@@ -34,20 +38,15 @@ class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
         self.host = config.root.parallel.server_addr
+        self.state = ServerStates.NOT_INITIALIZED
         self.port = None
-        self.should_stop_on_error = config.root.run.stop_on_error
         self.tests = tests
-        self.stop_on_error_and_error_found = False
-        self.is_initialized = False
         self.worker_session_ids = []
         self.executing_tests = {}
         self.finished_tests = []
         self.unstarted_tests = queue.Queue()
-        self.should_stop = False
-        self.all_clients_connected = False
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
-        self.tests_restart_count = defaultdict(int)
         self.clients_last_communication_time = {}
         self.collection = [[test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id] for test in self.tests]
 
@@ -57,14 +56,11 @@ class Server(object):
     def _has_unstarted_tests(self):
         return not self.unstarted_tests.empty()
 
-    def _has_unfinished_tests(self):
-        return len(self.finished_tests) < len(self.tests)
-
     def _has_connected_clients(self):
         return len(self.clients_last_communication_time) > 0
 
     def has_more_tests(self):
-        return self._has_unfinished_tests() and not self.stop_on_error_and_error_found
+        return len(self.finished_tests) < len(self.tests)
 
     def report_client_failure(self, client_id):
         self.clients_last_communication_time.pop(client_id)
@@ -74,6 +70,8 @@ class Server(object):
             with _get_test_context(self.tests[test_index]) as result:
                 result.mark_interrupted()
                 self.finished_tests.append(test_index)
+        self.state = ServerStates.STOP_TESTS_SERVING
+        self._mark_unrun_tests()
 
     def _mark_unrun_tests(self):
         while self._has_unstarted_tests():
@@ -82,8 +80,8 @@ class Server(object):
                 pass
             self.finished_tests.append(test_index)
 
-    def stop_server(self):
-        self.should_stop = True
+    def session_interrupted(self):
+        self.state = ServerStates.STOP_IMMEDIATELY
 
     @server_func
     def keep_alive(self, client_id):
@@ -98,7 +96,7 @@ class Server(object):
         self.worker_session_ids.append(client_session_id)
         self.executing_tests[client_id] = None
         if len(self.clients_last_communication_time) >= config.root.parallel.num_workers:
-            self.all_clients_connected = True
+            self.state = ServerStates.SERVE_TESTS
 
     @server_func
     def validate_collection(self, client_id, client_collection):
@@ -111,15 +109,18 @@ class Server(object):
     def disconnect(self, client_id):
         _logger.notice("Client {} sent disconnect".format(client_id))
         self.clients_last_communication_time.pop(client_id)
+        self.state = ServerStates.STOP_TESTS_SERVING
 
     @server_func
     def get_test(self, client_id):
-        if not self.all_clients_connected:
-            return WAITING_FOR_CLIENTS
         if not self.executing_tests[client_id] is None:
             _logger.error("Client_id {} requested new test without sending former result".format(client_id))
             return PROTOCOL_ERROR
-        if self._has_unstarted_tests():
+        if self.state == ServerStates.STOP_TESTS_SERVING:
+            return NO_MORE_TESTS
+        elif self.state == ServerStates.WAIT_FOR_CLIENTS:
+            return WAITING_FOR_CLIENTS
+        elif self.state == ServerStates.SERVE_TESTS and self._has_unstarted_tests():
             test_index = self.unstarted_tests.get()
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
@@ -127,7 +128,8 @@ class Server(object):
             return test_index
         else:
             _logger.debug("No unstarted tests, sending end to client_id {}".format(client_id))
-            return FINISHED_ALL_TESTS
+            self.state = ServerStates.STOP_TESTS_SERVING
+            return NO_MORE_TESTS
 
     @server_func
     def finished_test(self, client_id, result_dict):
@@ -139,9 +141,9 @@ class Server(object):
             with _get_test_context(self.tests[test_index]) as result:
                 result.deserialize(result_dict)
                 context.session.reporter.report_test_end(self.tests[test_index], result)
-                if not result.is_success(allow_skips=True) and self.should_stop_on_error:
+                if not result.is_success(allow_skips=True) and config.root.run.stop_on_error:
                     _logger.debug("Stopping (run.stop_on_error==True)")
-                    self.stop_on_error_and_error_found = True
+                    self.state = ServerStates.STOP_TESTS_SERVING
                     self._mark_unrun_tests()
         else:
             _logger.error(
@@ -161,12 +163,12 @@ class Server(object):
         try:
             server = xmlrpc_server.SimpleXMLRPCServer((self.host, config.root.parallel.server_port), allow_none=True, logRequests=False)
             self.port = server.server_address[1]
-            self.is_initialized = True
+            self.state = ServerStates.WAIT_FOR_CLIENTS
             server.register_instance(self)
             _logger.debug("Starting server loop")
-            while not self.should_stop and (self._has_connected_clients() or self.has_more_tests()):
+            while self.state != ServerStates.STOP_IMMEDIATELY and (self._has_connected_clients() or self.has_more_tests()):
                 server.handle_request()
-            if not self.stop_on_error_and_error_found:
+            if self.state != ServerStates.STOP_IMMEDIATELY:
                 context.session.mark_complete()
             _logger.trace('Session finished. is_success={0} has_skips={1}',
                           context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))

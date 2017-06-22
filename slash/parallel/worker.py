@@ -4,7 +4,7 @@ import os
 import pickle
 import time
 from six.moves import xmlrpc_client
-from .server import FINISHED_ALL_TESTS, PROTOCOL_ERROR, WAITING_FOR_CLIENTS, SHOULD_TERMINATE
+from .server import NO_MORE_TESTS, PROTOCOL_ERROR, WAITING_FOR_CLIENTS
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..hooks import register
 from ..ctx import context
@@ -50,7 +50,6 @@ class Worker(object):
         tr = threading.Thread(target=self.keep_alive, args=(stop_event,))
         tr.setDaemon(True)
         tr.start()
-        retries_num = 0
         should_stop = False
         with app.session.get_started_context():
             try:
@@ -62,11 +61,8 @@ class Worker(object):
                     elif test_index == PROTOCOL_ERROR:
                         _logger.error("Worker_id {} recieved protocol error message, terminating".format(self.client_id))
                         break
-                    elif test_index == FINISHED_ALL_TESTS:
-                        _logger.debug("Got FINISHED_ALL_TESTS, Client {} disconnecting".format(self.client_id))
-                        break
-                    elif test_index == SHOULD_TERMINATE:
-                        _logger.debug("Got SHOULD_TERMINATE, Client {} disconnecting".format(self.client_id))
+                    elif test_index == NO_MORE_TESTS:
+                        _logger.debug("Got NO_MORE_TESTS, Client {} disconnecting".format(self.client_id))
                         break
                     else:
                         test = self.collected_tests[test_index]
