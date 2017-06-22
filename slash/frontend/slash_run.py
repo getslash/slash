@@ -54,7 +54,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                         if is_parent():
                             app.session.parallel_manager = ParallelManager(args)
                             app.session.parallel_manager.start_server_in_thread(collected)
-                            app.session.parallel_manager.start_workers()
+                            app.session.parallel_manager.start()
                         else:
                             run_tests(collected)
 
