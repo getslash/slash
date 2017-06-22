@@ -1,9 +1,9 @@
 import copy
 import logbook
 import functools
-from enum import Enum, auto
+import time
+from enum import Enum
 from six.moves import queue
-from datetime import datetime
 from six.moves import xmlrpc_server
 from ..utils.python import unpickle
 from .. import log
@@ -19,18 +19,19 @@ PROTOCOL_ERROR = "PROTOCOL_ERROR"
 WAITING_FOR_CLIENTS = "WAITING_FOR_CLIENTS"
 
 class ServerStates(Enum):
-    NOT_INITIALIZED = auto()
-    WAIT_FOR_CLIENTS = auto()
-    SERVE_TESTS = auto()
-    STOP_TESTS_SERVING = auto()
-    STOP_IMMEDIATELY = auto()
+    NOT_INITIALIZED = 1
+    WAIT_FOR_CLIENTS = 2
+    SERVE_TESTS = 3
+    STOP_TESTS_SERVING = 4
+    STOP_IMMEDIATELY = 5
 
 def server_func(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         self = args[0]
+        time_now = time.time()
         client_id = kwargs.pop('client_id', args[1])
-        self.clients_last_communication_time[client_id] = datetime.now()
+        self.clients_last_communication_time[client_id] = self.last_request_time = time_now
         return func(*args)  # pylint: disable=not-callable
     return wrapper
 
@@ -45,6 +46,7 @@ class Server(object):
         self.executing_tests = {}
         self.finished_tests = []
         self.unstarted_tests = queue.Queue()
+        self.last_request_time = time.time()
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
         self.clients_last_communication_time = {}
@@ -159,6 +161,9 @@ class Server(object):
         except TypeError:
             _logger.error('Error when deserializing warning, not adding it')
 
+    def should_wait_for_request(self):
+        return  self.state != ServerStates.STOP_IMMEDIATELY and (self._has_connected_clients() or self.has_more_tests())
+
     def serve(self):
         try:
             server = xmlrpc_server.SimpleXMLRPCServer((self.host, config.root.parallel.server_port), allow_none=True, logRequests=False)
@@ -166,7 +171,7 @@ class Server(object):
             self.state = ServerStates.WAIT_FOR_CLIENTS
             server.register_instance(self)
             _logger.debug("Starting server loop")
-            while self.state != ServerStates.STOP_IMMEDIATELY and (self._has_connected_clients() or self.has_more_tests()):
+            while self.should_wait_for_request():
                 server.handle_request()
             if self.state != ServerStates.STOP_IMMEDIATELY:
                 context.session.mark_complete()

@@ -3,8 +3,13 @@ import os
 import signal
 from .utils.suite_writer import Suite
 from slash.resuming import get_tests_to_resume
-from slash.exceptions import InteractiveParallelNotAllowed
+from slash.exceptions import InteractiveParallelNotAllowed, ParallelTimeout
 from slash.parallel.server import ServerStates
+from slash.parallel.parallel_manager import ParallelManager
+from uuid import uuid4
+from slash import Session
+from slash.loader import Loader
+import time
 
 #basic features of parallel
 def run_specific_workers_and_tests_num(workers_num, tests_num=10):
@@ -27,8 +32,8 @@ def test_zero_workers(parallel_suite):
     assert summary.session.results.is_success()
     assert summary.session.parallel_manager is None
 
-def test_test_causes_worker_exit(parallel_suite):
-    slash.config.root.parallel.communication_timeout_secs = 2
+def test_test_causes_worker_exit(parallel_suite, config_override):
+    config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].append_line("import os")
     parallel_suite[0].append_line("os._exit(0)")
     parallel_suite[0].expect_interruption()
@@ -38,8 +43,8 @@ def test_test_causes_worker_exit(parallel_suite):
     [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.is_interrupted()
 
-def test_keepalive_works(parallel_suite):
-    slash.config.root.parallel.communication_timeout_secs = 2
+def test_keepalive_works(parallel_suite, config_override):
+    config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].append_line("import time")
     parallel_suite[0].append_line("time.sleep(6)")
     workers_num = 1
@@ -112,7 +117,8 @@ def test_test_error(parallel_suite):
     assert 'RuntimeError' in str(err)
     assert 'add_error() must be called' in str(err)
 
-def test_test_interruption(parallel_suite):
+def test_test_interruption_causes_communication_timeout(parallel_suite, config_override):
+    config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].when_run.interrupt()
     summary = parallel_suite.run(num_workers=1, verify=False)
     [interrupted_result] = summary.get_all_results_for_test(parallel_suite[0])
@@ -120,6 +126,12 @@ def test_test_interruption(parallel_suite):
     for result in summary.session.results:
         if result != interrupted_result:
             assert result.is_success() or result.is_not_run()
+
+def test_test_interruption_causes_no_requests(parallel_suite, config_override):
+    config_override("parallel.no_request_timeout", 2)
+    parallel_suite[0].when_run.interrupt()
+    summary = parallel_suite.run(num_workers=1, verify=False)
+    assert summary.get_all_results_for_test(parallel_suite[0]) == []
 
 def test_test_skips(parallel_suite):
     parallel_suite[0].add_decorator('slash.skipped("reason")')
@@ -227,7 +239,6 @@ def test_parallel_resume(parallel_suite):
     resumed = get_tests_to_resume(result.session.id)
     assert len(resumed) == 1
 
-
 def test_parallel_symlinks(parallel_suite, logs_dir):
     files_dir = logs_dir.join("files")
     links_dir = logs_dir.join("links")
@@ -249,7 +260,6 @@ def test_parallel_symlinks(parallel_suite, logs_dir):
             assert last_token in worker_session_ids
             assert os.path.isdir(file_name.readlink())
 
-
 def test_parallel_interactive_fails(parallel_suite):
     summary = parallel_suite.run(additional_args=['-i'], verify=False)
     results = list(summary.session.results.iter_all_results())
@@ -257,10 +267,44 @@ def test_parallel_interactive_fails(parallel_suite):
     error = results[0].get_errors()[0]
     assert error.exception_type == InteractiveParallelNotAllowed
 
-
 def test_children_session_ids(parallel_suite):
     summary = parallel_suite.run()
     assert summary.session.results.is_success()
     session_ids = summary.session.parallel_manager.server.worker_session_ids
     expected_session_ids = ["{}_1".format(summary.session.id.split('_')[0])]
     assert session_ids == expected_session_ids
+
+def test_timeout_no_request_to_server(config_override, tmpdir):
+    config_override("parallel.no_request_timeout", 1)
+    tests_dir = tmpdir.join(str(uuid4()))
+    with tests_dir.join(str(uuid4()).replace('-', '') + '.py').open('w', ensure=True) as f:
+        f.write('def test_something():\n    pass')
+
+    with Session():
+        runnables = Loader().get_runnables(str(tests_dir))
+        parallel_manager = ParallelManager([])
+        parallel_manager.start_server_in_thread(runnables)
+        parallel_manager.server.state = ServerStates.SERVE_TESTS
+        config_override("parallel.num_workers", 0)
+
+        with slash.assert_raises(ParallelTimeout) as caught:
+            parallel_manager.start()
+        assert 'No request sent to server' in caught.exception.args[0]
+
+def test_children_not_connected_timeout(tmpdir, config_override):
+    config_override("parallel.workers_connect_timeout", 1)
+    tests_dir = tmpdir.join(str(uuid4()))
+    filename = str(uuid4()).replace('-', '') + '.py'
+    with tests_dir.join(filename).open('w', ensure=True) as f:
+        f.write('def test_something():\n    pass')
+
+    with Session():
+        runnables = Loader().get_runnables(str(tests_dir))
+        parallel_manager = ParallelManager([])
+        parallel_manager.start_server_in_thread(runnables)
+        config_override("parallel.num_workers", 1)
+        time.sleep(1)
+
+        with slash.assert_raises(ParallelTimeout) as caught:
+            parallel_manager.start()
+        assert caught.exception.args[0] == 'Not all clients connected'
