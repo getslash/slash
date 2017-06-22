@@ -11,14 +11,13 @@ from ..exceptions import ParallelServerIsDown
 from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..conf import config
 from ..ctx import context
-from .server import Server
+from .server import Server, ServerStates
 from ..utils.tmux_utils import create_new_window, kill_tmux_session
 
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
 TIME_BETWEEN_CHECKS = 5
-COMMUNICATION_TIMEOUT_SECS = 60
 MAX_CONNECTION_RETRIES = 200
 
 class ParallelManager(object):
@@ -33,7 +32,7 @@ class ParallelManager(object):
 
     def try_connect(self):
         num_retries = 0
-        while not self.server.is_initialized:
+        while self.server.state == ServerStates.NOT_INITIALIZED:
             time.sleep(0.1)
             if num_retries == MAX_CONNECTION_RETRIES:
                 raise ParallelServerIsDown("Cannot connect to XML_RPC server")
@@ -60,11 +59,11 @@ class ParallelManager(object):
         self.server_thread.setDaemon(True)
         self.server_thread.start()
 
-    def stop_server(self):
-        client = xmlrpc_client.ServerProxy('http://{0}:{1}'.format(config.root.parallel.server_addr, self.server.port))
-        client.stop_server()
+    def get_proxy(self):
+        return xmlrpc_client.ServerProxy('http://{0}:{1}'.format(config.root.parallel.server_addr, self.server.port))
 
     def start_workers(self):
+        found = False
         self.try_connect()
         if not config.root.parallel.server_port:
             self.args.extend(['--parallel_port', str(self.server.port)])
@@ -75,16 +74,19 @@ class ParallelManager(object):
                 workers_last_connection_time = self.server.get_workers_last_connection_time()
                 for worker_id in workers_last_connection_time:
                     delta = (datetime.now() - workers_last_connection_time[worker_id]).seconds
-                    if delta > COMMUNICATION_TIMEOUT_SECS:
+                    if delta > config.root.parallel.communication_timeout_secs:
                         if not config.root.run.tmux:
-                            _logger.error("Worker {} is down, restarting".format(worker_id))
+                            _logger.error("Worker {} is down, terminating session".format(worker_id))
                             if self.workers[worker_id].poll() is None:
                                 _logger.error("Killing worker {}".format(worker_id))
                                 self.workers[worker_id].kill()
                         else:
                             self.workers[worker_id].rename_window('stopped_client_{}'.format(worker_id))
-                        self.server.report_client_failure(worker_id)
-                        self.start_worker()
+                        self.get_proxy().report_client_failure(worker_id)
+                        found = True
+                        break
+                if found:
+                    break
                 time.sleep(TIME_BETWEEN_CHECKS)
         except INTERRUPTION_EXCEPTIONS:
             _logger.error("Server interrupted, stopping workers and terminating")
@@ -93,7 +95,7 @@ class ParallelManager(object):
             else:
                 for worker in self.workers.values():
                     worker.kill()
-                self.stop_server()
+                self.get_proxy().session_interrupted()
                 raise
         finally:
             if not config.root.run.tmux:

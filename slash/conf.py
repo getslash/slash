@@ -80,7 +80,8 @@ config = Config({
         "worker_id": None // Doc("Worker_id") // Cmdline(arg='--parallel_worker_id', metavar="WORKER_ID"),
         "server_addr": "localhost" // Doc("Server address") // Cmdline(arg='--parallel_addr', metavar="PARALLEL_SERVER_ADDRESS"),
         "server_port": 0 // Doc("Server port") // Cmdline(arg='--parallel_port', metavar="PARALLEL_SERVER_PORT"),
-        "parent_session_id": None // Doc("Master id") // Cmdline(arg='--parallel_parent_session_id', metavar="MASTER_SESSION_ID"),
+        "parent_session_id": None // Doc("parent session id") // Cmdline(arg='--parallel_parent_session_id', metavar="MASTER_SESSION_ID"),
+        "communication_timeout_secs": 60 // Doc("timeout of worker in seconds"),
     },
     "sentry": {
         "dsn": None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "
