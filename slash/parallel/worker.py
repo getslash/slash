@@ -35,12 +35,13 @@ class Worker(object):
             _logger.error("Failed to pickle warning. Message: {}, File: {}, Line: {}".format(warning.message, warning.filename, warning.lineno))
 
     def start(self, app):
-        if not os.getpid() == os.getpgid(0):
+        pid = os.getpid()
+        if pid != os.getpgid(0):
             os.setsid()
         register(self.warning_added)
         collection = [(test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id) for test in self.collected_tests]
         self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
-        self.client.connect(self.client_id)
+        self.client.connect(self.client_id, pid)
         if not self.client.validate_collection(self.client_id, collection):
             _logger.error("Collections of worker id {0} and master don't match, worker terminates".format(self.client_id))
             self.client.disconnect(self.client_id)

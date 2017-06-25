@@ -23,7 +23,7 @@ class ServerStates(Enum):
     WAIT_FOR_CLIENTS = 2
     SERVE_TESTS = 3
     STOP_TESTS_SERVING = 4
-    STOP_IMMEDIATELY = 5
+    STOP_SERVE = 5
 
 def server_func(func):
     @functools.wraps(func)
@@ -39,6 +39,7 @@ class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
         self.host = config.root.parallel.server_addr
+        self.interrupted = False
         self.state = ServerStates.NOT_INITIALIZED
         self.port = None
         self.tests = tests
@@ -47,6 +48,7 @@ class Server(object):
         self.finished_tests = []
         self.unstarted_tests = queue.Queue()
         self.last_request_time = time.time()
+        self.worker_pids = []
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
         self.clients_last_communication_time = {}
@@ -82,20 +84,18 @@ class Server(object):
                 pass
             self.finished_tests.append(test_index)
 
-    def session_interrupted(self):
-        self.state = ServerStates.STOP_IMMEDIATELY
-
     @server_func
     def keep_alive(self, client_id):
         _logger.debug("Client_id {} sent keep_alive".format(client_id))
 
     @server_func
-    def connect(self, client_id):
+    def connect(self, client_id, client_pid):
         _logger.notice("Client_id {} connected".format(client_id))
         client_session_id = '{}_{}'.format(context.session.id.split('_')[0], client_id)
         context.session.logging.create_worker_symlink("worker_{}".format(client_id), client_session_id)
         hooks.worker_connected(session_id=client_session_id)  # pylint: disable=no-member
         self.worker_session_ids.append(client_session_id)
+        self.worker_pids.append(client_pid)
         self.executing_tests[client_id] = None
         if len(self.clients_last_communication_time) >= config.root.parallel.num_workers:
             self.state = ServerStates.SERVE_TESTS
@@ -152,6 +152,9 @@ class Server(object):
                 "finished_test request from client_id {} with index {}, but no test is mapped to this worker".format(client_id, test_index))
             return PROTOCOL_ERROR
 
+    def stop_serve(self):
+        self.state = ServerStates.STOP_SERVE
+
     @server_func
     def report_warning(self, client_id, pickled_warning):
         _logger.notice("Client_id {} sent warning".format(client_id))
@@ -162,7 +165,7 @@ class Server(object):
             _logger.error('Error when deserializing warning, not adding it')
 
     def should_wait_for_request(self):
-        return  self.state != ServerStates.STOP_IMMEDIATELY and (self._has_connected_clients() or self.has_more_tests())
+        return  self._has_connected_clients() or self.has_more_tests()
 
     def serve(self):
         try:
@@ -171,9 +174,9 @@ class Server(object):
             self.state = ServerStates.WAIT_FOR_CLIENTS
             server.register_instance(self)
             _logger.debug("Starting server loop")
-            while self.should_wait_for_request():
+            while self.state != ServerStates.STOP_SERVE:
                 server.handle_request()
-            if self.state != ServerStates.STOP_IMMEDIATELY:
+            if not self.interrupted:
                 context.session.mark_complete()
             _logger.trace('Session finished. is_success={0} has_skips={1}',
                           context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
