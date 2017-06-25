@@ -78,4 +78,3 @@ class ReporterInterface(object):
 
     def report_error_message(self, message):
         pass
-

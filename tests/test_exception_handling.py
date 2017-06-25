@@ -225,4 +225,3 @@ def test_handling_exceptions_inside_assert_raises_with_session(with_session):
     assert not exception_handling.is_exception_handled(value)
     if with_session:
         assert session.results.get_num_errors() == 0
-

@@ -42,4 +42,3 @@ from .utils.interactive import start_interactive_shell
 from .runner import run_tests
 import logbook
 logger = logbook.Logger(__name__)
-

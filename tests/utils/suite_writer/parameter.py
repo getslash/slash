@@ -15,4 +15,3 @@ class Parameter(Element):
     def write_decorator(self, code_formatter):
         code_formatter.writeln('@slash.parametrize({0!r}, {1!r})'.format(
             self.name, self.values))
-

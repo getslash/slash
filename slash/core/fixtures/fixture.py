@@ -89,4 +89,3 @@ class Fixture(FixtureBase):
                 raise UnknownFixtures(param_name)
 
         return keyword_arguments
-

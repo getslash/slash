@@ -182,4 +182,3 @@ else:
                 current = current.tb_next
 
         return (first, current)
-
