@@ -46,18 +46,16 @@ def create_new_window(window_name, command):
 def run_slash_in_tmux(command):
     tmux_session = get_slash_tmux_session()
     if tmux_session:
+        tmux_session.set_option('remain-on-exit', True)
         libtmux.Server().switch_client(SESSION_NAME)
     else:
         path_to_tmux = which(TMUX_EXECUTABLE_NAME)
         if not path_to_tmux:
             _logger.error("Tmux executable not found")
             raise TmuxExecutableNotFound("Tmux executable not found")
-        command = ' '.join([sys.executable, '-m', 'slash.frontend.main', 'run'] + command + [';$SHELL'])
+        command = ' '.join([sys.executable, '-m', 'slash.frontend.main', 'run'] + command)
         tmux_args = [path_to_tmux, 'new-session', '-s', SESSION_NAME, '-n', MASTER_WINDOW_NAME]
         if is_in_tmux():
             tmux_args.append('-Ad')
         tmux_args.append(command)
         os.execve(path_to_tmux, tmux_args, dict(os.environ))
-
-def kill_tmux_session():
-    get_slash_tmux_session().kill_session()

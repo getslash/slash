@@ -1,5 +1,7 @@
 import sys
+import errno
 import os
+import signal
 import subprocess
 import time
 import logbook
@@ -10,7 +12,7 @@ from ..exceptions import INTERRUPTION_EXCEPTIONS, ParallelServerIsDown, Parallel
 from ..conf import config
 from ..ctx import context
 from .server import Server, ServerStates
-from ..utils.tmux_utils import create_new_window, kill_tmux_session
+from ..utils.tmux_utils import create_new_window
 from .._compat import iteritems
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
@@ -60,16 +62,23 @@ class ParallelManager(object):
     def get_proxy(self):
         return xmlrpc_client.ServerProxy('http://{0}:{1}'.format(config.root.parallel.server_addr, self.server.port))
 
-    def terminate_all(self):
-        for worker in self.workers.values():
-            worker.kill()
-        self.get_proxy().session_interrupted()
+    def kill_workers(self):
+        if config.root.run.tmux:
+            for worker_pid in self.server.worker_pids:
+                try:
+                    os.kill(worker_pid, signal.SIGINT)
+                except OSError as err:
+                    if err.errno != errno.ESRCH:
+                        raise
+        else:
+            for worker in self.workers.values():
+                worker.send_signal(signal.SIGINT)
 
     def wait_all_workers_to_connect(self):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
             if time.time() - self.server.last_request_time > config.root.parallel.workers_connect_timeout:
                 _logger.error("Timeout: Not all clients connected to server, terminating")
-                self.terminate_all()
+                self.kill_workers()
                 raise ParallelTimeout("Not all clients connected")
             time.sleep(TIME_BETWEEN_CHECKS)
 
@@ -87,8 +96,18 @@ class ParallelManager(object):
     def check_no_requests_timeout(self):
         if time.time() - self.server.last_request_time > config.root.parallel.no_request_timeout:
             _logger.error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
-            self.terminate_all()
+            self.kill_workers()
             raise ParallelTimeout("No request sent to server for {} seconds".format(config.root.parallel.no_request_timeout))
+
+    def is_process_running(self, pid):
+        try:
+            os.kill(pid, 0)
+        except OSError as err:
+            if err.errno == errno.ESRCH:
+                return False
+            else:
+                raise
+        return True
 
 
     def start(self):
@@ -105,13 +124,19 @@ class ParallelManager(object):
                 time.sleep(TIME_BETWEEN_CHECKS)
         except INTERRUPTION_EXCEPTIONS:
             _logger.error("Server interrupted, stopping workers and terminating")
-            if config.root.run.tmux:
-                kill_tmux_session()
-            else:
-                self.terminate_all()
-                raise
+            self.kill_workers()
+            self.server.interrupted = True
+            raise
         finally:
             if not config.root.run.tmux:
                 for worker in self.workers.values():
                     worker.wait()
-                self.server_thread.join()
+            else:
+                for worker_pid in self.server.worker_pids:
+                    for _ in range(10):
+                        if not self.is_process_running(worker_pid):
+                            break
+                        else:
+                            time.sleep(0.5)
+            self.get_proxy().stop_serve()
+            self.server_thread.join()

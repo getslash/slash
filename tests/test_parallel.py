@@ -64,7 +64,7 @@ def test_server_fails(parallel_suite):
         for worker in slash.context.session.parallel_manager.workers.values():
             ret = worker.poll()
             assert not ret is None
-        assert slash.context.session.parallel_manager.server.state == ServerStates.STOP_IMMEDIATELY
+        assert slash.context.session.parallel_manager.server.interrupted
         assert not slash.context.session.parallel_manager.server.finished_tests
 
     for test in parallel_suite:
