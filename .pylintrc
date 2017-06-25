@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,trailing-newlines,ungrouped-imports,wrong-import-order,wrong-import-position
+disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,ungrouped-imports,wrong-import-order,wrong-import-position
 
 [REPORTS]
 reports=no

@@ -16,5 +16,3 @@ class Event(object):
         super(Event, self).__init__()
         self.timestamp = timestamp
         self.info = info
-
-

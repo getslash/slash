@@ -46,4 +46,3 @@ except ZeroDivisionError:
         assert err.message == message
     assert err.exception_type is ZeroDivisionError
     assert err.traceback.frames
-
