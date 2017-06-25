@@ -4,6 +4,7 @@ import pytest
 import inspect
 import traceback
 import slash
+import logbook
 from slash import exception_handling
 from slash._compat import ExitStack, PYPY
 from slash.exceptions import SkipTest, TestFailed
@@ -203,7 +204,7 @@ def test_assert_raises_that_not_raises(message):
     except TestFailed as e:
         assert expected_substring in str(e)
     else:
-        raise Exception('TestFailed exception was not raised :()')
+        raise Exception('TestFailed exception was not raised :(')
 
 
 @pytest.mark.parametrize('with_session', [True, False])
@@ -225,3 +226,47 @@ def test_handling_exceptions_inside_assert_raises_with_session(with_session):
     assert not exception_handling.is_exception_handled(value)
     if with_session:
         assert session.results.get_num_errors() == 0
+
+
+@pytest.mark.parametrize('message', [None, 'My custom message'])
+@pytest.mark.parametrize('exc_types', [CustomException, (CustomException, ZeroDivisionError)])
+def test_allowing_exceptions(exc_types, message):
+    raised = CustomException()
+    with slash.Session():
+        with slash.allowing_exceptions(exc_types, msg=message) as caught:
+            with logbook.TestHandler() as handler:
+                raise raised
+    assert sys.exc_info() == exception_handling.NO_EXC_INFO
+    assert caught.exception is raised
+    assert len(handler.records) == 0  # pylint: disable=len-as-condition
+
+
+def test_allowing_exceptions_that_not_raises():
+    with logbook.TestHandler() as handler:
+        with slash.allowing_exceptions((Exception, CustomException)):
+            pass
+    assert len(handler.records) == 1
+    assert handler.records[0].message.startswith("Exception/CustomException not raised")
+
+
+@pytest.mark.parametrize('with_session', [True, False])
+def test_handling_exceptions_inside_allowing_exceptions_with_session(with_session):
+    value = CustomException()
+
+    with ExitStack() as ctx:
+
+        if with_session:
+            session = ctx.enter_context(slash.Session())
+            ctx.enter_context(session.get_started_context())
+        else:
+            session = None
+
+        with logbook.TestHandler() as handler:
+            with slash.allowing_exceptions(CustomException):
+                with exception_handling.handling_exceptions():
+                    raise value
+
+    assert not exception_handling.is_exception_handled(value)
+    if with_session:
+        assert session.results.get_num_errors() == 0
+    assert len(handler.records) == 0  # pylint: disable=len-as-condition

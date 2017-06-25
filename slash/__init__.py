@@ -9,6 +9,7 @@ from .core.tagging import tag
 from . import assertions
 should = assertions
 from .assertions import (
+    allowing_exceptions,
     assert_almost_equal,
     assert_contains,
     assert_equal,
