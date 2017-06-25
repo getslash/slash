@@ -47,13 +47,30 @@ One case that is not easily covered by the assert statement is asserting Excepti
 
 	  assert caught.exception.param == 'some_value'
 
+:func:`slash.assert_raises` will raise ``TestFailed`` exception in case the expected exception was not raised:
+
+.. code:: python
+
+	 >>> with slash.assert_raises(Exception) as caught: # doctest: +IGNORE_EXCEPTION_DETAIL
+	 ...    pass
+	 Traceback (most recent call last):
+	     ...
+	 TestFailed: ...
+
+In a case where the test author wants to allow a specific exception but not to enforce its propagation (e.g. allowing a timing issue to be present), :func:`slash.allowing_exceptions` can be used.
+
+.. code:: python
+
+	  >>> with slash.allowing_exceptions(Exception) as caught:
+	  ...    pass
+
 You also have :func:`slash.assert_almost_equal` to test for near equality:
 
 .. code:: python
 
 	  slash.assert_almost_equal(1.001, 1, max_delta=0.1)
 
-.. note:: :func:`slash.assert_raises` interacts with :func:`.handling_exceptions` - exceptions anticipated by ``assert_raises`` will be ignored by ``handling_exceptions``.
+.. note:: :func:`slash.assert_raises` and :func:`slash.allowing_exceptions` interacts with :func:`.handling_exceptions` - exceptions anticipated by ``assert_raises`` or ``allowing_exceptions`` will be ignored by ``handling_exceptions``.
 
 Errors
 ------

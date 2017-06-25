@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`595` Add `allowing_exceptions` context letting tests allow specific exceptions in selective context
 * :bug:`606 major` Swallow python warnings during ast.parse
 * :feature:`-` Slash now detects test functions being redefined, hiding previous tests, and warns about it
 * :feature:`556` Long variable representations are now capped by default when distilling tracebacks
