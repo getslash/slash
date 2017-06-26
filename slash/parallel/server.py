@@ -70,7 +70,7 @@ class Server(object):
         test_index = self.executing_tests.get(client_id, None)
         if test_index is not None:
             _logger.error("Worker {} interrupted while executing test {}".format(client_id, self.tests[test_index].__slash__.address))
-            with _get_test_context(self.tests[test_index]) as result:
+            with _get_test_context(self.tests[test_index], logging=False) as result:
                 result.mark_interrupted()
                 self.finished_tests.append(test_index)
         self.state = ServerStates.STOP_TESTS_SERVING
@@ -79,7 +79,7 @@ class Server(object):
     def _mark_unrun_tests(self):
         while self._has_unstarted_tests():
             test_index = self.unstarted_tests.get()
-            with _get_test_context(self.tests[test_index]):
+            with _get_test_context(self.tests[test_index], logging=False):
                 pass
             self.finished_tests.append(test_index)
 
