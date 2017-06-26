@@ -96,6 +96,12 @@ class ParallelManager(object):
     def check_no_requests_timeout(self):
         if time.time() - self.server.last_request_time > config.root.parallel.no_request_timeout:
             _logger.error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
+            if self.server.has_connected_clients():
+                _logger.debug("Clients that are still connected to server: {}".format(self.server.clients_last_communication_time.keys()))
+            if self.server.has_more_tests():
+                _logger.debug("Unstarted tests indexes: {}".format(self.server.unstarted_tests))
+            if self.server.executing_tests:
+                _logger.debug("Currently executed tests indexes: {}".format(self.server.executing_tests.values()))
             self.kill_workers()
             raise ParallelTimeout("No request sent to server for {} seconds".format(config.root.parallel.no_request_timeout))
 

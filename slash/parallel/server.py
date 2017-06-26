@@ -29,9 +29,8 @@ def server_func(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         self = args[0]
-        time_now = time.time()
         client_id = kwargs.pop('client_id', args[1])
-        self.clients_last_communication_time[client_id] = self.last_request_time = time_now
+        self.clients_last_communication_time[client_id] = self.last_request_time = time.time()
         return func(*args)  # pylint: disable=not-callable
     return wrapper
 
@@ -60,7 +59,7 @@ class Server(object):
     def _has_unstarted_tests(self):
         return not self.unstarted_tests.empty()
 
-    def _has_connected_clients(self):
+    def has_connected_clients(self):
         return len(self.clients_last_communication_time) > 0
 
     def has_more_tests(self):
@@ -165,7 +164,7 @@ class Server(object):
             _logger.error('Error when deserializing warning, not adding it')
 
     def should_wait_for_request(self):
-        return  self._has_connected_clients() or self.has_more_tests()
+        return self.has_connected_clients() or self.has_more_tests()
 
     def serve(self):
         try:
