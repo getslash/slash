@@ -16,6 +16,7 @@ from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
 from ..utils.python import unpickle
+from ..exception_handling import capture_sentry_exception
 
 _logger = logbook.Logger(__name__)
 
@@ -25,6 +26,7 @@ _ADDED_TO_RESULT = ExceptionMarker('added_to_result')
 class Result(object):
     """Represents a single result for a test which was run
     """
+    pickle_key_blacklist = {'test_metadata', 'facts'}
 
     def __init__(self, test_metadata=None):
         super(Result, self).__init__()
@@ -52,10 +54,12 @@ class Result(object):
     def serialize(self):
         serialized_object = {}
         for key, value in vars(self).items():
-            try:
-                serialized_object[key] = pickle.dumps(value)
-            except (pickle.PicklingError, TypeError):
-                _logger.error('Failed serializing reult, skipping this value. key = {}'.format(key))
+            if key not in Result.pickle_key_blacklist:
+                try:
+                    serialized_object[key] = pickle.dumps(value)
+                except (pickle.PicklingError, TypeError):
+                    _logger.debug('Failed serializing result, skipping this value. key = {}'.format(key))
+                    capture_sentry_exception()
         return serialized_object
 
     def deserialize(self, result_dict):
