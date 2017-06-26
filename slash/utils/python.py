@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import functools
+import warnings
 import inspect
 import sys
 import ast
@@ -13,7 +14,9 @@ def check_duplicate_functions(path):
     code = None
     with open(path) as f:
         code = f.read()
-    root = ast.parse(code)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        root = ast.parse(code)
     func_names = set()
     duplicates = set()
     for node in root.body:
