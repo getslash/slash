@@ -1,5 +1,6 @@
 import functools
 import sys
+import logbook
 from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
@@ -12,6 +13,7 @@ from ..plugins import manager
 from ..parallel.parallel_manager import ParallelManager
 from ..parallel.worker import Worker
 
+_logger = logbook.Logger(__name__)
 
 def slash_run(args, report_stream=None, resume=False, app_callback=None, working_directory=None):
 
@@ -34,6 +36,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                     if is_parallel() and app.parsed_args.interactive:
                         raise InteractiveParallelNotAllowed("Cannot run interactive mode in parallel")
                     if config.root.run.tmux and not is_child():
+                        _logger.notice("About to start slash in new tmux session...")
                         run_slash_in_tmux(args)
                     if resume:
                         session_ids = app.positional_args
