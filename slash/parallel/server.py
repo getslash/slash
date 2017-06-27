@@ -154,6 +154,11 @@ class Server(object):
     def stop_serve(self):
         self.state = ServerStates.STOP_SERVE
 
+    def session_interrupted(self):
+        self.interrupted = True
+        if self.state != ServerStates.STOP_SERVE:
+            self.state = ServerStates.STOP_TESTS_SERVING
+
     @server_func
     def report_warning(self, client_id, pickled_warning):
         _logger.notice("Client_id {} sent warning".format(client_id))
