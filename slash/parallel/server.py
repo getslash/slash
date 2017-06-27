@@ -139,7 +139,7 @@ class Server(object):
         if test_index is not None:
             self.finished_tests.append(test_index)
             self.executing_tests[client_id] = None
-            with _get_test_context(self.tests[test_index]) as result:
+            with _get_test_context(self.tests[test_index], logging=False) as result:
                 result.deserialize(result_dict)
                 context.session.reporter.report_test_end(self.tests[test_index], result)
                 if not result.is_success(allow_skips=True) and config.root.run.stop_on_error:
