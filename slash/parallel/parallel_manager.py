@@ -130,8 +130,8 @@ class ParallelManager(object):
                 time.sleep(TIME_BETWEEN_CHECKS)
         except INTERRUPTION_EXCEPTIONS:
             _logger.error("Server interrupted, stopping workers and terminating")
+            self.get_proxy().session_interrupted()
             self.kill_workers()
-            self.server.interrupted = True
             raise
         finally:
             if not config.root.run.tmux:
