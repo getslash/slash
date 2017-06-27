@@ -44,6 +44,14 @@ def create_new_window(window_name, command):
         raise TmuxSessionNotExist("Slash tmux session not found, can't create new window")
     return slash_session.new_window(attach=False, window_name=window_name, window_shell=command)
 
+def create_new_pane(command):
+    slash_session = get_slash_tmux_session(context.session.id)
+    if not slash_session:
+        raise TmuxSessionNotExist("Slash tmux session not found, can't create new window")
+    new_pane = slash_session.attached_window.split_window(attach=False)
+    new_pane.send_keys(command)
+    return new_pane
+
 def run_slash_in_tmux(command):
     tmux_session = get_slash_tmux_session(DEFAULT_SESSION_NAME)
     if tmux_session:

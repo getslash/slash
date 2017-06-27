@@ -67,7 +67,6 @@ config = Config({
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),
         "suite_files": [] // Doc("File(s) to be read for lists of tests to be run") // Cmdline(append="-f", metavar="FILENAME"),
         "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
-        "tmux": False // Doc("Run inside tmux") // Cmdline(on="--tmux"),
         "filter_strings": [] // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(append='-k', metavar='FILTER'),
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
         "repeat_all": 1 // Doc("Repeat all suite a specified amount of times") // Cmdline(arg='--repeat-all', metavar="NUM_TIMES"),
@@ -84,6 +83,10 @@ config = Config({
         "communication_timeout_secs": 60 // Doc("timeout of worker in seconds"),
         "workers_connect_timeout": 20 // Doc("timeout for all workers to connect"),
         "no_request_timeout": 20 // Doc("timeout for server not getting requests"),
+    },
+    "tmux": {
+        "enabled": False // Doc("Run inside tmux") // Cmdline(on="--tmux"),
+        "use_panes": False // Doc("In parallel mode, run children inside panes and not windows") // Cmdline(on="--tmux-panes"),
     },
     "sentry": {
         "dsn": None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "

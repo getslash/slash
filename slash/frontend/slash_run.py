@@ -35,7 +35,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                 with handling_exceptions():
                     if is_parallel() and app.parsed_args.interactive:
                         raise InteractiveParallelNotAllowed("Cannot run interactive mode in parallel")
-                    if config.root.run.tmux and not is_child():
+                    if config.root.tmux.enabled and not is_child():
                         _logger.notice("About to start slash in new tmux session...")
                         run_slash_in_tmux(args)
                     if resume:
