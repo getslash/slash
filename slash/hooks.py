@@ -52,6 +52,8 @@ _define('entering_debugger', doc='Called right before entering debugger', arg_na
 
 _define('exception_caught_after_debugger',
         doc="Called whenever an exception is caught, and a debugger has already been run")
+_define('before_worker_start', doc="Called in parallel execution mode, before the parent starts the child worker",
+        arg_names=("worker_config",))
 
 _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()
