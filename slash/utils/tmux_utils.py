@@ -3,8 +3,9 @@ import os
 import libtmux
 import logbook
 from ..exceptions import TmuxSessionNotExist, TmuxExecutableNotFound
+from ..ctx import context
 
-SESSION_NAME = 'slash_session'
+DEFAULT_SESSION_NAME = 'slash_session'
 TMUX_EXECUTABLE_NAME = 'tmux'
 MASTER_WINDOW_NAME = 'master'
 
@@ -29,32 +30,33 @@ def which(program):
 def is_in_tmux():
     return os.environ.get('TMUX') is not None
 
-def get_slash_tmux_session():
+def get_slash_tmux_session(session_name):
     try:
         tmux_server = libtmux.Server()
-        return tmux_server.find_where({"session_name":SESSION_NAME})
+        return tmux_server.find_where({"session_name":session_name})
     except libtmux.exc.LibTmuxException:
         _logger.debug('No tmux server is running')
         return
 
 def create_new_window(window_name, command):
-    slash_session = get_slash_tmux_session()
+    slash_session = get_slash_tmux_session(context.session.id)
     if not slash_session:
         raise TmuxSessionNotExist("Slash tmux session not found, can't create new window")
     return slash_session.new_window(attach=False, window_name=window_name, window_shell=command)
 
 def run_slash_in_tmux(command):
-    tmux_session = get_slash_tmux_session()
+    tmux_session = get_slash_tmux_session(DEFAULT_SESSION_NAME)
     if tmux_session:
         tmux_session.set_option('remain-on-exit', True)
-        libtmux.Server().switch_client(SESSION_NAME)
+        libtmux.Server().switch_client(DEFAULT_SESSION_NAME)
+        tmux_session.rename_session(context.session.id)
     else:
         path_to_tmux = which(TMUX_EXECUTABLE_NAME)
         if not path_to_tmux:
             _logger.error("Tmux executable not found")
             raise TmuxExecutableNotFound("Tmux executable not found")
         command = ' '.join([sys.executable, '-m', 'slash.frontend.main', 'run'] + command)
-        tmux_args = [path_to_tmux, 'new-session', '-s', SESSION_NAME, '-n', MASTER_WINDOW_NAME]
+        tmux_args = [path_to_tmux, 'new-session', '-s', DEFAULT_SESSION_NAME, '-n', MASTER_WINDOW_NAME]
         if is_in_tmux():
             tmux_args.append('-Ad')
         tmux_args.append(command)
