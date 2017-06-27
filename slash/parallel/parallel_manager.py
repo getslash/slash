@@ -13,7 +13,10 @@ from ..conf import config
 from ..ctx import context
 from .server import Server, ServerStates
 from ..utils.tmux_utils import create_new_window, create_new_pane
+from .worker_configuration import WorkerConfiguration
 from .._compat import iteritems
+from .. import hooks
+
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
@@ -42,16 +45,18 @@ class ParallelManager(object):
         worker_id = str(self.max_worker_id)
         _logger.notice("Starting worker number {}".format(worker_id))
         new_args = self.args[:] + ["--parallel_worker_id", worker_id]
+        worker_config = WorkerConfiguration(new_args)
+        hooks.before_worker_start(worker_config=worker_config) # pylint: disable=no-member
         if config.root.tmux.enabled:
-            new_args.append(';$SHELL')
-            command = ' '.join(new_args)
+            worker_config.argv.append(';$SHELL')
+            command = ' '.join(worker_config.argv)
             if config.root.tmux.use_panes:
                 self.workers[worker_id] = create_new_pane(command)
             else:
                 self.workers[worker_id] = create_new_window("worker {}".format(worker_id), command)
         else:
             with open(os.devnull, 'w') as devnull:
-                proc = subprocess.Popen(new_args, stdin=devnull, stdout=devnull, stderr=devnull)
+                proc = subprocess.Popen(worker_config.argv, stdin=devnull, stdout=devnull, stderr=devnull)
                 self.workers[worker_id] = proc
         self.max_worker_id += 1
 
