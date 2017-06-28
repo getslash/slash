@@ -1,8 +1,13 @@
 # pylint: disable=unused-variable,redefined-outer-name
+import collections
 import warnings
+from contextlib import contextmanager
 from uuid import uuid4
+from vintage import deprecated
 
+import logbook
 import pytest
+
 import slash
 
 from .utils import run_tests_assert_success, without_pyc
@@ -43,7 +48,10 @@ def test_warning_added_hook(suite, suite_test):
 def test_native_warnings(message):
 
     def test_example():
-        warnings.warn(message)
+        with logbook.TestHandler() as handler:
+            warnings.warn(message)
+        assert len(handler.records) == 1
+        assert handler.records[0].message == message
 
     s = run_tests_assert_success(test_example)
 
@@ -52,9 +60,22 @@ def test_native_warnings(message):
     assert w.message == message
 
 
+def test_deprecation(message):
+    @deprecated(message=message)
+    def deprecated_func():
+        pass
+    with capturing_native_warnings() as handlers:
+        deprecated_func()
+    assert len(handlers.native_warnings) == 1
+    native_warning = handlers.native_warnings[0]
+    warning_message = native_warning.message.args[0]
+    assert message in warning_message
+
+
 @pytest.fixture
 def message():
     return 'some message here {}'.format(uuid4())
+
 
 @pytest.fixture
 def warning():
@@ -69,3 +90,12 @@ def warning():
 
     [warning] = session.warnings
     return warning
+
+
+@contextmanager
+def capturing_native_warnings():
+    with logbook.TestHandler() as log_handler:
+        with warnings.catch_warnings(record=True) as recorded:
+            warnings.simplefilter('always')
+            handlers = collections.namedtuple('Handlers', ('log', 'native_warnings'))(log_handler, recorded)
+            yield handlers
