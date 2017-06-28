@@ -1,7 +1,7 @@
 import gossip
+from vintage import deprecated
 
 from .conf import config
-from .utils.deprecation import deprecated
 
 
 def register(func):

@@ -1,13 +1,15 @@
-import arrow
 import sys
 import traceback
 
-from .._compat import string_types, StringIO, iteritems
+import arrow
+from vintage import deprecated
+
+from .._compat import StringIO, iteritems, string_types
 from ..exception_handling import is_exception_fatal
 from ..exceptions import FAILURE_EXCEPTION_TYPES
-from ..utils.traceback_utils import distill_traceback, distill_call_stack
 from ..utils.formatter import Formatter
-from ..utils.deprecation import deprecated
+from ..utils.traceback_utils import distill_call_stack, distill_traceback
+
 
 class Error(object):
 

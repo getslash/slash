@@ -14,6 +14,7 @@ tmuxp
 raven
 py>=1.4.20
 pyparsing
+vintage>=0.4.0
 
 IPython==1.2.1; implementation_name=='pypy'
 IPython; implementation_name!='pypy'

@@ -1,14 +1,16 @@
 from contextlib import contextmanager
+
 import logbook
-
 from sentinels import Sentinel
-
-_logger = logbook.Logger(__name__)
+from vintage import warn_deprecation
 
 from .. import hooks
 from ..ctx import context
 from ..exception_handling import handling_exceptions
-from ..exceptions import IncorrectScope, CannotAddCleanup
+from ..exceptions import CannotAddCleanup, IncorrectScope
+
+_logger = logbook.Logger(__name__)
+
 
 
 _LAST_SCOPE = Sentinel('LAST_SCOPE')
@@ -55,8 +57,8 @@ class CleanupManager(object):
         new_kwargs = kwargs.pop('kwargs', {}).copy()
         new_args = list(kwargs.pop('args', ()))
         if args or kwargs:
-            _logger.warning(
-                'Passing *args/**kwargs to slash.add_cleanup is deprecated. Use args=(...) and/or kwargs={...} instead', frame_correction=+2)
+            warn_deprecation('Passing *args/**kwargs to slash.add_cleanup is deprecated. '
+                             'Use args=(...) and/or kwargs={...} instead', frame_correction=+2)
             new_args.extend(args)
             new_kwargs.update(kwargs)
 
