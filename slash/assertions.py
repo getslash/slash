@@ -1,11 +1,13 @@
-from .exceptions import TestFailed
-from . import exception_handling
-from ._compat import PY2
-from .utils import operator_information
-from .utils.deprecation import deprecated
 import operator
 import sys
+
 import logbook
+from vintage import deprecated
+
+from . import exception_handling
+from ._compat import PY2
+from .exceptions import TestFailed
+from .utils import operator_information
 
 sys.modules["slash.should"] = sys.modules[__name__]
 _logger = logbook.Logger(__name__)

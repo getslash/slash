@@ -1,22 +1,24 @@
 import functools
 import itertools
 import os
+import pickle
 import sys
+from numbers import Number
+
 import gossip
 import logbook
-import pickle
-from numbers import Number
-from .._compat import itervalues, OrderedDict
-from ..ctx import context
+from vintage import deprecated
+
 from .. import hooks
-from .details import Details
-from .error import Error
+from .._compat import OrderedDict, itervalues
+from ..ctx import context
+from ..exception_handling import capture_sentry_exception
 from ..exceptions import FAILURE_EXCEPTION_TYPES
-from ..utils.deprecation import deprecated
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
 from ..utils.python import unpickle
-from ..exception_handling import capture_sentry_exception
+from .details import Details
+from .error import Error
 
 _logger = logbook.Logger(__name__)
 
