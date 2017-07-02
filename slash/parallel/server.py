@@ -86,6 +86,9 @@ class Server(object):
                 pass
             self.finished_tests.append(test_index)
 
+    def _get_worker_session_id(self, client_id):
+        return "worker_{}".format(client_id)
+
     @server_func
     def keep_alive(self, client_id):
         _logger.debug("Client_id {} sent keep_alive".format(client_id))
@@ -94,7 +97,7 @@ class Server(object):
     def connect(self, client_id, client_pid):
         _logger.notice("Client_id {} connected".format(client_id))
         client_session_id = '{}_{}'.format(context.session.id.split('_')[0], client_id)
-        context.session.logging.create_worker_symlink("worker_{}".format(client_id), client_session_id)
+        context.session.logging.create_worker_symlink(self._get_worker_session_id(client_id), client_session_id)
         hooks.worker_connected(session_id=client_session_id)  # pylint: disable=no-member
         self.worker_session_ids.append(client_session_id)
         self.worker_pids.append(client_pid)
@@ -134,6 +137,7 @@ class Server(object):
             test_index = self.unstarted_tests.get()
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
+            hooks.test_distributed(test_logical_id=test.__slash__.id, worker_session_id=self._get_worker_session_id(client_id)) # pylint: disable=no-member
             _logger.notice("#{}: {}, Client_id: {}", test_index + 1, test.__slash__.address, client_id, extra={'to_error_log': 1})
             return test_index
         else:
