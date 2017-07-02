@@ -257,9 +257,11 @@ class Result(object):
     def has_skips(self):
         return bool(self._skips)
 
-    def has_fatal_exception(self):
+    def has_fatal_errors(self):
         return any(e.is_fatal() for e in
                    itertools.chain(self._errors, self._failures))
+
+    has_fatal_exception = has_fatal_errors
 
     def __repr__(self):
         return "< Result ({0})>".format(
@@ -357,6 +359,9 @@ class SessionResults(object):
 
     def get_num_not_run(self):
         return self._count(Result.is_not_run, include_global=False)
+
+    def has_fatal_errors(self):
+        return bool(self._count(Result.has_fatal_errors))
 
     def _count(self, pred, include_global=True):
         returned = 0

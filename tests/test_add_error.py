@@ -46,3 +46,17 @@ except ZeroDivisionError:
         assert err.message == message
     assert err.exception_type is ZeroDivisionError
     assert err.traceback.frames
+
+
+def test_add_fatal_error(suite, suite_test):
+
+    @suite_test.append_body
+    def __code__():             # pylint: disable=unused-variable
+        slash.add_error('bla').mark_fatal() # pylint: disable=undefined-variable
+
+    suite_test.expect_error()
+    for test in suite.iter_all_after(suite_test):
+        test.expect_not_run()
+
+    session = suite.run().session
+    assert session.results.has_fatal_errors()
