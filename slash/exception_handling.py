@@ -211,6 +211,18 @@ def is_exception_fatal(exception):
     return bool(get_exception_mark(exception, "fatal", False))
 
 
+def inhibit_unhandled_exception_traceback(exception):
+    """
+    Causes this exception to inhibit console tracback
+    """
+    mark_exception(exception, "inhibit_console_tb", True)
+    return exception
+
+
+def should_inhibit_unhandled_exception_traceback(exception):
+    return bool(get_exception_mark(exception, "inhibit_console_tb", False))
+
+
 def disable_exception_swallowing(func_or_exception):
     """
     Marks an exception to prevent swallowing. Can also be used as a decorator around a function to mark all escaped

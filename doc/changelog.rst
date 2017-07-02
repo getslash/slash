@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`617` Support ``inhibit_unhandled_exception_traceback``
 * :feature:`635` ``slash run`` now supports ``--force-color``/``--no-color`` flags.
 * :feature:`633` When using the `handling_exceptions`, it is now possible to obtain the exception object that was handled
 * :feature:`-` Added ``SLASH_USER_SETTINGS=x`` environment variable to give a possibility to override the user slashrc file
