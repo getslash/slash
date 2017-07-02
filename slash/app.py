@@ -13,13 +13,14 @@ from .conf import config
 from .core.session import Session
 from .reporting.console_reporter import ConsoleReporter
 from .exceptions import TerminatedException, SlashException
-from .exception_handling import handling_exceptions
+from .exception_handling import handling_exceptions, inhibit_unhandled_exception_traceback, should_inhibit_unhandled_exception_traceback
 from .loader import Loader
 from .log import ConsoleHandler
 from .utils import cli_utils
 from .utils.debug import debug_if_needed
 
 _logger = logbook.Logger(__name__)
+inhibit_unhandled_exception_traceback(SlashException)
 
 
 class Application(object):
@@ -136,15 +137,15 @@ class Application(object):
         if exc_value is not None:
             self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else -1
 
-        if isinstance(exc_value, SlashException):
-            self.get_reporter().report_error_message(str(exc_value))
+            if should_inhibit_unhandled_exception_traceback(exc_value):
+                self.get_reporter().report_error_message(str(exc_value))
 
-        elif isinstance(exc_value, Exception):
-            _logger.error('Unexpected error occurred', exc_info=exc_info)
-            self.get_reporter().report_error_message('Unexpected error: {}'.format(exc_value))
+            elif isinstance(exc_value, Exception):
+                _logger.error('Unexpected error occurred', exc_info=exc_info)
+                self.get_reporter().report_error_message('Unexpected error: {}'.format(exc_value))
 
-        if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
-            self._interrupted = True
+            if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
+                self._interrupted = True
 
         if exc_type is not None:
             trigger_hook.result_summary() # pylint: disable=no-member
