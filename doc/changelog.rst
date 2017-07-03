@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`592` Added ``exception_attributes`` dict to ``Error`` objects
 * :feature:`600` Use `vintage` package for deprecations
 * :feature:`595` Add `allowing_exceptions` context letting tests allow specific exceptions in selective context
 * :bug:`606 major` Swallow python warnings during ast.parse

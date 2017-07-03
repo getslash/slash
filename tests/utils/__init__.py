@@ -160,3 +160,11 @@ if PYPY:
     skip_on_pypy = pytest.mark.skip
 else:
     skip_on_pypy = _noop
+
+
+class Unprintable(object):
+
+    def __repr__(self):
+        1/0                     # pylint: disable=pointless-statement
+
+    __str__ = __repr__

@@ -6,6 +6,7 @@ from slash.core.error import Error
 from slash.utils.traceback_utils import _MAX_VARIABLE_VALUE_LENGTH
 
 
+
 def test_traceback_line_numbers(tmpdir):
     filename = tmpdir.join('filename.py')
 

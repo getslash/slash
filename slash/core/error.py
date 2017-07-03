@@ -8,7 +8,7 @@ from .._compat import StringIO, iteritems, string_types
 from ..exception_handling import is_exception_fatal
 from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.formatter import Formatter
-from ..utils.traceback_utils import distill_call_stack, distill_traceback
+from ..utils.traceback_utils import distill_call_stack, distill_traceback, distill_object_attributes
 
 
 class Error(object):
@@ -26,10 +26,11 @@ class Error(object):
             self.arg = msg
             msg = repr(msg)
         self.message = msg
-        self.exception_str = exception = None
+        self.exception_str = exception = self.exception_attributes = None
         if exc_info is not None:
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.exception_str = repr(exception)
+            self.exception_attributes = distill_object_attributes(exception, truncate=False)
             self.traceback = distill_traceback(tb)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)

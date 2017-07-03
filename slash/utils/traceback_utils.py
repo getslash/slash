@@ -20,6 +20,11 @@ if PY2:
     _FILTERED_MEMBER_TYPES.append(types.ClassType) # pylint: disable=no-member
 _FILTERED_MEMBER_TYPES = tuple(_FILTERED_MEMBER_TYPES)
 
+_ALLOWED_ATTRIBUTE_TYPES = [int, str, float]
+if PY2:
+    _ALLOWED_ATTRIBUTE_TYPES.append(long) # pylint: disable=undefined-variable
+_ALLOWED_ATTRIBUTE_TYPES = tuple(_ALLOWED_ATTRIBUTE_TYPES)
+
 
 def get_traceback_string(exc_info=None):
     if exc_info is None:
@@ -178,32 +183,44 @@ class DistilledFrame(object):
         if local_name != 'self':
             return
 
-        try:
-            obj_dict = getattr(local_value, '__dict__', {})
-        except Exception:       # pylint: disable=broad-except
-            obj_dict = {}
-
-        for attr in obj_dict:
-            if attr.startswith('__') and attr.endswith('__'):
-                continue
-            try:
-                value = getattr(local_value, attr)
-            except Exception:   # pylint: disable=broad-except
-                continue
-            if isinstance(value, _FILTERED_MEMBER_TYPES):
-                continue
+        for attr, value in iter_distilled_object_attributes(local_value):
             yield 'self.{}'.format(attr), value
 
     def __repr__(self):
         return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
 
 
-def _safe_repr(value):
+
+def iter_distilled_object_attributes(obj):
+    try:
+        obj_dict = getattr(obj, '__dict__', {})
+    except Exception:       # pylint: disable=broad-except
+        obj_dict = {}
+
+    for attr in obj_dict:
+        if attr.startswith('__') and attr.endswith('__'):
+            continue
+        try:
+            value = getattr(obj, attr)
+        except Exception:   # pylint: disable=broad-except
+            continue
+        if isinstance(value, _FILTERED_MEMBER_TYPES):
+            continue
+        yield attr, value
+
+
+def distill_object_attributes(obj, truncate=True):
+
+    return {attr: value if isinstance(value, _ALLOWED_ATTRIBUTE_TYPES) else _safe_repr(value, truncate=truncate)
+            for attr, value in iter_distilled_object_attributes(obj)}
+
+
+def _safe_repr(value, truncate=True):
     try:
         returned = repr(value)
     except Exception:  # pylint: disable=broad-except
         return "[Unprintable {0!r} object]".format(type(value).__name__)
 
-    if len(returned) > _MAX_VARIABLE_VALUE_LENGTH:
+    if truncate and len(returned) > _MAX_VARIABLE_VALUE_LENGTH:
         returned = returned[:_MAX_VARIABLE_VALUE_LENGTH - 3] + '...'
     return returned
