@@ -49,9 +49,9 @@ Sometimes you would like to run a sequence of tests that you control in fine det
  from slash.loader import Loader
 
  if __name__ == "__main__":
-     with slash.Session() as s:
+     with slash.Session() as session:
          tests = Loader().get_runnables(["/my_path", ...])
-         with s.get_started_context():
+         with session.get_started_context():
              slash.run_tests(tests)
 
 The parameter given above to :func:`slash.runner.run_tests` is merely an iterator yielding runnable tests. You can interfere or skip specific tests quite easily:
@@ -68,6 +68,14 @@ The parameter given above to :func:`slash.runner.run_tests` is merely an iterato
 
  ...
      slash.run_tests(_filter_tests(slash.loader.Loader().get_runnables(...)))
+
+
+Once you run your tests, you can examine the results through :class:`session.results <slash.core.result.SessionResults>`:
+
+.. code-block:: python
+       
+  if not session.results.is_success(allow_skips=False):
+      print('Some tests did not succeed')
 
 .. seealso:: :ref:`Test Metadata <test_metadata>`
 

@@ -37,7 +37,7 @@ Changelog
 * :feature:`502` Added ``session_interrupt`` hook for when sessions are interrupted
 * :release:`1.1.0 <22-11-2016>`
 * :feature:`485` xunit plugin now saves the run results even when the session doesn't end gracefully (Thanks @eplaut)
-* :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
+* :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook section <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
 * :bug:`483 major` Properly handle possible exceptions when examining traceback object attributes
 * :feature:`484` ``slash list`` now indicates fixtures that are overriding outer fixtures (e.g. from ``slashconf.py``)
 * :feature:`417` ``add_error``/``add_failure`` can now receive both message and exc_info information

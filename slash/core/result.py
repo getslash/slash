@@ -305,17 +305,29 @@ class SessionResults(object):
                 yield result, result.get_additional_details()
 
     def iter_all_failures(self):
+        """Iterates over all results which have failures
+
+        yields tuples of the form (result, failure_list)
+        """
         for result in self.iter_all_results():
             if result.get_failures():
                 yield result, result.get_failures()
 
     def iter_all_errors(self):
+        """Iterates over all results which have errors
+
+        yields tuples of the form (result, errors_list)
+        """
         for result in self.iter_all_results():
             if result.get_errors():
                 yield result, result.get_errors()
 
     @property
     def current(self):
+        """Obtains the currently running result, if exists
+
+        Otherwise, returns the global result object
+        """
         test_id = context.test_id
         if test_id is None:
             return self.global_result
@@ -325,6 +337,10 @@ class SessionResults(object):
         return self._iterator()
 
     def is_success(self, allow_skips=False):
+        """Indicates whether this run is successful
+
+        :param allow_skips: Whether to consider skips as unsuccessful
+        """
         if not self.global_result.is_success():
             return False
         for result in self._iterator():
@@ -335,6 +351,8 @@ class SessionResults(object):
         return True
 
     def is_interrupted(self):
+        """Indicates if this session was interrupted
+        """
         return any(result.is_interrupted() for result in self._iterator())
 
     def get_num_results(self):
@@ -361,6 +379,8 @@ class SessionResults(object):
         return self._count(Result.is_not_run, include_global=False)
 
     def has_fatal_errors(self):
+        """Indicates whether any result has an error marked as fatal (causing the session to terminate)
+        """
         return bool(self._count(Result.has_fatal_errors))
 
     def _count(self, pred, include_global=True):
@@ -373,9 +393,13 @@ class SessionResults(object):
         return returned
 
     def iter_test_results(self):
+        """Iterates over results belonging to tests
+        """
         return iter(self)
 
     def iter_all_results(self):
+        """Iterates over all results, ending with the global result object
+        """
         return itertools.chain(self.iter_test_results(), [self.global_result])
 
     def create_result(self, test):
@@ -385,6 +409,8 @@ class SessionResults(object):
         return returned
 
     def get_result(self, test):
+        """Returns the result stored belonging to a given test
+        """
         if test.__slash__ is None:
             raise LookupError("Could not find result for {0}".format(test))
         return self._results_dict[test.__slash__.id]

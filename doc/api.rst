@@ -111,6 +111,8 @@ Exceptions
 
 .. autofunction:: slash.exception_handling.handling_exceptions
 
+.. autofunction:: slash.allowing_exceptions
+
 .. autofunction:: slash.exception_handling.mark_exception
 .. autofunction:: slash.exception_handling.get_exception_mark
 
@@ -139,6 +141,9 @@ Internals
   :members:
 
 .. autoclass:: slash.core.result.Result
+  :members:
+
+.. autoclass:: slash.core.result.SessionResults
   :members:
 
 .. autoclass:: slash.core.details.Details
