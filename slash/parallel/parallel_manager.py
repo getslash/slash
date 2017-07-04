@@ -84,8 +84,9 @@ class ParallelManager(object):
 
     def wait_all_workers_to_connect(self):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
-            if time.time() - self.server.last_request_time > config.root.parallel.workers_connect_timeout:
+            if time.time() - self.server.start_time > config.root.parallel.worker_connect_timeout * self.workers_num:
                 _logger.error("Timeout: Not all clients connected to server, terminating")
+                _logger.error("Clients connected: {}".format(self.server.clients_last_communication_time.keys()))
                 self.kill_workers()
                 raise ParallelTimeout("Not all clients connected")
             time.sleep(TIME_BETWEEN_CHECKS)
@@ -105,11 +106,11 @@ class ParallelManager(object):
         if time.time() - self.server.last_request_time > config.root.parallel.no_request_timeout:
             _logger.error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
             if self.server.has_connected_clients():
-                _logger.debug("Clients that are still connected to server: {}".format(self.server.clients_last_communication_time.keys()))
+                _logger.error("Clients that are still connected to server: {}".format(self.server.clients_last_communication_time.keys()))
             if self.server.has_more_tests():
-                _logger.debug("Unstarted tests indexes: {}".format(self.server.unstarted_tests))
+                _logger.error("Number of unstarted tests: {}".format(self.server.unstarted_tests.qsize()))
             if self.server.executing_tests:
-                _logger.debug("Currently executed tests indexes: {}".format(self.server.executing_tests.values()))
+                _logger.error("Currently executed tests indexes: {}".format(self.server.executing_tests.values()))
             self.kill_workers()
             raise ParallelTimeout("No request sent to server for {} seconds".format(config.root.parallel.no_request_timeout))
 
@@ -122,7 +123,6 @@ class ParallelManager(object):
             else:
                 raise
         return True
-
 
     def start(self):
         self.try_connect()

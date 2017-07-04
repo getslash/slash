@@ -38,6 +38,9 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                     if config.root.tmux.enabled and not is_child():
                         _logger.notice("About to start slash in new tmux session...")
                         run_slash_in_tmux(args)
+                    if is_child():
+                        worker = Worker(config.root.parallel.worker_id, app.session.id)
+                        worker.connect_to_server()
                     if resume:
                         session_ids = app.positional_args
                         if not session_ids:
@@ -49,8 +52,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
 
                 collected = list(collected)
                 if is_child():
-                    worker = Worker(config.root.parallel.worker_id, app.session.id, collected)
-                    worker.start(app)
+                    worker.start_execution(app, collected)
                 else:
                     with app.session.get_started_context():
                         report_tests_to_backslash(collected)

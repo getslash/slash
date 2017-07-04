@@ -21,9 +21,10 @@ WAITING_FOR_CLIENTS = "WAITING_FOR_CLIENTS"
 class ServerStates(Enum):
     NOT_INITIALIZED = 1
     WAIT_FOR_CLIENTS = 2
-    SERVE_TESTS = 3
-    STOP_TESTS_SERVING = 4
-    STOP_SERVE = 5
+    WAIT_FOR_COLLECTION_VALIDATION = 3
+    SERVE_TESTS = 4
+    STOP_TESTS_SERVING = 5
+    STOP_SERVE = 6
 
 def server_func(func):
     @functools.wraps(func)
@@ -47,6 +48,8 @@ class Server(object):
         self.finished_tests = []
         self.unstarted_tests = queue.Queue()
         self.last_request_time = time.time()
+        self.num_collections_validated = 0
+        self.start_time = time.time()
         self.worker_pids = []
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
@@ -97,13 +100,19 @@ class Server(object):
         self.worker_pids.append(client_pid)
         self.executing_tests[client_id] = None
         if len(self.clients_last_communication_time) >= config.root.parallel.num_workers:
-            self.state = ServerStates.SERVE_TESTS
+            _logger.notice("All workers connected to server")
+            self.state = ServerStates.WAIT_FOR_COLLECTION_VALIDATION
 
     @server_func
     def validate_collection(self, client_id, client_collection):
         if not self.collection == client_collection:
             _logger.error("Client_id {} sent wrong collection".format(client_id))
             return False
+        self.num_collections_validated += 1
+        _logger.debug("Worker {} validated tests successfully".format(client_id))
+        if self.num_collections_validated >= config.root.parallel.num_workers and self.state == ServerStates.WAIT_FOR_COLLECTION_VALIDATION:
+            _logger.notice("All workers collected tests successfully, start serving tests")
+            self.state = ServerStates.SERVE_TESTS
         return True
 
     @server_func
@@ -119,7 +128,7 @@ class Server(object):
             return PROTOCOL_ERROR
         if self.state == ServerStates.STOP_TESTS_SERVING:
             return NO_MORE_TESTS
-        elif self.state == ServerStates.WAIT_FOR_CLIENTS:
+        elif self.state in [ServerStates.WAIT_FOR_CLIENTS, ServerStates.WAIT_FOR_COLLECTION_VALIDATION]:
             return WAITING_FOR_CLIENTS
         elif self.state == ServerStates.SERVE_TESTS and self._has_unstarted_tests():
             test_index = self.unstarted_tests.get()
