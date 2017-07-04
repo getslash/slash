@@ -39,6 +39,7 @@ def no_user_config(request):
     def cleanup():  # pylint: disable=unused-variable
         os.rmdir(tmpdir)
 
+
 @pytest.fixture
 def no_plugins(request):
     slash.plugins.manager.uninstall_all()

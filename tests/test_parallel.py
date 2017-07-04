@@ -9,6 +9,19 @@ from slash.parallel.parallel_manager import ParallelManager
 from slash import Session
 from slash.loader import Loader
 import time
+import tempfile
+import pytest
+
+@pytest.fixture(scope='module', autouse=True)
+def no_parallel_user_config(request):
+    tmpdir = tempfile.mkdtemp()
+    path = os.path.join(tmpdir, 'slashrc')
+    os.environ["SLASH_USER_SETTINGS"] = path
+
+    @request.addfinalizer
+    def cleanup():  # pylint: disable=unused-variable
+        os.rmdir(tmpdir)
+        del os.environ["SLASH_USER_SETTINGS"]
 
 #basic features of parallel
 def run_specific_workers_and_tests_num(workers_num, tests_num=10):
