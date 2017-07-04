@@ -26,8 +26,11 @@ There are several locations in which you can store files that are to be automati
 **slashrc file**
   If the file ``~/.slash/slashrc`` (See :ref:`conf.run.user_customization_file_path`) exists, it is loaded and executed as a regular Python file by Slash on startup.
 
+**SLASH_USER_SETTINGS**
+  If an environment variable named ``SLASH_USER_SETTINGS`` exists, the file path it points to will be loaded *instead* of the slashrc file.
+
 **SLASH_SETTINGS**
-  If an environment variable named ``SLASH_SETTINGS`` exists, it is assumed to point at a file path or URL to laod as a regular Python file on startup.
+  If an environment variable named ``SLASH_SETTINGS`` exists, it is assumed to point at a file path or URL to load as a regular Python file on startup.
 
 Each of these files can contain code which, among other things, can modify Slash's configuration. The configuration object is located in ``slash.config``, and modified through ``slash.config.root`` as follows:
 
@@ -42,6 +45,4 @@ Each of these files can contain code which, among other things, can modify Slash
 List of Available Configuration Values
 --------------------------------------
 
-.. config_doc:: 
-
-
+.. config_doc::

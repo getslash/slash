@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Added ``SLASH_USER_SETTINGS=x`` environment variable to give a possibility to override the user slashrc file
 * :feature:`592` Added ``exception_attributes`` dict to ``Error`` objects
 * :feature:`600` Use `vintage` package for deprecations
 * :feature:`595` Add `allowing_exceptions` context letting tests allow specific exceptions in selective context
@@ -185,7 +186,7 @@ Changelog
 * :feature:`264` Allow specifying location of .slashrc via configuration
 * :release:`0.13.0 <22-02-2015>`
 * :feature:`261` Added a traceback to manually added errors (throush ``slash.add_error`` and friends)
-* :feature:`258` Added ``hooks.error_added``, a hook that is called when an error is added to a test result or to a global result. Also works when errors are added after the test has ended. 
+* :feature:`258` Added ``hooks.error_added``, a hook that is called when an error is added to a test result or to a global result. Also works when errors are added after the test has ended.
 * :feature:`140` Added ``--repeat-each`` command line argument to repeat each test multiple times
 * :feature:`249` Added @slash.repeat decorator to repeat tests multiple times
 * :feature:`-` Slash now emits a console message when session_start handlers take too long
@@ -282,5 +283,3 @@ Changelog
 * :feature:`48`, #54: handle import errors and improve captured exceptions
 * :feature:`3` Handle KeyboardInterrupts (quit fast), added the test_interrupt hook
 * :feature:`5` add_critical_cleanup for adding cleanups that are always called (even on interruptions)
-
-

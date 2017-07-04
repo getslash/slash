@@ -24,7 +24,8 @@ def _load_defaults(working_directory=None):
     _load_entry_points()
 
 def _load_slashrc():
-    _load_file_if_exists(os.path.expanduser(config.root.run.user_customization_file_path))
+    user_customization_file = os.environ.get("SLASH_USER_SETTINGS", os.path.expanduser(config.root.run.user_customization_file_path))
+    _load_file_if_exists(user_customization_file)
 
 def _load_local_slashrc(working_directory=None):
     path = os.path.expanduser(config.root.run.project_customization_file_path)
