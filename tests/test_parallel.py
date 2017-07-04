@@ -6,7 +6,6 @@ from slash.resuming import get_tests_to_resume
 from slash.exceptions import InteractiveParallelNotAllowed, ParallelTimeout
 from slash.parallel.server import ServerStates
 from slash.parallel.parallel_manager import ParallelManager
-from uuid import uuid4
 from slash import Session
 from slash.loader import Loader
 import time
@@ -274,37 +273,26 @@ def test_children_session_ids(parallel_suite):
     expected_session_ids = ["{}_1".format(summary.session.id.split('_')[0])]
     assert session_ids == expected_session_ids
 
-def test_timeout_no_request_to_server(config_override, tmpdir):
+def test_timeout_no_request_to_server(config_override, runnable_test_dir):
     config_override("parallel.no_request_timeout", 1)
-    tests_dir = tmpdir.join(str(uuid4()))
-    with tests_dir.join(str(uuid4()).replace('-', '') + '.py').open('w', ensure=True) as f:
-        f.write('def test_something():\n    pass')
-
     with Session():
-        runnables = Loader().get_runnables(str(tests_dir))
+        runnables = Loader().get_runnables(str(runnable_test_dir))
         parallel_manager = ParallelManager([])
         parallel_manager.start_server_in_thread(runnables)
         parallel_manager.server.state = ServerStates.SERVE_TESTS
-        config_override("parallel.num_workers", 0)
 
         with slash.assert_raises(ParallelTimeout) as caught:
             parallel_manager.start()
         assert 'No request sent to server' in caught.exception.args[0]
 
-def test_children_not_connected_timeout(tmpdir, config_override):
-    config_override("parallel.workers_connect_timeout", 1)
-    tests_dir = tmpdir.join(str(uuid4()))
-    filename = str(uuid4()).replace('-', '') + '.py'
-    with tests_dir.join(filename).open('w', ensure=True) as f:
-        f.write('def test_something():\n    pass')
-
+def test_children_not_connected_timeout(runnable_test_dir, config_override):
+    config_override("parallel.worker_connect_timeout", 0)
+    config_override("parallel.num_workers", 1)
     with Session():
-        runnables = Loader().get_runnables(str(tests_dir))
+        runnables = Loader().get_runnables(str(runnable_test_dir))
         parallel_manager = ParallelManager([])
         parallel_manager.start_server_in_thread(runnables)
-        config_override("parallel.num_workers", 1)
-        time.sleep(1)
-
+        time.sleep(0.1)
         with slash.assert_raises(ParallelTimeout) as caught:
-            parallel_manager.start()
+            parallel_manager.wait_all_workers_to_connect()
         assert caught.exception.args[0] == 'Not all clients connected'

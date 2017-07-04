@@ -81,7 +81,7 @@ config = Config({
         "server_port": 0 // Doc("Server port") // Cmdline(arg='--parallel_port', metavar="PARALLEL_SERVER_PORT"),
         "parent_session_id": None // Doc("parent session id") // Cmdline(arg='--parallel_parent_session_id', metavar="MASTER_SESSION_ID"),
         "communication_timeout_secs": 60 // Doc("timeout of worker in seconds"),
-        "workers_connect_timeout": 20 // Doc("timeout for all workers to connect"),
+        "worker_connect_timeout": 5 // Doc("timeout for each worker to connect"),
         "no_request_timeout": 20 // Doc("timeout for server not getting requests"),
     },
     "tmux": {

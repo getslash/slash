@@ -14,11 +14,10 @@ from ..conf import config
 _logger = logbook.Logger(__name__)
 
 class Worker(object):
-    def __init__(self, client_id, session_id, collected_tests):
+    def __init__(self, client_id, session_id):
         super(Worker, self).__init__()
         self.client_id = client_id
         self.session_id = session_id
-        self.collected_tests = collected_tests
         self.server_addr = 'http://{0}:{1}'.format(config.root.parallel.server_addr, config.root.parallel.server_port)
 
     def keep_alive(self, stop_event):
@@ -34,14 +33,16 @@ class Worker(object):
         except (pickle.PicklingError, TypeError):
             _logger.error("Failed to pickle warning. Message: {}, File: {}, Line: {}".format(warning.message, warning.filename, warning.lineno))
 
-    def start(self, app):
-        pid = os.getpid()
-        if pid != os.getpgid(0):
+    def connect_to_server(self):
+        self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
+        self.client.connect(self.client_id, os.getpid())
+
+    def start_execution(self, app, collected_tests):
+        if os.getpid() != os.getpgid(0):
             os.setsid()
         register(self.warning_added)
-        collection = [(test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id) for test in self.collected_tests]
-        self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
-        self.client.connect(self.client_id, pid)
+        collection = [(test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id) for test in collected_tests]
+
         if not self.client.validate_collection(self.client_id, collection):
             _logger.error("Collections of worker id {0} and master don't match, worker terminates".format(self.client_id))
             self.client.disconnect(self.client_id)
@@ -66,7 +67,7 @@ class Worker(object):
                         _logger.debug("Got NO_MORE_TESTS, Client {} disconnecting".format(self.client_id))
                         break
                     else:
-                        test = self.collected_tests[test_index]
+                        test = collected_tests[test_index]
                         context.session.current_parallel_test_index = test_index
                         run_tests([test])
                         result = context.session.results[test]

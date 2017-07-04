@@ -166,6 +166,13 @@ def parallel_suite():
     returned.populate()
     return returned
 
+@pytest.fixture
+def runnable_test_dir(tmpdir):
+    tests_dir = tmpdir.join(str(uuid4()))
+    filename = str(uuid4()).replace('-', '') + '.py'
+    with tests_dir.join(filename).open('w', ensure=True) as f:
+        f.write('def test_something():\n    pass')
+    return tests_dir
 
 @pytest.fixture
 def slash_session():
