@@ -26,7 +26,10 @@ class Error(object):
             self.arg = msg
             msg = repr(msg)
         self.message = msg
-        self.exception_str = exception = self.exception_attributes = None
+        #: A string representation of the exception caught, if exists
+        self.exception_str = exception = None
+        #: A dictionary of distilled attributes of the exception object
+        self.exception_attributes = None
         if exc_info is not None:
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.exception_str = repr(exception)
@@ -53,6 +56,8 @@ class Error(object):
         return self.exception_str
 
     def mark_fatal(self):
+        """Marks this error as fatal, causing session termination
+        """
         self._fatal = True
         return self
 
@@ -84,11 +89,15 @@ class Error(object):
 
     @property
     def lineno(self):
+        """Line number from which the error was raised
+        """
         if self.traceback is not None:
             return self.traceback.cause.lineno
 
     @property
     def func_name(self):
+        """Function name from which the error was raised
+        """
         if self.traceback is not None:
             return self.traceback.cause.func_name
 
@@ -96,6 +105,8 @@ class Error(object):
         return self.message
 
     def get_detailed_traceback_str(self):
+        """Returns a formatted traceback string for the exception caught
+        """
         if self._cached_detailed_traceback_str is None:
             stream = StringIO()
             f = Formatter(stream, indentation_string='  ')

@@ -17,7 +17,7 @@ env: .env/.up-to-date
 	touch .env/.up-to-date
 
 doc: env
-	.env/bin/python setup.py build_sphinx -a -E
+	.env/bin/sphinx-build -a -E doc build/sphinx/html
 
 .PHONY: doc
 
