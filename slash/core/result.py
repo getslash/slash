@@ -242,9 +242,17 @@ class Result(object):
         context.reporter.report_test_skip_added(context.test, reason)
 
     def get_errors(self):
+        """Returns the list of errors recorded for this result
+
+        :return: a list of :class:`slash.core.error.Error` objects
+        """
         return self._errors
 
     def get_failures(self):
+        """Returns the list of failures recorded for this result
+
+        :return: a list of :class:`slash.core.error.Error` objects
+        """
         return self._failures
 
     @deprecated('Use result.details.all()', since='0.20.0')
