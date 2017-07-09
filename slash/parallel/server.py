@@ -185,8 +185,8 @@ class Server(object):
         return self.has_connected_clients() or self.has_more_tests()
 
     def serve(self):
+        server = xmlrpc_server.SimpleXMLRPCServer((self.host, config.root.parallel.server_port), allow_none=True, logRequests=False)
         try:
-            server = xmlrpc_server.SimpleXMLRPCServer((self.host, config.root.parallel.server_port), allow_none=True, logRequests=False)
             self.port = server.server_address[1]
             self.state = ServerStates.WAIT_FOR_CLIENTS
             server.register_instance(self)
