@@ -99,6 +99,9 @@ def handling_exceptions(fake_traceback=True, **kwargs):
     return _HandlingException(fake_tbs, swallow_types, passthrough_types, kwargs)
 
 
+class _HandledException(object):
+    exception = None
+
 class _HandlingException(object):
 
     def __init__(self, fake_tbs, swallow_types, passthrough_types, handling_kwargs):
@@ -106,9 +109,10 @@ class _HandlingException(object):
         self._kwargs = handling_kwargs
         self._passthrough_types = passthrough_types
         self._swallow_types = swallow_types
+        self._handled = _HandledException()
 
     def __enter__(self):
-        pass
+        return self._handled
 
     def __exit__(self, *exc_info):
         if not exc_info or exc_info == NO_EXC_INFO:
@@ -117,12 +121,14 @@ class _HandlingException(object):
 
         if isinstance(exc_value, self._passthrough_types):
             return None
+
         if self._fake_traceback:
             (first_tb, last_tb) = self._fake_traceback
             (second_tb, _) = create_traceback_proxy(exc_info[2])
             last_tb.tb_next = second_tb
             exc_info = (exc_info[0], exc_info[1], first_tb._tb) # pylint: disable=protected-access
         handle_exception(exc_info, **self._kwargs)
+        self._handled.exception = exc_info[1]
         if isinstance(exc_value, slash_context.session.get_skip_exception_types()):
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
