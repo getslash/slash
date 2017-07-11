@@ -28,22 +28,35 @@ def test_handling_exceptions_swallow_skip_test(suite, suite_test):
     assert not summary.events.has_event('NEVER')
 
 
+def test_handling_exceptions_skip_test_would_not_return_skip_test():
+    with pytest.raises(SkipTest) as caught:
+        with slash.Session():
+            with exception_handling.handling_exceptions() as handled:
+                raise SkipTest('Unittest')
+
+    assert isinstance(caught.value, SkipTest)
+    assert handled.exception is caught.value
+    assert exception_handling.is_exception_handled(caught.value)
+
+
 def test_passthrough_types():
 
     value = CustomException()
 
     with slash.Session():
         with pytest.raises(CustomException) as caught:
-            with exception_handling.handling_exceptions(passthrough_types=(CustomException,)):
+            with exception_handling.handling_exceptions(passthrough_types=(CustomException,)) as handled:
                 raise value
     assert value is caught.value
+    assert handled.exception is None
     assert not exception_handling.is_exception_handled(value)
 
     with slash.Session():
         with pytest.raises(CustomException) as caught:
-            with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)):
+            with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)) as handled:
                 raise value
     assert value is caught.value
+    assert handled.exception is value
     assert exception_handling.is_exception_handled(value)
 
 
@@ -51,9 +64,10 @@ def test_swallow_types():
     value = CustomException()
 
     with slash.Session():
-        with exception_handling.handling_exceptions(swallow_types=(CustomException,)):
+        with exception_handling.handling_exceptions(swallow_types=(CustomException,)) as handled:
             raise value
     assert sys.exc_info() == exception_handling.NO_EXC_INFO
+    assert handled.exception is value
 
 
 class FakeTracebackTest(TestCase):
@@ -100,11 +114,15 @@ def test_handling_exceptions():
     value = CustomException()
 
     with slash.Session(), pytest.raises(CustomException) as caught:
-        with exception_handling.handling_exceptions():
-            with exception_handling.handling_exceptions():
-                with exception_handling.handling_exceptions():
+        with exception_handling.handling_exceptions() as handled1:
+            with exception_handling.handling_exceptions() as handled2:
+                with exception_handling.handling_exceptions() as handled3:
                     raise value
+
     assert caught.value is value
+    assert handled1.exception is value
+    assert handled2.exception is value
+    assert handled3.exception is value
 
 
 @pytest.mark.skipif(sys.version_info >= (3, 0), reason='Cannot run on 3.x')
