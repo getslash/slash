@@ -28,7 +28,7 @@ to use a single worker per CPU core.
           socket, to which the worker session processes connect and
           receive test descriptions via RPC. In case you want, you can
           control the address and/or port settings via the
-          ``--parallel_addr`` and ``--parallel_port`` command-line arguments.
+          ``--parallel-addr`` and ``--parallel-port`` command-line arguments.
 
 By default, only the paerent session process outputs logs to the
 console. For a more controlled run you can use ``tmux`` to run your

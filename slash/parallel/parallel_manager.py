@@ -27,7 +27,7 @@ class ParallelManager(object):
     def __init__(self, args):
         super(ParallelManager, self).__init__()
         self.server = None
-        self.args = [sys.executable, '-m', 'slash.frontend.main', 'run', '--parallel_parent_session_id', context.session.id] + args
+        self.args = [sys.executable, '-m', 'slash.frontend.main', 'run', '--parallel-parent-session-id', context.session.id] + args
         self.workers_num = config.root.parallel.num_workers
         self.workers = {}
         self.max_worker_id = 1
@@ -44,7 +44,7 @@ class ParallelManager(object):
     def start_worker(self):
         worker_id = str(self.max_worker_id)
         _logger.notice("Starting worker number {}".format(worker_id))
-        new_args = self.args[:] + ["--parallel_worker_id", worker_id]
+        new_args = self.args[:] + ["--parallel-worker-id", worker_id]
         worker_config = WorkerConfiguration(new_args)
         hooks.before_worker_start(worker_config=worker_config) # pylint: disable=no-member
         if config.root.tmux.enabled:
@@ -127,7 +127,7 @@ class ParallelManager(object):
     def start(self):
         self.try_connect()
         if not config.root.parallel.server_port:
-            self.args.extend(['--parallel_port', str(self.server.port)])
+            self.args.extend(['--parallel-port', str(self.server.port)])
         try:
             for _ in range(self.workers_num):
                 self.start_worker()
