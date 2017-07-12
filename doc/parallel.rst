@@ -1,42 +1,58 @@
 .. _parallel:
 
-Parallel execution
-==============================
+Parallel Test Execution
+=======================
 
-By default, tests run in serial order. However, it is possible to run tests in parallel mode.
+By default, Slash runs tests sequentially through a single session
+process. However, it is also possible to use Slash to run tests in
+parallel. In this mode, slash will run a 'parent' session process that will be
+used to distribute the tests, and a number of child session processes
+that will receive the distributed tests and run them.
 
-Using parallel, slash will run a 'parent' process that will be used as server, and a number of child processes that will execute tests.
 
-
-Running in parallel mode
+Running in Parallel Mode
 ------------------------
 
 In order to run tests in parallel, just add ``--parallel`` and the number of workers you want to start. For example::
 
   $ slash run /path/to/tests --parallel 4
 
-will start a server and 4 workers that execute tests.
-If no address and no port are specified (using ``--parallel_addr`` and ``--parallel_port``), localhost and a random port will be assigned for the server.
+If, for instance, most of your tests are CPU-bound, it would make
+sense to run them like this::
 
-By default, only the server will output logs to the console. However, you can use tmux to show output from each worker::
+  $ slash run /path/to/tests --parallel $(nproc)
+
+to use a single worker per CPU core.
+
+.. note:: The parallel mechanism works by listening on a local TCP
+          socket, to which the worker session processes connect and
+          receive test descriptions via RPC. In case you want, you can
+          control the address and/or port settings via the
+          ``--parallel_addr`` and ``--parallel_port`` command-line arguments.
+
+By default, only the paerent session process outputs logs to the
+console. For a more controlled run you can use ``tmux`` to run your
+workers, so that you can examine their outputs::
 
   $ slash run /path/to/tests --parallel 4 --tmux  [--tmux-panes]
 
-If using tmux panes, a new pane will be opened for every worker, and there its output will be. If not, each worker will open a new window.
+If ``--tmux-panes`` is specified, a new pane will be opened for every worker, letting it
+emit console output. Otherwise each worker will open a new window.
 
 
-How parallel exeuction works
-----------------------------
+The Parallel Execution Mechanism
+--------------------------------
 
-When running slash in parallel mode, the main process will start a server and a number of workers in new processes.
-The server then will wait until all the workers to connect and collect tests.
+When running Slash in parallel mode, the main process starts a server and a number of workers as new processes.
+The server then waits until all the workers connect and start collecting tests.
 Only after all the workers connect and validate that all of them collected the same tests collection, the test execution will start:
 
-* Each worker asks the server for a test.
-* The server gives them one test to execute.
-* The worker executes the test and report the server the test's results.
-* The worker asks for another test and so on, until all tests are executed.
-* Clients disconnect from the server, and the server terminates.
+* Each worker asks the master process for a test.
+* The master process gives them one test to execute.
+* The worker executes the test and reports the test's results to the parent.
+* The worker asks for the next test and so on, until all tests are executed.
+* The worker processes disconnect from the server, and the server
+  terminates.
 
 Worker session ids
 -------------------
