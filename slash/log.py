@@ -73,7 +73,11 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         logbook.StreamHandler.__init__(self, stream=stream, **kw)
         self._truncate_lines = config.root.log.truncate_console_lines
         self._truncate_errors = config.root.log.truncate_console_errors
-
+        if config.root.log.color_console is not None:
+            if config.root.log.color_console:
+                self.force_color()
+            else:
+                self.forbid_color()
 
     def format(self, record):
         orig_message = record.message

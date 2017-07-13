@@ -43,6 +43,7 @@ config = Config({
                                                     decrease_doc='Make console more verbose (can be specified multiple times)',
                                                     increase='-q',
                                                     increase_doc='Make console less verbose (can be specified multiple times)'),
+        "color_console": None // Cmdline(on='--force-color', off='--no-color'),
         "traceback_level": 2 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),
         "truncate_console_lines": True // Doc("truncate long log lines on the console") // Cmdline(arg='--truncate-console-lines', metavar='yes/no'),
         "truncate_console_errors": False // Doc("If truncate_console_lines is set, also truncate long log lines, including and above the \"error\" level, on the console"),
