@@ -1,6 +1,7 @@
 # pylint: disable=import-error,no-name-in-module
 from __future__ import division
 import itertools
+import os
 import sys
 
 from py.io import TerminalWriter
@@ -38,6 +39,8 @@ class TerminalWriterWrapper(object):
 
     def __init__(self, file):
         super(TerminalWriterWrapper, self).__init__()
+        if config.root.log.color_console is not None:
+            os.environ['PY_COLORS'] = '1' if config.root.log.color_console else '0'
         self._writer = TerminalWriter(file=file)
         self._isatty = file.isatty()
         self._line = ''
