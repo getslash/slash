@@ -12,9 +12,10 @@ _logger = logbook.Logger(__name__)
 
 def validate_run(suite, run_result, expect_interruption):
     if expect_interruption or not run_result.session.results.is_success(allow_skips=True):
-        assert run_result.exit_code != 0, 'slash run unexpectedly returned 0'
+        assert run_result.exit_code != 0, '`slash run` unexpectedly returned 0'
     else:
-        assert run_result.exit_code == 0
+        assert run_result.exit_code == 0, '`slash run` unexpectedly returned {}. Output: {}'.format(
+            run_result.exit_code, run_result.get_console_output())
 
     for test, results in iteritems(_group_results_by_test_id(suite, run_result)):
         _validate_single_test(test, results)
