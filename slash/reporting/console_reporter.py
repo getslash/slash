@@ -389,7 +389,7 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_test_error_failure_added(self, test, e, errtype):  # pylint: disable=unused-argument
         if test is None:
-            if not isinstance(e.exception, CLI_ABORT_EXCEPTIONS):
+            if not issubclass(e.exception_type, CLI_ABORT_EXCEPTIONS):
                 self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
         else:
             self._file_failed = True
