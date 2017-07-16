@@ -3,6 +3,7 @@ from .._compat import xrange
 from ..exceptions import InvalidTest
 
 from .fixtures.parameters import bound_parametrizations_context
+from .fixtures.utils import nofixtures
 from .requirements import get_requirements
 from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
@@ -34,7 +35,10 @@ class FunctionTest(RunnableTest):
         return self._func
 
     def get_requirements(self):
-        return get_requirements(self._func)
+        test_requirements = get_requirements(self._func)
+        if nofixtures.is_marked(self._func):
+            return test_requirements
+        return list(set(test_requirements + self._get_fixtures_requirements()))
 
     def get_required_fixture_objects(self):
         return self._fixture_store.get_required_fixture_objects(self._func, namespace=self._fixture_namespace)

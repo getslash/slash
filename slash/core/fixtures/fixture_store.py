@@ -262,6 +262,8 @@ class FixtureStore(object):
 
             if required_name in skip_names:
                 continue
+            if element == 'this':
+                continue
             fixture = namespace.get_fixture_by_name(real_name)
             if get_values:
                 fixture = self.get_fixture_value(fixture, name=required_name)
