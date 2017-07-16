@@ -10,7 +10,7 @@ from .runnable_test import RunnableTest
 from .runnable_test_factory import RunnableTestFactory
 from .requirements import get_requirements
 from .tagging import get_tags
-
+from .fixtures.utils import nofixtures
 
 class TestTestFactory(RunnableTestFactory):
 
@@ -104,7 +104,10 @@ class Test(RunnableTest):
         return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
 
     def get_requirements(self):
-        return get_requirements(type(self)) + get_requirements(self.get_test_function())
+        test_requirements = get_requirements(type(self)) + get_requirements(self.get_test_function())
+        if nofixtures.is_marked(self.get_test_function()):
+            return test_requirements
+        return list(set(test_requirements + self._get_fixtures_requirements()))
 
     def run(self):  # pylint: disable=E0202
         """
