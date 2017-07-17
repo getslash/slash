@@ -62,6 +62,7 @@ config = Config({
         "localtime": False // Doc("Use local time for logging. If False, will use UTC"),
         "unittest_mode": False // Doc("Used during unit testing. Emit all logs to stderr as well as the log files"),
         "unified_session_log": False // Doc("Make the session log file contain all logs, including from tests"),
+        "disable_introspection": False // Doc("Don't output introspection when assertion fails"),
     },
     "run": {
         "dump_variation": False // Doc("Output the full variation structure before each test is run (mainly used for internal debugging)"),
