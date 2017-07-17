@@ -27,7 +27,6 @@ from .utils.python import check_duplicate_functions
 from .resuming import ResumedTestData
 from .utils.interactive import generate_interactive_test
 
-
 _logger = Logger(__name__)
 
 
@@ -169,6 +168,8 @@ class Loader(object):
                 module = None
                 try:
                     with handling_exceptions(context="during import"):
+                        if config.root.log.disable_introspection:
+                            dessert.disable_introspection()
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
