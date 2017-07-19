@@ -120,6 +120,7 @@ Exceptions
 .. autofunction:: slash.exception_handling.noswallow
 .. autofunction:: slash.exception_handling.mark_exception_fatal
 .. autofunction:: slash.exception_handling.get_exception_swallowing_context
+.. autofunction:: slash.exception_handling.inhibit_unhandled_exception_traceback
 
 
 Misc. Utilities

@@ -196,6 +196,7 @@ Marks with Special Meanings
 
 * :func:`.mark_exception_fatal`: See :ref:`below <fatal_exceptions>`.
 * :func:`.noswallow`: See :ref:`below <exception_swallowing>`.
+* :func:`.inhibit_unhandled_exception_traceback`: See :ref:`below <inhibit_traceback>`.
 
 
 .. _fatal_exceptions:
@@ -264,4 +265,17 @@ You can force certain exceptions through by using the :func:`.noswallow` or ``di
    def func3():
       raise Exception("CRITICAL!")
 
+.. _inhibit_traceback:
 
+Console Traceback of Unhandled Exceptions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Exceptions thrown from hooks and plugins *outside of running tests* normally cause emitting full traceback to the console. In some cases, you would like to use these errors to denote usage errors or specific known erroneous conditions (e.g. missing configuration or conflicting usages). In these cases you can mark your exceptions to inhibit a full traceback:
+
+.. code-block:: python
+       
+       from slash.exception_handling import inhibit_unhandled_exception_traceback
+       ...
+       raise inhibit_unhandled_exception_traceback(Exception('Some Error'))
+
+.. versionadded:: 1.3.0
