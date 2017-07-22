@@ -106,6 +106,36 @@ def test_custom_hook_registration(request):
     assert not gossip.get_hook(hook_name).get_registrations()
 
 
+def test_multiple_registers_on(request):
+    hook_names = ['some_hook_{}'.format(i) for i in range(2)]
+
+    class MyPlugin(PluginInterface):
+
+        def get_name(self):
+            return "plugin"
+
+        @plugins.registers_on(hook_names[0])
+        @plugins.registers_on(hook_names[1])
+        def unknown(self):
+            pass
+
+    expected_func = MyPlugin.unknown.__func__ if PY2 else MyPlugin.unknown
+    p = MyPlugin()
+    plugins.manager.install(p, activate=True)
+    @request.addfinalizer
+    def cleanup():              # pylint: disable=unused-variable
+        plugins.manager.uninstall(p)
+
+    for hook_name in hook_names:
+        registrations = gossip.get_hook(hook_name).get_registrations()
+        assert len(registrations) == 1
+        assert registrations[0].func.__func__ is expected_func
+
+    plugins.manager.deactivate(p)
+
+    for hook_name in hook_names:
+        assert not gossip.get_hook(hook_name).get_registrations()
+
 def test_register_invalid_hook():
 
     initially_installed = list(plugins.manager.get_installed_plugins())

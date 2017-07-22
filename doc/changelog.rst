@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`642` Support multiple registrations on the same plugin method with ``plugins.registers_on``
 * :feature:`617` Support ``inhibit_unhandled_exception_traceback``
 * :feature:`635` ``slash run`` now supports ``--force-color``/``--no-color`` flags.
 * :feature:`633` When using the `handling_exceptions`, it is now possible to obtain the exception object that was handled
