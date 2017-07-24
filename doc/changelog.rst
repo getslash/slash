@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`1.3.0 <24-07-2017>`
 * :feature:`213` Added parallel execution capability (still considered experimental) - tests can be run in parallel by multiple subprocess "workers". See `the documentation <http://slash.readthedocs.io/en/master/parallel.html>`_ for more information
 * :feature:`596` Slash now supports a flag to disable assertion introspection on assertions containing messages (``run.message_assertion_introspection``)
 * :feature:`642` Support multiple registrations on the same plugin method with ``plugins.registers_on``
