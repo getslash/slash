@@ -169,9 +169,14 @@ Slash also provides :func:`slash.skipped`, which is a decorator to skip specific
 
 In some cases you may want to register a custom exception to be recognized as a skip. You can do this by registering your exception type first with :func:`slash.register_skip_exception`.
 
+.. _requirements:
 
 Requirements
 ------------
+
+.. index::
+   single: requirements
+
 In many cases you want to depend in our test on a certain precondition in order to run. Requirements provide an explicit way of stating those requirements. Use :func:`slash.requires` to specify requirements:
 
 .. code-block:: python
