@@ -35,6 +35,10 @@ When the above assertion fails, for instance, you can expect an elaborate output
 
 .. note:: The assertion rewriting code is provided by `dessert <https://github.com/vmalloc/dessert>`_, which is a direct port of the code that powers `pytest <http://pytest.org>`_. All credit goes to Holger Krekel and his fellow devs for this masterpiece.
 
+.. note:: By default, even asserts with accompanied messages will emit introspection information. This can be overriden through the ``run.message_assertion_introspection`` configuration flag.
+  
+  .. versionadded:: 1.3.0
+
 More Assertion Utilities
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

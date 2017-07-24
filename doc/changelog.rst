@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`596` Slash now supports a flag to disable assertion introspection on assertions containing messages (``run.message_assertion_introspection``)
 * :feature:`642` Support multiple registrations on the same plugin method with ``plugins.registers_on``
 * :feature:`617` Support ``inhibit_unhandled_exception_traceback``
 * :feature:`635` ``slash run`` now supports ``--force-color``/``--no-color`` flags.

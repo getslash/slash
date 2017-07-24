@@ -168,8 +168,8 @@ class Loader(object):
                 module = None
                 try:
                     with handling_exceptions(context="during import"):
-                        if config.root.log.disable_introspection:
-                            dessert.disable_introspection()
+                        if not config.root.run.message_assertion_introspection:
+                            dessert.disable_message_introspection()
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
