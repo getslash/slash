@@ -197,4 +197,3 @@ def test_pending_deactivation_not_exists(plugin):
 def _assert_hooks_not_registered(plugin):
     hooks.session_start()  # pylint: disable=no-member
     assert plugin.session_start_call_count == 0, 'Hook unexpectedly registered!'
-

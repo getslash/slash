@@ -3,6 +3,8 @@ import sys
 import emport
 
 from slash.core.error import Error
+from slash.utils.traceback_utils import _MAX_VARIABLE_VALUE_LENGTH
+
 
 
 def test_traceback_line_numbers(tmpdir):
@@ -35,6 +37,27 @@ def context():
         assert False, 'did not fail'
 
     assert err.traceback.frames[-2].lineno == 6
+
+
+def test_variable_capping():
+
+    def f():
+        g()
+
+    def g():
+        long_var = 'a' * 1000
+        assert len(long_var) > _MAX_VARIABLE_VALUE_LENGTH
+        1/0                     # pylint: disable=pointless-statement
+
+    try:
+        f()
+    except ZeroDivisionError:
+        err = Error(exc_info=sys.exc_info())
+
+    distilled = err.traceback.to_list()
+    assert len(distilled[-1]['locals']['long_var']['value']) == _MAX_VARIABLE_VALUE_LENGTH
+
+
 
 
 def test_is_test_code(suite, suite_test):

@@ -1,3 +1,4 @@
+import collections
 import os
 import sys
 
@@ -15,6 +16,7 @@ from .interface import PluginInterface
 
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
+RegistrationInfo = collections.namedtuple("RegistrationInfo", ("hook_name", "expect_exists"))
 
 class IncompatiblePlugin(ValueError):
     pass
@@ -244,53 +246,53 @@ class PluginManager(object):
             if not hasattr(method, '__call__'):
                 continue
 
-            hook_name = try_get_mark(method, 'register_on', NOTHING)
+            registration_list = try_get_mark(method, 'register_on', NOTHING)
 
-            if hook_name is None:
-                # asked not to register for nothing
-                continue
-
-            if not try_get_mark(method, 'register_if', True):
-                continue
-
-            if hook_name is not NOTHING:
-                expect_exists = False
+            if registration_list is not NOTHING:
+                registration_list = [RegistrationInfo(hook_name, False) for hook_name in registration_list]
             else:
                 if method_name.startswith('_'):
                     continue
-                expect_exists = True
-                hook_name = "slash.{0}".format(method_name)
+                registration_list = [RegistrationInfo("slash.{0}".format(method_name), True)]
 
-            plugin_needs = try_get_mark(method, 'plugin_needs', []) + global_needs
-            plugin_provides = try_get_mark(method, 'plugin_provides', []) + global_provides
+            for registration_info in registration_list:
+                if registration_info.hook_name is None:
+                    # asked not to register for nothing
+                    continue
 
-            try:
-                if expect_exists:
-                    hook = gossip.get_hook(hook_name)
-                else:
-                    hook = gossip.hooks.get_or_create_hook(hook_name)
-                    if not hook.is_defined() and hook.group.is_strict():
-                        raise LookupError()
-            except LookupError:
-                unknown.append(hook_name)
-                continue
+                if not try_get_mark(method, 'register_if', True):
+                    continue
 
-            assert hook is not None
-            register_no_op_hooks.discard(hook_name)
+                plugin_needs = try_get_mark(method, 'plugin_needs', []) + global_needs
+                plugin_provides = try_get_mark(method, 'plugin_provides', []) + global_provides
 
-            kwargs = {
-                'needs': plugin_needs,
-                'provides': plugin_provides,
-                'token': self._get_token(plugin_name),
-            }
-            if hook_name == 'slash.session_start':
-                has_session_start = True
-                kwargs['toggles_on'] = plugin.__toggles__['session']
-            elif hook_name == 'slash.session_end':
-                has_session_end = True
-                kwargs['toggles_off'] = plugin.__toggles__['session']
+                try:
+                    if registration_info.expect_exists:
+                        hook = gossip.get_hook(registration_info.hook_name)
+                    else:
+                        hook = gossip.hooks.get_or_create_hook(registration_info.hook_name)
+                        if not hook.is_defined() and hook.group.is_strict():
+                            raise LookupError()
+                except LookupError:
+                    unknown.append(registration_info.hook_name)
+                    continue
 
-            returned.append((hook, method, kwargs))
+                assert hook is not None
+                register_no_op_hooks.discard(registration_info.hook_name)
+
+                kwargs = {
+                    'needs': plugin_needs,
+                    'provides': plugin_provides,
+                    'token': self._get_token(plugin_name),
+                }
+                if registration_info.hook_name == 'slash.session_start':
+                    has_session_start = True
+                    kwargs['toggles_on'] = plugin.__toggles__['session']
+                elif registration_info.hook_name == 'slash.session_end':
+                    has_session_end = True
+                    kwargs['toggles_off'] = plugin.__toggles__['session']
+
+                returned.append((hook, method, kwargs))
 
         if has_session_end and not has_session_start:
             hook = gossip.get_hook('slash.session_start')
@@ -314,7 +316,7 @@ def registers_on(hook_name):
 
     Specifying ``registers_on(None)`` means that this is not a hook entry point at all.
     """
-    return mark("register_on", hook_name)
+    return mark("register_on", hook_name, append=True)
 
 def register_if(condition):
     """Marks the decorated plugins method to only be registered if *condition* is ``True``

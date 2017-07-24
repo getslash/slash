@@ -43,6 +43,7 @@ config = Config({
                                                     decrease_doc='Make console more verbose (can be specified multiple times)',
                                                     increase='-q',
                                                     increase_doc='Make console less verbose (can be specified multiple times)'),
+        "color_console": None // Cmdline(on='--force-color', off='--no-color'),
         "traceback_level": 2 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),
         "truncate_console_lines": True // Doc("truncate long log lines on the console") // Cmdline(arg='--truncate-console-lines', metavar='yes/no'),
         "truncate_console_errors": False // Doc("If truncate_console_lines is set, also truncate long log lines, including and above the \"error\" level, on the console"),
@@ -73,6 +74,21 @@ config = Config({
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
         "project_customization_file_path": "./.slashrc",
         "user_customization_file_path": "~/.slash/slashrc",
+        "message_assertion_introspection": True // Doc("When False, failing assertions which have messages attached will not emit introspection info"),
+    },
+    "parallel": {
+        "num_workers": 0 // Doc("Parallel execution") // Cmdline(arg='--parallel', metavar="NUM_WORKERS"),
+        "worker_id": None // Doc("Worker_id") // Cmdline(arg='--parallel-worker-id', metavar="WORKER_ID"),
+        "server_addr": "localhost" // Doc("Server address") // Cmdline(arg='--parallel-addr', metavar="PARALLEL_SERVER_ADDRESS"),
+        "server_port": 0 // Doc("Server port") // Cmdline(arg='--parallel-port', metavar="PARALLEL_SERVER_PORT"),
+        "parent_session_id": None // Doc("parent session id") // Cmdline(arg='--parallel-parent-session-id', metavar="MASTER_SESSION_ID"),
+        "communication_timeout_secs": 60 // Doc("timeout of worker in seconds"),
+        "worker_connect_timeout": 10 // Doc("timeout for each worker to connect"),
+        "no_request_timeout": 20 // Doc("timeout for server not getting requests"),
+    },
+    "tmux": {
+        "enabled": False // Doc("Run inside tmux") // Cmdline(on="--tmux"),
+        "use_panes": False // Doc("In parallel mode, run children inside panes and not windows") // Cmdline(on="--tmux-panes"),
     },
     "sentry": {
         "dsn": None // Doc("Possible DSN for a sentry service to log swallowed exceptions. "

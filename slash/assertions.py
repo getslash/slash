@@ -1,12 +1,16 @@
-from .exceptions import TestFailed
-from . import exception_handling
-from ._compat import PY2
-from .utils import operator_information
-from .utils.deprecation import deprecated
 import operator
 import sys
 
+import logbook
+from vintage import deprecated
+
+from . import exception_handling
+from ._compat import PY2
+from .exceptions import TestFailed
+from .utils import operator_information
+
 sys.modules["slash.should"] = sys.modules[__name__]
+_logger = logbook.Logger(__name__)
 
 def _deprecated(func, message=None):
     return deprecated(since='0.19.0', what='slash.should.{0.__name__}'.format(func),
@@ -111,13 +115,14 @@ assert_not_in = not_be_in
 
 class _CaughtContext(object):
 
-    def __init__(self, message, exc_types):
+    def __init__(self, message, exc_types, ensure_caught):
         if not isinstance(exc_types, tuple):
             exc_types = (exc_types, )
         self._expected_classes = exc_types
         self._caught = _CaughtException()
         self._ignore_ctx = None
         self._msg = message
+        self._ensure_caught = ensure_caught
 
     def __enter__(self):
         self._ignore_ctx = exception_handling.thread_ignore_exception_context(self._expected_classes)
@@ -141,7 +146,10 @@ class _CaughtContext(object):
             if not isinstance(expected_classes, tuple):
                 expected_classes = (expected_classes, )
             msg = "{0} not raised".format("/".join(e.__name__ for e in expected_classes))
-        raise TestFailed(msg)
+        if self._ensure_caught:
+            raise TestFailed(msg)
+        _logger.debug(msg)
+        return True
 
 
 def assert_raises(exception_class, msg=None):
@@ -151,7 +159,20 @@ def assert_raises(exception_class, msg=None):
     >>> with assert_raises(AttributeError):
     ...     raise AttributeError()
     """
-    return _CaughtContext(msg, exception_class)
+    return _CaughtContext(msg, exception_class, ensure_caught=True)
+
+
+def allowing_exceptions(exception_class, msg=None):
+    """
+    Allow subclass of **ARG1** to be raised during context:
+
+    >>> with allowing_exceptions(AttributeError):
+    ...     raise AttributeError()
+    >>> with allowing_exceptions(AttributeError):
+    ...     pass
+    """
+    return _CaughtContext(msg, exception_class, ensure_caught=False)
+
 
 @deprecated(since='0.19.0', what='slash.should.raise_exception', message='Use slash.assert_raises instead')
 def raise_exception(exception_class, msg=None):

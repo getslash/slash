@@ -19,12 +19,13 @@ from .validation import validate_run, get_test_id_from_test_address
 
 class Suite(object):
 
-    def __init__(self, strategy=BalancedStrategy(), path=None, debug_info=True):
+    def __init__(self, strategy=BalancedStrategy(), path=None, debug_info=True, is_parallel=False):
         super(Suite, self).__init__()
         self._path = path
         self._last_committed_path = None
         self.strategy = strategy
         self.debug_info = debug_info
+        self.is_parallel = is_parallel
         self.clear()
 
     def disable_debug_info(self):
@@ -121,7 +122,7 @@ class Suite(object):
     def __getitem__(self, idx):
         return self._notified[idx]
 
-    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True):
+    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True, num_workers=1):
         if commit:
             self.commit()
         path = self._last_committed_path
@@ -129,10 +130,13 @@ class Suite(object):
         report_stream = StringIO()
         returned = SlashRunResult(report_stream=report_stream)
         captured = []
+        if args is None:
+            args = [path]
+        args.extend(additional_args)
+        if self.is_parallel:
+            args.extend(['--parallel', str(num_workers), '-vvvvv', '--parallel-addr', 'localhost'])
+            sort = False
         with self._capture_events(returned), self._custom_sorting(sort):
-            if args is None:
-                args = [path]
-            args.extend(additional_args)
             with self._custom_slashrc(path):
                 app = slash_run(
                     args, report_stream=report_stream,

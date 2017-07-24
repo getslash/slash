@@ -1,10 +1,8 @@
-import inspect
-
 import pytest
 from slash.reporting.console_reporter import ConsoleReporter
 from slash.reporting.null_reporter import NullReporter
 from slash.reporting.reporter_interface import ReporterInterface
-from slash.utils.python import get_underlying_func
+from slash.utils.python import get_underlying_func, get_arguments
 
 # pylint: disable=redefined-outer-name
 
@@ -30,11 +28,8 @@ def test_parameter_lists_conform_to_interface(reporter_class):
         derived_method = _get_method(reporter_class, method_name)
         base_method = _get_method(ReporterInterface, method_name)
 
-        # inspect.getargspec() is deprecated in python3 only, its substitude (inspect.getfullargspec)
-        # does not exist in python2. Therefore, disabling pylint error
-        # pylint: disable=deprecated-method
-        argpsec = inspect.getargspec(derived_method)
-        expected = inspect.getargspec(base_method)
+        argpsec = [argument.name for argument in get_arguments(derived_method)]
+        expected = [argument.name for argument in get_arguments(base_method)]
         assert argpsec == expected
 
 def _get_method(cls, method_name):

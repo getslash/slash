@@ -1,6 +1,7 @@
 # pylint: disable=import-error,no-name-in-module
 from __future__ import division
 import itertools
+import os
 import sys
 
 from py.io import TerminalWriter
@@ -38,6 +39,8 @@ class TerminalWriterWrapper(object):
 
     def __init__(self, file):
         super(TerminalWriterWrapper, self).__init__()
+        if config.root.log.color_console is not None:
+            os.environ['PY_COLORS'] = '1' if config.root.log.color_console else '0'
         self._writer = TerminalWriter(file=file)
         self._isatty = file.isatty()
         self._line = ''
@@ -368,7 +371,7 @@ class ConsoleReporter(ReporterInterface):
     def report_test_skip_added(self, test, reason):
         self._file_has_skips = True
         if self._verobsity_allows(VERBOSITIES.NOTICE):
-            self._terminal.write('Skipped: {0}\n'.format(reason), **theme('test-skip-message'))
+            self._terminal.write('Skipped: {}, Test: {}\n'.format(reason, test.__slash__), **theme('test-skip-message'))
         else:
             self._terminal.write('s', yellow=True)
 
@@ -386,14 +389,14 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_test_error_failure_added(self, test, e, errtype):  # pylint: disable=unused-argument
         if test is None:
-            if not isinstance(e.exception, CLI_ABORT_EXCEPTIONS):
+            if not issubclass(e.exception_type, CLI_ABORT_EXCEPTIONS):
                 self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
         else:
             self._file_failed = True
             if not self._verobsity_allows(VERBOSITIES.NOTICE):
                 self._terminal.write(errtype, red=True)
             else:
-                self._terminal.write('{0}: {1}\n'.format(errtype, e), **theme('inline-error'))
+                self._terminal.write('{}: {}, Test: {}\n'.format(errtype, e, test.__slash__), **theme('inline-error'))
 
     def report_fancy_message(self, headline, message):
         if self._verobsity_allows(VERBOSITIES.INFO):

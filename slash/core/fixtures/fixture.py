@@ -10,7 +10,7 @@ from .namespace import Namespace
 from .parameters import iter_parametrization_fixtures
 from .fixture_base import FixtureBase
 from .utils import get_real_fixture_name_from_argument
-
+from ..requirements import get_requirements
 
 _fixture_id = itertools.count()
 
@@ -56,6 +56,13 @@ class Fixture(FixtureBase):
             kwargs['this'] = active_fixture
         return self.fixture_func(**kwargs)
 
+    def get_requirements(self, store):
+        fixture_requirements = get_requirements(self.fixture_func)
+        required_fixtures = store.get_required_fixture_objects(self.fixture_func, self.namespace)
+        while required_fixtures:
+            fixture_requirements.extend(required_fixtures.pop().get_requirements(store))
+        return fixture_requirements
+
     def _resolve(self, store):
         assert self.keyword_arguments is None
         assert self.parametrization_ids is None
@@ -89,4 +96,3 @@ class Fixture(FixtureBase):
                 raise UnknownFixtures(param_name)
 
         return keyword_arguments
-

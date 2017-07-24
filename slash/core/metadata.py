@@ -104,6 +104,16 @@ class Metadata(object):
     def __repr__(self):
         return '<{0}>'.format(self.address)
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.address == other.address
+        return False
+
+    def __ne__(self, other):
+        return not (self == other)  # pylint: disable=superfluous-parens,unneeded-not
+
+    def __hash__(self):
+        return self.address.__hash__()
 
 def ensure_test_metadata(test):
     returned = getattr(test, "__slash__", None)

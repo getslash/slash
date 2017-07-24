@@ -35,6 +35,10 @@ When the above assertion fails, for instance, you can expect an elaborate output
 
 .. note:: The assertion rewriting code is provided by `dessert <https://github.com/vmalloc/dessert>`_, which is a direct port of the code that powers `pytest <http://pytest.org>`_. All credit goes to Holger Krekel and his fellow devs for this masterpiece.
 
+.. note:: By default, even asserts with accompanied messages will emit introspection information. This can be overriden through the ``run.message_assertion_introspection`` configuration flag.
+  
+  .. versionadded:: 1.3.0
+
 More Assertion Utilities
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -47,13 +51,30 @@ One case that is not easily covered by the assert statement is asserting Excepti
 
 	  assert caught.exception.param == 'some_value'
 
+:func:`slash.assert_raises` will raise ``TestFailed`` exception in case the expected exception was not raised:
+
+.. code:: python
+
+	 >>> with slash.assert_raises(Exception) as caught: # doctest: +IGNORE_EXCEPTION_DETAIL
+	 ...    pass
+	 Traceback (most recent call last):
+	     ...
+	 TestFailed: ...
+
+In a case where the test author wants to allow a specific exception but not to enforce its propagation (e.g. allowing a timing issue to be present), :func:`slash.allowing_exceptions` can be used.
+
+.. code:: python
+
+	  >>> with slash.allowing_exceptions(Exception) as caught:
+	  ...    pass
+
 You also have :func:`slash.assert_almost_equal` to test for near equality:
 
 .. code:: python
 
 	  slash.assert_almost_equal(1.001, 1, max_delta=0.1)
 
-.. note:: :func:`slash.assert_raises` interacts with :func:`.handling_exceptions` - exceptions anticipated by ``assert_raises`` will be ignored by ``handling_exceptions``.
+.. note:: :func:`slash.assert_raises` and :func:`slash.allowing_exceptions` interacts with :func:`.handling_exceptions` - exceptions anticipated by ``assert_raises`` or ``allowing_exceptions`` will be ignored by ``handling_exceptions``.
 
 Errors
 ------
@@ -179,6 +200,7 @@ Marks with Special Meanings
 
 * :func:`.mark_exception_fatal`: See :ref:`below <fatal_exceptions>`.
 * :func:`.noswallow`: See :ref:`below <exception_swallowing>`.
+* :func:`.inhibit_unhandled_exception_traceback`: See :ref:`below <inhibit_traceback>`.
 
 
 .. _fatal_exceptions:
@@ -247,4 +269,17 @@ You can force certain exceptions through by using the :func:`.noswallow` or ``di
    def func3():
       raise Exception("CRITICAL!")
 
+.. _inhibit_traceback:
 
+Console Traceback of Unhandled Exceptions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Exceptions thrown from hooks and plugins *outside of running tests* normally cause emitting full traceback to the console. In some cases, you would like to use these errors to denote usage errors or specific known erroneous conditions (e.g. missing configuration or conflicting usages). In these cases you can mark your exceptions to inhibit a full traceback:
+
+.. code-block:: python
+       
+       from slash.exception_handling import inhibit_unhandled_exception_traceback
+       ...
+       raise inhibit_unhandled_exception_traceback(Exception('Some Error'))
+
+.. versionadded:: 1.3.0

@@ -64,14 +64,16 @@ def run_tests(iterable, stop_on_error=None):
         else:
             complete = True
     finally:
-        context.session.scope_manager.flush_remaining_scopes()
+        if config.root.parallel.worker_id is None:
+            context.session.scope_manager.flush_remaining_scopes()
 
-    _mark_unrun_tests(test_iterator)
-    if complete:
-        context.session.mark_complete()
-    elif last_filename is not None:
-        context.session.reporter.report_file_end(last_filename)
-    _logger.trace('Session finished. is_success={0} has_skips={1}',
+    if config.root.parallel.worker_id is None:
+        _mark_unrun_tests(test_iterator)
+        if complete:
+            context.session.mark_complete()
+        elif last_filename is not None:
+            context.session.reporter.report_file_end(last_filename)
+        _logger.trace('Session finished. is_success={0} has_skips={1}',
                   context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
 
 
@@ -110,7 +112,7 @@ def _run_single_test(test, test_iterator):
                         pass
 
                     _fire_test_summary_hooks(test, result)
-                    if next_test is None:
+                    if next_test is None and config.root.parallel.worker_id is None:
                         controller.end()
 
                         with handling_exceptions(swallow=True):
@@ -190,7 +192,8 @@ def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
 def _set_test_metadata(test):
     ensure_test_metadata(test)
     assert test.__slash__.test_index0 is None
-    test.__slash__.test_index0 = next(context.session.test_index_counter)
+    test.__slash__.test_index0 = next(context.session.test_index_counter) if config.root.parallel.worker_id is None \
+                                 else context.session.current_parallel_test_index
 
 
 def _mark_unrun_tests(test_iterator):

@@ -1,6 +1,24 @@
 Changelog
 =========
 
+* :release:`1.3.0 <24-07-2017>`
+* :feature:`213` Added parallel execution capability (still considered experimental) - tests can be run in parallel by multiple subprocess "workers". See `the documentation <http://slash.readthedocs.io/en/master/parallel.html>`_ for more information
+* :feature:`596` Slash now supports a flag to disable assertion introspection on assertions containing messages (``run.message_assertion_introspection``)
+* :feature:`642` Support multiple registrations on the same plugin method with ``plugins.registers_on``
+* :feature:`617` Support ``inhibit_unhandled_exception_traceback``
+* :feature:`635` ``slash run`` now supports ``--force-color``/``--no-color`` flags.
+* :feature:`633` When using the `handling_exceptions`, it is now possible to obtain the exception object that was handled
+* :feature:`-` Added ``SLASH_USER_SETTINGS=x`` environment variable to give a possibility to override the user slashrc file
+* :feature:`592` Added ``exception_attributes`` dict to ``Error`` objects
+* :feature:`600` Use `vintage` package for deprecations
+* :feature:`595` Add `allowing_exceptions` context letting tests allow specific exceptions in selective context
+* :bug:`606 major` Swallow python warnings during ast.parse
+* :feature:`-` Added ``session.results.has_fatal_errors`` to check for fatal errors within a session
+* :feature:`-` Slash now detects test functions being redefined, hiding previous tests, and warns about it
+* :feature:`556` Long variable representations are now capped by default when distilling tracebacks
+* :feature:`-` Assertions coming from plugins and modules loaded from the project's ``.slashrc`` now also have assertion rewriting introspection enabled
+* :bug:`- major` Honor run.default_sources configuration when using slash list (thanks Pierre-Luc Tessier Gagné)
+* :bug:`- major` Several Windows-specific fixes (thanks Pierre-Luc Tessier Gagné)
 * :release:`1.2.5 <19-06-2017>`
 * :bug:`-` Add exception_str shortcut for future compatibility on error objects
 * :release:`1.2.4 <19-06-2017>`
@@ -28,7 +46,7 @@ Changelog
 * :feature:`502` Added ``session_interrupt`` hook for when sessions are interrupted
 * :release:`1.1.0 <22-11-2016>`
 * :feature:`485` xunit plugin now saves the run results even when the session doesn't end gracefully (Thanks @eplaut)
-* :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
+* :feature:`369` Add ``slash.exclude`` to only skip specific parametrizations of a specific test or a dependent fixture. See `the cookbook section <http://slash.readthedocs.io/en/master/parameters.html#excluding-parameter-values>`_ for more details
 * :bug:`483 major` Properly handle possible exceptions when examining traceback object attributes
 * :feature:`484` ``slash list`` now indicates fixtures that are overriding outer fixtures (e.g. from ``slashconf.py``)
 * :feature:`417` ``add_error``/``add_failure`` can now receive both message and exc_info information
@@ -175,7 +193,7 @@ Changelog
 * :feature:`264` Allow specifying location of .slashrc via configuration
 * :release:`0.13.0 <22-02-2015>`
 * :feature:`261` Added a traceback to manually added errors (throush ``slash.add_error`` and friends)
-* :feature:`258` Added ``hooks.error_added``, a hook that is called when an error is added to a test result or to a global result. Also works when errors are added after the test has ended. 
+* :feature:`258` Added ``hooks.error_added``, a hook that is called when an error is added to a test result or to a global result. Also works when errors are added after the test has ended.
 * :feature:`140` Added ``--repeat-each`` command line argument to repeat each test multiple times
 * :feature:`249` Added @slash.repeat decorator to repeat tests multiple times
 * :feature:`-` Slash now emits a console message when session_start handlers take too long
@@ -272,5 +290,3 @@ Changelog
 * :feature:`48`, #54: handle import errors and improve captured exceptions
 * :feature:`3` Handle KeyboardInterrupts (quit fast), added the test_interrupt hook
 * :feature:`5` add_critical_cleanup for adding cleanups that are always called (even on interruptions)
-
-

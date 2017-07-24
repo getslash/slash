@@ -16,6 +16,18 @@ class NoActiveSession(SlashException):
     pass
 
 
+class ParallelServerIsDown(SlashException):
+    pass
+
+
+class ParallelTimeout(SlashException):
+    pass
+
+
+class InteractiveParallelNotAllowed(SlashException):
+    pass
+
+
 class CannotLoadTests(SlashException):
     pass
 
@@ -55,6 +67,14 @@ class InvalidTest(SlashException):
 
 
 class CannotAddCleanup(SlashException):
+    pass
+
+
+class TmuxSessionNotExist(SlashException):
+    pass
+
+
+class TmuxExecutableNotFound(SlashException):
     pass
 
 

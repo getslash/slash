@@ -1,7 +1,7 @@
 import gossip
+from vintage import deprecated
 
 from .conf import config
-from .utils.deprecation import deprecated
 
 
 def register(func):
@@ -32,12 +32,14 @@ _define('configure', doc='Configuration hook that happens during commandline par
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
 _define('test_avoided', doc="Called when a test is skipped completely (not even started)", arg_names=('reason',))
 _define('test_start', doc="Called right after a test starts")
+_define('test_distributed', doc="Called in parallel mode, after the parent sent a test to child)", arg_names=('test_logical_id', 'worker_session_id',)) # pylint: disable=line-too-long
 _define('test_end', doc="Called right before a test ends, regardless of the reason for termination")
 _define('before_test_cleanups', doc="Called right before a test cleanups are executed")
 _define('test_success', doc="Called on test success")
 _define('test_error', doc="Called on test error")
 _define('test_failure', doc="Called on test failure")
 _define('test_skip', doc="Called on test skip", arg_names=("reason",))
+_define('worker_connected', doc="Called on new worker startup", arg_names=("session_id",))
 
 _define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
 _define('fact_set', doc='Called when a fact is set for a test', arg_names=['name', 'value'])
@@ -51,6 +53,8 @@ _define('entering_debugger', doc='Called right before entering debugger', arg_na
 
 _define('exception_caught_after_debugger',
         doc="Called whenever an exception is caught, and a debugger has already been run")
+_define('before_worker_start', doc="Called in parallel execution mode, before the parent starts the child worker",
+        arg_names=("worker_config",))
 
 _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()

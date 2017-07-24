@@ -8,4 +8,3 @@ class Activatable(object):
         return self
     def __exit__(self, *_, **__):
         self.deactivate()
-

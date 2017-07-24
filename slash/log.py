@@ -73,7 +73,11 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         logbook.StreamHandler.__init__(self, stream=stream, **kw)
         self._truncate_lines = config.root.log.truncate_console_lines
         self._truncate_errors = config.root.log.truncate_console_errors
-
+        if config.root.log.color_console is not None:
+            if config.root.log.color_console:
+                self.force_color()
+            else:
+                self.forbid_color()
 
     def format(self, record):
         orig_message = record.message
@@ -157,7 +161,7 @@ class SessionLogging(object):
             stack.enter_context(self._get_error_logging_context())
             stack.enter_context(self._get_silenced_logs_context())
             if config.root.log.unittest_mode:
-                stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.DEBUG))
+                stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.TRACE))
             for extra_handler in _extra_handlers:
                 stack.enter_context(extra_handler.applicationbound())
             if config.root.log.unified_session_log and self.session_log_handler is not None:
@@ -205,8 +209,15 @@ class SessionLogging(object):
     def _normalize_path(self, p):
         return os.path.expanduser(p)
 
+    def create_worker_symlink(self, worker_name, worker_session_id):
+        if config.root.log.root is None:
+            return
+        symlink = os.path.join(self.session.id, worker_name)
+        worker_dir = os.path.join(self._normalize_path(config.root.log.root), worker_session_id)
+        self._try_create_symlink(worker_dir, symlink)
+
     def _try_create_symlink(self, path, symlink):
-        if symlink is None or config.root.log.root is None:
+        if symlink is None or config.root.log.root is None or config.root.parallel.worker_id is not None:
             return
 
         symlink = self._normalize_path(symlink)

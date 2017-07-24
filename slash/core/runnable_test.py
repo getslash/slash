@@ -45,6 +45,12 @@ class RunnableTest(object):
                 returned.append((req, reason))
         return returned
 
+    def _get_fixtures_requirements(self):
+        fixture_requirements = [item for fixture in self.get_required_fixture_objects() for item in fixture.get_requirements(self._fixture_store)]
+        autouse_fixture_requirements = [item for fixture in self._fixture_store.iter_autouse_fixtures_in_namespace(self.get_fixture_namespace()) \
+                            for item in fixture.get_requirements(self._fixture_store)]
+        return list(set(fixture_requirements + autouse_fixture_requirements))
+
     def get_requirements(self):
         raise NotImplementedError() # pragma: no cover
 

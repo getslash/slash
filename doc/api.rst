@@ -111,6 +111,8 @@ Exceptions
 
 .. autofunction:: slash.exception_handling.handling_exceptions
 
+.. autofunction:: slash.allowing_exceptions
+
 .. autofunction:: slash.exception_handling.mark_exception
 .. autofunction:: slash.exception_handling.get_exception_mark
 
@@ -118,6 +120,7 @@ Exceptions
 .. autofunction:: slash.exception_handling.noswallow
 .. autofunction:: slash.exception_handling.mark_exception_fatal
 .. autofunction:: slash.exception_handling.get_exception_swallowing_context
+.. autofunction:: slash.exception_handling.inhibit_unhandled_exception_traceback
 
 
 Misc. Utilities
@@ -138,7 +141,13 @@ Internals
 .. autoclass:: slash.core.metadata.Metadata
   :members:
 
+.. autoclass:: slash.core.error.Error
+  :members:
+
 .. autoclass:: slash.core.result.Result
+  :members:
+
+.. autoclass:: slash.core.result.SessionResults
   :members:
 
 .. autoclass:: slash.core.details.Details

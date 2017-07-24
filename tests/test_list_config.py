@@ -11,5 +11,3 @@ def test_slash_list_config_with_filters():
     report_stream = StringIO()
     list_config(['log'], report_stream)
     assert 'log.root' in report_stream.getvalue()
-
-

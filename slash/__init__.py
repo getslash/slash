@@ -9,6 +9,7 @@ from .core.tagging import tag
 from . import assertions
 should = assertions
 from .assertions import (
+    allowing_exceptions,
     assert_almost_equal,
     assert_contains,
     assert_equal,
@@ -42,4 +43,3 @@ from .utils.interactive import start_interactive_shell
 from .runner import run_tests
 import logbook
 logger = logbook.Logger(__name__)
-

@@ -39,6 +39,7 @@ def no_user_config(request):
     def cleanup():  # pylint: disable=unused-variable
         os.rmdir(tmpdir)
 
+
 @pytest.fixture
 def no_plugins(request):
     slash.plugins.manager.uninstall_all()
@@ -152,6 +153,27 @@ def suite():
     returned.populate()
     return returned
 
+@pytest.fixture
+def parallel_suite_test(parallel_suite, test_type, is_last_test):
+    returned = parallel_suite.add_test(type=test_type)
+    if not is_last_test:
+        _ = parallel_suite.add_test(type=test_type)
+
+    return returned
+
+@pytest.fixture
+def parallel_suite():
+    returned = Suite(debug_info=False, is_parallel=True)
+    returned.populate()
+    return returned
+
+@pytest.fixture
+def runnable_test_dir(tmpdir):
+    tests_dir = tmpdir.join(str(uuid4()))
+    filename = str(uuid4()).replace('-', '') + '.py'
+    with tests_dir.join(filename).open('w', ensure=True) as f:
+        f.write('def test_something():\n    pass')
+    return tests_dir
 
 @pytest.fixture
 def slash_session():

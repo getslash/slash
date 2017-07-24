@@ -11,6 +11,7 @@ import colorama
 import slash
 import slash.site
 import slash.loader
+from slash import config
 from slash.exceptions import CannotLoadTests
 from slash.utils.cli_utils import UNDERLINED, make_styler, Printer
 from slash.utils.python import get_underlying_func
@@ -46,14 +47,18 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
     parser = _get_parser()
     parsed_args = parser.parse_args(args)
 
-    if not parsed_args.paths and not parsed_args.suite_files:
-        parser.error('Neither test paths nor suite files were specified')
-
     _print = Printer(report_stream, enable_output=parsed_args.show_output, force_color=parsed_args.force_color,
                      enable_color=parsed_args.enable_color)
     try:
         with slash.Session() as session:
             slash.site.load()
+
+            if not parsed_args.paths and not parsed_args.suite_files:
+                parsed_args.paths = config.root.run.default_sources
+
+            if not parsed_args.paths and not parsed_args.suite_files:
+                parser.error('Neither test paths nor suite files were specified')
+
             loader = slash.loader.Loader()
             runnables = loader.get_runnables(itertools.chain(parsed_args.paths, iter_suite_file_paths(parsed_args.suite_files)))
             used_fixtures = set()

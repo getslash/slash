@@ -58,6 +58,7 @@ You can control what happens when the lifetime of your fixture ends. By default,
 
 .. note:: Ths ``this`` variable is also available globally while computing each fixture as the ``slash.context.fixture`` global variable.
 
+
 Opting Out of Fixtures
 ----------------------
 
@@ -125,6 +126,24 @@ Fixtures become interesting when you parametrize them. This enables composing ma
 Now that we have a parametrized fixture, Slash takes care of multiplying the test cases that rely on it automatically. The single test we wrote in the beginning will now cause two actual test cases to be loaded and run -- one with a simple microwave and one with an advanced microwave.
 
 As you add more parametrizations into dependent fixtures in the dependency graph, the actual number of cases being run eventually multiples in a cartesian manner.
+
+Fixture Requirements
+--------------------
+
+.. index:: 
+   pair: fixtures; requirements
+
+It is possible to specify requirements for fixture functions, very much like :ref:`test requirements <requirements>`. Fixtures for which requirements are not met will prevent their dependent tests from being run, being skipped instead:
+
+.. code-block:: python
+
+                @slash.fixture
+                @slash.requires(condition, 'Requires a specific flag')
+                def some_fixture():
+                    ...
+
+.. seealso:: :ref:`requirements`
+                
 
 Fixture Scopes
 --------------

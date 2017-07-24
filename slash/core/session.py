@@ -3,7 +3,7 @@ import sys
 import time
 import uuid
 from contextlib import contextmanager
-
+from ..conf import config
 from .. import ctx, hooks, log, exceptions
 from .cleanup_manager import CleanupManager
 from ..exception_handling import handling_exceptions
@@ -26,7 +26,9 @@ class Session(Activatable):
 
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
-        self.id = "{0}_0".format(uuid.uuid1())
+        self.parent_session_id = config.root.parallel.parent_session_id
+        self.id = "{0}_0".format(uuid.uuid1()) if not self.parent_session_id else \
+                    "{}_{}".format(self.parent_session_id.split('_')[0], config.root.parallel.worker_id)
         self.id_space = IDSpace(self.id)
         self.test_index_counter = itertools.count()
         self.scope_manager = ScopeManager(self)
@@ -34,9 +36,11 @@ class Session(Activatable):
         self._complete = False
         self._active = False
         self._active_context = None
+        self.parallel_manager = None
         self.fixture_store = FixtureStore()
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)
+        self.current_parallel_test_index = None
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults(self)
         if reporter is None:
@@ -51,6 +55,9 @@ class Session(Activatable):
 
     def get_skip_exception_types(self):
         return self._skip_exc_types
+
+    def has_children(self):
+        return not self.parallel_manager is None
 
     @property
     def started(self):
