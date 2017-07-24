@@ -17,12 +17,23 @@ script:
 after_success:
   - codecov
 after_failure:
-  - .env/bin/pip freeze
+- .env/bin/pip freeze
+
+before_deploy:
+  - python setup.py bdist_wheel
+
 deploy:
-  provider: pypi
-  user: vmalloc
-  password:
-    secure: EBE30QsQvwodsakJRtXvmeah0KRQoMpHQSfSACjE0FviWU6eHhgE7nSzxrTSwetmLaB/+hexkys8ULsE4Dxwgvd8aXJ5T6+GnhFkWLgaTl8Q39g/cnLqnVj+OCS95XlyFcWyBLsdyPY+tAc34YpYRfjuWgXup5UNc7Ze2KQ7wqk=
-  on:
-    tags: true
-    repo: getslash/slash
+  - provider: pypi
+    user: vmalloc
+    password:
+      secure: EBE30QsQvwodsakJRtXvmeah0KRQoMpHQSfSACjE0FviWU6eHhgE7nSzxrTSwetmLaB/+hexkys8ULsE4Dxwgvd8aXJ5T6+GnhFkWLgaTl8Q39g/cnLqnVj+OCS95XlyFcWyBLsdyPY+tAc34YpYRfjuWgXup5UNc7Ze2KQ7wqk=
+    on:
+      tags: true
+      repo: getslash/slash
+  - provider: releases
+    api_key:
+      secure: LVS3CMERZiq7NjQNdteAwcq1ZOEWyu+KSaf80YFiMlkoSy9dh9UyxdZ99LSWvSvbeOOl+NX8zL+u5y61s/qDMJbEfbUVlkbhunYm3gZjZMTusfno19QoLEB4k2sYPFFnKyzB2ib6gHjJ7TVic4LQhK9jrUffEMljaAz5Fh7N5ww=
+    file: build/bdist.*
+    on:
+      tags: true
+      repo: getslash/slash
