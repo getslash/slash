@@ -3,6 +3,10 @@
 Parallel Test Execution
 =======================
 
+.. index::
+   single: parallel
+   double: parallel; test execution
+
 By default, Slash runs tests sequentially through a single session
 process. However, it is also possible to use Slash to run tests in
 parallel. In this mode, slash will run a 'parent' session process that will be
