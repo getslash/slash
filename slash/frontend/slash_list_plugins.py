@@ -31,7 +31,7 @@ def slash_list_plugins(args, report_stream=sys.stdout):
 
     active = manager.get_future_active_plugins()
 
-    for plugin in sorted(manager.get_installed_plugins().values(), key=lambda p: p.get_name()):
+    for plugin in sorted(manager.get_installed_plugins(include_internals=False).values(), key=lambda p: p.get_name()):
         name = plugin.get_name()
         _print(_title_style(name), end=' ')
         if name in active:

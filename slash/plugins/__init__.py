@@ -17,6 +17,7 @@ from .interface import PluginInterface
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 RegistrationInfo = collections.namedtuple("RegistrationInfo", ("hook_name", "expect_exists"))
+PluginInfo = collections.namedtuple("PluginInfo", ("plugin_instance", "is_internal"))
 
 class IncompatiblePlugin(ValueError):
     pass
@@ -48,11 +49,13 @@ class PluginManager(object):
                         continue
                     install_func()
 
-    def get_installed_plugins(self):
+    def get_installed_plugins(self, include_internals=True):
         """
         Returns a dict mapping plugin names to currently installed plugins
         """
-        return self._installed.copy()
+        return {plugin_name: plugin_info.plugin_instance
+                for plugin_name, plugin_info in self._installed.items()
+                if include_internals or (not plugin_info.is_internal)}
 
     def get_active_plugins(self):
         """
@@ -62,7 +65,7 @@ class PluginManager(object):
 
     def _iterate_active_plugins(self):
         for active_name in self._active:
-            yield (active_name, self._installed[active_name])
+            yield (active_name, self._get_installed_plugin_instance_by_name(active_name))
 
     def get_future_active_plugins(self):
         """
@@ -80,10 +83,16 @@ class PluginManager(object):
         """
         Retrieves a registered plugin by name, or raises a LookupError
         """
-        return self._installed[plugin_name]
+        return self._installed[plugin_name].plugin_instance
 
+    def is_internal_plugin(self, plugin):
+        """
+        Returns rather installed plugin is internal plugin
+        """
+        plugin_name = plugin if isinstance(plugin, str) else plugin.get_name()
+        return self._installed[plugin_name].is_internal
 
-    def install(self, plugin, activate=False, activate_later=False):
+    def install(self, plugin, activate=False, activate_later=False, is_internal=False):
         """
         Installs a plugin object to the plugin mechanism. ``plugin`` must be an object deriving from
         :class:`slash.plugins.PluginInterface`.
@@ -92,7 +101,7 @@ class PluginManager(object):
             raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))
         plugin_name = plugin.get_name()
         self._configure(plugin)
-        self._installed[plugin_name] = plugin
+        self._installed[plugin_name] = PluginInfo(plugin, is_internal)
         if not hasattr(plugin, '__toggles__'):
             plugin.__toggles__ = {
                 'session': gossip.Toggle(),
@@ -138,8 +147,8 @@ class PluginManager(object):
         """
         Uninstalls all installed plugins
         """
-        for plugin in list(itervalues(self._installed)):
-            self.uninstall(plugin)
+        for plugin_info in list(itervalues(self._installed)):
+            self.uninstall(plugin_info.plugin_instance)
         assert not self._installed
 
     def activate(self, plugin):
@@ -214,13 +223,19 @@ class PluginManager(object):
     def _get_token(self, plugin_name):
         return "slash.plugins.{0}".format(plugin_name)
 
+    def _get_installed_plugin_instance_by_name(self, plugin_name):
+        plugin_info = self._installed.get(plugin_name)
+        if plugin_info is None:
+            return None
+        return plugin_info.plugin_instance
+
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):
             plugin_name = plugin
-            plugin = self._installed.get(plugin_name)
+            plugin = self._get_installed_plugin_instance_by_name(plugin_name)
         else:
             plugin_name = plugin.get_name()
-        if plugin is None or self._installed.get(plugin_name) is not plugin:
+        if plugin is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin:
             raise UnknownPlugin("Unknown plugin: {0}".format(plugin_name))
         return plugin
 
