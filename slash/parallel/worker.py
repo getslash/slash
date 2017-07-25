@@ -35,7 +35,7 @@ class Worker(object):
 
     def write_to_error_file(self, msg):
         try:
-            file_name = "{}_{}.log".format(config.root.parallel.worker_error_file, self.client_id)
+            file_name = "{}-{}.log".format(config.root.parallel.worker_error_file, self.client_id)
             worker_error_file = os.path.join(config.root.parallel.workers_error_dir, file_name)
             with open(worker_error_file, 'a') as error_file:
                 error_file.write(msg)
