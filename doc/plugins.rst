@@ -30,6 +30,8 @@ To install a plugin, use the :func:`slash.plugins.manager.install <slash.plugins
 
 Only plugins that are :class:`.PluginInterface` derivative instances are accepted.
 
+By passing ``internal=True`` to the install function, the plugin will be marked for internal use which mean that it cannot be activated/deactivate by command line and is not displayed in ``slash run -h`` and ``slash list-plugins`` commands.
+
 To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <slash.plugins.PluginManager.uninstall>`. 
 
 .. note:: uninstalling plugins also deactivates them.

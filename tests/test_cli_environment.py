@@ -92,6 +92,9 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
         self.plugin = SampleCommandLinePlugin()
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
+        self.internal_plugin = InternalPlugin()
+        plugins.manager.install(self.internal_plugin, is_internal=True)
+        self.addCleanup(plugins.manager.uninstall, self.internal_plugin)
         self._parser = cli_utils.SlashArgumentParser()
 
     def test_arguments_are_not_parsed_if_not_activated(self):
@@ -114,7 +117,6 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
         self.assertNotIn(self.plugin.get_name(), plugins.manager.get_future_active_plugins())
         self.assertNotIn(self.plugin.get_name(), plugins.manager.get_active_plugins())
 
-
     def test_argument_passing(self):
         argv = ["--with-sample-plugin", "--plugin-option", "value"]
         cli_utils.configure_arg_parser_by_plugins(self._parser)
@@ -130,6 +132,10 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
             self._parser.parse_args(['-h'])
         output = self.stdout.getvalue()
         self.assertIn("--with-sample-plugin", output)
+        self.assertIn("--plugin-option", output)
+        self.assertIn("internal-plugin", output)
+        self.assertNotIn("--with-internal-plugin", output)
+        self.assertIn("--internal-plugin-option", output)
 
 
 class SampleCommandLinePlugin(PluginInterface):
@@ -139,6 +145,18 @@ class SampleCommandLinePlugin(PluginInterface):
 
     def configure_argument_parser(self, parser):
         parser.add_argument("--plugin-option")
+
+    def configure_from_parsed_args(self, args):
+        self.cmdline_param = args.plugin_option
+
+
+class InternalPlugin(PluginInterface):
+
+    def get_name(self):
+        return "internal-plugin"
+
+    def configure_argument_parser(self, parser):
+        parser.add_argument("--internal-plugin-option")
 
     def configure_from_parsed_args(self, args):
         self.cmdline_param = args.plugin_option
