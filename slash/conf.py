@@ -85,7 +85,7 @@ config = Config({
         "communication_timeout_secs": 60 // Doc("timeout of worker in seconds"),
         "worker_connect_timeout": 10 // Doc("timeout for each worker to connect"),
         "no_request_timeout": 20 // Doc("timeout for server not getting requests"),
-        "worker_error_file": "errors_of_worker" // Doc("worker error filename template"),
+        "worker_error_file": "worker_errors" // Doc("worker error filename template"),
         "workers_error_dir": None // Doc("workers error directory") // Cmdline(arg='--workers-error-dir', metavar="WORKERS_ERROR_DIR"),
     },
     "tmux": {
