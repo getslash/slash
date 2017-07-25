@@ -319,7 +319,7 @@ def test_worker_error_logs(parallel_suite, config_override):
     for result in summary.session.results:
         if result != interrupted_result:
             assert result.is_success() or result.is_not_run()
-    file_path = os.path.join(summary.session.parallel_manager.workers_error_dircetory, 'errors_of_worker_1.log')
+    file_path = os.path.join(summary.session.parallel_manager.workers_error_dircetory, 'errors-worker-1.log')
     assert os.path.isfile(file_path)
     with open(file_path) as error_file:
         line = error_file.readline()
