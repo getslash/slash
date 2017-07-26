@@ -3,6 +3,9 @@
 Plugins
 =======
 
+.. index::
+   single: plugins
+
 Plugins are a comfortable way of extending Slash's behavior. They are objects inheriting from a :class:`common base class <.PluginInterface>` that can be activated to modify or what happens in select point of the infrastructure. 
 
 The Plugin Interface
@@ -30,12 +33,28 @@ To install a plugin, use the :func:`slash.plugins.manager.install <slash.plugins
 
 Only plugins that are :class:`.PluginInterface` derivative instances are accepted.
 
-By passing ``internal=True`` to the install function, the plugin will be marked for internal use which mean that it cannot be activated/deactivate by command line and is not displayed in ``slash run -h`` and ``slash list-plugins`` commands.
-
 To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <slash.plugins.PluginManager.uninstall>`. 
 
 .. note:: uninstalling plugins also deactivates them.
 
+
+Internal Plugins
+~~~~~~~~~~~~~~~~
+
+.. index::
+   pair: plugins; internal
+
+By default, plugins are considered "external", meaning they were
+loaded by the user (either directly or indirectly). External plugins
+can be activated and deactivated through the command-line using
+``--with-<plugin name>`` and ``--without-<plugin name>``.
+
+In some cases, though, you may want to install a plugin in a way that
+would not let the user disable it externally. Such plugins are
+considered "internal", and cannot be deactivated through the command
+line. 
+
+You can install a plugin as an internal plugin by passing ``internal=True`` to the install function.
 
 Plugin Activation
 -----------------
