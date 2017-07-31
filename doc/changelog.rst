@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`662` Improve notifications plugin
 * :feature:`651` Add ``host_fqdn`` and ``host_name`` attributes to session
 * :feature:`647` Support internal plugins
 * :feature:`647` Support installing plugins as "internal" -- thus not letting users disable or enable them through the command line

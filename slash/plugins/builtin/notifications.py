@@ -1,35 +1,80 @@
 from ..interface import PluginInterface
 from ...conf import config
 from ...ctx import session
-from functools import partial
-import time
-import socket
-import requests
+from ...exception_handling import handling_exceptions
+from email.mime.text import MIMEText
+from vintage import warn_deprecation
+import datetime
 import gossip
+import requests
+import smtplib
+import slash
 
 
-def _post_notification(url, api_key, title, message):
-    response = requests.post(url, {"apikey": api_key, "application": "slash", "event": title, "description": message})
+_SLASH_ICON = "http://slash.readthedocs.org/en/latest/_static/slash-logo.png"
+
+_HTML_TEMPLATE = '''
+Session ID: <a href=\'{backslash_link}\'>{session_id}</a>
+Run by: {full_name}
+Run from: {host_name}
+
+Session Summary:
+Total tests count: {total_num_tests}
+Errors/Failures count: {non_successful_tests}
+'''
+
+
+def _post_request(url, **kwargs):
+    response = requests.post(url, **kwargs)
     response.raise_for_status()
+    return response
 
 
-def _pushbullet_notification(api_key, title, message):
-    data = {
-        "type": "note",
-        "title": title,
-        "body": message
-    }
-    response = requests.post(
-        "https://api.pushbullet.com/api/pushes",
-        data=data,
-        auth=(api_key, ""))
-    response.raise_for_status()
+def _send_email(smtp_server, subject, body, from_email, to_list, cc_list):
+    """Send an email.
+
+    :param str smtp_server: The smtp_server uri
+    :param str subject: The email subject.
+    :param str body: The email body.
+    :param str from_email: The from address.
+    :param list to_list: A list of email addresses to send to.
+    :param list cc_list: A list of email addresses to send to as cc.
+    """
+    msg = MIMEText(body, 'html')
+
+    if not to_list:
+        to_list = []
+
+    if not cc_list:
+        cc_list = []
+
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = ', '.join(to_list)
+    msg['Cc'] = ', '.join(cc_list)
+    smtp = smtplib.SMTP(smtp_server)
+    try:
+        smtp.sendmail(from_email, to_list + cc_list, msg.as_string())
+    finally:
+        smtp.quit()
 
 
 class Message(object):
-    def __init__(self, title, body):
+    def __init__(self, title, body_template, html_body_template, kwargs):
         self.title = title
-        self.body = body
+        self.body = body_template
+        self.html_body = html_body_template
+        self.kwargs = kwargs
+
+    def get_title(self):
+        return self.title.format(**self.kwargs)
+
+    def get_short_message(self):
+        return self.body.format(**self.kwargs)
+
+    def get_html_message(self):
+        return self.html_body.format(**self.kwargs)
+
 
 
 class Plugin(PluginInterface):
@@ -37,41 +82,139 @@ class Plugin(PluginInterface):
     For more information see https://slash.readthedocs.org/en/master/builtin_plugins.html#notifications
     """
 
-    def get_name(self):
-        return "notifications"
-
-    def get_config(self):
-        return {
+    def __init__(self, *args, **kwargs):
+        super(Plugin, self).__init__(*args, **kwargs)
+        self._notifiers = {}
+        self._basic_config = {
             "prowl_api_key" : None,
             "nma_api_key" : None,
             "pushbullet_api_key": None,
             "notification_threshold": 5,
         }
+        self._add_notifier(self._prowl_notifier, 'prowl', {'api_key': None})
+        self._add_notifier(self._nma_notifier, 'nma', {'api_key': None})
+        self._add_notifier(self._pushbullet_notifier, 'pushbullet', {'api_key': None})
+        self._add_notifier(self._email_notifier, 'email', {'smtp_server': None, 'to_list': [], 'cc_list': []})
+        self._add_notifier(self._slack_notifier, 'slack', {'url': None, 'channel': None, 'from_user': 'slash-bot'})
 
-    def session_start(self):
-        self._session_start_time = time.time() #pylint: disable=W0201
+    def get_name(self):
+        return 'notifications'
 
-    def session_end(self):
-        if time.time() - self._session_start_time < config.root.plugin_config.notifications.notification_threshold:
+    def get_config(self):
+        return self._basic_config
+
+    def _add_notifier(self, func, name, conf_dict=None):
+        self._notifiers[name] = func
+        if not conf_dict:
+            conf_dict = {}
+        assert isinstance(conf_dict, dict)
+        conf_dict.setdefault('enabled', True)
+        self._basic_config[name] = conf_dict
+
+    def _get_from_config_with_legacy(self, notifier_name, legacy_name, new_name):
+        this_config = config.get_path('plugin_config.notifications')
+        value = this_config[legacy_name]
+        if value:
+            warn_deprecation('{} is depreacted. use {}.{} instead'.format(legacy_name, notifier_name, new_name))
+        else:
+            value = this_config[notifier_name][new_name]
+        return value
+
+    @staticmethod
+    def _os_post_notification(url, api_key, message):
+        if api_key:
+            data = {
+                "apikey": api_key,
+                "application": "slash",
+                "event": message.get_title(),
+                "description": message.get_short_message(),
+            }
+            _post_request(url, data=data)
+
+    def _prowl_notifier(self, message):
+        api_key = self._get_from_config_with_legacy('prowl', 'prowl_api_key', 'api_key')
+        self._os_post_notification("https://prowl.weks.net/publicapi/add", api_key, message)
+
+    def _nma_notifier(self, message):
+        api_key = self._get_from_config_with_legacy('nma', 'nma_api_key', 'api_key')
+        self._os_post_notification("https://www.notifymyandroid.com/publicapi/notify", api_key, message)
+
+    def _pushbullet_notifier(self, message):
+        api_key = self._get_from_config_with_legacy('pushbullet', 'pushbullet_api_key', 'api_key')
+        if api_key:
+            data = {"type": "note", "title": message.get_title(), "body": message.get_short_message()}
+            _post_request("https://api.pushbullet.com/api/pushes", data=data, auth=(api_key, ""))
+
+    def _email_notifier(self, message):
+        email_config = config.root.plugin_config.notifications.email
+        email_kwargs = {
+            'from_email': 'Slash <noreply@getslash.github.io>',
+            'subject': message.get_title(),
+            'body': message.get_html_message().replace('\n', '<br>'),
+            'smtp_server': email_config.smtp_server,
+            'to_list': email_config.to_list or None,
+            'cc_list': email_config.cc_list,
+        }
+        if all(value is not None for value in email_kwargs.values()):
+            _send_email(**email_kwargs)
+
+    def _slack_notifier(self, message):
+        slack_config = config.root.plugin_config.notifications.slack
+        if (slack_config.url is None) or (slack_config.channel is None):
             return
 
-        result = "successfully" if session.results.is_success() else "unsuccessfully"
-        hostname = socket.gethostname().split(".")[0]
-        body = "{0}\n\n{1}".format(session.results, session.id)
+        kwargs = {
+            'attachments': [{
+                'title': message.get_title(),
+                'fallback': 'Session {session_id} {result}'.format(**message.kwargs),
+                'text': message.get_short_message(),
+                'color': 'good' if self._finished_successfully() else 'danger',
+                }],
+            'channel': slack_config.channel,
+            'username': slack_config.from_user,
+            'icon_url': _SLASH_ICON,
+            }
+        _post_request(slack_config.url, json=kwargs)
 
-        message = Message("Slash session in {0} ended {1}".format(hostname, result), body)
+    def _finished_successfully(self):
+        return session.results.is_success(allow_skips=True)
+
+    def _get_message(self):
+        kwargs = {
+            'session_id': session.id,
+            'host_name': session.host_name,
+            'full_name': 'N/A',
+            'duration': str(datetime.timedelta(seconds=session.duration)).partition('.')[0],
+            'result': "successfully" if self._finished_successfully() else "unsuccessfully",
+            'results_summary': repr(session.results).replace('<', '').replace('>', ''),
+            'total_num_tests': session.results.get_num_results(),
+            'non_successful_tests': session.results.get_num_errors() + session.results.get_num_failures(),
+        }
+        backslash_plugin = slash.plugins.manager.get_active_plugins().get('backslash')
+        if backslash_plugin:
+            config.root.plugin_config.notifications.email.to_list.append(backslash_plugin.session.user_email)
+            url = backslash_plugin.webapp_url + 'sessions/{}'.format(session.id)
+            kwargs['backslash_link'] = url
+            kwargs['full_name'] = backslash_plugin.session.user_display_name
+            session_info = 'Backslash: {backslash_link}'
+        else:
+            session_info = 'Session ID: {session_id}'
+        short_message = "{results_summary}\n\n" + session_info
+        title = "Slash session in {host_name} ended {result} (duration: {duration})"
+        return Message(title, short_message, _HTML_TEMPLATE, kwargs)
+
+    def session_end(self):
+        if (session.duration is None) or \
+           (session.duration < config.root.plugin_config.notifications.notification_threshold):
+            return
+
+        message = self._get_message()
         gossip.trigger("slash-gossip.prepare_notification", message=message)
 
-        self._notify(message.title, message.body)
+        this_config = config.get_path('plugin_config.notifications')
 
-    def _notify(self, title, message):
-        this_config = config.root.plugin_config.notifications
-        for func, api_key in [
-                (partial(_post_notification, "https://prowl.weks.net/publicapi/add"), this_config.prowl_api_key),
-                (partial(_post_notification, "https://www.notifymyandroid.com/publicapi/notify"), this_config.nma_api_key),
-                (_pushbullet_notification, this_config.pushbullet_api_key),
-                ]:
-            if api_key is None:
+        for notifier_name, notifier_func in self._notifiers.items():
+            if not this_config[notifier_name]['enabled']:
                 continue
-
-            func(api_key, title, message)
+            with handling_exceptions(swallow=True):
+                notifier_func(message)
