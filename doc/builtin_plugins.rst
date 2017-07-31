@@ -15,8 +15,18 @@ To use it, run Slash with ``--with-coverage``, and optionally specify modules to
 Notifications
 -------------
 
-*STUB*
+This plugins notifies the session results on session end. This plugin support multiple notification types, for example: email, slack.
 
+To use it, run Slash with ``--with-notifications``.
+Please notice that each notification type requires additional configuration values.
+
+For using email notification, you'll need to configure your smtp server::
+
+  $ slash run --with-notifications -o plugin_config.notifications.email.smtp_server='my-smtp-server.com'
+
+For using slack notification, you should firstly configure `slack webhook integration <https://api.slack.com/incoming-webhooks>`_. And run slash::
+
+  $ slash run --with-notifications -o plugin_config.notifications.slack.url='your-webhook-ingetration-url' -o plugin_config.notifications.slack.channel='@myslackuser'
 
 XUnit
 -----
