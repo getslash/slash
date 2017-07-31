@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`651` Add ``host_fqdn`` and ``host_name`` attributes to session
 * :feature:`647` Support internal plugins
 * :release:`1.3.0 <24-07-2017>`
 * :feature:`213` Added parallel execution capability (still considered experimental) - tests can be run in parallel by multiple subprocess "workers". See `the documentation <http://slash.readthedocs.io/en/master/parallel.html>`_ for more information
