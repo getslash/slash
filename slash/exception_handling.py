@@ -129,11 +129,13 @@ class _HandlingException(object):
             exc_info = (exc_info[0], exc_info[1], first_tb._tb) # pylint: disable=protected-access
         handle_exception(exc_info, **self._kwargs)
         self._handled.exception = exc_info[1]
-        if isinstance(exc_value, slash_context.session.get_skip_exception_types()):
+        skip_types = () if slash_context.session is None else slash_context.session.get_skip_exception_types()
+        if isinstance(exc_value, skip_types):
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
             if PY2:
                 sys.exc_clear()  # pylint: disable=no-member
+            _logger.trace('Swallowing {!r}', exc_value)
             return True
         return None
 
