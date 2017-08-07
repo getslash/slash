@@ -56,6 +56,9 @@ _define('exception_caught_after_debugger',
 _define('before_worker_start', doc="Called in parallel execution mode, before the parent starts the child worker",
         arg_names=("worker_config",))
 
+_define('prepare_notification', doc='Called with a message object prior to it being sent via the notifications plugin (if enabled)',
+        arg_names=("message",))
+
 _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()
 _slash_group.set_exception_policy(gossip.RaiseDefer())
