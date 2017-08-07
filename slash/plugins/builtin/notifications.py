@@ -1,14 +1,14 @@
 from ..interface import PluginInterface
+from ... import hooks
 from ...conf import config
 from ...ctx import session
 from ...exception_handling import handling_exceptions
-from ...utils.conf_utils import Doc, Cmdline
+from ...utils.conf_utils import Cmdline
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from vintage import warn_deprecation
 import datetime
-import gossip
 from pkg_resources import resource_string
 import requests
 import slash
@@ -220,7 +220,7 @@ class Plugin(PluginInterface):
             return
 
         message = self._get_message()
-        gossip.trigger("slash-gossip.prepare_notification", message=message)
+        hooks.prepare_notification(message=message) # pylint: disable=no-member
 
         this_config = config.get_path('plugin_config.notifications')
 
