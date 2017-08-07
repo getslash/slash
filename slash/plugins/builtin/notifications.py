@@ -2,27 +2,21 @@ from ..interface import PluginInterface
 from ...conf import config
 from ...ctx import session
 from ...exception_handling import handling_exceptions
+from ...utils.conf_utils import Doc, Cmdline
+
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from vintage import warn_deprecation
 import datetime
 import gossip
+from pkg_resources import resource_string
 import requests
-import smtplib
 import slash
+import smtplib
+import jinja2
 
 
 _SLASH_ICON = "http://slash.readthedocs.org/en/latest/_static/slash-logo.png"
-
-_HTML_TEMPLATE = '''
-Session ID: <a href=\'{backslash_link}\'>{session_id}</a>
-Run by: {full_name}
-Run from: {host_name}
-
-Session Summary:
-Total tests count: {total_num_tests}
-Errors/Failures count: {non_successful_tests}
-'''
-
 
 def _post_request(url, **kwargs):
     response = requests.post(url, **kwargs)
@@ -40,7 +34,8 @@ def _send_email(smtp_server, subject, body, from_email, to_list, cc_list):
     :param list to_list: A list of email addresses to send to.
     :param list cc_list: A list of email addresses to send to as cc.
     """
-    msg = MIMEText(body, 'html')
+    msg = MIMEMultipart('alternative')
+    msg.attach(MIMEText(body, 'html'))
 
     if not to_list:
         to_list = []
@@ -60,10 +55,9 @@ def _send_email(smtp_server, subject, body, from_email, to_list, cc_list):
 
 
 class Message(object):
-    def __init__(self, title, body_template, html_body_template, kwargs):
+    def __init__(self, title, body_template, kwargs):
         self.title = title
         self.body = body_template
-        self.html_body = html_body_template
         self.kwargs = kwargs
 
     def get_title(self):
@@ -72,8 +66,17 @@ class Message(object):
     def get_short_message(self):
         return self.body.format(**self.kwargs)
 
+    _email_template = None
+
+    def _get_html_template(self):
+        returned = self._email_template
+        if returned is None:
+            source = resource_string('slash.plugins.builtin', 'email_template.j2').decode('utf-8')
+            returned = type(self)._email_template = jinja2.Template(source)
+        return returned
+
     def get_html_message(self):
-        return self.html_body.format(**self.kwargs)
+        return self._get_html_template().render(**self.kwargs)
 
 
 
@@ -94,7 +97,11 @@ class Plugin(PluginInterface):
         self._add_notifier(self._prowl_notifier, 'prowl', {'api_key': None})
         self._add_notifier(self._nma_notifier, 'nma', {'api_key': None})
         self._add_notifier(self._pushbullet_notifier, 'pushbullet', {'api_key': None})
-        self._add_notifier(self._email_notifier, 'email', {'smtp_server': None, 'to_list': [], 'cc_list': []})
+        self._add_notifier(self._email_notifier, 'email', {
+            'smtp_server': None,
+            'to_list': [] // Cmdline(append='--email-to', metavar='ADDRESS'),
+            'cc_list': []
+        })
         self._add_notifier(self._slack_notifier, 'slack', {'url': None, 'channel': None, 'from_user': 'slash-bot'})
 
     def get_name(self):
@@ -109,6 +116,7 @@ class Plugin(PluginInterface):
             conf_dict = {}
         assert isinstance(conf_dict, dict)
         conf_dict.setdefault('enabled', True)
+        conf_dict['enabled'] //= Cmdline(on='--notify-{}'.format(name))
         self._basic_config[name] = conf_dict
 
     def _get_from_config_with_legacy(self, notifier_name, legacy_name, new_name):
@@ -180,8 +188,11 @@ class Plugin(PluginInterface):
         return session.results.is_success(allow_skips=True)
 
     def _get_message(self):
+        title = "Slash Session has {}".format(
+            "Succeeded" if session.results.is_success(allow_skips=True) else "Failed")
         kwargs = {
             'session_id': session.id,
+            'title': title,
             'host_name': session.host_name,
             'full_name': 'N/A',
             'duration': str(datetime.timedelta(seconds=session.duration)).partition('.')[0],
@@ -200,8 +211,8 @@ class Plugin(PluginInterface):
         else:
             session_info = 'Session ID: {session_id}'
         short_message = "{results_summary}\n\n" + session_info
-        title = "Slash session in {host_name} ended {result} (duration: {duration})"
-        return Message(title, short_message, _HTML_TEMPLATE, kwargs)
+        return Message(title, short_message, kwargs)
+
 
     def session_end(self):
         if (session.duration is None) or \
