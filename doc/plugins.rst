@@ -119,7 +119,7 @@ In many cases you would like to receive options from the command line. Plugins c
 Plugin Configuration
 --------------------
 
-Plugins can expose the :func:`config <slash.plugins.PluginInterface.get_config>` can provide configuration to be placed under ``plugin_config.<plugin name>``:
+Plugins can override the :func:`config <slash.plugins.PluginInterface.get_config>` method to provide configuration to be placed under ``plugin_config.<plugin name>``:
 
 .. code-block:: python
 
@@ -130,6 +130,7 @@ Plugins can expose the :func:`config <slash.plugins.PluginInterface.get_config>`
              'log_destination': '/some/default/path'
          }
 
+The configuration is then accessible with :func:`get_current_config <slash.plugins.PluginInterface.current_config>` property.
 
 Plugin Examples
 ---------------
