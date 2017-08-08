@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Add ``current_config`` property to plugins
 * :release:`1.4.0 <8-8-2017>`
 * :feature:`-` Added new hook ``prepare_notification`` to process notifications before being sent by the notifications plugin
 * :feature:`662` Improve notifications plugin, add support for email notifications

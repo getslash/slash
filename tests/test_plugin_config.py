@@ -25,9 +25,11 @@ def test_plugin_config():
                     'value_1': value,
                 }}
 
-    slash.plugins.manager.install(Plugin())
+    plugin = Plugin()
+    slash.plugins.manager.install(plugin)
 
     assert slash.config.root.plugin_config.sample.values.value_1 is value
+    assert plugin.current_config.values.value_1 is value
 
     slash.plugins.manager.uninstall('sample')
 
