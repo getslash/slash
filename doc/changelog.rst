@@ -1,8 +1,9 @@
 Changelog
 =========
 
+* :release:`1.4.0 <8-8-2017>`
 * :feature:`-` Added new hook ``prepare_notification`` to process notifications before being sent by the notifications plugin
-* :feature:`662` Improve notifications plugin
+* :feature:`662` Improve notifications plugin, add support for email notifications
 * :feature:`651` Add ``host_fqdn`` and ``host_name`` attributes to session
 * :feature:`647` Support internal plugins
 * :feature:`647` Support installing plugins as "internal" -- thus not letting users disable or enable them through the command line
