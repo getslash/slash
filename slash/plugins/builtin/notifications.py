@@ -158,7 +158,7 @@ class Plugin(PluginInterface):
         email_kwargs = {
             'from_email': 'Slash <noreply@getslash.github.io>',
             'subject': message.get_title(),
-            'body': message.get_html_message().replace('\n', '<br>'),
+            'body': message.get_html_message(),
             'smtp_server': email_config.smtp_server,
             'to_list': email_config.to_list or None,
             'cc_list': email_config.cc_list,
@@ -188,7 +188,8 @@ class Plugin(PluginInterface):
         return session.results.is_success(allow_skips=True)
 
     def _get_message(self):
-        title = "Slash Session has {}".format(
+        title = "Slash Session on {} has {}".format(
+            session.host_name,
             "Succeeded" if session.results.is_success(allow_skips=True) else "Failed")
         kwargs = {
             'session_id': session.id,
