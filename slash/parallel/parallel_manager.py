@@ -6,6 +6,7 @@ import subprocess
 import time
 import logbook
 import threading
+from tempfile import mkdtemp
 from  six.moves import xmlrpc_client
 from .. import log
 from ..exceptions import INTERRUPTION_EXCEPTIONS, ParallelServerIsDown, ParallelTimeout
@@ -27,7 +28,9 @@ class ParallelManager(object):
     def __init__(self, args):
         super(ParallelManager, self).__init__()
         self.server = None
-        self.args = [sys.executable, '-m', 'slash.frontend.main', 'run', '--parallel-parent-session-id', context.session.id] + args
+        self.workers_error_dircetory = mkdtemp()
+        self.args = [sys.executable, '-m', 'slash.frontend.main', 'run', '--parallel-parent-session-id', context.session.id, \
+                    '--workers-error-dir', self.workers_error_dircetory] + args
         self.workers_num = config.root.parallel.num_workers
         self.workers = {}
         self.max_worker_id = 1
@@ -82,12 +85,26 @@ class ParallelManager(object):
             for worker in self.workers.values():
                 worker.send_signal(signal.SIGINT)
 
+    def report_worker_error_logs(self):
+        found_worker_errors_file = False
+        for file_name in os.listdir(self.workers_error_dircetory):
+            if file_name.startswith(config.root.parallel.worker_error_file):
+                found_worker_errors_file = True
+                with open(os.path.join(self.workers_error_dircetory, file_name)) as worker_file:
+                    content = worker_file.readlines()
+                    for line in content:
+                        _logger.error("{}: {}", file_name, line)
+        if not found_worker_errors_file:
+            _logger.error("No worker error files were found")
+
+
     def wait_all_workers_to_connect(self):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
             if time.time() - self.server.start_time > config.root.parallel.worker_connect_timeout * self.workers_num:
                 _logger.error("Timeout: Not all clients connected to server, terminating")
                 _logger.error("Clients connected: {}".format(self.server.clients_last_communication_time.keys()))
                 self.kill_workers()
+                self.report_worker_error_logs()
                 raise ParallelTimeout("Not all clients connected")
             time.sleep(TIME_BETWEEN_CHECKS)
 
@@ -95,6 +112,7 @@ class ParallelManager(object):
         for worker_id, last_connection_time in iteritems(self.server.get_workers_last_connection_time()):
             if time.time() - last_connection_time > config.root.parallel.communication_timeout_secs:
                 _logger.error("Worker {} is down, terminating session".format(worker_id))
+                self.report_worker_error_logs()
                 if not config.root.tmux.enabled:
                     if self.workers[worker_id].poll() is None:
                         self.workers[worker_id].kill()
@@ -112,6 +130,7 @@ class ParallelManager(object):
             if self.server.executing_tests:
                 _logger.error("Currently executed tests indexes: {}".format(self.server.executing_tests.values()))
             self.kill_workers()
+            self.report_worker_error_logs()
             raise ParallelTimeout("No request sent to server for {} seconds".format(config.root.parallel.no_request_timeout))
 
     def is_process_running(self, pid):

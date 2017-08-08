@@ -33,9 +33,21 @@ class Worker(object):
         except (pickle.PicklingError, TypeError):
             _logger.error("Failed to pickle warning. Message: {}, File: {}, Line: {}".format(warning.message, warning.filename, warning.lineno))
 
+    def write_to_error_file(self, msg):
+        try:
+            file_name = "{}-{}.log".format(config.root.parallel.worker_error_file, self.client_id)
+            worker_error_file = os.path.join(config.root.parallel.workers_error_dir, file_name)
+            with open(worker_error_file, 'a') as error_file:
+                error_file.write(msg)
+        except OSError as err:
+            _logger.error("Failed to write to worker error file, error: {}".format(str(err)))
+
     def connect_to_server(self):
-        self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
-        self.client.connect(self.client_id, os.getpid())
+        try:
+            self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
+            self.client.connect(self.client_id, os.getpid())
+        except OSError as err:
+            self.write_to_error_file("Failed to connect to server, error: {}".format(str(err)))
 
     def start_execution(self, app, collected_tests):
         if os.getpid() != os.getpgid(0):
@@ -77,7 +89,11 @@ class Worker(object):
                             _logger.error("Worker_id {} recieved protocol error message, terminating".format(self.client_id))
                             should_stop = True
             except INTERRUPTION_EXCEPTIONS:
+                self.write_to_error_file("Worker interrupted while executing test")
                 _logger.error("Worker interrupted while executing test")
+                raise
+            except Exception as err:
+                self.write_to_error_file(str(err))
                 raise
             else:
                 context.session.mark_complete()

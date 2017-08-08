@@ -1,5 +1,6 @@
 import itertools
 import sys
+import socket
 import time
 import uuid
 from contextlib import contextmanager
@@ -22,7 +23,7 @@ class Session(Activatable):
     """ Represents a slash session
     """
 
-    duration = start_time = end_time = None
+    duration = start_time = end_time = host_fqdn = host_name = None
 
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
@@ -94,6 +95,9 @@ class Session(Activatable):
 
     @contextmanager
     def get_started_context(self):
+        if self.host_fqdn is None:
+            type(self).host_fqdn = socket.getfqdn()
+        self.host_name = self.host_fqdn.split('.')[0]
         self.start_time = time.time()
         self.results.global_result.mark_started()
         self.cleanups.push_scope('session-global')

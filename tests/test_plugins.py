@@ -72,7 +72,8 @@ def test_active_decorator(restore_plugins_on_cleanup):
     assert isinstance(active, SamplePlugin)
 
 
-def test_custom_hook_registration(request):
+@pytest.mark.parametrize('is_internal', [True, False])
+def test_custom_hook_registration(request, is_internal):
 
     hook_name = 'some_hook'
     with pytest.raises(LookupError):
@@ -87,7 +88,7 @@ def test_custom_hook_registration(request):
         def unknown(self):
             pass
     p = MyPlugin()
-    plugins.manager.install(p, activate=True)
+    plugins.manager.install(p, activate=True, is_internal=is_internal)
 
     @request.addfinalizer
     def cleanup():              # pylint: disable=unused-variable
@@ -190,6 +191,26 @@ def test_builtin_plugins_are_installed():
             continue
         assert filename[:(-3)] in installed
 
+
+def test_get_installed_plugins():
+
+    class CustomPlugin(PluginInterface):
+        def __init__(self, name):
+            super(CustomPlugin, self).__init__()
+            self._name = name
+
+        def get_name(self):
+            return self._name
+
+    some_plugin = CustomPlugin('some-plugin')
+    internal_plugin = CustomPlugin('internal-plugin')
+    plugins.manager.install(some_plugin)
+    plugins.manager.install(internal_plugin, is_internal=True)
+
+    assert some_plugin.get_name() in plugins.manager.get_installed_plugins(include_internals=True)
+    assert some_plugin.get_name() in plugins.manager.get_installed_plugins(include_internals=False)
+    assert internal_plugin.get_name() in plugins.manager.get_installed_plugins(include_internals=True)
+    assert internal_plugin.get_name() not in plugins.manager.get_installed_plugins(include_internals=False)
 
 def test_cannot_install_incompatible_subclasses(no_plugins):
 

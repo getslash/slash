@@ -251,7 +251,7 @@ def test_parallel_resume(parallel_suite):
     resumed = get_tests_to_resume(result.session.id)
     assert len(resumed) == 1
 
-def test_parallel_symlinks(parallel_suite, logs_dir):
+def test_parallel_symlinks(parallel_suite, logs_dir):   # pylint: disable=unused-argument
     files_dir = logs_dir.join("files")
     links_dir = logs_dir.join("links")
     session = parallel_suite.run(additional_args=['-l', str(files_dir)]).session
@@ -309,3 +309,18 @@ def test_children_not_connected_timeout(runnable_test_dir, config_override):
         with slash.assert_raises(ParallelTimeout) as caught:
             parallel_manager.wait_all_workers_to_connect()
         assert caught.exception.args[0] == 'Not all clients connected'
+
+def test_worker_error_logs(parallel_suite, config_override):
+    config_override("parallel.communication_timeout_secs", 2)
+    parallel_suite[0].when_run.interrupt()
+    summary = parallel_suite.run(num_workers=1, verify=False)
+    [interrupted_result] = summary.get_all_results_for_test(parallel_suite[0])
+    assert interrupted_result.is_interrupted()
+    for result in summary.session.results:
+        if result != interrupted_result:
+            assert result.is_success() or result.is_not_run()
+    file_path = os.path.join(summary.session.parallel_manager.workers_error_dircetory, 'errors-worker-1.log')
+    assert os.path.isfile(file_path)
+    with open(file_path) as error_file:
+        line = error_file.readline()
+        assert 'interrupted' in line

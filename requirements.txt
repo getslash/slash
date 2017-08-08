@@ -6,6 +6,7 @@ confetti>=2.4.1
 dessert>=1.3.1
 emport>=1.1.3
 gossip>=2.2.0
+Jinja2
 Logbook>=1.1.0
 orderedset>=2.0.0
 requests>=1.1.0

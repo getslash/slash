@@ -5,6 +5,7 @@ import os
 import sys
 
 import pytest
+import slash
 from slash import config, site
 from slash._compat import StringIO
 from slash.frontend import slash_run
@@ -164,6 +165,14 @@ def test_slash_run_specific_file(suite):
         t.expect_deselect()
 
     suite.run(args=[os.path.join(suite_path, file.get_relative_path())], commit=False)
+
+
+def test_session_host_variables():
+    with slash.Session() as session:
+        with session.get_started_context():
+            assert session.host_fqdn is not None
+            assert session.host_name is not None
+            assert session.host_fqdn.startswith(session.host_name)
 
 
 @pytest.fixture(autouse=True)
