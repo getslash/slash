@@ -59,6 +59,7 @@ class Message(object):
         self.title = title
         self.body = body_template
         self.kwargs = kwargs
+        self.details_dict = {}
 
     def get_title(self):
         return self.title.format(**self.kwargs)
@@ -94,9 +95,9 @@ class Plugin(PluginInterface):
             "pushbullet_api_key": None,
             "notification_threshold": 5,
         }
-        self._add_notifier(self._prowl_notifier, 'prowl', {'api_key': None})
-        self._add_notifier(self._nma_notifier, 'nma', {'api_key': None})
-        self._add_notifier(self._pushbullet_notifier, 'pushbullet', {'api_key': None})
+        self._add_notifier(self._prowl_notifier, 'prowl', {'api_key': None, 'enabled': True})
+        self._add_notifier(self._nma_notifier, 'nma', {'api_key': None, 'enabled': True})
+        self._add_notifier(self._pushbullet_notifier, 'pushbullet', {'api_key': None, 'enabled': True})
         self._add_notifier(self._email_notifier, 'email', {
             'smtp_server': None,
             'to_list': [] // Cmdline(append='--email-to', metavar='ADDRESS'),
@@ -115,7 +116,7 @@ class Plugin(PluginInterface):
         if not conf_dict:
             conf_dict = {}
         assert isinstance(conf_dict, dict)
-        conf_dict.setdefault('enabled', True)
+        conf_dict.setdefault('enabled', False)
         conf_dict['enabled'] //= Cmdline(on='--notify-{}'.format(name))
         self._basic_config[name] = conf_dict
 
