@@ -27,6 +27,20 @@ For using Slack notification, you should firstly configure `slack webhook integr
 
   $ slash run --with-notifications -o plugin_config.notifications.slack.url='your-webhook-ingetration-url' -o plugin_config.notifications.slack.channel='@myslackuser'
 
+Including Details in Notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. index::
+   pair: notification; details
+
+You can include additional information in your notifications, which is then sent as a part of email messages you receive. This can be done with the ``prepare_notification`` hook:
+
+.. code-block:: python
+
+       @slash.hooks.prepare_notification.register
+       def prepare_notification(message):
+           message.details_dict['additional_information'] = 'some information included'
+
 XUnit
 -----
 

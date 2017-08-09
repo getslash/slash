@@ -2,6 +2,9 @@ Changelog
 =========
 
 * :feature:`-` Add ``current_config`` property to plugins
+* :release:`1.4.1 <9-8-2017>`
+* :bug:`-` Add ability to include details in email notifications
+* :bug:`-` Restore default enabled state for Prowl/NMA/Pushbullet notifications
 * :release:`1.4.0 <8-8-2017>`
 * :feature:`-` Added new hook ``prepare_notification`` to process notifications before being sent by the notifications plugin
 * :feature:`662` Improve notifications plugin, add support for email notifications
@@ -37,7 +40,7 @@ Changelog
 * :bug:`551 major` Fix stopping on error behavior when errors are reported on previous tests
 * :feature:`529` Switch to PBR
 * :feature:`508` Added optional ``end_message`` argument to ``notify_if_slow_context``, allowing better verbosity of long operations
-* :bug:`490` Fixed behavior of plugin dependencies in cases involving mixed usage of plugin-level and hook-level dependencies
+* :bug:`490 major` Fixed behavior of plugin dependencies in cases involving mixed usage of plugin-level and hook-level dependencies
 * :feature:`544` Added ``debug.debugger`` configuration to enable specifying preferred debugger. You can now pass ``-o debug.debugger=ipdb`` to prefer ipdb over pudb, for example
 * :feature:`476` ``slash resume`` was greatly improved, and can now also fetch resumed tests from a recorded session in Backslash, if its plugin is configured
 * :feature:`524` ``slash list``, ``slash list-config`` and ``slash list-plugins`` now supports ``--force-color``/``--no-color`` flags. The default changed from colored to colored only for tty
