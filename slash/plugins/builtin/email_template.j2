@@ -150,6 +150,25 @@
                         <div style="cursor:auto;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;text-align:left;">{{result_summary}}</div>
                       </td>
                     </tr>
+                    
+                    {% for key, value in message.details_dict.items() %}
+                      {% if loop.first %}
+                        <tr>
+                          <td style="word-wrap:break-word;font-size:0px;padding:10px 25px;" align="left">
+                            <div style="cursor:auto;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;text-align:left;"><strong>Additional Details</strong></div>
+                          </td>
+                        </tr>
+                      {% endif %}
+
+                    <tr>
+                      <td style="word-wrap:break-word;font-size:0px;padding:10px 25px;" align="left">
+                        <div style="cursor:auto;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;text-align:left;">{{key}}</div>
+                      </td>
+<td style="word-wrap:break-word;font-size:0px;padding:10px 25px;" align="left">
+                        <div style="cursor:auto;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;text-align:left;">{{value}}</div>
+                      </td>
+                    </tr>
+                    {% endfor %}
                   </tbody>
                 </table>
               </div>

@@ -2,6 +2,7 @@ Changelog
 =========
 
 * :release:`1.4.1 <9-8-2017>`
+* :feature:`- minor` Add ability to include details in email notifications
 * :bug:`-` Restore default enabled state for Prowl/NMA/Pushbullet notifications
 * :release:`1.4.0 <8-8-2017>`
 * :feature:`-` Added new hook ``prepare_notification`` to process notifications before being sent by the notifications plugin

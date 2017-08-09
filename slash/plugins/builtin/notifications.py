@@ -77,7 +77,7 @@ class Message(object):
         return returned
 
     def get_html_message(self):
-        return self._get_html_template().render(**self.kwargs)
+        return self._get_html_template().render(message=self, **self.kwargs)
 
 
 
