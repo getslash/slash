@@ -1,7 +1,8 @@
 Changelog
 =========
 
-* :feature:`-` Add ``current_config`` property to plugins
+* :release:`1.4.2 <13-8-2017>`
+* :bug:`-` Add ``current_config`` property to plugins
 * :release:`1.4.1 <9-8-2017>`
 * :bug:`-` Add ability to include details in email notifications
 * :bug:`-` Restore default enabled state for Prowl/NMA/Pushbullet notifications
