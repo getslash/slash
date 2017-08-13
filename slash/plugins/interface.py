@@ -1,4 +1,6 @@
 import abc
+from ..conf import config
+
 
 class PluginInterface(object):
     """
@@ -18,6 +20,13 @@ class PluginInterface(object):
         ``slash.config.plugin_config.<plugin_name>``
         """
         pass
+
+    @property
+    def current_config(self):
+        """
+        Returns configuration object for plugin
+        """
+        return getattr(config.root.plugin_config, self.get_name())
 
     def deactivate(self):
         """
