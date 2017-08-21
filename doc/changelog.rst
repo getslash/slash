@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`662` Change email notification icon based on session success status
 * :release:`1.4.2 <13-8-2017>`
 * :bug:`-` Add ``current_config`` property to plugins
 * :release:`1.4.1 <9-8-2017>`

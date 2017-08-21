@@ -199,6 +199,7 @@ class Plugin(PluginInterface):
             'full_name': 'N/A',
             'duration': str(datetime.timedelta(seconds=session.duration)).partition('.')[0],
             'result': "successfully" if self._finished_successfully() else "unsuccessfully",
+            'success': self._finished_successfully(),
             'results_summary': repr(session.results).replace('<', '').replace('>', ''),
             'total_num_tests': session.results.get_num_results(),
             'non_successful_tests': session.results.get_num_errors() + session.results.get_num_failures(),
