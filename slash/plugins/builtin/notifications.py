@@ -94,6 +94,7 @@ class Plugin(PluginInterface):
             "nma_api_key" : None,
             "pushbullet_api_key": None,
             "notification_threshold": 5,
+            "notify_only_on_failures": False // Cmdline(on='--notify-only-on-failures'),
         }
         self._add_notifier(self._prowl_notifier, 'prowl', {'api_key': None, 'enabled': True})
         self._add_notifier(self._nma_notifier, 'nma', {'api_key': None, 'enabled': True})
@@ -219,8 +220,10 @@ class Plugin(PluginInterface):
 
 
     def session_end(self):
-        if (session.duration is None) or \
-           (session.duration < config.root.plugin_config.notifications.notification_threshold):
+        if (session.duration is None) or (session.duration < self.current_config.notification_threshold):
+            return
+
+        if session.results.is_success(allow_skips=True) and self.current_config.notify_only_on_failures:
             return
 
         message = self._get_message()
