@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`661` Support PDB notifications by notifications plugin
 * :feature:`660` Add configuration for notifications plugin ``--notify-only-on-failure``
 * :feature:`665` Support overriding notifications plugin's ``from_email`` by configuration
 * :feature:`668` Fixing console color is not working on windows

@@ -55,11 +55,12 @@ def _send_email(smtp_server, subject, body, from_email, to_list, cc_list):
 
 
 class Message(object):
-    def __init__(self, title, body_template, kwargs):
+    def __init__(self, title, body_template, kwargs, is_pdb):
         self.title = title
         self.body = body_template
         self.kwargs = kwargs
         self.details_dict = {}
+        self.is_pdb = is_pdb
 
     def get_title(self):
         return self.title.format(**self.kwargs)
@@ -95,6 +96,7 @@ class Plugin(PluginInterface):
             "pushbullet_api_key": None,
             "notification_threshold": 5,
             "notify_only_on_failures": False // Cmdline(on='--notify-only-on-failures'),
+            "notify_on_pdb": True,
         }
         self._add_notifier(self._prowl_notifier, 'prowl', {'api_key': None, 'enabled': True})
         self._add_notifier(self._nma_notifier, 'nma', {'api_key': None, 'enabled': True})
@@ -174,12 +176,13 @@ class Plugin(PluginInterface):
         if (slack_config.url is None) or (slack_config.channel is None):
             return
 
+        color = '#439FE0' if message.is_pdb else ('good' if self._finished_successfully() else 'danger')
         kwargs = {
             'attachments': [{
                 'title': message.get_title(),
                 'fallback': 'Session {session_id} {result}'.format(**message.kwargs),
                 'text': message.get_short_message(),
-                'color': 'good' if self._finished_successfully() else 'danger',
+                'color': color,
                 }],
             'channel': slack_config.channel,
             'username': slack_config.from_user,
@@ -190,17 +193,14 @@ class Plugin(PluginInterface):
     def _finished_successfully(self):
         return session.results.is_success(allow_skips=True)
 
-    def _get_message(self):
-        title = "Slash Session on {} has {}".format(
-            session.host_name,
-            "Succeeded" if session.results.is_success(allow_skips=True) else "Failed")
+    def _get_message(self, short_message, is_pdb):
+        result_str = 'entered PDB' if is_pdb else ("Succeeded" if self._finished_successfully() else "Failed")
         kwargs = {
             'session_id': session.id,
-            'title': title,
             'host_name': session.host_name,
             'full_name': 'N/A',
             'duration': str(datetime.timedelta(seconds=session.duration)).partition('.')[0],
-            'result': "successfully" if self._finished_successfully() else "unsuccessfully",
+            'result': result_str,
             'success': self._finished_successfully(),
             'results_summary': repr(session.results).replace('<', '').replace('>', ''),
             'total_num_tests': session.results.get_num_results(),
@@ -215,20 +215,27 @@ class Plugin(PluginInterface):
             session_info = 'Backslash: {backslash_link}'
         else:
             session_info = 'Session ID: {session_id}'
-        short_message = "{results_summary}\n\n" + session_info
-        return Message(title, short_message, kwargs)
+        short_message += "\n\n" + session_info
+        title = "Slash Session on {host_name} has {result}".format(**kwargs)
+        kwargs['title'] = title
+        return Message(title, short_message, kwargs, is_pdb)
 
+    def entering_debugger(self, exc_info):
+        if not self.current_config.notify_on_pdb:
+            return
+        self._notify_all(short_message=repr(exc_info[1]), is_pdb=True)
 
     def session_end(self):
-        if (session.duration is None) or (session.duration < self.current_config.notification_threshold):
+        if session.duration < self.current_config.notification_threshold:
             return
-
-        if session.results.is_success(allow_skips=True) and self.current_config.notify_only_on_failures:
+        if self._finished_successfully() and self.current_config.notify_only_on_failures:
             return
+        self._notify_all(short_message='{results_summary}', is_pdb=False)
 
-        message = self._get_message()
+
+    def _notify_all(self, short_message, is_pdb):
+        message = self._get_message(short_message, is_pdb)
         hooks.prepare_notification(message=message) # pylint: disable=no-member
-
         this_config = config.get_path('plugin_config.notifications')
 
         for notifier_name, notifier_func in self._notifiers.items():

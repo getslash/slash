@@ -23,7 +23,7 @@ class Session(Activatable):
     """ Represents a slash session
     """
 
-    duration = start_time = end_time = host_fqdn = host_name = None
+    start_time = end_time = host_fqdn = host_name = None
 
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
@@ -93,6 +93,13 @@ class Session(Activatable):
         self._logging_context = None
         ctx.pop_context()
 
+    @property
+    def duration(self):
+        if self.end_time is not None:
+            return self.end_time - self.start_time
+        curr_time = time.time()
+        return (self.end_time or curr_time) - (self.start_time or curr_time)
+
     @contextmanager
     def get_started_context(self):
         if self.host_fqdn is None:
@@ -118,7 +125,6 @@ class Session(Activatable):
             self._started = False
             self.results.global_result.mark_finished()
             self.end_time = time.time()
-            self.duration = self.end_time - self.start_time
 
             with handling_exceptions():
                 self.cleanups.pop_scope('session-global')
