@@ -99,6 +99,7 @@ class Plugin(PluginInterface):
         self._add_notifier(self._nma_notifier, 'nma', {'api_key': None, 'enabled': True})
         self._add_notifier(self._pushbullet_notifier, 'pushbullet', {'api_key': None, 'enabled': True})
         self._add_notifier(self._email_notifier, 'email', {
+            'from_email': 'Slash <noreply@getslash.github.io>',
             'smtp_server': None,
             'to_list': [] // Cmdline(append='--email-to', metavar='ADDRESS'),
             'cc_list': []
@@ -157,7 +158,7 @@ class Plugin(PluginInterface):
     def _email_notifier(self, message):
         email_config = config.root.plugin_config.notifications.email
         email_kwargs = {
-            'from_email': 'Slash <noreply@getslash.github.io>',
+            'from_email': email_config.from_email,
             'subject': message.get_title(),
             'body': message.get_html_message(),
             'smtp_server': email_config.smtp_server,

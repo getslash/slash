@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`665` Support overriding notifications plugin's ``from_email`` by configuration
 * :feature:`668` Fixing console color is not working on windows
 * :feature:`662` Change email notification icon based on session success status
 * :release:`1.4.2 <13-8-2017>`
