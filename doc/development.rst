@@ -16,4 +16,5 @@ Special thanks go to these people for taking the time in improving Slash and pro
 
 * Alon Horev (@alonho)
 * Omer Gertel
+* Pierre-Luc Tessier Gagné
 
