@@ -12,6 +12,9 @@ from contextlib import contextmanager
 
 _native_logger = logbook.Logger('slash.native_warnings')
 
+class LogbookWarning(UserWarning):
+    pass
+
 class SessionWarnings(object):
     """
     Holds all warnings emitted during the session
@@ -30,7 +33,8 @@ class SessionWarnings(object):
     def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
         warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
         self.add(warning)
-        _native_logger.warning('{!r}', warning)
+        if not issubclass(category, LogbookWarning):
+            _native_logger.warning('{!r}', warning)
 
     def add(self, warning):
         hooks.warning_added(warning=warning) # pylint: disable=no-member
@@ -68,8 +72,9 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
         return record.level == self.level
 
     def emit(self, record):
-        warning = RecordedWarning.from_log_record(record, self)
-        self.session_warnings.add(warning)
+        warnings.warn_explicit(message=record.message, category=LogbookWarning, filename=record.filename,
+                               lineno=record.lineno, module=record.module)
+
 
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
