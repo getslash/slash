@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`675` Emit native python warnings for logbook warning level
 * :feature:`661` Support PDB notifications by notifications plugin
 * :feature:`660` Add configuration for notifications plugin ``--notify-only-on-failure``
 * :feature:`665` Support overriding notifications plugin's ``from_email`` by configuration

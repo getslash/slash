@@ -34,7 +34,7 @@ def test_warning_added_hook(suite, suite_test):
     def warning_added(warning):
         captured.append(warning)
 
-    suite_test.append_line('slash.logger.warning("message here")')
+    suite_test.append_line('slash.logger.warning("message {}", "here")')
     suite.run()
     assert captured
     [w] = captured # pylint: disable=unbalanced-tuple-unpacking
@@ -43,6 +43,10 @@ def test_warning_added_hook(suite, suite_test):
     assert isinstance(w.filename, str)
     assert w.lineno
     assert w.filename
+    assert w.filename.rsplit('/', 1)[-1] == suite_test.file.get_relative_path()
+    warning_type = w.details['type']
+    assert isinstance(warning_type, str)
+    assert warning_type == 'LogbookWarning'
 
 
 def test_native_warnings(message):
