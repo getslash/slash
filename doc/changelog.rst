@@ -4,8 +4,6 @@ Changelog
 * :feature:`675` Emit native python warnings for logbook warning level
 * :feature:`661` Support PDB notifications by notifications plugin
 * :feature:`660` Add configuration for notifications plugin ``--notify-only-on-failure``
-* :feature:`665` Support overriding notifications plugin's ``from_email`` by configuration
-* :feature:`668` Fixing console color is not working on windows
 * :feature:`662` Change email notification icon based on session success status
 * :bug:`668` Properly initialize colorama under Windows
 * :bug:`665` Support overriding notifications plugin's ``from_email`` by configuration
