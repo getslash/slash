@@ -13,7 +13,7 @@ from .. import hooks
 from .._compat import OrderedDict, itervalues
 from ..ctx import context
 from ..exception_handling import capture_sentry_exception
-from ..exceptions import FAILURE_EXCEPTION_TYPES
+from .. import exceptions
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
 from ..utils.python import unpickle
@@ -82,34 +82,33 @@ class Result(object):
         """
         if exc_info is None:
             exc_info = sys.exc_info()
-        exc_class, exc_value, _ = exc_info  # pylint: disable=unpacking-non-sequence
+        _, exc_value, _ = exc_info  # pylint: disable=unpacking-non-sequence
 
         if _ADDED_TO_RESULT.is_exception_marked(exc_value):
             return
 
         _ADDED_TO_RESULT.mark_exception(exc_value)
-        if isinstance(exc_value, FAILURE_EXCEPTION_TYPES):
+        if isinstance(exc_value, exceptions.FAILURE_EXCEPTION_TYPES):
             self.add_failure()
         elif isinstance(exc_value, context.session.get_skip_exception_types()):
             self.add_skip(getattr(exc_value, 'reason', str(exc_value)))
-        elif issubclass(exc_class, Exception):
-            #skip keyboardinterrupt and system exit
-            self.add_error(exc_info=exc_info)
-        else:
-            # Assume interrupted
+        elif isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
             session_result = context.session.results.global_result
+            interrupted_test = self.is_interrupted()
             interrupted_session = session_result.is_interrupted()
-
             if not self.is_global_result():
-                # Test was interrupted
-                interrupted_test = self.is_interrupted()
                 self.mark_interrupted()
                 if not interrupted_test and not context.session.has_children():
                     with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."):
                         hooks.test_interrupt() # pylint: disable=no-member
-
             if not interrupted_session:
                 session_result.mark_interrupted()
+
+        elif not isinstance(exc_value, GeneratorExit):
+            #skip keyboardinterrupt and system exit
+            self.add_error(exc_info=exc_info)
+        else:
+            _logger.trace('Ignoring GeneratorExit exception')
 
     def has_errors_or_failures(self):
         return bool(self._failures or self._errors)
