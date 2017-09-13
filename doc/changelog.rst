@@ -1,7 +1,8 @@
 Changelog
 =========
 
-* :feature:`665` Support overriding notifications plugin's ``from_email`` by configuration
+* :bug:`668` Properly initialize colorama under Windows
+* :bug:`665` Support overriding notifications plugin's ``from_email`` by configuration
 * :release:`1.4.2 <13-8-2017>`
 * :bug:`-` Add ``current_config`` property to plugins
 * :release:`1.4.1 <9-8-2017>`
