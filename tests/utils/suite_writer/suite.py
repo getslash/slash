@@ -146,7 +146,7 @@ class Suite(object):
             if app.interrupted:
                 assert expect_interruption, 'Unexpectedly interrupted'
             else:
-                assert not expect_interruption, 'KeyboardInterrupt did not happen'
+                assert not expect_interruption, 'Session was not interrupted as expected'
 
         if captured:
             assert len(captured) == 1

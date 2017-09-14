@@ -12,6 +12,7 @@ from ._compat import ExitStack
 from .conf import config
 from .core.session import Session
 from .reporting.console_reporter import ConsoleReporter
+from . import exceptions
 from .exceptions import TerminatedException, SlashException
 from .exception_handling import handling_exceptions, inhibit_unhandled_exception_traceback, should_inhibit_unhandled_exception_traceback
 from .loader import Loader
@@ -144,7 +145,7 @@ class Application(object):
                 _logger.error('Unexpected error occurred', exc_info=exc_info)
                 self.get_reporter().report_error_message('Unexpected error: {}'.format(exc_value))
 
-            if isinstance(exc_value, (KeyboardInterrupt, SystemExit, TerminatedException)):
+            if isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
                 self._interrupted = True
 
         if exc_type is not None:
