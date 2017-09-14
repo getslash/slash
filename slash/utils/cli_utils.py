@@ -30,7 +30,7 @@ def configure_arg_parser_by_plugins(parser):
     for plugin in itervalues(plugins.manager.get_installed_plugins()):
         group = parser.add_argument_group('Options for {}{}'.format(
             '' if plugins.manager.is_internal_plugin(plugin) else '--with-',
-            plugin.get_name()))
+            plugins.manager.normalize_command_line_name(plugin.get_name())))
         plugin.configure_argument_parser(group)
 
 def configure_arg_parser_by_config(parser, config=None):

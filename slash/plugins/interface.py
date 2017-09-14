@@ -34,7 +34,9 @@ class PluginInterface(object):
         """
         Returns configuration object for plugin
         """
-        return getattr(config.root.plugin_config, self.get_name())
+        from slash.plugins import manager
+        config_name = manager.normalize_config_name(self.get_name())
+        return getattr(config.root.plugin_config, config_name)
 
     def deactivate(self):
         """

@@ -46,6 +46,21 @@ def test_plugin_end_not_called_when_start_not_called(gossip_raise_immediately, h
     assert not errors
 
 
+@pytest.mark.parametrize('illegal_char', ['\t', '\n', '$', '(', '[', '{', '='])
+def test_plugin_with_illegal_name(illegal_char):
+
+    class PluginWithIllegalName(slash.plugins.PluginInterface):
+        def __init__(self):
+            self._name = 'ab' + illegal_char
+
+        def get_name(self):
+            return self._name
+
+    plugin = PluginWithIllegalName()
+    with pytest.raises(slash.plugins.IllegalPluginName):
+        slash.plugins.manager.install(plugin)
+
+
 def test_plugin_with_no_session_start_gets_called_session_end(checkpoint):
 
     @slash.plugins.active
