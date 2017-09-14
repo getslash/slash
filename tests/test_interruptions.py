@@ -117,6 +117,34 @@ def test_interrupt_hooks_should_be_called_once(suite, suite_test, is_last_test, 
     assert result.session.results.global_result.is_interrupted()
 
 
+def test_interrupted_with_custom_exception(suite, suite_test, request):
+
+    import test
+
+    class CustomException(Exception):
+        pass
+    test.__interruption_exception__ = CustomException
+
+    prev_interruption_exceptions = slash.exceptions.INTERRUPTION_EXCEPTIONS
+    slash.exceptions.INTERRUPTION_EXCEPTIONS += (CustomException,)
+
+    @request.addfinalizer
+    def cleanup():
+        del test.__interruption_exception__
+        slash.exceptions.INTERRUPTION_EXCEPTIONS = prev_interruption_exceptions
+
+
+    suite_test.append_line('import test')
+    suite_test.append_line('raise test.__interruption_exception__()')
+    suite_test.expect_interruption()
+
+    for t in suite.iter_all_after(suite_test):
+        t.expect_deselect()
+
+    results = suite.run(expect_interruption=True)
+
+
+
 @pytest.fixture
 def session_interrupt():
     callback = Checkpoint()

@@ -8,7 +8,6 @@ from ..conf import config
 from .. import ctx, hooks, log, exceptions
 from .cleanup_manager import CleanupManager
 from ..exception_handling import handling_exceptions
-from ..exceptions import INTERRUPTION_EXCEPTIONS
 from ..interfaces import Activatable
 from ..reporting.null_reporter import NullReporter
 from ..utils.id_space import IDSpace
@@ -111,7 +110,7 @@ class Session(Activatable):
                     hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield
-        except INTERRUPTION_EXCEPTIONS:
+        except exceptions.INTERRUPTION_EXCEPTIONS:
             hooks.session_interrupt() # pylint: disable=no-member
             raise
         finally:

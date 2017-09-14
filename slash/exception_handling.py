@@ -3,10 +3,10 @@ from .utils.debug import debug_if_needed
 from .utils.exception_mark import mark_exception, get_exception_mark
 from .utils.traceback_proxy import create_traceback_proxy
 from . import hooks as trigger_hook
-from ._compat import PY2
+from . import exceptions
+from ._compat import PY2, PYPY
 from .ctx import context as slash_context
 from .conf import config
-from ._compat import PYPY
 
 import functools
 import threading
@@ -130,7 +130,7 @@ class _HandlingException(object):
         handle_exception(exc_info, **self._kwargs)
         self._handled.exception = exc_info[1]
         skip_types = () if slash_context.session is None else slash_context.session.get_skip_exception_types()
-        if isinstance(exc_value, skip_types):
+        if isinstance(exc_value, skip_types) or isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
             if PY2:

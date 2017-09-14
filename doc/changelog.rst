@@ -1,6 +1,9 @@
 Changelog
 =========
 
+* :bug:`670` Improve handling of interruption exceptions - custom interruption exceptions will now properly cause the session and test to trigger the ``session_interrupt`` and ``test_interrupt`` hooks. Unexpected exceptions like ``SystemExit`` from within tests are now also reported properly instead of silently ignored
+* :bug:`668` Properly initialize colorama under Windows
+* :bug:`665` Support overriding notifications plugin's ``from_email`` by configuration
 * :release:`1.4.2 <13-8-2017>`
 * :bug:`-` Add ``current_config`` property to plugins
 * :release:`1.4.1 <9-8-2017>`

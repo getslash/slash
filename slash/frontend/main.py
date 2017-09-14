@@ -2,6 +2,8 @@
 from __future__ import print_function
 import argparse
 import contextlib
+
+import colorama
 import logbook # pylint: disable=F0401
 import sys
 
@@ -60,7 +62,11 @@ def _setup_logging_context(args):
 
 #### For use with entry_points/console_scripts
 def main_entry_point():
-    sys.exit(main())
+    colorama.init()
+    try:
+        sys.exit(main())
+    finally:
+        colorama.deinit()
 
 if __name__ == "__main__":
     main_entry_point()
