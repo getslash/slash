@@ -6,6 +6,7 @@ import contextlib
 import colorama
 import logbook # pylint: disable=F0401
 import sys
+import os
 
 from ..__version__ import __version__
 
@@ -62,11 +63,14 @@ def _setup_logging_context(args):
 
 #### For use with entry_points/console_scripts
 def main_entry_point():
-    colorama.init()
+    is_windows = os.name == 'nt'
+    if is_windows:
+        colorama.init()
     try:
         sys.exit(main())
     finally:
-        colorama.deinit()
+        if is_windows:
+            colorama.deinit()
 
 if __name__ == "__main__":
     main_entry_point()

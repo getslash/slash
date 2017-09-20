@@ -1,6 +1,12 @@
 Changelog
 =========
 
+* :bug:`679 major` Fix coloring console for non TTY stdout
+* :feature:`675` Emit native python warnings for logbook warning level
+* :feature:`661` Support PDB notifications by notifications plugin
+* :feature:`660` Add configuration for notifications plugin ``--notify-only-on-failure``
+* :feature:`662` Change email notification icon based on session success status
+* :release:`1.4.3 <14-9-2017>`
 * :bug:`670` Improve handling of interruption exceptions - custom interruption exceptions will now properly cause the session and test to trigger the ``session_interrupt`` and ``test_interrupt`` hooks. Unexpected exceptions like ``SystemExit`` from within tests are now also reported properly instead of silently ignored
 * :bug:`668` Properly initialize colorama under Windows
 * :bug:`665` Support overriding notifications plugin's ``from_email`` by configuration
