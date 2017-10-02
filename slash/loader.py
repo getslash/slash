@@ -15,6 +15,7 @@ from .conf import config
 from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
+from .core.markers import repeat_marker
 from . import hooks
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory, is_valid_test_name
@@ -54,8 +55,7 @@ class Loader(object):
 
     def get_runnables(self, paths, prepend_interactive=False):
         assert context.session is not None
-        sources = (t for repetition in range(config.root.run.repeat_all)
-                   for t in self._generate_test_sources(paths))
+        sources = self._generate_repeats(self._generate_test_sources(paths))
         returned = self._collect(sources)
         self._duplicate_funcs |= self._local_config.duplicate_funcs
         for (path, name, line) in sorted(self._duplicate_funcs):
@@ -67,6 +67,20 @@ class Loader(object):
         hooks.tests_loaded(tests=returned) # pylint: disable=no-member
         returned.sort(key=lambda test: test.__slash__.get_sort_key())
         return returned
+
+
+    def _generate_repeats(self, tests):
+        returned = []
+        repeat_each = config.root.run.repeat_each
+        for test in tests:
+            for i in range(repeat_each * repeat_marker.get_value(test.get_test_function(), 1)):
+                returned.append(test.clone() if i else test)
+        num_tests = len(returned)
+        for i in range(config.root.run.repeat_all - 1):
+            for test in itertools.islice(returned, 0, num_tests):
+                returned.append(test.clone())
+        return returned
+
 
     def _collect(self, iterator):
         returned = []

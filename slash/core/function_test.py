@@ -1,5 +1,4 @@
 from types import GeneratorType
-from .._compat import xrange
 from ..exceptions import InvalidTest
 
 from .fixtures.parameters import bound_parametrizations_context
@@ -53,5 +52,4 @@ class FunctionTestFactory(RunnableTestFactory):
     def _generate_tests(self, fixture_store):
         namespace = fixture_store.get_current_namespace()
         for variation in fixture_store.iter_parametrization_variations(funcs=[self.func]):
-            for _ in xrange(self._get_num_repetitions(self.func)):
-                yield FunctionTest(self.func, fixture_store, namespace, variation)
+            yield FunctionTest(self.func, fixture_store, namespace, variation)
