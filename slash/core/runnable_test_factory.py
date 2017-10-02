@@ -1,8 +1,6 @@
 import sys
 
-from .markers import repeat_marker
 from .metadata import Metadata
-from ..conf import config
 
 
 class RunnableTestFactory(object):
@@ -60,6 +58,3 @@ class RunnableTestFactory(object):
 
     def _generate_tests(self, fixture_store):
         raise NotImplementedError()  # pragma: no cover
-
-    def _get_num_repetitions(self, func):
-        return repeat_marker.get_value(func, 1) * config.root.run.repeat_each

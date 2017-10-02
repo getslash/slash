@@ -1,3 +1,4 @@
+import copy
 from .tagging import NO_TAGS
 
 class RunnableTest(object):
@@ -13,6 +14,12 @@ class RunnableTest(object):
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
         self._variation = variation
+
+    def clone(self):
+        returned = copy.copy(self)
+        for copied_attr in ('_variation', '__slash__'):
+            setattr(returned, copied_attr, copy.copy(getattr(returned, copied_attr)))
+        return returned
 
     @property
     def id(self):

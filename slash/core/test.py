@@ -2,7 +2,7 @@ import functools
 import itertools
 from types import GeneratorType
 
-from .._compat import iteritems, izip, xrange
+from .._compat import iteritems, izip
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest, InvalidTest
 from .fixtures.parameters import bound_parametrizations_context
@@ -30,16 +30,15 @@ class TestTestFactory(RunnableTestFactory):
                 continue
 
             for fixture_variation in self._iter_parametrization_variations(test_method_name, fixture_store):
-                for _ in xrange(self._get_num_repetitions(getattr(self.testclass, test_method_name))):
-                    case = self.testclass(
-                        test_method_name,
-                        fixture_store=fixture_store,
-                        fixture_namespace=fixture_store.get_current_namespace(),
-                        variation=fixture_variation,
-                    )
-                    if self.testclass.__slash_skipped__:
-                        case.run = functools.partial(SkipTest.throw, self.testclass.__slash_skipped_reason__)
-                    yield case  # pylint: disable=protected-access
+                case = self.testclass(
+                    test_method_name,
+                    fixture_store=fixture_store,
+                    fixture_namespace=fixture_store.get_current_namespace(),
+                    variation=fixture_variation,
+                )
+                if self.testclass.__slash_skipped__:
+                    case.run = functools.partial(SkipTest.throw, self.testclass.__slash_skipped_reason__)
+                yield case  # pylint: disable=protected-access
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(
