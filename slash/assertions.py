@@ -6,7 +6,7 @@ from vintage import deprecated
 
 from . import exception_handling
 from ._compat import PY2
-from .exceptions import TestFailed
+from .exceptions import TestFailed, ExpectedExceptionNotCaught
 from .utils import operator_information
 
 sys.modules["slash.should"] = sys.modules[__name__]
@@ -147,7 +147,7 @@ class _CaughtContext(object):
                 expected_classes = (expected_classes, )
             msg = "{0} not raised".format("/".join(e.__name__ for e in expected_classes))
         if self._ensure_caught:
-            raise TestFailed(msg)
+            raise ExpectedExceptionNotCaught(msg, self._expected_classes)
         _logger.debug(msg)
         return True
 

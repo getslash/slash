@@ -7,7 +7,7 @@ import pytest
 
 import slash
 from slash import should
-from slash.exceptions import TestFailed
+from slash.exceptions import TestFailed, ExpectedExceptionNotCaught
 
 
 @pytest.mark.parametrize('pair', [
@@ -119,8 +119,9 @@ def test_assert_raises(func):
     try:
         with func(CustomException):
             pass
-    except TestFailed as e:
+    except ExpectedExceptionNotCaught as e:
         assert " not raised" in str(e)
+        assert e.expected_types == (CustomException,)
     else:
         assert False, "should.raise_exception allowed success"
 
@@ -159,7 +160,7 @@ def test_raises_exception_multiple_classes():
         with should.raise_exception(possible_exception_types):
             raise x()
 
-    with pytest.raises(TestFailed):
+    with pytest.raises(ExpectedExceptionNotCaught):
         with should.raise_exception((CustomException,)):
             pass
 

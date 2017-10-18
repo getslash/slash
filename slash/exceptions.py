@@ -90,7 +90,13 @@ class TestFailed(AssertionError):
     pass
 
 
-FAILURE_EXCEPTION_TYPES = (TestFailed, AssertionError)
+class ExpectedExceptionNotCaught(TestFailed):
+    def __init__(self, msg, expected_types):
+        self.expected_types = expected_types
+        super(ExpectedExceptionNotCaught, self).__init__(msg)
+
+
+FAILURE_EXCEPTION_TYPES = (TestFailed, AssertionError, ExpectedExceptionNotCaught)
 
 
 class SkipTest(SlashException):
