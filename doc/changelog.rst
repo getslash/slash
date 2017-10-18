@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`686` ``assert_raises`` raises ``ExpectedExceptionNotCaught`` if exception wasn't caught also allowing inspection of the expected exception object
 * :bug:`684 major` Optimize test loading with ``--repeat-each`` and ``--repeat-all``
 * :bug:`679 major` Fix coloring console for non TTY stdout
 * :feature:`675` Emit native python warnings for logbook warning level
