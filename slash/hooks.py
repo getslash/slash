@@ -42,7 +42,8 @@ _define('test_skip', doc="Called on test skip", arg_names=("reason",))
 _define('worker_connected', doc="Called on new worker startup", arg_names=("session_id",))
 
 _define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
-_define('interruption_added', doc='Called when an exception is encountered that triggers test or session interruption', arg_names=('result', 'exception'))
+_define('interruption_added', doc='Called when an exception is encountered that triggers test or session interruption',
+        arg_names=('result', 'exception'))
 _define('fact_set', doc='Called when a fact is set for a test', arg_names=['name', 'value'])
 _define('warning_added', doc='Called when a warning is captured by Slash', arg_names=('warning',))
 
