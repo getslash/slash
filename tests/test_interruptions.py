@@ -12,6 +12,18 @@ def test_interruption(interrupted_suite, interrupted_index):
     interrupted_suite.run(expect_interruption=True)
 
 
+def test_interruption_added_to_result(interrupted_suite, interrupted_index):
+    caught = []
+    @gossip.register('slash.interruption_added')
+    def interruption_added(exception):
+        caught.append(exception)
+
+    summary = interrupted_suite.run(expect_interruption=True)
+    assert len(caught) == 1
+    [err] = caught              # pylint: disable=unbalanced-tuple-unpacking
+    assert err.exception_type is KeyboardInterrupt
+
+
 def test_interruption_triggers_gossip(request, interrupted_suite, interrupted_test):
     test_id = {'value': None}
 
