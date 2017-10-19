@@ -15,7 +15,7 @@ def test_interruption(interrupted_suite, interrupted_index):
 def test_interruption_added_to_result(interrupted_suite, interrupted_index):
     caught = []
     @gossip.register('slash.interruption_added')
-    def interruption_added(exception):
+    def interruption_added(result, exception):
         caught.append(exception)
 
     summary = interrupted_suite.run(expect_interruption=True)
