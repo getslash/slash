@@ -20,7 +20,7 @@ def test_interruption_added_to_result(interrupted_suite, interrupted_index):
 
     summary = interrupted_suite.run(expect_interruption=True)
     assert len(caught) == 1
-    [err] = caught
+    [err] = caught              # pylint: disable=unbalanced-tuple-unpacking
     assert err.exception_type is KeyboardInterrupt
 
 
