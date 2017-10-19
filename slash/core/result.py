@@ -93,6 +93,8 @@ class Result(object):
         elif isinstance(exc_value, context.session.get_skip_exception_types()):
             self.add_skip(getattr(exc_value, 'reason', str(exc_value)))
         elif isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
+            err = Error.capture_exception(exc_info=exc_info)
+            hooks.interruption_added(exception=err)
             session_result = context.session.results.global_result
             interrupted_test = self.is_interrupted()
             interrupted_session = session_result.is_interrupted()
