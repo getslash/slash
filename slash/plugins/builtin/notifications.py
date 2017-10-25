@@ -112,7 +112,7 @@ class Plugin(PluginInterface):
     def get_name(self):
         return 'notifications'
 
-    def get_config(self):
+    def get_default_config(self):
         return self._basic_config
 
     def _add_notifier(self, func, name, conf_dict=None):

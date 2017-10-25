@@ -4,6 +4,7 @@ import sys
 
 from emport import import_file
 from sentinels import NOTHING
+from vintage import warn_deprecation
 
 import gossip
 import gossip.hooks
@@ -212,6 +213,11 @@ class PluginManager(object):
 
     def _configure(self, plugin):
         cfg = plugin.get_config()
+        if cfg is not None:
+            warn_deprecation('PluginInterface.get_config() is deprecated. '
+                             'Please use PluginInterface.get_default_config() instead')
+        else:
+            cfg = plugin.get_default_config()
         if cfg is not None:
             config['plugin_config'].extend({plugin.get_name(): cfg})
 

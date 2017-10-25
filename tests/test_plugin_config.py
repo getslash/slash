@@ -19,7 +19,7 @@ def test_plugin_config():
         def get_name(self):
             return 'sample'
 
-        def get_config(self):
+        def get_default_config(self):
             return {
                 'values': {
                     'value_1': value,
