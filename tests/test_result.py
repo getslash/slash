@@ -161,18 +161,19 @@ def test_is_global_result(suite, suite_test):
 
 
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
-@pytest.mark.parametrize('errors_subpath', [None, 'my_errors.log'])
-def test_log_paths(log_path, errors_subpath, config_override, logs_dir):
+@pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.hightlights_subpath'])
+@pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
+def test_log_paths(log_path, log_subpath, config_path, config_override, logs_dir):
     # pylint: disable=protected-access
     extra_logs = ['/my/extra/log_{}'.format(i) for i in range(2)]
 
-    config_override('log.errors_subpath', errors_subpath)
+    config_override(config_path, log_subpath)
     with slash.Session() as curr_session:
         result = curr_session.results.global_result
         result.set_log_path(log_path)
         expected_logs = [log_path] if log_path else []
-        if errors_subpath:
-            expected_logs.append(logs_dir.join('files').join(errors_subpath))
+        if log_subpath:
+            expected_logs.append(logs_dir.join('files').join(log_subpath))
         assert result.get_log_path() is log_path
         assert result.get_log_paths() == expected_logs
         for extra_log in extra_logs:

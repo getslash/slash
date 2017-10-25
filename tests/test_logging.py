@@ -173,7 +173,7 @@ def session():
 @pytest.fixture
 def errors_log_path(request, config_override, tmpdir, logs_dir):
     subpath = 'subdir/errors.log'
-    config_override('log.errors_subpath', subpath)
+    config_override('log.hightlights_subpath', subpath)
     return logs_dir.join('files').join(subpath)
 
 
