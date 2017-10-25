@@ -260,6 +260,6 @@ def _walk(p):
         return
 
     for path, dirnames, filenames in os.walk(p):
-        dirnames[:] = [dirname for dirname in dirnames if not dirname.startswith('.')]
+        dirnames[:] = sorted(dirname for dirname in dirnames if not dirname.startswith('.'))
         for filename in sorted(filenames):
             yield os.path.join(path, filename)

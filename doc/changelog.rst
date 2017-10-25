@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`- major` Fix tests loading order for some FS types
 * :feature:`689` Added a new hook, ``interruption_added``, for registering exceptions which cause test/session interruptions
 * :feature:`686` ``assert_raises`` raises ``ExpectedExceptionNotCaught`` if exception wasn't caught also allowing inspection of the expected exception object
 * :bug:`684 major` Optimize test loading with ``--repeat-each`` and ``--repeat-all``
