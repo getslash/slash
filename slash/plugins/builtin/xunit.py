@@ -29,7 +29,7 @@ class Plugin(PluginInterface):
     def get_name(self):
         return "xunit"
 
-    def get_config(self):
+    def get_default_config(self):
         return {
             "filename": "testsuite.xml" // Cmdline(arg="--xunit-filename") // Doc('Name of XML xUnit file to create'),
         }

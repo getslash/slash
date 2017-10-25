@@ -54,7 +54,7 @@ You can also configure extre session paths, for example from plugins:
         def get_name(self):
             return "my_plugin"
 
-        def get_config(self):
+        def get_default_config(self):
             retrun {'extra_log_path': ''}
 
         def session_start(self):
