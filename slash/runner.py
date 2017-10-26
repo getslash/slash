@@ -46,7 +46,7 @@ def run_tests(iterable, stop_on_error=None):
                 context.session.reporter.report_file_start(test_filename)
                 last_filename = test_filename
             context.session.reporter.report_test_start(test)
-            _logger.notice("#{}: {}", test.__slash__.test_index1, test.__slash__.address, extra={'hightlights': 1})
+            _logger.notice("#{}: {}", test.__slash__.test_index1, test.__slash__.address, extra={'highlights': 1})
 
             _run_single_test(test, test_iterator)
 

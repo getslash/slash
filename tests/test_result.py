@@ -161,7 +161,7 @@ def test_is_global_result(suite, suite_test):
 
 
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
-@pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.hightlights_subpath'])
+@pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.highlights_subpath'])
 @pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
 def test_log_paths(log_path, log_subpath, config_path, config_override, logs_dir):
     # pylint: disable=protected-access

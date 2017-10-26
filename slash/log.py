@@ -174,9 +174,9 @@ class SessionLogging(object):
         path = config.root.log.errors_subpath
         if path:
             warn_deprecation('log.errors_subpath configuration is deprecated since 1.5.0. '
-                             'Please use log.hightlights_subpath instead')
+                             'Please use log.highlights_subpath instead')
         else:
-            path = config.root.log.hightlights_subpath
+            path = config.root.log.highlights_subpath
         def _error_added_filter(record, handler): # pylint: disable=unused-argument
             return record.extra.get('highlight')
 

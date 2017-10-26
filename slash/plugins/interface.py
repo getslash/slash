@@ -23,8 +23,9 @@ class PluginInterface(object):
 
     def get_config(self):
         """
-        .. deprecated:: 1.5.0
         Use :meth:`.get_default_config()` instead.
+
+        .. deprecated:: 1.5.0
         """
         pass
 
