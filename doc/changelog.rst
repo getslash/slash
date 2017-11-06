@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`685` use.X is now a shortcut for use('x') for fixture annotations
 * :feature:`692` Enhance errors summary log to session highlights log (configuration changed: ``log.errors_subpath`` -> ``log.highlights_subpath``)
 * :feature:`658` Deprecate ``PluginInterface.get_config()`` and rename it to ``PluginInterface.get_default_config()``
 * :bug:`- major` Fix tests loading order for some FS types

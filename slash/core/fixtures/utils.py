@@ -3,6 +3,7 @@ import itertools
 import inspect
 
 from sentinels import NOTHING
+import six
 
 from ...ctx import context
 from ..._compat import izip, iteritems
@@ -122,16 +123,34 @@ def yield_fixture(func=None, **kw):
         return value
     return new_func
 
-class use(object):
-    """Allows tests to use fixtures under different names
 
-    def test_something(m: use('microwave')):
-        ...
+
+class _use_type(type):
+
+    def __getattr__(cls, attr):
+        if attr.startswith('_'):
+            raise AttributeError(attr)
+        return cls(attr)
+
+
+class use(six.with_metaclass(_use_type)): # pylint: disable=no-init
     """
+    Allows tests to use fixtures under different names:
 
+    >>> def test_something(m: use('microwave')):
+    ...    ...
+
+    For cosmetic purposes, you can also use ``use`` with attribute access:
+
+    >>> def test_something(m: use.microwave):
+    ...    ...
+
+    """
     def __init__(self, real_fixture_name):
-        super(use, self).__init__()
         self.real_fixture_name = real_fixture_name
+
+    def __repr__(self):
+        return '<slash.use({!r})>'.format(self.real_fixture_name)
 
 
 def get_real_fixture_name_from_argument(argument):
