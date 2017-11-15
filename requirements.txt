@@ -13,7 +13,7 @@ requests>=1.1.0
 SQLAlchemy
 tmuxp
 raven
-py>=1.4.20
+py>=1.4.20,<1.5
 pyparsing
 vintage>=0.4.0
 
