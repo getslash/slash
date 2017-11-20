@@ -105,12 +105,18 @@ class SlashArgumentParser(argparse.ArgumentParser):
     def _deduce_program_name(self):
         returned = os.path.basename(sys.argv[0])
         if len(sys.argv) > 1:
-            returned += " {0}".format(sys.argv[1])
+            returned += " {}".format(sys.argv[1])
         return returned
 
-    def set_positional_metavar(self, metavar):
+    def set_positional_metavar(self, metavar, plural=True):
         self._positionals_metavar = metavar
-        self.usage += ' {0} [{0} [...]]'.format(metavar)
+        if plural:
+            self.usage += ' {0} [{0} [...]]'.format(metavar)
+        else:
+            self.usage += ' {}'.format(metavar)
+
+    def set_description(self, description):
+        self.description = description
 
 
 COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member

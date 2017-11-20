@@ -20,7 +20,11 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
     if report_stream is None:
         report_stream = sys.stderr
     app = Application()
-    app.arg_parser.set_positional_metavar('TEST')
+    if resume:
+        app.arg_parser.set_positional_metavar('SESSION-ID', plural=False)
+        app.arg_parser.set_description('Resumes a previously run session by running only unsuccessful on unfinished tests')
+    else:
+        app.arg_parser.set_positional_metavar('TEST')
     if working_directory is not None:
         app.set_working_directory(working_directory)
     app.set_argv(args)
