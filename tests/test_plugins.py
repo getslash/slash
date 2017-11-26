@@ -263,3 +263,23 @@ def test_register_if_nonexistent_hook(no_plugins, checkpoint):
         @slash.plugins.register_if(False)
         def nonexistent_hook(self):
             checkpoint()
+
+
+def test_restoring_state_context():
+
+    class CustomPlugin(NamedPlugin):
+        pass
+
+    @slash.plugins.active
+    class OtherPlugin(NamedPlugin):
+        pass
+
+    manager = slash.plugins.manager
+    installed = manager.get_installed_plugins().copy()
+
+
+    with manager.restoring_state_context():
+        manager.uninstall(OtherPlugin)
+        manager.install(CustomPlugin())
+        assert set(manager.get_installed_plugins()) == (set(installed) | {'CustomPlugin'}) - {'OtherPlugin'}
+    assert manager.get_installed_plugins() == installed
