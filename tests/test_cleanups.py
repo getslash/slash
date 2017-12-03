@@ -14,7 +14,7 @@ def test_session_cleanup(suite, suite_test):
         def session_cleanup():
             1 / 0 # pylint: disable=pointless-statement
 
-    summary = suite.run()
+    summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.is_success()
     [err] = summary.session.results.global_result.get_errors()
     assert err.exception_type is ZeroDivisionError

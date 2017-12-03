@@ -10,12 +10,19 @@ from .generator_fixture import GeneratorFixture
 _logger = logbook.Logger(__name__)
 
 
-def validate_run(suite, run_result, expect_interruption):
+def validate_run(suite, run_result, expect_interruption, expect_session_errors):
     if expect_interruption or not run_result.session.results.is_success(allow_skips=True):
         assert run_result.exit_code != 0, '`slash run` unexpectedly returned 0'
     else:
         assert run_result.exit_code == 0, '`slash run` unexpectedly returned {}. Output: {}'.format(
             run_result.exit_code, run_result.get_console_output())
+
+    global_result = run_result.session.results.global_result
+    errors = global_result.get_errors() + global_result.get_failures()
+    if expect_session_errors:
+        assert errors, 'Expected session errors but found none'
+    else:
+        assert not errors, 'Sessions errors were not expected (Got {})'.format(errors)
 
     for test, results in iteritems(_group_results_by_test_id(suite, run_result)):
         _validate_single_test(test, results)

@@ -14,6 +14,9 @@ Changelog
 * :feature:`661` Support PDB notifications by notifications plugin
 * :feature:`660` Add configuration for notifications plugin ``--notify-only-on-failure``
 * :feature:`662` Change email notification icon based on session success status
+* :release:`1.4.6 <3-12-2017>`
+* :bug:`701` Fixed error in coverage reporter cleanup
+* :bug:`700` Fixed handling of non-exception errors in session scope
 * :release:`1.4.3 <14-9-2017>`
 * :bug:`670` Improve handling of interruption exceptions - custom interruption exceptions will now properly cause the session and test to trigger the ``session_interrupt`` and ``test_interrupt`` hooks. Unexpected exceptions like ``SystemExit`` from within tests are now also reported properly instead of silently ignored
 * :bug:`668` Properly initialize colorama under Windows
