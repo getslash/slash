@@ -24,7 +24,7 @@ def test_session_errors(suite, xunit_filename):
         # tests are not going to even be loaded
         test.expect_deselect()
 
-    summary = suite.run()
+    summary = suite.run(expect_session_errors=True)
 
     assert 'ZeroDivision' in summary.get_console_output()
 

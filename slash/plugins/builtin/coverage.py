@@ -52,8 +52,13 @@ class Plugin(PluginInterface):
 
 
     def session_end(self):
+        from coverage import CoverageException
         self._cov.stop()
         self._cov.save()
         if slash_config.root.plugin_config.coverage.report:
             for reporter in self._reporters:
-                reporter()
+                try:
+                    reporter()
+                except CoverageException as e:
+                    if 'no data' not in str(e).lower():
+                        raise

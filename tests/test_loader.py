@@ -119,7 +119,7 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
 
 def test_no_traceback_for_slash_exception():
     suite = Suite()
-    summary = suite.run()
+    summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.is_success()
     [err] = summary.session.results.global_result.get_errors()
     assert err.exception_type is CannotLoadTests
@@ -128,15 +128,13 @@ def test_no_traceback_for_slash_exception():
 
 def test_no_traceback_for_marked_exceptions():
     suite = Suite()
-    #suite.add_function_test()
-    #suite[0].expect_not_run()
 
     @suite.slashconf.append_body
     def __code__():  # pylint: disable=unused-variable
         from slash.exception_handling import inhibit_unhandled_exception_traceback
         raise inhibit_unhandled_exception_traceback(Exception('Some Error'))
 
-    summary = suite.run()
+    summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.is_success()
     errors = summary.session.results.global_result.get_errors()
     assert [err.exception_type for err in errors] == [Exception, CannotLoadTests]
@@ -157,7 +155,7 @@ def test_import_errors_with_session():
     for test in suite:
         test.expect_deselect()
 
-    summary = suite.run()
+    summary = suite.run(expect_session_errors=True)
 
     assert summary.exit_code != 0
 

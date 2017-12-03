@@ -130,7 +130,7 @@ def test_slash_run_with_suite_file_invalid_test(suite, suite_test, tmpdir):
     for t in suite:
         t.expect_deselect()
 
-    summary = suite.run(args=[], additional_args=['-f', suite_file.name])
+    summary = suite.run(args=[], additional_args=['-f', suite_file.name], expect_session_errors=True)
     assert summary.exit_code != 0
     assert 'Cannot find test' in summary.get_console_output()
     assert 'CORRUPT' in summary.get_console_output()
