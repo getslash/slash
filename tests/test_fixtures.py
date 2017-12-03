@@ -110,6 +110,8 @@ def test_fixture_which_name_startswith_test(suite):
     suite[-1].depend_on_fixture(fixture)
     for test in suite:
         test.expect_deselect()
-    summary = suite.run()
+    summary = suite.run(expect_session_errors=True)
     assert not summary.ok()
-    assert 'Invalid fixture name' in summary.get_console_output()
+    for output in [summary.get_console_output(),
+                   str(summary.session.results.global_result.get_errors()[0])]:
+        assert 'Invalid fixture name' in output

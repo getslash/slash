@@ -149,7 +149,7 @@ def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
             slash.add_error()
 
     request.addfinalizer(on_session_start.gossip.unregister)
-    results = suite.run().session.results
+    results = suite.run(expect_session_errors=True).session.results
     assert len(results.global_result.get_errors()) == 1
     with errors_log_path.open() as f:
         lines = [l for l in f.read().splitlines() if 'NOTICE' not in l]

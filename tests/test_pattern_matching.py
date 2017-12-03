@@ -23,7 +23,9 @@ def test_string_patterns_and(suite, config_override):
     for i, test in enumerate(suite):  # pylint: disable=unused-variable
         test.expect_deselect()
 
-    suite.run()
+    result = suite.run(expect_session_errors=True).session.results.global_result
+    assert len(result.get_errors()) == 1
+    assert 'no tests could be collected' in str(result.get_errors()[0]).lower()
 
 
 def test_matcher():

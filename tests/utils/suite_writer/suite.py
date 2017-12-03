@@ -122,7 +122,8 @@ class Suite(object):
     def __getitem__(self, idx):
         return self._notified[idx]
 
-    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True, num_workers=1):
+    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True, num_workers=1,
+            expect_session_errors=False):
         if commit:
             self.commit()
         path = self._last_committed_path
@@ -153,7 +154,7 @@ class Suite(object):
             returned.session = captured[0].session
 
         if verify:
-            validate_run(self, returned, expect_interruption)
+            validate_run(self, returned, expect_interruption=expect_interruption, expect_session_errors=expect_session_errors)
         return returned
 
     @contextmanager

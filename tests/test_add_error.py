@@ -60,3 +60,16 @@ def test_add_fatal_error(suite, suite_test):
 
     session = suite.run().session
     assert session.results.has_fatal_errors()
+
+
+def test_session_level_add_error_message(suite, suite_test):
+    @suite_test.file.append_body
+    def __code__():                       # pylint: disable=unused-variable
+        @slash.hooks.session_end.register # pylint: disable=undefined-variable
+        def _callback():
+            slash.add_error('session: add_error') # pylint: disable=undefined-variable
+    res = suite.run(expect_session_errors=True)
+    errors = res.session.results.global_result.get_errors()
+    assert len(errors) == 1
+    [err] = errors
+    assert err.message == 'session: add_error'
