@@ -250,7 +250,7 @@ class PluginManager(object):
 
     def _get_installed_plugin_instance_by_type(self, plugin_class):
         for plugin in self._installed.values():
-            if type(plugin.plugin_instance) is plugin_class:
+            if type(plugin.plugin_instance) is plugin_class: # pylint: disable=unidiomatic-typecheck
                 return plugin.plugin_instance
         return None
 
