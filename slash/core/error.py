@@ -2,14 +2,18 @@ import sys
 import traceback
 
 import arrow
+import logbook
 from vintage import deprecated
 
 from .._compat import StringIO, iteritems, string_types
+from ..conf import config
 from ..exception_handling import is_exception_fatal
 from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.formatter import Formatter
 from ..utils.traceback_utils import distill_call_stack, distill_traceback, distill_object_attributes
 
+
+_logger = logbook.Logger(__name__)
 
 class Error(object):
 
@@ -47,6 +51,10 @@ class Error(object):
         self.exc_info = None
         for frame in self.traceback.frames:
             frame.forget_python_frame()
+
+    def log_added(self):
+        tb = self.traceback.to_string(include_vars=config.root.log.traceback_variables)
+        _logger.trace('Error added: {}\n{}', self, tb, extra={'highlight': True})
 
     def has_custom_message(self):
         return self._has_custom_message

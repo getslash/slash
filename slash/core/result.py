@@ -227,7 +227,7 @@ class Result(object):
             if is_failure:
                 # force the error object to be marked as failure
                 error.mark_as_failure()
-            _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'highlight': True})
+            error.log_added()
             if append:
                 error_list.append(error)
             if not context.session or not context.session.has_children():

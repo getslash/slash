@@ -73,3 +73,26 @@ def test_session_level_add_error_message(suite, suite_test):
     assert len(errors) == 1
     [err] = errors
     assert err.message == 'session: add_error'
+
+
+@pytest.mark.parametrize('log_variables', [True, False])
+def test_add_error_log_traceback_variables(suite, suite_test, log_variables, config_override, tmpdir):
+
+    config_override('log.traceback_variables', log_variables)
+    config_override('log.root', str(tmpdir.join('logs')))
+
+    @suite_test.prepend_body
+    def __code__():          # pylint: disable=unused-variable
+        # to avoid the line itself from being detected
+        x_variable = 'x' * 3 # pylint: disable=unused-variable
+
+    suite_test.when_run.error()
+    res = suite.run()
+    result = res[suite_test]
+    with open(result.get_log_path()) as f:
+        found = False
+        for line in f:
+            if 'x_variable' in line and 'xxx' in line:
+                found = True
+                break
+        assert found == log_variables

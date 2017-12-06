@@ -127,7 +127,10 @@ class DistilledTraceback(object):
             return self.frames[-1]
 
     def __repr__(self):
-        return '\n'.join(str(frame) for frame in self.frames)
+        return self.to_string()
+
+    def to_string(self, include_vars=False):
+        return '\n'.join(frame.to_string(include_vars=include_vars) for frame in self.frames)
 
 
 class DistilledFrame(object):
@@ -191,7 +194,16 @@ class DistilledFrame(object):
             yield 'self.{}'.format(attr), value
 
     def __repr__(self):
-        return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
+        return self.to_string()
+
+    def to_string(self, include_vars=False):
+        returned = '  {0.filename}, line {0.lineno}:\n'.format(self)
+        returned += '    {.code_line}'.format(self)
+        if include_vars and self.python_frame is not None:
+            for name, value in sorted(self.python_frame.f_locals.items()):
+                returned += '\n\t- {}: {}'.format(name, _safe_repr(value, truncate=False))
+            returned += '\n'
+        return returned
 
 
 

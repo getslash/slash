@@ -24,7 +24,7 @@ class CodeElement(Element):
         with self._body_context(code_formatter):
             self._write_body(code_formatter)
 
-    def append_body(self, code_element):
+    def _add_body(self, code_element, prepend):
         """An easier way to write multiline injected code:
 
         @code_element.append_body
@@ -37,10 +37,18 @@ class CodeElement(Element):
         assert source_lines[0].startswith('@')
         assert source_lines[1].startswith('def ')
         assert source_lines[2][0].isspace()
-        for line in str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines():  # pylint: disable=no-member
-            self._body.append(line)
+        lines = str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines() # pylint: disable=no-member
+        if prepend:
+            self._body[:0] = lines
+        else:
+            self._body.extend(lines)
 
+    def append_body(self, code_element):
+        self._add_body(code_element, prepend=False)
     include = append_body
+
+    def prepend_body(self, code_element):
+        self._add_body(code_element, prepend=True)
 
     @contextmanager  # pylint: disable=unused-argument
     def _body_context(self, code_formatter):  # pylint: disable=unused-argument
