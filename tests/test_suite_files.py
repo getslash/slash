@@ -88,7 +88,7 @@ def test_parse_repeat_string():
     'some_path.py # filter: bla, repeat: 5',
     'some_path.py # repeat: 5, filter: bla',
 ])
-def test_parse_repeat_string(string):
+def test_parse_repeat_string_with_filter(string):
     path, matcher, repeat = suite_files._parse_path_filter_and_repeat(
         string)  # pylint: disable=protected-access
     assert path == 'some_path.py'
