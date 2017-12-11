@@ -77,8 +77,7 @@ def test_iter_suite_file_paths_nested_filter(tmpdir):
 
 
 def test_parse_repeat_string():
-    path, matcher, repeat = suite_files._parse_path_filter_and_repeat(
-        'some_path.py # repeat: 5')  # pylint: disable=protected-access
+    path, matcher, repeat = suite_files._parse_path_filter_and_repeat('some_path.py # repeat: 5')  # pylint: disable=protected-access
     assert path == 'some_path.py'
     assert matcher is None
     assert repeat == 5
@@ -89,8 +88,7 @@ def test_parse_repeat_string():
     'some_path.py # repeat: 5, filter: bla',
 ])
 def test_parse_repeat_string_with_filter(string):
-    path, matcher, repeat = suite_files._parse_path_filter_and_repeat(
-        string)  # pylint: disable=protected-access
+    path, matcher, repeat = suite_files._parse_path_filter_and_repeat(string)  # pylint: disable=protected-access
     assert path == 'some_path.py'
     assert matcher is not None
     assert matcher.matches('bla')
