@@ -25,7 +25,9 @@ You can also read tests from file or files which contain paths to run. Whitespac
 
   $ slash run -f file1.txt -f file2.txt
 
-Lines in suite files can optionally contain filters, restricting the tests actually loaded from them::
+Lines in suite files can optionally contain filters and repeat directive.
+
+Filter allows restricting the tests actually loaded from them::
 
   # my_suite_file.txt
   # this is the first test file
@@ -34,6 +36,15 @@ Lines in suite files can optionally contain filters, restricting the tests actua
   /path/to/other_tests.py # filter: not dangerous
 
 .. seealso:: The filter syntax is exactly like ``-k`` described below
+
+Repeat allows to repeat a line::
+
+  # my_suite_file.txt
+  # the next line will be repeated twice
+  /path/to/other_tests.py # repeat: 2
+  # you can use filter and repeat together
+  /path/to/other_tests.py # filter: not dangerous, repeat: 2
+
 
 Debugging & Failures
 --------------------
