@@ -39,22 +39,22 @@ def test_suite_file_with_filter(suite, suite_test, suite_file):
 
 
 def test_parse_filter_string():
-    path, filter = suite_files._parse_path_and_filter('some_path.py # filter: bla')  # pylint: disable=protected-access
-    assert path == 'some_path.py'
-    assert filter is not None
-    assert filter.matches('bla')
-    assert not filter.matches('blooop')
+    suite_entry = suite_files._parse_path_filter_and_repeat('some_path.py # filter: bla')  # pylint: disable=protected-access
+    assert suite_entry.path == 'some_path.py'
+    assert suite_entry.matcher is not None
+    assert suite_entry.matcher.matches('bla')
+    assert not suite_entry.matcher.matches('blooop')
 
 
 @pytest.mark.parametrize("string", [
     'some_path.py #',
     'some_path.py # bbb',
-    'some_path.py#',
+    'some_path.py#'
 ])
 def test_parse_filter_string_no_filter(string):
-    path, filter = suite_files._parse_path_and_filter(string)  # pylint: disable=protected-access
-    assert path == 'some_path.py'
-    assert filter is None
+    suite_entry = suite_files._parse_path_filter_and_repeat(string)  # pylint: disable=protected-access
+    assert suite_entry.path == 'some_path.py'
+    assert suite_entry.matcher is None
 
 
 def test_iter_suite_file_paths_nested_filter(tmpdir):
@@ -69,11 +69,32 @@ def test_iter_suite_file_paths_nested_filter(tmpdir):
     with suite_file2.open('w') as f:
         print(test_filename, '# filter: green', file=f)
 
-    [(item, filter)] = suite_files.iter_suite_file_paths([str(suite_file1)])
+    [(item, matcher)] = suite_files.iter_suite_file_paths([str(suite_file1)])
     assert item == test_filename
-    assert filter.matches('green')
-    assert not filter.matches('blue')
-    assert not filter.matches('green blue')
+    assert matcher.matches('green')
+    assert not matcher.matches('blue')
+    assert not matcher.matches('green blue')
+
+
+def test_parse_repeat_string():
+    suite_entry = suite_files._parse_path_filter_and_repeat('some_path.py # repeat: 5')  # pylint: disable=protected-access
+    assert suite_entry.path == 'some_path.py'
+    assert suite_entry.matcher is None
+    assert suite_entry.repeat == 5
+
+
+@pytest.mark.parametrize("string", [
+    'some_path.py # filter: bla, repeat: 5',
+    'some_path.py # repeat: 5, filter: bla',
+])
+def test_parse_repeat_string_with_filter(string):
+    suite_entry = suite_files._parse_path_filter_and_repeat(string)  # pylint: disable=protected-access
+    assert suite_entry.path == 'some_path.py'
+    assert suite_entry.matcher is not None
+    assert suite_entry.matcher.matches('bla')
+    assert not suite_entry.matcher.matches('blooop')
+    assert suite_entry.matcher is not None
+    assert suite_entry.repeat == 5
 
 
 @pytest.fixture
