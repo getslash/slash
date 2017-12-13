@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Error objects now have their respective ``exc_info`` attribute containing the exception info for the current info (if available). This deprecates the use of the ``locals``/``globals`` attributes on traceback frames
 * :feature:`-` Suite files can now have a ``repeat: X`` marker to make the test run multiple times (Thanks @pierreluctg!)
 * :bug:`671 major` Help for ``slash resume`` is now more helpful
 * :feature:`685` use.X is now a shortcut for use('x') for fixture annotations

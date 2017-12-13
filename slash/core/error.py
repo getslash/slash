@@ -30,6 +30,7 @@ class Error(object):
         self.exception_str = exception = None
         #: A dictionary of distilled attributes of the exception object
         self.exception_attributes = None
+        self.exc_info = exc_info
         if exc_info is not None:
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.exception_str = repr(exception)
@@ -40,6 +41,10 @@ class Error(object):
         self._is_failure = False
         self._fatal = exception is not None and is_exception_fatal(exception)
         self._is_failure = isinstance(exception, FAILURE_EXCEPTION_TYPES)
+
+    def forget_exc_info(self):
+        assert hasattr(self, 'exc_info')
+        self.exc_info = None
 
     def has_custom_message(self):
         return self._has_custom_message
