@@ -14,7 +14,6 @@ from sentinels import NOTHING
 from .conf import config
 from ._compat import string_types
 from .ctx import context
-from .core import metadata
 from .core.local_config import LocalConfig
 from .core.markers import repeat_marker
 from . import hooks
