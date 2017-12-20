@@ -14,6 +14,7 @@ from sentinels import NOTHING
 from .conf import config
 from ._compat import string_types
 from .ctx import context
+from .core import metadata
 from .core.local_config import LocalConfig
 from .core.markers import repeat_marker
 from . import hooks
@@ -65,7 +66,9 @@ class Loader(object):
             returned.insert(0, generate_interactive_test())
 
         hooks.tests_loaded(tests=returned) # pylint: disable=no-member
-        returned.sort(key=lambda test: test.__slash__.get_sort_key())
+        returned.sort(key=lambda test: (
+            test.__slash__.repeat_all_index, test.__slash__.get_sort_key()
+        ))
         return returned
 
 
@@ -78,7 +81,9 @@ class Loader(object):
         num_tests = len(returned)
         for i in range(config.root.run.repeat_all - 1):
             for test in itertools.islice(returned, 0, num_tests):
-                returned.append(test.clone())
+                clone = test.clone()
+                clone.__slash__.repeat_all_index = i + 1
+                returned.append(clone)
         return returned
 
 
