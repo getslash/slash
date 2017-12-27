@@ -45,6 +45,8 @@ class Error(object):
     def forget_exc_info(self):
         assert hasattr(self, 'exc_info')
         self.exc_info = None
+        for frame in self.traceback.frames:
+            frame.forget_python_frame()
 
     def has_custom_message(self):
         return self._has_custom_message

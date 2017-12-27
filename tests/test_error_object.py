@@ -58,6 +58,21 @@ def test_error_exc_info_forgotten_by_default(suite, suite_test):
     assert err.exc_info is None
 
 
+def test_error_frame_objects(error):
+    assert error.traceback.frames
+    for f in error.traceback.frames:
+        assert isinstance(f.python_frame, types.FrameType)
+
+
+def test_error_frame_objects_forgotten_by_default(suite, suite_test):
+    suite_test.when_run.error()
+    res = suite.run()[suite_test]
+    [err] = res.get_errors()
+    assert err.traceback.frames
+    for frame in err.traceback.frames:
+        assert frame.python_frame is None
+
+
 def test_frame_locals(error):
     assert error.traceback.frames[-3].locals == {
         "local_func_1": {
