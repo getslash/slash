@@ -188,8 +188,6 @@ def test_traceback_vars(parallel_suite):
             found_failure += 1
             assert len(result.get_failures()) == 1
             assert len(result.get_failures()[0].traceback.frames) == 3
-            assert 'x' in result.get_failures()[0].traceback.frames[2].locals
-            assert 'num' in result.get_failures()[0].traceback.frames[1].locals
     assert found_failure == 1
 
 def test_result_data_not_picklable(parallel_suite):

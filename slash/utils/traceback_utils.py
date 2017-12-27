@@ -140,8 +140,6 @@ class DistilledFrame(object):
             lineno = frame.f_lineno
         self.lineno = lineno
         self.func_name = frame.f_code.co_name
-        self.locals = self._capture_locals(frame)
-        self.globals = self._capture_globals(frame)
         self.code_line = linecache.getline(self.filename, self.lineno).rstrip()
         self.code_string = "".join(
             linecache.getline(self.filename, lineno)
@@ -160,63 +158,13 @@ class DistilledFrame(object):
 
     def to_dict(self):
         serialized = {}
-        for attr in ['filename', 'lineno', 'func_name', 'locals', 'globals', 'code_line', 'code_string']:
+        for attr in ['filename', 'lineno', 'func_name', 'code_line', 'code_string']:
             serialized[attr] = getattr(self, attr)
         serialized['is_in_test_code'] = self._is_in_test_code
         return serialized
 
-    def _capture_globals(self, frame):
-        used_globals = set(frame.f_code.co_names)
-        return dict((global_name, {"value": _safe_repr(value)})
-                    for global_name, value in frame.f_globals.items()
-                    if global_name in used_globals and self._is_global_included(value))
-
-    def _is_global_included(self, g):
-        if isinstance(g, (types.FunctionType, types.MethodType, types.ModuleType, type)):
-            return False
-        return True
-
-    def _capture_locals(self, frame):
-        return dict((local_name, {"value": _safe_repr(local_value)})
-                    for key, value in frame.f_locals.items()
-                    if "@" not in key
-                    for local_name, local_value in self._unwrap_local(key, value))
-
-    def _unwrap_local(self, local_name, local_value):
-        yield local_name, local_value
-        if local_name != 'self':
-            return
-
-        for attr, value in iter_distilled_object_attributes(local_value):
-            yield 'self.{}'.format(attr), value
-
     def __repr__(self):
         return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
-
-
-
-def iter_distilled_object_attributes(obj):
-    try:
-        obj_dict = getattr(obj, '__dict__', {})
-    except Exception:       # pylint: disable=broad-except
-        obj_dict = {}
-
-    for attr in obj_dict:
-        if attr.startswith('__') and attr.endswith('__'):
-            continue
-        try:
-            value = getattr(obj, attr)
-        except Exception:   # pylint: disable=broad-except
-            continue
-        if isinstance(value, _FILTERED_MEMBER_TYPES):
-            continue
-        yield attr, value
-
-
-def distill_object_attributes(obj, truncate=True):
-
-    return {attr: value if isinstance(value, _ALLOWED_ATTRIBUTE_TYPES) else _safe_repr(value, truncate=truncate)
-            for attr, value in iter_distilled_object_attributes(obj)}
 
 
 def _safe_repr(value, truncate=True):

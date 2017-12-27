@@ -11,16 +11,6 @@ def test_frame_order(error, use_exception):
         assert code_line == 'get_error_adder()("error message")'
 
 
-def test_self_variables(error):
-    frame = error.traceback.frames[-3]
-    assert frame.func_name == 'method1'
-    assert 'ExampleObject' in frame.locals['self']['value']
-    assert frame.locals['self.a']['value'] == '1'
-    assert frame.locals['self.b']['value'] == '2'
-    for var_name in frame.locals:
-        assert not var_name.startswith('self.__')
-
-
 @pytest.fixture
 def error(get_error_adder, use_exception):
 

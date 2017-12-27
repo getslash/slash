@@ -17,11 +17,6 @@ def test_error_exception_str_repr(error):
     assert "NotImplementedError" in repr(error)
 
 
-def test_detailed_exception(error):
-    assert error.get_detailed_str()
-    assert 'NotImplementedError' in error.get_detailed_str()
-
-
 def test_error_filename(error):
     assert error.filename == without_pyc(os.path.abspath(__file__))
 
@@ -73,33 +68,11 @@ def test_error_frame_objects_forgotten_by_default(suite, suite_test):
         assert frame.python_frame is None
 
 
-def test_frame_locals(error):
-    assert error.traceback.frames[-3].locals == {
-        "local_func_1": {
-            "value": "'global_func_1'"
-        }}
-
-
 def test_to_list(error):
     serialized = error.traceback.to_list()
-    assert serialized[-3]['locals'] == {
-        "local_func_1": {
-            "value": "'global_func_1'"
-        }}
+    assert serialized[-3]['func_name'] == 'func_1'
     # Just make sure that it's serializable
     json.dumps(serialized)
-
-
-def test_frame_locals_no_assertion_markers(assertion_error):
-    for var_name, _ in assertion_error.cause.locals.items():
-        assert "@" not in var_name
-
-
-def test_frame_globals(error):
-    assert error.traceback.frames[-3].globals == {
-        "global_func_1": {
-            "value": "'global_func_1'"
-        }}
 
 
 def test_capture_exception_twice_caches_object():
@@ -113,11 +86,6 @@ def test_capture_exception_twice_caches_object():
         err2 = Error.capture_exception()
 
     assert err1 is err2
-
-
-def test_detailed_traceback(error):
-    detailed = error.get_detailed_str()
-    assert detailed
 
 
 def test_error_is_fatal(error):
