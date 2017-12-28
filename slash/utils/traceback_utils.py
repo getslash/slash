@@ -5,26 +5,11 @@ import linecache
 import os
 import sys
 import traceback
-import types
-
-from .._compat import PY2
 from .. import context
 from .python import get_underlying_func
 
 
 _MAX_VARIABLE_VALUE_LENGTH = 100
-
-_FILTERED_MEMBER_TYPES = [types.MethodType, types.FunctionType, type]
-if PY2:
-    _FILTERED_MEMBER_TYPES.append(types.UnboundMethodType) # pylint: disable=no-member
-    _FILTERED_MEMBER_TYPES.append(types.ClassType) # pylint: disable=no-member
-_FILTERED_MEMBER_TYPES = tuple(_FILTERED_MEMBER_TYPES)
-
-_ALLOWED_ATTRIBUTE_TYPES = [int, str, float]
-if PY2:
-    _ALLOWED_ATTRIBUTE_TYPES.append(long) # pylint: disable=undefined-variable
-_ALLOWED_ATTRIBUTE_TYPES = tuple(_ALLOWED_ATTRIBUTE_TYPES)
-
 
 def get_traceback_string(exc_info=None):
     if exc_info is None:
