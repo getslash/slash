@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`710 major` Fix sorting when repeat-all option is use
 * :feature:`-` Suite files can now have a ``repeat: X`` marker to make the test run multiple times (Thanks @pierreluctg!)
 * :bug:`671 major` Help for ``slash resume`` is now more helpful
 * :feature:`685` use.X is now a shortcut for use('x') for fixture annotations
