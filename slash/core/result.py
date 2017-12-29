@@ -232,6 +232,7 @@ class Result(object):
                 error_list.append(error)
             if not context.session or not context.session.has_children():
                 hooks.error_added(result=self, error=error)  # pylint: disable=no-member
+            error.forget_exc_info()
             return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)

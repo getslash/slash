@@ -1,4 +1,5 @@
 import collections
+from contextlib import contextmanager
 import os
 import sys
 
@@ -34,6 +35,18 @@ class PluginManager(object):
         self._pending_deactivation = set()
         self._active = set()
         self.install_builtin_plugins()
+
+    @contextmanager
+    def restoring_state_context(self):
+        previous = self._installed.copy()
+        try:
+            yield
+        finally:
+            for plugin_name in set(previous) - set(self._installed):
+                self.install(previous[plugin_name].plugin_instance)
+            for plugin_name in set(self._installed) - set(previous):
+                self.uninstall(plugin_name)
+
 
     def discover(self):
         """
@@ -235,15 +248,25 @@ class PluginManager(object):
             return None
         return plugin_info.plugin_instance
 
+    def _get_installed_plugin_instance_by_type(self, plugin_class):
+        for plugin in self._installed.values():
+            if type(plugin.plugin_instance) is plugin_class: # pylint: disable=unidiomatic-typecheck
+                return plugin.plugin_instance
+        return None
+
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):
             plugin_name = plugin
-            plugin = self._get_installed_plugin_instance_by_name(plugin_name)
+            plugin_instance = self._get_installed_plugin_instance_by_name(plugin_name)
+        elif isinstance(plugin, type):
+            plugin_instance = self._get_installed_plugin_instance_by_type(plugin)
+            plugin_name = plugin_instance.get_name() if plugin_instance is not None else repr(plugin)
         else:
+            plugin_instance = plugin
             plugin_name = plugin.get_name()
-        if plugin is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin:
+        if plugin_instance is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin_instance:
             raise UnknownPlugin("Unknown plugin: {0}".format(plugin_name))
-        return plugin
+        return plugin_instance
 
     def _get_plugin_registrations(self, plugin):
         plugin_name = plugin.get_name()

@@ -134,6 +134,7 @@ class DistilledFrame(object):
 
     def __init__(self, frame, lineno=None):
         super(DistilledFrame, self).__init__()
+        self.python_frame = frame
         self.filename = os.path.abspath(frame.f_code.co_filename)
         if lineno is None:
             lineno = frame.f_lineno
@@ -150,6 +151,9 @@ class DistilledFrame(object):
             self._is_in_test_code = frame.f_code is test_function.__code__
         else:
             self._is_in_test_code = False
+
+    def forget_python_frame(self):
+        self.python_frame = None
 
     def is_in_test_code(self):
         return self._is_in_test_code
