@@ -20,6 +20,7 @@ class Metadata(object):
         self.id = None
         self.tags = test.get_tags()
         self._sort_key = next(_sort_key_generator)
+        self.repeat_all_index = 0
         if factory is not None:
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()

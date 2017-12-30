@@ -38,7 +38,9 @@ def test_repeat_all_global(suite, config_override):
     summary = suite.run()
 
     indices = [res.data['index'] for res in summary.session.results.iter_test_results()]
-    assert indices == [x for x in range(len(suite)) for _ in range(num_repetitions)]
+
+    expected = [[x for x in range(len(suite))] for _ in range(num_repetitions)]
+    assert indices == [item for sublist in expected for item in sublist]
 
 
 @pytest.mark.parametrize('repeat_mode', ['repeat_each', 'repeat_all'])
