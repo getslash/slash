@@ -16,8 +16,7 @@ from ..utils.python import wraps
 from .reporter_interface import ReporterInterface
 
 # traceback levels
-NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH_CONTEXT_AND_VARS = range(
-    5)
+NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT = range(4)
 
 
 def theme(name):
@@ -265,15 +264,9 @@ class ConsoleReporter(ReporterInterface):
         else:
             frames = err.traceback.frames
         for frame_iteration, frame in iteration(frames):
-            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
 
-                if not frame_iteration.first:
-                    self._terminal.sep('- ')
             self._terminal.write(
                 ' {0}:{1}\n'.format(frame.filename, frame.lineno), **theme('tb-frame-location'))
-
-            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
-                self._write_frame_locals(frame)
 
             self._write_frame_code(
                 frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
@@ -310,17 +303,6 @@ class ConsoleReporter(ReporterInterface):
         msg += '\n'
 
         self._terminal.write(msg, **theme('test-skip-message'))
-
-    def _write_frame_locals(self, frame):
-        if not frame.locals and not frame.globals:
-            return
-        for index, (name, value) in enumerate(itertools.chain(iteritems(frame.locals), iteritems(frame.globals))):
-            if index > 0:
-                self._terminal.write(', ')
-            self._terminal.write(
-                '    {0}: '.format(name), **theme('frame-local-varname'))
-            self._terminal.write(value['value'])
-        self._terminal.write('\n\n')
 
     def _write_frame_code(self, frame, include_context):
         if frame.code_string:
