@@ -33,18 +33,23 @@ class Error(object):
         #: A string representation of the exception caught, if exists
         self.exception_str = exception = None
         #: A dictionary of distilled attributes of the exception object
-        self.exception_attributes = None
+        self._exception_attributes = None
         self.exc_info = exc_info
         if exc_info is not None:
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.exception_str = repr(exception)
-            self.exception_attributes = distill_object_attributes(exception, truncate=False)
+            self._exception_attributes = distill_object_attributes(exception, truncate=False)
             self.traceback = distill_traceback(tb)
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
         self._is_failure = False
         self._fatal = exception is not None and is_exception_fatal(exception)
         self._is_failure = isinstance(exception, FAILURE_EXCEPTION_TYPES)
+
+    @property
+    @deprecated(since='1.5.0', what='error.exception_attributes')
+    def exception_attributes(self):
+        return self._exception_attributes
 
     def forget_exc_info(self):
         assert hasattr(self, 'exc_info')

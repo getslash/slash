@@ -7,6 +7,8 @@ import sys
 import traceback
 import types
 
+from vintage import deprecated
+
 from .._compat import PY2
 from .. import context
 from .python import get_underlying_func
@@ -143,8 +145,8 @@ class DistilledFrame(object):
             lineno = frame.f_lineno
         self.lineno = lineno
         self.func_name = frame.f_code.co_name
-        self.locals = self._capture_locals(frame)
-        self.globals = self._capture_globals(frame)
+        self._locals = self._capture_locals(frame)
+        self._globals = self._capture_globals(frame)
         self.code_line = linecache.getline(self.filename, self.lineno).rstrip()
         self.code_string = "".join(
             linecache.getline(self.filename, lineno)
@@ -155,6 +157,16 @@ class DistilledFrame(object):
         else:
             self._is_in_test_code = False
 
+    @property
+    @deprecated(since='1.5.0')
+    def locals(self):
+        return self._locals
+
+    @property
+    @deprecated(since='1.5.0')
+    def globals(self):
+        return self._globals
+
     def forget_python_frame(self):
         self.python_frame = None
 
@@ -163,8 +175,10 @@ class DistilledFrame(object):
 
     def to_dict(self):
         serialized = {}
-        for attr in ['filename', 'lineno', 'func_name', 'locals', 'globals', 'code_line', 'code_string']:
+        for attr in ['filename', 'lineno', 'func_name', 'code_line', 'code_string']:
             serialized[attr] = getattr(self, attr)
+        serialized['globals'] = self._globals
+        serialized['locals'] = self._locals
         serialized['is_in_test_code'] = self._is_in_test_code
         return serialized
 

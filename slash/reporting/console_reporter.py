@@ -4,6 +4,7 @@ import itertools
 import os
 import sys
 
+import vintage
 from py.io import TerminalWriter
 from textwrap import wrap
 
@@ -312,9 +313,12 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.write(msg, **theme('test-skip-message'))
 
     def _write_frame_locals(self, frame):
-        if not frame.locals and not frame.globals:
+        with vintage.get_no_deprecations_context():
+            locals = frame.locals
+            globals = frame.globals
+        if not locals and not globals:
             return
-        for index, (name, value) in enumerate(itertools.chain(iteritems(frame.locals), iteritems(frame.globals))):
+        for index, (name, value) in enumerate(itertools.chain(iteritems(locals), iteritems(globals))):
             if index > 0:
                 self._terminal.write(', ')
             self._terminal.write(
