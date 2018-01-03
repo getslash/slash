@@ -38,14 +38,19 @@ class PluginManager(object):
 
     @contextmanager
     def restoring_state_context(self):
-        previous = self._installed.copy()
+        previous_installed = self._installed.copy()
+        previous_active = {name: self._installed[name] for name in self._active}
         try:
             yield
         finally:
-            for plugin_name in set(previous) - set(self._installed):
-                self.install(previous[plugin_name].plugin_instance)
-            for plugin_name in set(self._installed) - set(previous):
-                self.uninstall(plugin_name)
+            for previous, current_set, adder, remover in [
+                    (previous_installed, set(self.get_installed_plugins()), self.install, self.uninstall),
+                    (previous_active, set(self.get_active_plugins()), self.activate, self.deactivate),
+            ]:
+                for plugin_name in set(previous) - current_set:
+                    adder(previous[plugin_name].plugin_instance)
+                for plugin_name in current_set - set(previous):
+                    remover(plugin_name)
 
 
     def discover(self):

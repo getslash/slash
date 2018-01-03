@@ -267,19 +267,34 @@ def test_register_if_nonexistent_hook(no_plugins, checkpoint):
 
 def test_restoring_state_context():
 
-    class CustomPlugin(NamedPlugin):
+    class Plugin1(NamedPlugin):
         pass
 
     @slash.plugins.active
-    class OtherPlugin(NamedPlugin):
+    class Plugin2(NamedPlugin):
+        pass
+
+    class Plugin3(NamedPlugin):
+        pass
+
+    @slash.plugins.active
+    class Plugin4(NamedPlugin):
         pass
 
     manager = slash.plugins.manager
+    manager.install(Plugin3())
     installed = manager.get_installed_plugins().copy()
+    active = manager.get_active_plugins().copy()
 
 
     with manager.restoring_state_context():
-        manager.uninstall(OtherPlugin)
-        manager.install(CustomPlugin())
-        assert set(manager.get_installed_plugins()) == (set(installed) | {'CustomPlugin'}) - {'OtherPlugin'}
+        manager.install(Plugin1())
+        manager.uninstall(Plugin2)
+        manager.activate('Plugin3')
+        manager.deactivate(Plugin4)
+        assert set(manager.get_installed_plugins()) == set(installed)\
+            .union({'Plugin1'})\
+            .difference({'Plugin2'})
+        assert set(manager.get_active_plugins()) == set(active).union({'Plugin3'}).difference({'Plugin2', 'Plugin4'})
     assert manager.get_installed_plugins() == installed
+    assert manager.get_active_plugins() == active
