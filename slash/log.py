@@ -125,17 +125,16 @@ class SessionLogging(object):
         self._set_formatting(self.console_handler, config.root.log.console_format or config.root.log.format)
 
     @contextmanager
-    def get_test_logging_context(self):
+    def get_test_logging_context(self, result):
         with self._get_file_logging_context(config.root.log.subpath, config.root.log.last_test_symlink) as (_, path):
             self.test_log_path = path
-            context.result.set_log_path(path)
+            result.set_log_path(path)
             try:
                 yield path
             finally:
-                self._create_last_failed_symlink_if_needed()
+                self._create_last_failed_symlink_if_needed(result)
 
-    def _create_last_failed_symlink_if_needed(self):
-        result = context.result
+    def _create_last_failed_symlink_if_needed(self, result):
         assert result
         if result.is_error() or result.is_failure():
             self._try_create_symlink(result.get_log_path(), config.root.log.last_failed_symlink)

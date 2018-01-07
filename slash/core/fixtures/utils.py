@@ -59,6 +59,10 @@ class FixtureInfo(object):
         else:
             self.needs_this = False
 
+    @property
+    def scope_name(self):
+        return _SCOPES_BY_ID[self.scope]
+
 def get_scope_by_name(scope_name):
     return _SCOPES[scope_name]
 

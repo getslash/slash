@@ -160,6 +160,18 @@ def test_is_global_result(suite, suite_test):
     assert result.session.results.global_result.is_global_result()
 
 
+def test_session_cleanups_under_global_result(suite, suite_test):
+
+    @suite_test.append_body
+    def __code__(): # pylint: disable=unused-variable
+        def cleanup():
+            slash.context.result.data['ok'] = True
+        slash.add_cleanup(cleanup, scope='session')
+
+    res = suite.run()
+    assert res.session.results.global_result.data['ok']
+
+
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
 @pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.highlights_subpath'])
 @pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
