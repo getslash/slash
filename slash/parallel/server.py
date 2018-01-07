@@ -73,7 +73,7 @@ class Server(object):
         test_index = self.executing_tests.get(client_id, None)
         if test_index is not None:
             _logger.error("Worker {} interrupted while executing test {}".format(client_id, self.tests[test_index].__slash__.address))
-            with _get_test_context(self.tests[test_index], logging=False) as result:
+            with _get_test_context(self.tests[test_index], logging=False) as (result, _):
                 result.mark_interrupted()
                 self.finished_tests.append(test_index)
         self.state = ServerStates.STOP_TESTS_SERVING
@@ -152,7 +152,7 @@ class Server(object):
         if test_index is not None:
             self.finished_tests.append(test_index)
             self.executing_tests[client_id] = None
-            with _get_test_context(self.tests[test_index], logging=False) as result:
+            with _get_test_context(self.tests[test_index], logging=False) as (result, _):
                 result.deserialize(result_dict)
                 context.session.reporter.report_test_end(self.tests[test_index], result)
                 if not result.is_success(allow_skips=True) and config.root.run.stop_on_error:

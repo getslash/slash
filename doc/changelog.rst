@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`714 major` Session cleanups now happen under the global result object
 * :bug:`669 major` Session-scoped fixtures now properly register cleanups on session scope as expected
 * :bug:`710 major` Fix sorting when repeat-all option is use
 * :feature:`698` By setting ``log.traceback_variables`` to ``True``, traceback variable values will now be written to the debug log upon failures/errors
