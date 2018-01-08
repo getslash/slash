@@ -10,6 +10,8 @@ config = Config({
         "debug_skips": False // Doc("Enter pdb also for SkipTest exceptions"),
         "debug_hook_handlers": False // Doc("Enter pdb also for every exception encountered in a hook/callback. Only relevant when debugging is enabled"),
         "enabled": False // Doc("Enter pdb on failures and errors") // Cmdline(on="--pdb"),
+        "filter_strings": [] // Doc("A string filter, selecting if to enter pdb") // Cmdline(append='--pdb-filter',
+                                                                                             metavar='FILTER'),
         "debugger": None,
     },
 

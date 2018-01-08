@@ -7,6 +7,7 @@ from .. import hooks as trigger_hook
 from ..conf import config
 from ..ctx import context
 from .. import exceptions
+from .pattern_matching import Matcher
 
 import warnings
 
@@ -61,7 +62,12 @@ def debug_if_needed(exc_info=None):
     if isinstance(exc_info[1], (SystemExit,) + exceptions.INTERRUPTION_EXCEPTIONS):
         return
 
+    exc_repr = repr(exc_info[1])
+    matchers = [Matcher(s) for s in config.root.debug.filter_strings]
+    if matchers and not all(matcher.matches(exc_repr) for matcher in matchers):
+        return
     launch_debugger(exc_info)
+
 
 def launch_debugger(exc_info):
     trigger_hook.entering_debugger(exc_info=exc_info) # pylint: disable=no-member
