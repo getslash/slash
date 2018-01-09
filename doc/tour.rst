@@ -34,6 +34,7 @@ Debugging
 ~~~~~~~~~
 
 You can debug failing tests using the ``--pdb`` flag, which automatically runs the best available debugger on exceptions. 
+You can also filter the exceptions which run the debugger by using ``--pdb-filter`` in addition to the ``--pdb`` flag.
 
 .. seealso:: :ref:`exceptions`
 
