@@ -183,6 +183,8 @@ def test_multiple_parameters_parametrization(suite_builder):
         {'params': (3, 4)},
     ])
 
+
+
 def _set(param, value):
     data = slash.session.results.current.data
     assert param not in data

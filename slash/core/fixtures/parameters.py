@@ -1,7 +1,10 @@
 import operator
+import re
 from contextlib import contextmanager
+from sentinels import NOTHING
 
 from ..._compat import iteritems
+from ...exception_handling import mark_exception_frame_correction
 from ...utils.python import wraps, get_argument_names
 from .fixture_base import FixtureBase
 from .utils import FixtureInfo, get_scope_by_name
@@ -93,18 +96,14 @@ class ParameterizationInfo(object):
 
     def add_options(self, param_name, values):
         assert param_name not in self._params
+        values = list(values)
 
         if not isinstance(param_name, (list, tuple)):
             names = (param_name,)
-            values = [[v] for v in values]
         else:
             names = param_name
-            values = list(values)
-            for value_set in values:
-                if not isinstance(value_set, (tuple, list)):
-                    raise RuntimeError('Invalid parametrization value (expected sequence): {0!r}'.format(value_set))
-                if len(value_set) != len(names):
-                    raise RuntimeError('Invalid parametrization value (invalid length): {0!r}'.format(value_set))
+
+        values = _normalize_values(values, num_params=len(names))
 
         p = Parametrization(values=values, path='{}.{}'.format(self.path, param_name))
         for index, name in enumerate(names):
@@ -112,7 +111,10 @@ class ParameterizationInfo(object):
                 params_dict = self._params
             else:
                 params_dict = self._extra_params
-            params_dict[name] = p.as_transform(operator.itemgetter(index))
+            if len(names) > 1:
+                params_dict[name] = p.as_transform(operator.itemgetter(index))
+            else:
+                params_dict[name] = p
 
     def iter_parametrization_fixtures(self):
         for name in self._argument_names:
@@ -132,7 +134,7 @@ class Parametrization(FixtureBase):
     def __init__(self, path, values, info=None, transform=_id):
         super(Parametrization, self).__init__()
         self.path = path
-        self.values = list(values)
+        self.values = values
         if info is None:
             info = FixtureInfo(path=path)
         self.info = info
@@ -140,7 +142,12 @@ class Parametrization(FixtureBase):
         self.transform = transform
 
     def get_value_by_index(self, index):
-        return self.transform(self.values[index])
+        return self.transform(self._compute_value(self.values[index]))
+
+    def _compute_value(self, param):
+        if isinstance(param, list):
+            return [p.value for p in param]
+        return param.value
 
     def is_parameter(self):
         return True
@@ -158,4 +165,48 @@ class Parametrization(FixtureBase):
         return {}
 
     def as_transform(self, transform):
-        return Parametrization(values=self.values, info=self.info, transform=transform, path=self.path)
+        returned = Parametrization(values=self.values, info=self.info, transform=transform, path=self.path)
+        return returned
+
+
+class ParametrizationValue(object):
+
+    def __init__(self, label, value=NOTHING):
+        super(ParametrizationValue, self).__init__()
+        self._validate_label(label)
+        self.label = label
+        self.value = value
+
+    def _validate_label(self, label):
+        if isinstance(label, str) and not re.match(r'^[a-zA-Z_][0-9a-zA-Z_]{0,29}$', label):
+            raise RuntimeError('Invalid label: {!r}'.format(label))
+
+    def __rfloordiv__(self, other):
+        assert self.value is NOTHING, 'Parameter already has a value'
+        self.value = other
+        return self
+
+
+def _normalize_values(values, num_params=1):
+    returned = []
+    for index, value in enumerate(values):
+
+        value = _normalize_single_value(value, default_label=index)
+        if num_params > 1:
+            if not isinstance(value.value, (tuple, list)):
+                raise RuntimeError('Invalid parametrization value (expected sequence): {!r}'.format(value.value))
+            if len(value.value) != num_params:
+                raise RuntimeError('Invalid parametrization value (invalid length, expected {}): {!r}'.format(num_params, value.value))
+
+        returned.append(value)
+    return returned
+
+
+def _normalize_single_value(value, default_label):
+    if not isinstance(value, ParametrizationValue):
+        value = ParametrizationValue(label=default_label, value=value)
+    if value.value is NOTHING:
+        raise mark_exception_frame_correction(
+            RuntimeError('Parameter {} has no value defined!'.format(value.label)),
+            +4)
+    return value
