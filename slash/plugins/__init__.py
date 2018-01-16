@@ -43,14 +43,14 @@ class PluginManager(object):
         try:
             yield
         finally:
-            for previous, current_set, adder, remover in [
-                    (previous_installed, set(self.get_installed_plugins()), self.install, self.uninstall),
-                    (previous_active, set(self.get_active_plugins()), self.activate, self.deactivate),
-            ]:
-                for plugin_name in set(previous) - current_set:
-                    adder(previous[plugin_name].plugin_instance)
-                for plugin_name in current_set - set(previous):
-                    remover(plugin_name)
+            for name in set(previous_installed) - set(self._installed):
+                self.install(previous_installed[name].plugin_instance)
+            for name in set(previous_active) - self._active:
+                self.activate(name)
+            for name in self._active - set(previous_active):
+                self.deactivate(name)
+            for name in set(self._installed) - set(previous_installed):
+                self.uninstall(name)
 
 
     def discover(self):

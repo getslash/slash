@@ -281,6 +281,10 @@ def test_restoring_state_context():
     class Plugin4(NamedPlugin):
         pass
 
+    class Plugin5(NamedPlugin):
+        pass
+
+
     manager = slash.plugins.manager
     manager.install(Plugin3())
     installed = manager.get_installed_plugins().copy()
@@ -292,9 +296,10 @@ def test_restoring_state_context():
         manager.uninstall(Plugin2)
         manager.activate('Plugin3')
         manager.deactivate(Plugin4)
+        manager.install(Plugin5(), activate=True)
         assert set(manager.get_installed_plugins()) == set(installed)\
-            .union({'Plugin1'})\
+            .union({'Plugin1', 'Plugin5'})\
             .difference({'Plugin2'})
-        assert set(manager.get_active_plugins()) == set(active).union({'Plugin3'}).difference({'Plugin2', 'Plugin4'})
+        assert set(manager.get_active_plugins()) == set(active).union({'Plugin3', 'Plugin5'}).difference({'Plugin2', 'Plugin4'})
     assert manager.get_installed_plugins() == installed
     assert manager.get_active_plugins() == active
