@@ -75,7 +75,7 @@ _SCOPES = dict(
 _SCOPES_BY_ID = dict((id, name) for (name, id) in iteritems(_SCOPES))
 
 
-def generator_fixture(func):
+def generator_fixture(func=None, **kw):
     """A utility for generating parametrization values from a generator:
 
     >>> @slash.generator_fixture
@@ -87,12 +87,15 @@ def generator_fixture(func):
     """
     from .parameters import parametrize
 
+    if func is None:
+        return functools.partial(generator_fixture, **kw)
+
     @parametrize('param', list(func()))
     def new_func(param):
         return param
 
-    new_func.__name__ = func.__name__
-    return _ensure_fixture_info(func=new_func)
+    kw.setdefault('name', func.__name__)
+    return _ensure_fixture_info(func=new_func, **kw)
 
 
 def yield_fixture(func=None, **kw):
