@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Support fixture keyword arguments for ``generator_fixture``
 * :feature:`712` Added ``--pdb-filter`` - a new command-line flag that allows the user to enter pdb only on specific caught exceptions, based on pattern matching (similar to ``-k``)
 * :bug:`714 major` Session cleanups now happen under the global result object
 * :bug:`669 major` Session-scoped fixtures now properly register cleanups on session scope as expected
