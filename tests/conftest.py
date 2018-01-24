@@ -16,6 +16,7 @@ from slash.core.result import GlobalResult, Result
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
+from .utils.suite_builder import SuiteBuilder
 from .utils.garbage_collection import GarbageCollectionMarker
 
 
@@ -153,6 +154,12 @@ def suite():
     returned.populate()
     return returned
 
+
+@pytest.fixture
+def suite_builder(tmpdir):
+    return SuiteBuilder(str(tmpdir.join('suite_builder')))
+
+
 @pytest.fixture
 def parallel_suite_test(parallel_suite, test_type, is_last_test):
     returned = parallel_suite.add_test(type=test_type)
@@ -160,6 +167,7 @@ def parallel_suite_test(parallel_suite, test_type, is_last_test):
         _ = parallel_suite.add_test(type=test_type)
 
     return returned
+
 
 @pytest.fixture
 def parallel_suite():

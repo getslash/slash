@@ -1,7 +1,6 @@
-import py.code  # pylint: disable=no-name-in-module, import-error
-
 from slash._compat import StringIO
 from .element import Element
+from .utils import get_code_lines
 from ..code_formatter import CodeFormatter
 
 from contextlib import contextmanager
@@ -33,11 +32,7 @@ class CodeElement(Element):
             for i in range(20):
                 some_other_code()
         """
-        source_lines = str(py.code.Code(code_element).source()).splitlines()  # pylint: disable=no-member
-        assert source_lines[0].startswith('@')
-        assert source_lines[1].startswith('def ')
-        assert source_lines[2][0].isspace()
-        lines = str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines() # pylint: disable=no-member
+        lines = get_code_lines(code_element)
         if prepend:
             self._body[:0] = lines
         else:

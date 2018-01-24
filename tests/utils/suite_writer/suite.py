@@ -7,7 +7,6 @@ from contextlib import contextmanager
 import gossip
 
 from slash._compat import StringIO
-from slash.conf import config
 from slash.frontend.slash_run import slash_run
 
 from ..code_formatter import CodeFormatter
@@ -15,6 +14,7 @@ from .file import File
 from .slash_run_result import SlashRunResult
 from .suite_strategy import BalancedStrategy
 from .validation import validate_run, get_test_id_from_test_address
+from .utils import get_temporary_slashrc_context
 
 
 class Suite(object):
@@ -176,15 +176,13 @@ class Suite(object):
 
     @contextmanager
     def _custom_slashrc(self, path):
-        if self._slashrc is None:
+        if self._slashrc is not None:
+            slashrc_path = os.path.join(path, self._slashrc.get_relative_path())
+        else:
+            slashrc_path = None
+
+        with get_temporary_slashrc_context(slashrc_path):
             yield
-            return
-        prev = config.root.run.user_customization_file_path
-        config.root.run.user_customization_file_path = os.path.join(path, self._slashrc.get_relative_path())
-        try:
-            yield
-        finally:
-            config.root.run.user_customization_file_path = prev
 
     @contextmanager
     def _capture_events(self, summary):

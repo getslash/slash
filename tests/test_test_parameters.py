@@ -167,6 +167,22 @@ def test_parametrizing_function_without_arg(checkpoint):
     assert not checkpoint.called
 
 
+def test_multiple_parameters_parametrization(suite_builder):
+
+    @suite_builder.first_file.add_code
+    def __code__(): # pylint: disable=unused-variable
+        import slash # pylint: disable=redefined-outer-name, reimported
+
+        @slash.parametrize(('x', 'y'), [(1, 2), (3, 4)])
+        def test_something(x, y): # pylint: disable=unused-variable
+            slash.context.result.data['params'] = (x, y)
+
+
+    suite_builder.build().run().assert_success(2).with_data([
+        {'params': (1, 2)},
+        {'params': (3, 4)},
+    ])
+
 def _set(param, value):
     data = slash.session.results.current.data
     assert param not in data
