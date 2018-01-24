@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`721 major` Add timeout to sending emails through SMTP
 * :feature:`-` Support fixture keyword arguments for ``generator_fixture``
 * :feature:`712` Added ``--pdb-filter`` - a new command-line flag that allows the user to enter pdb only on specific caught exceptions, based on pattern matching (similar to ``-k``)
 * :bug:`714 major` Session cleanups now happen under the global result object
