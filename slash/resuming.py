@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 from slash.plugins import manager
 from ast import literal_eval
 from .utils.path import ensure_directory
+from .conf import config
 
-_RESUME_DIR = os.path.expanduser("~/.slash/session_states")
 _DB_NAME = 'resume_state.db'
 _MAX_DAYS_SAVED_SESSIONS = 10
 _logger = logbook.Logger(__name__)
@@ -48,8 +48,9 @@ class ResumedTestData(object):
 
 
 def _init_db():
-    ensure_directory(_RESUME_DIR)
-    engine = create_engine('sqlite:///{0}/{1}'.format(_RESUME_DIR, _DB_NAME))
+    resume_dir = os.path.expanduser(config.root.run.resume_state_path)
+    ensure_directory(resume_dir)
+    engine = create_engine('sqlite:///{0}/{1}'.format(resume_dir, _DB_NAME))
     _session.configure(bind=engine)
     Base.metadata.create_all(engine)
 

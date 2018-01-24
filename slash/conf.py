@@ -78,6 +78,7 @@ config = Config({
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
         "project_customization_file_path": "./.slashrc",
         "user_customization_file_path": "~/.slash/slashrc",
+        "resume_state_path": "~/.slash/session_states" // Doc("Path to store or load session's resume data"),
         "message_assertion_introspection": True // Doc("When False, failing assertions which have messages attached will not emit introspection info"),
     },
     "parallel": {
