@@ -24,7 +24,10 @@ def _load_defaults(working_directory=None):
     _load_entry_points()
 
 def _load_slashrc():
-    user_customization_file = os.environ.get("SLASH_USER_SETTINGS", os.path.expanduser(config.root.run.user_customization_file_path))
+    user_customization_file_path = config.root.run.user_customization_file_path
+    if user_customization_file_path is not None:
+        user_customization_file_path = os.path.expanduser(user_customization_file_path)
+    user_customization_file = os.environ.get("SLASH_USER_SETTINGS", user_customization_file_path)
     _load_file_if_exists(user_customization_file)
 
 def _load_local_slashrc(working_directory=None):
@@ -34,7 +37,7 @@ def _load_local_slashrc(working_directory=None):
     _load_file_if_exists(os.path.abspath(path))
 
 def _load_file_if_exists(path):
-    if os.path.isfile(path):
+    if path is not None and os.path.isfile(path):
         old_sys_path = sys.path[:]
         sys.path.insert(0, os.path.dirname(path))
         try:
