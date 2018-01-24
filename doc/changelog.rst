@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`723` Add configuration for resume state path location
 * :bug:`721 major` Add timeout to sending emails through SMTP
 * :feature:`-` Support fixture keyword arguments for ``generator_fixture``
 * :feature:`712` Added ``--pdb-filter`` - a new command-line flag that allows the user to enter pdb only on specific caught exceptions, based on pattern matching (similar to ``-k``)
