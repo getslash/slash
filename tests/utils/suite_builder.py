@@ -1,6 +1,7 @@
 import os
 from uuid import uuid4
 
+from slash._compat import izip_longest
 from slash.frontend.slash_run import slash_run
 
 from .suite_writer.utils import get_code_lines
@@ -54,9 +55,12 @@ class SuiteBuilderSuiteResult(object):
         self.slash_app = slash_app
 
     def assert_success(self, num_tests):
+        return self.assert_all(num_tests).success()
+
+
+    def assert_all(self, num_tests):
         assert len(self.slash_app.session.results) == num_tests
-        assert self.slash_app.session.results.is_success(allow_skips=False)
-        return self
+        return AssertAllHelper(self)
 
     def with_data(self, data_sets):
         results = list(self.slash_app.session.results)
@@ -71,3 +75,20 @@ class SuiteBuilderSuiteResult(object):
                 assert False, 'No result found for {}'.format(data_set)
         assert not results
         return self
+
+class AssertAllHelper(object):
+
+    def __init__(self, suite_builder_result):
+        self.suite_builder_result = suite_builder_result
+        self._results = suite_builder_result.slash_app.session.results
+
+    def success(self):
+        assert self._results.is_success(allow_skips=False)
+        return self.suite_builder_result
+
+    def errors(self, errors_list):
+        for res, error in izip_longest(self._results, errors_list):
+            errs = res.get_errors()
+            assert len(errs) == 1
+            assert errs[0] == error
+        return self.suite_builder_result
