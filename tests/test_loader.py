@@ -137,7 +137,7 @@ def test_no_traceback_for_marked_exceptions():
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.is_success()
     errors = summary.session.results.global_result.get_errors()
-    assert [err.exception_type for err in errors] == [Exception, CannotLoadTests]
+    assert [err.exception_type for err in errors] == [Exception]
     assert 'Some Error' in errors[0].exception_str
     output = summary.get_console_output()
     assert 'Traceback' not in output

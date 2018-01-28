@@ -20,7 +20,7 @@ from . import hooks
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory, is_valid_test_name
 from .core.function_test import FunctionTestFactory
-from .exception_handling import handling_exceptions
+from .exception_handling import handling_exceptions, mark_exception_handled
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
@@ -192,8 +192,9 @@ class Loader(object):
                             module = import_file(file_path)
                 except Exception as e:
                     tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_info()[2])[-1]
-                    raise CannotLoadTests(
-                        "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
+                    raise mark_exception_handled(
+                        CannotLoadTests(
+                            "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e)))
                 if module is not None:
                     self._duplicate_funcs |= check_duplicate_functions(file_path)
                     with self._adding_local_fixtures(file_path, module):

@@ -164,7 +164,7 @@ def handle_exception(exc_info, context=None):
 
 
 def mark_exception_handled(e):
-    mark_exception(e, "handled", True)
+    return mark_exception(e, "handled", True)
 
 
 def is_exception_handled(e):

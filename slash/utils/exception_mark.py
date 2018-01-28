@@ -6,6 +6,7 @@ def mark_exception(e, name, value):
     Associates a mark with a given value to the exception ``e``
     """
     _ensure_exception_marks(e)[name] = value
+    return e
 
 
 def get_exception_mark(e, name, default=None):
