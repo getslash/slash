@@ -57,10 +57,15 @@ class SuiteBuilderSuiteResult(object):
     def assert_success(self, num_tests):
         return self.assert_all(num_tests).success()
 
-
     def assert_all(self, num_tests):
         assert len(self.slash_app.session.results) == num_tests
         return AssertAllHelper(self)
+
+    def assert_session_error(self, error_substring):
+        self.assert_all(0)
+        errs = self.slash_app.session.results.global_result.get_errors()
+        assert len(errs) == 1
+        assert error_substring in str(errs[0])
 
     def with_data(self, data_sets):
         results = list(self.slash_app.session.results)
