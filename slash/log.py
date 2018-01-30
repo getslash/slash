@@ -1,7 +1,7 @@
 import numbers
 import os
 import sys
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 
 import logbook  # pylint: disable=F0401
 import logbook.more
@@ -12,6 +12,7 @@ from ._compat import ExitStack
 from .conf import config
 from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
+from .exceptions import InvalidConfiguraion
 
 _logger = logbook.Logger(__name__)
 
@@ -154,8 +155,18 @@ class SessionLogging(object):
     @contextmanager
     def _get_file_logging_context(self, filename_template, symlink):
         with ExitStack() as stack:
-            handler, path = self._get_file_log_handler(filename_template, symlink)
+
+            if config.root.log.compression.enabled:
+                handler, path = self._get_file_log_handler(filename_template, symlink, use_compression=True)
+            else:
+                handler, path = self._get_file_log_handler(filename_template, symlink)
+            stack.enter_context(closing(handler))
             stack.enter_context(handler.applicationbound())
+
+            if config.root.log.compression.enabled and config.root.log.compression.use_rotating_raw_file:
+                rotating_handler, _ = self._get_file_log_handler(filename_template, symlink, bubble=True, use_rotation=True)
+                stack.enter_context(rotating_handler.applicationbound())
+
             stack.enter_context(self.console_handler.applicationbound())
             stack.enter_context(self.warnings_handler.applicationbound())
             stack.enter_context(self._get_error_logging_context())
@@ -189,7 +200,7 @@ class SessionLogging(object):
             return ExitStack()
         return SilencedLoggersHandler(config.root.log.silence_loggers).applicationbound()
 
-    def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=None):
+    def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=None, use_compression=False, use_rotation=False):
         root_path = config.root.log.root
         if root_path is None or subpath is None:
             log_path = None
@@ -200,16 +211,32 @@ class SessionLogging(object):
         else:
             log_path = self._normalize_path(os.path.join(root_path, _format_log_path(subpath)))
             ensure_containing_directory(log_path)
-            handler = self._get_file_handler_class()(log_path, bubble=bubble, filter=filter)
+            handler = self._get_file_handler(log_path, use_compression=use_compression, use_rotation=use_rotation, bubble=bubble, filter=filter)
             if symlink:
                 self._try_create_symlink(log_path, symlink)
             self._set_formatting(handler, config.root.log.format)
-        return handler, log_path
+        path = handler.stream.name if isinstance(handler, logbook.FileHandler) else log_path
+        return handler, path
 
-    def _get_file_handler_class(self):
-        if config.root.log.colorize:
-            return ColorizedFileHandler
-        return logbook.FileHandler
+    def _get_file_handler(self, filename, bubble=False, filter=None, use_compression=False, use_rotation=False):
+        kwargs = {"bubble": bubble, "filter": filter}
+        if use_compression:
+            if config.root.log.compression.algorithm == "gzip":
+                handler = logbook.GZIPCompressionHandler
+                filename += ".gz"
+            elif config.root.log.compression.algorithm == "brotli":
+                handler = logbook.BrotliCompressionHandler
+                filename += ".brotli"
+            else:
+                raise InvalidConfiguraion("Unsupported compression method: {}".format(config.root.log.compression.algorithm))
+        elif use_rotation:
+            kwargs.update({"max_size": 4*1024**2, "backup_count": 1})
+            handler = logbook.RotatingFileHandler
+        elif config.root.log.colorize:
+            handler = ColorizedFileHandler
+        else:
+            handler = logbook.FileHandler
+        return handler(filename, **kwargs)
 
     def _normalize_path(self, p):
         return os.path.expanduser(p)
