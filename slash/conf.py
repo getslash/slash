@@ -71,7 +71,7 @@ config = Config({
         "dump_variation": False // Doc("Output the full variation structure before each test is run (mainly used for internal debugging)"),
         "default_sources": [] // Doc("Default tests to run assuming no other sources are given to the runner"),
         "suite_files": [] // Doc("File(s) to be read for lists of tests to be run") // Cmdline(append="-f", metavar="FILENAME"),
-        "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x"),
+        "stop_on_error": False // Doc("Stop execution when a test doesn't succeed") // Cmdline(on="-x", off="-X"),
         "filter_strings": [] // Doc("A string filter, selecting specific tests by string matching against their name") // Cmdline(append='-k', metavar='FILTER'),
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
         "repeat_all": 1 // Doc("Repeat all suite a specified amount of times") // Cmdline(arg='--repeat-all', metavar="NUM_TIMES"),
