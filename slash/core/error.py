@@ -7,7 +7,7 @@ from vintage import deprecated
 
 from .._compat import StringIO, iteritems, string_types
 from ..conf import config
-from ..exception_handling import is_exception_fatal
+from ..exception_handling import is_exception_fatal, get_exception_frame_correction
 from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.formatter import Formatter
 from ..utils.traceback_utils import distill_call_stack, distill_traceback, distill_object_attributes
@@ -39,7 +39,8 @@ class Error(object):
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.exception_str = repr(exception)
             self._exception_attributes = distill_object_attributes(exception, truncate=False)
-            self.traceback = distill_traceback(tb)
+            self.traceback = distill_traceback(
+                tb, frame_correction=get_exception_frame_correction(exception))
         else:
             self.traceback = distill_call_stack(frame_correction=frame_correction+4)
         self._is_failure = False

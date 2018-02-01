@@ -20,7 +20,7 @@ from . import hooks
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory, is_valid_test_name
 from .core.function_test import FunctionTestFactory
-from .exception_handling import handling_exceptions, mark_exception_handled
+from .exception_handling import handling_exceptions, mark_exception_handled, get_exception_frame_correction
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
@@ -191,7 +191,8 @@ class Loader(object):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
-                    tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_info()[2])[-1]
+
+                    tb_file, tb_lineno, _, _ = _extract_tb()
                     raise mark_exception_handled(
                         CannotLoadTests(
                             "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e)))
@@ -268,3 +269,8 @@ def _walk(p):
         dirnames[:] = sorted(dirname for dirname in dirnames if not dirname.startswith('.'))
         for filename in sorted(filenames):
             yield os.path.join(path, filename)
+
+def _extract_tb():
+    _, exc_value, exc_tb = sys.exc_info()
+    returned = traceback.extract_tb(exc_tb)
+    return returned[-1 - get_exception_frame_correction(exc_value)]

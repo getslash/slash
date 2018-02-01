@@ -209,6 +209,15 @@ def mark_exception_fatal(exception):
     return exception
 
 
+def mark_exception_frame_correction(exception, correction=+1):
+    current_correction = get_exception_frame_correction(exception)
+    return mark_exception(exception, 'frame_correction', current_correction + correction)
+
+
+def get_exception_frame_correction(exception):
+    return get_exception_mark(exception, 'frame_correction', 0)
+
+
 def is_exception_fatal(exception):
     return bool(get_exception_mark(exception, "fatal", False))
 

@@ -8,6 +8,7 @@ import emport
 import dessert
 import pytest
 from slash.core.error import Error
+from slash.exception_handling import mark_exception_frame_correction
 
 from .utils import without_pyc
 
@@ -128,6 +129,29 @@ def test_error_mark_fatal(error):
     rv = error.mark_fatal()
     assert rv is error
     assert error.is_fatal()
+
+
+def test_error_frame_correction():
+
+    class CustomException(Exception):
+        pass
+
+    def f():
+        g()
+
+    def g():
+        h()
+
+    def h():
+        raise mark_exception_frame_correction(CustomException(), +2)
+
+    try:
+        f()
+    except CustomException:
+        err = Error.capture_exception()
+
+    assert err.traceback.frames[-1].func_name == 'f'
+
 
 ####
 
