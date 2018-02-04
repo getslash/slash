@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`702` Rename log.traceback_level to log.console_traceback_level
 * :feature:`-` ``-X`` can now be used to turn off stop-on-error behavior. Useful if you have it on by default through a configuration file
 * :feature:`723` Add configuration for resume state path location
 * :bug:`721 major` Add timeout to sending emails through SMTP

@@ -258,26 +258,26 @@ class ConsoleReporter(ReporterInterface):
             self._report_traceback(err_type, err)
 
     def _report_traceback(self, err_type, err):
-        traceback_level = config.root.log.traceback_level
-        if not err.traceback or traceback_level == NO_TRACEBACK:
+        console_traceback_level = config.root.log.console_traceback_level
+        if not err.traceback or console_traceback_level == NO_TRACEBACK:
             frames = []
-        elif traceback_level == SINGLE_FRAME:
+        elif console_traceback_level == SINGLE_FRAME:
             frames = [err.traceback.frames[-1]]
         else:
             frames = err.traceback.frames
         for frame_iteration, frame in iteration(frames):
-            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+            if console_traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
 
                 if not frame_iteration.first:
                     self._terminal.sep('- ')
             self._terminal.write(
                 ' {0}:{1}\n'.format(frame.filename, frame.lineno), **theme('tb-frame-location'))
 
-            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+            if console_traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
 
             self._write_frame_code(
-                frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
+                frame, include_context=(console_traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
                 self._terminal.write(err_type, **theme('tb-error'))
                 self._terminal.write(
