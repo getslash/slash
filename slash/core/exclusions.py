@@ -29,7 +29,7 @@ def is_excluded(test):
             param_index = test.__slash__.variation.param_value_indices[param.info.id] #pylint: disable=no-member
         except LookupError:
             raise UnknownFixtures('{!r} cannot be excluded for {!r}'.format(parameter_name, test))
-        value = param.transform(param.values[param_index]) #pylint: disable=no-member
+        value = param.get_value_by_index(param_index)
         if value in values:
             return True
     return False

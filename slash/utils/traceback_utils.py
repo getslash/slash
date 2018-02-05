@@ -35,17 +35,22 @@ def get_traceback_string(exc_info=None):
     return "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
 
 
-def distill_traceback(tb, **kw):
-    return _distill_frames(_get_tb_frames(tb), **kw)
+def distill_traceback(tb, frame_correction=0, **kw):
+    frames = _get_tb_frames(tb)
+    if frame_correction:
+        frames = frames[:len(frames) - frame_correction]
+    return _distill_frames(frames, **kw)
 
 
-def distill_call_stack(**kw):
-    return _distill_frames(_get_sys_trace_frames(), **kw)
+def distill_call_stack(frame_correction=0, **kw):
+    frames = _get_sys_trace_frames()
+    if frame_correction:
+        frames = frames[:len(frames) - frame_correction + 1]
+    return _distill_frames(frames, **kw)
 
 
-def _distill_frames(frames, frame_correction=0):
+def _distill_frames(frames):
     returned = DistilledTraceback()
-    frames = frames[:len(frames)-frame_correction+1]
     for frame in frames:
         if isinstance(frame, tuple):
             frame, lineno = frame

@@ -33,14 +33,16 @@ def test_resolve_fixture_object():
             tests = make_runnable_tests(test_something)
 
     _resolve = functools.partial(s.fixture_store.resolve_name, start_point=tests[0])
+    def _resolve_values(path):
+        return [v.value for v in _resolve(path).values]
 
     # check simple resolutions
     assert _resolve('fixture2').info is fixture2.__slash_fixture__
     assert _resolve('fixture2.fixture1').info is fixture1.__slash_fixture__
 
     # check parameter resolution
-    assert _resolve('fixture2.fixture1.x').values == [[1], [2]]
-    assert _resolve('fixture2.x').values == [[3], [4]]
+    assert _resolve_values('fixture2.fixture1.x') == [1, 2]
+    assert _resolve_values('fixture2.x') == [3, 4]
 
     for invalid_name in ['fixture2.x.y']:
         with pytest.raises(UnknownFixtures):

@@ -83,6 +83,48 @@ You can specify dependent parameters in a way that forces them to receive relate
        def test_fruits(fruit, color):
            ... # <-- this never gets a yellow apple
 
+Labeling Parameters
+-------------------
+
+By default, parameters are being designated by their ordinal number, starting with zero. This means that the following test:
+
+.. code-block:: python
+
+     @slash.parametrize('param', [Object1(), Object2()])
+     def test_something(param):
+         ...
+
+This will generate tests named ``test_something(param=param0)`` and ``test_something(param=param1)``. This is not very useful for most cases -- as the tests should be indicative of their respective parametrization flavors.
+
+To cope with this, Slash supports *parametrization labels*. This can be done as follows:
+
+.. code-block:: python
+
+     @slash.parametrize('param', [
+       slash.param('first', Object1()),
+       slash.param('second', Object2()),
+     ])
+     def test_something(param):
+         ...
+
+The above will generate tests named ``test_something(param=first)`` and ``test_something(param=second)``, which, given descriptive labels, should differentiate the cases more clearly.
+
+The labeling mechanism has a second possible syntactic shortcut, for developers preferring the value to appear first:
+
+.. code-block:: python
+
+     @slash.parametrize('param', [
+       Object1() // slash.param('first'),
+       Object2() // slash.param('second'),
+     ])
+     def test_something(param):
+         ...
+
+The two forms are functionally equivalent.
+
+.. note:: Label names are limited to 30 characters, and are under the same naming constraints as Python variables. This is intentional, and is intended to avoid abuse and keep labels concise. 
+
+
 Excluding Parameter Values
 --------------------------
 
