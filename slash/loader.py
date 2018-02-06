@@ -72,6 +72,8 @@ class Loader(object):
 
 
     def _generate_repeats(self, tests):
+        if config.root.run.repeat_each == 1 and config.root.run.repeat_all == 1:
+            return tests
         returned = []
         repeat_each = config.root.run.repeat_each
         for test in tests:
