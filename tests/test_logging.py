@@ -10,7 +10,7 @@ import pytest
 import slash
 
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase
-
+from .utils.suite_writer import Suite
 
 def test_console_format(suite, suite_test, config_override, tmpdir):
     config_override('log.format', 'file: {record.message}')
@@ -222,10 +222,40 @@ def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
         assert lines[0] in f.read().splitlines()
 
 
+@pytest.mark.parametrize('level', ['info', 'error'])
+@pytest.mark.parametrize('core_log_level', [logbook.WARNING, logbook.TRACE])
+def test_filtering_slash_logs(files_dir, config_override, level, core_log_level):
+    config_override('log.core_log_level', core_log_level)
+    assert slash.config.root.log.truncate_console_lines
+
+    suite = Suite()
+    suite_test = suite.add_test(type='function')
+    long_string = 'a' * 1000
+    suite_test.append_line('slash.logger.{level}({msg!r})'.format(msg=long_string, level=level))
+    summary = suite.run()
+    result = summary.get_all_results_for_test(suite_test)[0]
+
+    with open(result.get_log_path()) as logfile:
+        logfile_data = logfile.read()
+        assert long_string in logfile_data
+
+    debug_core_string = 'slash.loader: Checking'
+    debug_bypass_string = 'slash.runner: #'
+    with open(summary.session.results.global_result.get_log_path()) as logfile:
+        logfile_data = logfile.read()
+        assert debug_bypass_string in logfile_data
+        if core_log_level == logbook.TRACE:
+            assert debug_core_string in logfile_data
+        else:
+            assert debug_core_string not in logfile_data
 
 
 ################################################################################
 ## Fixtures
+
+@pytest.fixture(autouse=True)
+def override_log_level(config_override):
+    config_override('log.core_log_level', logbook.TRACE)
 
 @pytest.fixture
 def session():

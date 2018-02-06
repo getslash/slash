@@ -45,6 +45,7 @@ config = Config({
                                                     decrease_doc='Make console more verbose (can be specified multiple times)',
                                                     increase='-q',
                                                     increase_doc='Make console less verbose (can be specified multiple times)'),
+        "core_log_level": logbook.WARNING // Doc("Minimal level of slash log messages to show"),
         "color_console": None // Cmdline(on='--force-color', off='--no-color'),
         "traceback_variables": False // Doc("Logs values of variables in traceback frames for added errors"),
         "console_traceback_level": 2 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),

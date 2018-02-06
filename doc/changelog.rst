@@ -3,6 +3,7 @@ Changelog
 
 * :feature:`702` Rename log.traceback_level to log.console_traceback_level
 * :feature:`681` Added a new hook, ``log_file_closed``, and added configuration ``log.cleanup`` to enable removing log files after they are closed
+* :feature:`719` Added log.core_log_level, allowing limiting the verbosity of logs initiated from Slash itself
 * :feature:`-` ``-X`` can now be used to turn off stop-on-error behavior. Useful if you have it on by default through a configuration file
 * :feature:`711` Logs can now optionally be compressed on-the-fly through the ``log.compression.enabled`` configuration parameter
 * :feature:`723` Add configuration for resume state path location
