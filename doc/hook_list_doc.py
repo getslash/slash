@@ -1,9 +1,8 @@
 from docutils import nodes
-from docutils.parsers.rst import directives
+from docutils.parsers.rst import directives, Directive
 from slash import hooks
 import gossip
 
-from sphinx.util.compat import Directive
 
 class HookListDoc(Directive):
     has_content = False
