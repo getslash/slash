@@ -31,7 +31,12 @@ class InteractiveParallelNotAllowed(SlashException):
 class CannotLoadTests(SlashException):
     pass
 
-CLI_ABORT_EXCEPTIONS = (CannotLoadTests, )
+
+class InvalidConfiguraion(SlashException):
+    pass
+
+
+CLI_ABORT_EXCEPTIONS = (CannotLoadTests, InvalidConfiguraion)
 
 
 class FixtureException(CannotLoadTests):

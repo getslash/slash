@@ -3,7 +3,8 @@ import functools
 import os
 
 import logbook
-
+import brotli
+import gzip
 import gossip
 import pytest
 import slash
@@ -43,6 +44,46 @@ def test_global_result_get_log_path(files_dir, suite):
     assert summary.session.results.global_result.get_log_path() is not None
     assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
 
+def _decompress(input_file_name, use_gzip=True):
+    if use_gzip:
+        with gzip.open(input_file_name, 'rb') as in_f:
+            return in_f.read().decode()
+    else:
+        with open(input_file_name, 'rb') as in_f:
+            return brotli.decompress(in_f.read()).decode()
+
+@pytest.mark.parametrize('compression_enabled', [True, False])
+@pytest.mark.parametrize('compression_method', ['gzip', 'brotli'])
+@pytest.mark.parametrize('use_rotating_raw_file', [True, False])
+def test_logs_compression(files_dir, suite, config_override, compression_enabled, compression_method, use_rotating_raw_file):
+    config_override("log.compression.enabled", compression_enabled)
+    config_override("log.compression.algorithm", compression_method)
+    config_override("log.compression.use_rotating_raw_file", use_rotating_raw_file)
+    summary = suite.run()
+    session_log_path = summary.session.results.global_result.get_log_path()
+
+    if compression_enabled:
+        #validate file names
+        if compression_method is "gzip":
+            session_log_path.endswith("gz")
+        else:
+            assert session_log_path.endswith("brotli")
+
+        assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
+
+        raw_file_name = session_log_path[:session_log_path.rfind(".")]
+        if use_rotating_raw_file:
+            assert os.path.exists(raw_file_name)
+        else:
+            assert not os.path.exists(raw_file_name)
+
+        #validate compressing successfully
+        if use_rotating_raw_file:
+            decompressed_logs = _decompress(session_log_path, compression_method == "gzip")
+            with open(raw_file_name, 'r') as raw_file:
+                assert decompressed_logs.endswith(raw_file.read())
+    else:
+        assert session_log_path.endswith(".log")
 
 def test_log_file_colorize(files_dir, config_override, suite, suite_test):
     config_override('log.colorize', True)
