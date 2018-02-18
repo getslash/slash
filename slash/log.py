@@ -13,6 +13,7 @@ from .conf import config
 from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
 from .exceptions import InvalidConfiguraion
+from . import hooks
 
 _logger = logbook.Logger(__name__)
 
@@ -154,31 +155,42 @@ class SessionLogging(object):
 
     @contextmanager
     def _get_file_logging_context(self, filename_template, symlink):
-        with ExitStack() as stack:
+        path = None
+        try:
+            with ExitStack() as stack:
+                if config.root.log.compression.enabled:
+                    handler, path = self._get_file_log_handler(filename_template, symlink, use_compression=True)
+                else:
+                    handler, path = self._get_file_log_handler(filename_template, symlink)
+                stack.enter_context(closing(handler))
+                stack.enter_context(handler.applicationbound())
 
-            if config.root.log.compression.enabled:
-                handler, path = self._get_file_log_handler(filename_template, symlink, use_compression=True)
-            else:
-                handler, path = self._get_file_log_handler(filename_template, symlink)
-            stack.enter_context(closing(handler))
-            stack.enter_context(handler.applicationbound())
+                if config.root.log.compression.enabled and config.root.log.compression.use_rotating_raw_file:
+                    rotating_handler, _ = self._get_file_log_handler(filename_template, symlink, bubble=True, use_rotation=True)
+                    stack.enter_context(rotating_handler.applicationbound())
 
-            if config.root.log.compression.enabled and config.root.log.compression.use_rotating_raw_file:
-                rotating_handler, _ = self._get_file_log_handler(filename_template, symlink, bubble=True, use_rotation=True)
-                stack.enter_context(rotating_handler.applicationbound())
+                stack.enter_context(self.console_handler.applicationbound())
+                stack.enter_context(self.warnings_handler.applicationbound())
+                stack.enter_context(self._get_error_logging_context())
+                stack.enter_context(self._get_silenced_logs_context())
+                if config.root.log.unittest_mode:
+                    stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.TRACE))
+                for extra_handler in _extra_handlers:
+                    stack.enter_context(extra_handler.applicationbound())
+                if config.root.log.unified_session_log and self.session_log_handler is not None:
+                    stack.enter_context(_make_bubbling_handler(self.session_log_handler))
 
-            stack.enter_context(self.console_handler.applicationbound())
-            stack.enter_context(self.warnings_handler.applicationbound())
-            stack.enter_context(self._get_error_logging_context())
-            stack.enter_context(self._get_silenced_logs_context())
-            if config.root.log.unittest_mode:
-                stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.TRACE))
-            for extra_handler in _extra_handlers:
-                stack.enter_context(extra_handler.applicationbound())
-            if config.root.log.unified_session_log and self.session_log_handler is not None:
-                stack.enter_context(_make_bubbling_handler(self.session_log_handler))
+                yield handler, path
+        finally:
+            if path is not None:
+                hooks.log_file_closed()  # pylint: disable=no-member
+                if config.root.log.cleanup.enabled and self._should_delete_log():
+                    os.remove(path)
 
-            yield handler, path
+    def _should_delete_log(self):
+        return (not config.root.log.cleanup.keep_failed) or \
+               (not self.session.results.current.is_global_result() and self.session.results.current.is_success(allow_skips=True)) or \
+               (self.session.results.current.is_global_result() and self.session.results.is_success(allow_skips=True))
 
     def _get_error_logging_context(self):
         path = config.root.log.errors_subpath
