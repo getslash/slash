@@ -1,6 +1,6 @@
 import sys
 
-from confetti import Config
+from confetti.config import Config, ConfigProxy
 from slash import plugins
 from slash._compat import cStringIO
 from slash.plugins import PluginInterface
@@ -86,13 +86,15 @@ class ArgumentParsingTest(OutputCaptureTest):
 
 
 class PluginCommandLineArgumentsTest(OutputCaptureTest):
+    INTERNAL_NAME = "internal plugin"
+    SAMPLE_NAME = "sample plugin"
 
     def setUp(self):
         super(PluginCommandLineArgumentsTest, self).setUp()
-        self.plugin = SampleCommandLinePlugin()
+        self.plugin = SampleCommandLinePlugin(self.SAMPLE_NAME)
         plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
-        self.internal_plugin = InternalPlugin()
+        self.internal_plugin = InternalPlugin(self.INTERNAL_NAME)
         plugins.manager.install(self.internal_plugin, is_internal=True)
         self.addCleanup(plugins.manager.uninstall, self.internal_plugin)
         self._parser = cli_utils.SlashArgumentParser()
@@ -106,6 +108,16 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
     def test_activation(self):
         cli_utils.add_pending_plugins_from_commandline(["--with-sample-plugin"])
         self.assertIn(self.plugin.get_name(), plugins.manager.get_future_active_plugins(), "plugin was not activated")
+
+    def test_plugins_configuration(self):
+        assert isinstance(self.plugin.current_config, ConfigProxy)
+        assert isinstance(self.internal_plugin.current_config, ConfigProxy)
+
+    def test_get_plugin(self):
+        sample = plugins.manager.get_installed_plugins().get(self.SAMPLE_NAME)
+        assert sample is self.plugin
+        internal = plugins.manager.get_installed_plugins().get(self.INTERNAL_NAME)
+        assert internal is self.internal_plugin
 
     def test_deactivation(self):
         argv = ["--without-sample-plugin"]
@@ -138,10 +150,21 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
         self.assertIn("--internal-plugin-option", output)
 
 
+class PluginCommandLineArgumentsTestWithDashes(PluginCommandLineArgumentsTest):
+    INTERNAL_NAME = "internal-plugin"
+    SAMPLE_NAME = "sample-plugin"
+
+
 class SampleCommandLinePlugin(PluginInterface):
 
+    def __init__(self, name="sample plugin"):
+        self._name = name
+
     def get_name(self):
-        return "sample-plugin"
+        return self._name
+
+    def get_default_config(self):
+        return {}
 
     def configure_argument_parser(self, parser):
         parser.add_argument("--plugin-option")
@@ -152,8 +175,14 @@ class SampleCommandLinePlugin(PluginInterface):
 
 class InternalPlugin(PluginInterface):
 
+    def __init__(self, name="internal plugin"):
+        self._name = name
+
     def get_name(self):
-        return "internal-plugin"
+        return self._name
+
+    def get_default_config(self):
+        return {}
 
     def configure_argument_parser(self, parser):
         parser.add_argument("--internal-plugin-option")
