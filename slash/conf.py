@@ -71,6 +71,10 @@ config = Config({
             "algorithm": "brotli" // Doc("Compression algorithm to use, either gzip or brotli"),
             "use_rotating_raw_file": False // Doc("When compression is enabled, write also to uncompressed rotating log file"),
         },
+        "cleanup": {
+            "enabled": False,
+            "keep_failed": True,
+        }
     },
     "run": {
         "dump_variation": False // Doc("Output the full variation structure before each test is run (mainly used for internal debugging)"),
