@@ -18,7 +18,8 @@ from . import hooks
 _logger = logbook.Logger(__name__)
 
 _custom_colors = {}
-
+filtered_channels = {'slash.runner', 'slash.loader', 'slash.core.cleanup_manager', 'slash.core.scope_manager', \
+                      'slash.exception_handling', 'slash.core.fixtures.fixture_store'}
 
 class _NormalizedObject(object):
     def __init__(self, obj):
@@ -108,6 +109,11 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
             reporter.notify_after_console_output()
         return returned
 
+def _slash_logs_filter(record, handler): # pylint: disable=unused-argument
+    return record.extra.get('filter_bypass') or \
+           record.channel not in filtered_channels or \
+           record.level >= config.root.log.core_log_level
+
 class SessionLogging(object):
     """
     A context creator for logging within a session and its tests
@@ -118,7 +124,7 @@ class SessionLogging(object):
             console_stream = sys.stderr
         self.session = session
         self.warnings_handler = WarnHandler(session.warnings)
-        self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level, stream=console_stream)
+        self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level, stream=console_stream, filter=_slash_logs_filter)
         #: contains the path for the session logs
         self.session_log_path = None
         self.session_log_handler = None
@@ -212,7 +218,7 @@ class SessionLogging(object):
             return ExitStack()
         return SilencedLoggersHandler(config.root.log.silence_loggers).applicationbound()
 
-    def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=None, use_compression=False, use_rotation=False):
+    def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
         root_path = config.root.log.root
         if root_path is None or subpath is None:
             log_path = None

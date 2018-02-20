@@ -1,6 +1,6 @@
 from uuid import uuid4
 import pytest
-
+import logbook
 
 @pytest.mark.parametrize('failure_type', ['failure', 'error'])
 @pytest.mark.parametrize('use_custom_message', [True, False])
@@ -77,7 +77,7 @@ def test_session_level_add_error_message(suite, suite_test):
 
 @pytest.mark.parametrize('log_variables', [True, False])
 def test_add_error_log_traceback_variables(suite, suite_test, log_variables, config_override, tmpdir):
-
+    config_override('log.core_log_level', logbook.TRACE)
     config_override('log.traceback_variables', log_variables)
     config_override('log.root', str(tmpdir.join('logs')))
 

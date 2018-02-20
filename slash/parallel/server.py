@@ -138,8 +138,8 @@ class Server(object):
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
             hooks.test_distributed(test_logical_id=test.__slash__.id, worker_session_id=self._get_worker_session_id(client_id)) # pylint: disable=no-member
-            _logger.notice("#{}: {}, Client_id: {}", test_index + 1, test.__slash__.address, client_id,
-                           extra={'highlight': True})
+            _logger.notice("#{}: {}, Client_id: {}", test_index + 1, test.__slash__.address, client_id, \
+                            extra={'highlight': True, 'filter_bypass': True})
             return test_index
         else:
             _logger.debug("No unstarted tests, sending end to client_id {}".format(client_id))
