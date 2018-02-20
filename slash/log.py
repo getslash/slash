@@ -216,13 +216,14 @@ class SessionLogging(object):
 
     @contextmanager
     def _wrap_with_cleanup(self, ctx, path):
+        result = context.result
         try:
             with ctx:
                 yield path
         finally:
             if path is not None:
-                hooks.log_file_closed(path=path)  # pylint: disable=no-member
-                if config.root.log.cleanup.enabled and self._should_delete_log():
+                hooks.log_file_closed(path=path, result=result)  # pylint: disable=no-member
+                if config.root.log.cleanup.enabled and self._should_delete_log(result):
                     os.remove(path)
 
     def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
