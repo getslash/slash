@@ -338,10 +338,7 @@ class SessionResults(object):
 
         Otherwise, returns the global result object
         """
-        test_id = context.test_id
-        if test_id is None:
-            return self.global_result
-        return self._results_dict[test_id]
+        return context.result
 
     def __iter__(self):
         return self._iterator()

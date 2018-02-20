@@ -161,6 +161,7 @@ class SessionLogging(object):
 
     @contextmanager
     def _get_file_logging_context(self, filename_template, symlink):
+        current_result = context.result
         path = None
         try:
             with ExitStack() as stack:
@@ -190,13 +191,13 @@ class SessionLogging(object):
         finally:
             if path is not None:
                 hooks.log_file_closed(path=path)  # pylint: disable=no-member
-                if config.root.log.cleanup.enabled and self._should_delete_log():
+                if config.root.log.cleanup.enabled and self._should_delete_log(current_result):
                     os.remove(path)
 
-    def _should_delete_log(self):
+    def _should_delete_log(self, result):
         return (not config.root.log.cleanup.keep_failed) or \
-               (not self.session.results.current.is_global_result() and self.session.results.current.is_success(allow_skips=True)) or \
-               (self.session.results.current.is_global_result() and self.session.results.is_success(allow_skips=True))
+               (not result.is_global_result() and result.is_success(allow_skips=True)) or \
+               (result.is_global_result() and self.session.results.is_success(allow_skips=True))
 
     def _get_error_logging_context(self):
         path = config.root.log.errors_subpath
