@@ -225,6 +225,11 @@ class SessionLogging(object):
                 hooks.log_file_closed(path=path, result=result)  # pylint: disable=no-member
                 if config.root.log.cleanup.enabled and self._should_delete_log(result):
                     os.remove(path)
+                    dir_path = os.path.dirname(path)
+                    logs_root_dir = self._normalize_path(config.root.log.root)
+                    if len(os.listdir(dir_path)) == 0 and logs_root_dir != dir_path:  # pylint: disable=len-as-condition
+                        os.rmdir(dir_path)
+
 
     def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
         root_path = config.root.log.root

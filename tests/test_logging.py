@@ -188,6 +188,7 @@ def test_logs_deletion(suite, suite_test, errors_log_path, logs_dir, config_over
     suite_test.when_run.fail()
     summary = suite.run()
     remaining_files = []
+    logs_files_dir = os.path.join(str(logs_dir), 'files')
     for dirname, _, files in os.walk(str(logs_dir)):
         for filename in files:
             f = os.path.join(dirname, filename)
@@ -196,8 +197,10 @@ def test_logs_deletion(suite, suite_test, errors_log_path, logs_dir, config_over
     if should_keep_failed_tests:
         for file_path in [summary[suite_test].get_log_path(), summary.session.results.global_result.get_log_path()]:
             assert file_path in remaining_files
+        assert os.listdir(logs_files_dir)
     else:
-        assert len(remaining_files) == 0
+        assert len(remaining_files) == 0   # pylint: disable=len-as-condition
+        assert not os.listdir(logs_files_dir)
 
 def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
     @gossip.register('slash.session_start')
