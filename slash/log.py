@@ -183,7 +183,7 @@ class SessionLogging(object):
                 yield handler, path
         finally:
             if path is not None:
-                hooks.log_file_closed()  # pylint: disable=no-member
+                hooks.log_file_closed(path=path)  # pylint: disable=no-member
                 if config.root.log.cleanup.enabled and self._should_delete_log():
                     os.remove(path)
 
