@@ -14,6 +14,7 @@ from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
 from .exceptions import InvalidConfiguraion
 from . import hooks
+from .ctx import context
 
 _logger = logbook.Logger(__name__)
 
@@ -183,7 +184,7 @@ class SessionLogging(object):
                 yield handler, path
         finally:
             if path is not None:
-                hooks.log_file_closed(path=path)  # pylint: disable=no-member
+                hooks.log_file_closed(path=path, result=context.result)  # pylint: disable=no-member
                 if config.root.log.cleanup.enabled and self._should_delete_log():
                     os.remove(path)
 
