@@ -167,17 +167,16 @@ class SessionLogging(object):
                 handler, path = self._get_file_log_handler(filename_template, symlink, use_compression=True)
             else:
                 handler, path = self._get_file_log_handler(filename_template, symlink)
-            stack.enter_context(closing(handler))
-            stack.enter_context(self._wrap_with_cleanup(handler.applicationbound(), path))
+            stack.enter_context(self._file_handler_cleanup_context(handler))
 
             if config.root.log.compression.enabled and config.root.log.compression.use_rotating_raw_file:
-                rotating_handler, rotating_handler_path = self._get_file_log_handler(filename_template, symlink, bubble=True, use_rotation=True)
-                stack.enter_context(self._wrap_with_cleanup(rotating_handler.applicationbound(), rotating_handler_path))
+                rotating_handler, _ = self._get_file_log_handler(filename_template, symlink, bubble=True, use_rotation=True)
+                stack.enter_context(self._file_handler_cleanup_context(rotating_handler))
 
             stack.enter_context(self.console_handler.applicationbound())
             stack.enter_context(self.warnings_handler.applicationbound())
-            error_handler, error_handler_path = self._get_error_logging_context()
-            stack.enter_context(self._wrap_with_cleanup(error_handler.applicationbound(), error_handler_path))
+            error_handler, _ = self._get_error_logging_context()
+            stack.enter_context(self._file_handler_cleanup_context(error_handler))
             stack.enter_context(self._get_silenced_logs_context())
             if config.root.log.unittest_mode:
                 stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.TRACE))
@@ -215,11 +214,16 @@ class SessionLogging(object):
         return SilencedLoggersHandler(config.root.log.silence_loggers).applicationbound()
 
     @contextmanager
-    def _wrap_with_cleanup(self, ctx, path):
+    def _file_handler_cleanup_context(self, handler):
         result = context.result
+        path = None
         try:
-            with ctx:
-                yield path
+            with ExitStack() as stack:
+                if isinstance(handler, logbook.FileHandler):
+                    path = handler.stream.name
+                    stack.enter_context(closing(handler))
+                stack.enter_context(handler.applicationbound())
+                yield handler
         finally:
             if path is not None:
                 hooks.log_file_closed(path=path, result=result)  # pylint: disable=no-member
@@ -227,7 +231,7 @@ class SessionLogging(object):
                     os.remove(path)
                     dir_path = os.path.dirname(path)
                     logs_root_dir = self._normalize_path(config.root.log.root)
-                    if len(os.listdir(dir_path)) == 0 and logs_root_dir != dir_path:  # pylint: disable=len-as-condition
+                    if not os.listdir(dir_path) and logs_root_dir != dir_path:
                         os.rmdir(dir_path)
 
 
