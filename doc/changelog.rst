@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`-` Add ``slash rerun`` - given a session_id, run all the tests of this session
 * :feature:`740` session.results.current is now a complete synonym for slash.context.result
 * :feature:`702` Rename log.traceback_level to log.console_traceback_level
 * :feature:`681` Added a new hook, ``log_file_closed``, and added configuration ``log.cleanup`` to enable removing log files after they are closed

@@ -2,7 +2,7 @@ import slash
 import os
 import signal
 from .utils.suite_writer import Suite
-from slash.resuming import get_tests_to_resume
+from slash.resuming import get_tests_from_previous_session
 from slash.exceptions import InteractiveParallelNotAllowed, ParallelTimeout
 from slash.parallel.server import ServerStates
 from slash.parallel.parallel_manager import ParallelManager
@@ -248,7 +248,7 @@ def test_is_test_code(parallel_suite):
 def test_parallel_resume(parallel_suite):
     parallel_suite[0].when_run.fail()
     result = parallel_suite.run()
-    resumed = get_tests_to_resume(result.session.id)
+    resumed = get_tests_from_previous_session(result.session.id)
     assert len(resumed) == 1
 
 def test_parallel_symlinks(parallel_suite, logs_dir):   # pylint: disable=unused-argument
