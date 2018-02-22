@@ -96,3 +96,12 @@ When you run a session that fails, Slash automatically saves the tests intended 
 
 This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for resuming.
 
+
+Rerunning Previous Sessions
+--------------------------
+
+You can rerun all the tests of a previous session, given the session's tests were reported. This might be helpful when reproducing a run of specific worker, for example. You can use ``slash rerun``::
+
+  $ slash rerun -vv <session id>
+
+This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for rerunning.

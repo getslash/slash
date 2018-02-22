@@ -13,6 +13,7 @@ from ..__version__ import __version__
 _COMMANDS = {
     "run": "slash.frontend.slash_run:slash_run",
     "resume": "slash.frontend.slash_run:slash_resume",
+    "rerun": "slash.frontend.slash_run:slash_rerun",
     "version": "slash.frontend.main:slash_version",
     "list": "slash.frontend.slash_list:slash_list",
     "list-config": "slash.frontend.list_config:list_config",
