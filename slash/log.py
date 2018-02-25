@@ -13,6 +13,7 @@ from .conf import config
 from .utils.path import ensure_containing_directory
 from .warnings import WarnHandler
 from .exceptions import InvalidConfiguraion
+from .exception_handling import handling_exceptions
 from . import hooks
 
 _logger = logbook.Logger(__name__)
@@ -131,6 +132,7 @@ class SessionLogging(object):
         #: contains the path for the current test logs
         self.test_log_path = None
         self._set_formatting(self.console_handler, config.root.log.console_format or config.root.log.format)
+        self._log_path_to_handler = {}
 
     @contextmanager
     def get_test_logging_context(self, result):
@@ -162,21 +164,17 @@ class SessionLogging(object):
     @contextmanager
     def _get_file_logging_context(self, filename_template, symlink):
         with ExitStack() as stack:
-            path = None
-            if config.root.log.compression.enabled:
-                handler, path = self._get_file_log_handler(filename_template, symlink, use_compression=True)
-            else:
-                handler, path = self._get_file_log_handler(filename_template, symlink)
-            stack.enter_context(self._file_handler_cleanup_context(handler))
-
+            handler = stack.enter_context(self._log_file_handler_context(filename_template, symlink, \
+                                                                         use_compression=config.root.log.compression.enabled))
+            stack.enter_context(handler.applicationbound())
             if config.root.log.compression.enabled and config.root.log.compression.use_rotating_raw_file:
-                rotating_handler, _ = self._get_file_log_handler(filename_template, symlink, bubble=True, use_rotation=True)
-                stack.enter_context(self._file_handler_cleanup_context(rotating_handler))
+                rotating_handler = stack.enter_context(self._log_file_handler_context(filename_template, symlink, bubble=True, use_rotation=True))
+                stack.enter_context(rotating_handler.applicationbound())
 
             stack.enter_context(self.console_handler.applicationbound())
             stack.enter_context(self.warnings_handler.applicationbound())
-            error_handler, _ = self._get_error_logging_context()
-            stack.enter_context(self._file_handler_cleanup_context(error_handler))
+            error_handler = stack.enter_context(self._get_error_logging_context())
+            stack.enter_context(error_handler.applicationbound())
             stack.enter_context(self._get_silenced_logs_context())
             if config.root.log.unittest_mode:
                 stack.enter_context(logbook.StreamHandler(sys.stderr, bubble=True, level=logbook.TRACE))
@@ -185,6 +183,7 @@ class SessionLogging(object):
             if config.root.log.unified_session_log and self.session_log_handler is not None:
                 stack.enter_context(_make_bubbling_handler(self.session_log_handler))
 
+            path = handler.stream.name if isinstance(handler, logbook.FileHandler) else None
             yield handler, path
 
 
@@ -193,85 +192,84 @@ class SessionLogging(object):
                (not result.is_global_result() and result.is_success(allow_skips=True)) or \
                (result.is_global_result() and self.session.results.is_success(allow_skips=True))
 
+    @contextmanager
     def _get_error_logging_context(self):
-        path = config.root.log.errors_subpath
-        if path:
-            warn_deprecation('log.errors_subpath configuration is deprecated since 1.5.0. '
-                             'Please use log.highlights_subpath instead')
-        else:
-            path = config.root.log.highlights_subpath
-        def _error_added_filter(record, handler): # pylint: disable=unused-argument
-            return record.extra.get('highlight')
+        with ExitStack() as stack:
+            path = config.root.log.errors_subpath
+            if path:
+                warn_deprecation('log.errors_subpath configuration is deprecated since 1.5.0. '
+                                 'Please use log.highlights_subpath instead')
+            else:
+                path = config.root.log.highlights_subpath
+            def _error_added_filter(record, handler): # pylint: disable=unused-argument
+                return record.extra.get('highlight')
 
-        handler, log_path = self._get_file_log_handler(path, symlink=None, bubble=True, filter=_error_added_filter)
-        if log_path and self.session.results.current is self.session.results.global_result:
-            self.session.results.global_result.add_extra_log_path(log_path)
-        return handler, log_path
+            handler = stack.enter_context(self._log_file_handler_context(path, symlink=None, bubble=True, filter=_error_added_filter))
+            log_path = handler.stream.name if isinstance(handler, logbook.FileHandler) else None
+            if log_path and self.session.results.current is self.session.results.global_result:
+                self.session.results.global_result.add_extra_log_path(log_path)
+            yield handler
 
     def _get_silenced_logs_context(self):
         if not config.root.log.silence_loggers:
             return ExitStack()
         return SilencedLoggersHandler(config.root.log.silence_loggers).applicationbound()
 
-    @contextmanager
-    def _file_handler_cleanup_context(self, handler):
-        result = context.result
-        path = None
-        try:
-            with ExitStack() as stack:
-                if isinstance(handler, logbook.FileHandler):
-                    path = handler.stream.name
-                    stack.enter_context(closing(handler))
-                stack.enter_context(handler.applicationbound())
-                yield handler
-        finally:
-            if path is not None:
-                hooks.log_file_closed(path=path, result=result)  # pylint: disable=no-member
-                if config.root.log.cleanup.enabled and self._should_delete_log(result):
-                    os.remove(path)
-                    dir_path = os.path.dirname(path)
-                    logs_root_dir = self._normalize_path(config.root.log.root)
-                    if not os.listdir(dir_path) and logs_root_dir != dir_path:
-                        os.rmdir(dir_path)
-
-
-    def _get_file_log_handler(self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
-        root_path = config.root.log.root
-        if root_path is None or subpath is None:
-            log_path = None
-            if bubble:
-                handler = NoopHandler()
+    def _get_log_file_path(self, subpath, use_compression):
+        log_path = self._normalize_path(os.path.join(config.root.log.root, _format_log_path(subpath)))
+        if use_compression:
+            if config.root.log.compression.algorithm == "gzip":
+                log_path += ".gz"
+            elif config.root.log.compression.algorithm == "brotli":
+                log_path += ".brotli"
             else:
-                handler = logbook.NullHandler(filter=filter)
-        else:
-            log_path = self._normalize_path(os.path.join(root_path, _format_log_path(subpath)))
-            ensure_containing_directory(log_path)
-            handler = self._get_file_handler(log_path, use_compression=use_compression, use_rotation=use_rotation, bubble=bubble, filter=filter)
-            if symlink:
-                self._try_create_symlink(log_path, symlink)
-            self._set_formatting(handler, config.root.log.format)
-        path = handler.stream.name if isinstance(handler, logbook.FileHandler) else log_path
-        return handler, path
+                raise InvalidConfiguraion("Unsupported compression method: {}".format(config.root.log.compression.algorithm))
+        return log_path
 
-    def _get_file_handler(self, filename, bubble=False, filter=None, use_compression=False, use_rotation=False):
+    def _create_log_file_handler(self, log_path, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
         kwargs = {"bubble": bubble, "filter": filter}
         if use_compression:
             if config.root.log.compression.algorithm == "gzip":
-                handler = logbook.GZIPCompressionHandler
-                filename += ".gz"
+                handler_class = logbook.GZIPCompressionHandler
             elif config.root.log.compression.algorithm == "brotli":
-                handler = logbook.BrotliCompressionHandler
-                filename += ".brotli"
-            else:
-                raise InvalidConfiguraion("Unsupported compression method: {}".format(config.root.log.compression.algorithm))
+                handler_class = logbook.BrotliCompressionHandler
         elif use_rotation:
             kwargs.update({"max_size": 4*1024**2, "backup_count": 1})
-            handler = logbook.RotatingFileHandler
+            handler_class = logbook.RotatingFileHandler
         elif config.root.log.colorize:
-            handler = ColorizedFileHandler
+            handler_class = ColorizedFileHandler
         else:
-            handler = logbook.FileHandler
-        return handler(filename, **kwargs)
+            handler_class = logbook.FileHandler
+        return handler_class(log_path, **kwargs)
+
+    @contextmanager
+    def _log_file_handler_context(self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
+        if subpath is None or config.root.log.root is None:
+            yield NoopHandler() if bubble else logbook.NullHandler(filter=filter)
+        else:
+            log_path = self._get_log_file_path(subpath, use_compression)
+            handler = self._log_path_to_handler.get(log_path, None)
+            if handler is not None:
+                yield handler
+            else:
+                result = context.result
+                ensure_containing_directory(log_path)
+                if symlink:
+                    self._try_create_symlink(log_path, symlink)
+                with closing(self._create_log_file_handler(log_path, bubble=bubble, use_compression=use_compression, \
+                                                           use_rotation=use_rotation, filter=filter)) as handler:
+                    self._log_path_to_handler[log_path] = handler
+                    self._set_formatting(handler, config.root.log.format)
+                    yield handler
+                self._log_path_to_handler[log_path] = None
+                hooks.log_file_closed(path=log_path, result=result)  # pylint: disable=no-member
+                if config.root.log.cleanup.enabled and self._should_delete_log(result):
+                    with handling_exceptions(swallow=True):
+                        os.remove(log_path)
+                        dir_path = os.path.dirname(log_path)
+                        if not os.listdir(dir_path) and dir_path != self._normalize_path(config.root.log.root):
+                            os.rmdir(dir_path)
+
 
     def _normalize_path(self, p):
         return os.path.expanduser(p)

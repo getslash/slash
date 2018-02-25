@@ -85,6 +85,22 @@ def test_logs_compression(files_dir, suite, config_override, compression_enabled
     else:
         assert session_log_path.endswith(".log")
 
+def test_compressing_to_unified_file(files_dir, suite, config_override):
+    config_override("log.compression.enabled", True)
+    config_override("log.subpath", slash.config.root.log.session_subpath)
+    config_override("log.compression.use_rotating_raw_file", True)
+    config_override("log.compression.algorithm", "gzip")
+    summary = suite.run()
+    session_log_path = summary.session.results.global_result.get_log_path()
+
+    raw_file_name = session_log_path[:session_log_path.rfind(".")]
+    assert os.path.exists(raw_file_name)
+
+    #validate compressing successfully
+    decompressed_logs = _decompress(session_log_path, use_gzip=True)
+    with open(raw_file_name, 'r') as raw_file:
+        assert decompressed_logs.endswith(raw_file.read())
+
 def test_log_file_colorize(files_dir, config_override, suite, suite_test):
     config_override('log.colorize', True)
     suite_test.append_line('slash.logger.notice("hey")')
