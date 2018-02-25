@@ -13,7 +13,8 @@ env: .env/.up-to-date
 
 .env/.up-to-date: setup.py Makefile
 	python -m virtualenv .env
-	.env/bin/pip install -e .[testing,doc]
+	.env/bin/pip install -e .[testing]
+	.env/bin/pip install -r doc/pip_requirements.txt
 	touch .env/.up-to-date
 
 doc: env
