@@ -156,6 +156,27 @@ def test_interrupted_with_custom_exception(suite, suite_test, request):
     results = suite.run(expect_interruption=True)
 
 
+def test_test_interrupt_hook_exception(suite_builder):
+    # pylint: disable=reimported,redefined-outer-name
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+
+        @slash.hooks.test_interrupt.register # pylint: disable=no-member
+        def test_interrupt(**_):
+            1/0 # pylint: disable=pointless-statement
+
+
+        def test_1():
+            raise KeyboardInterrupt()
+
+        def test_2():
+            pass
+
+    [res] = suite_builder.build().run().assert_results(1)
+    assert res.is_interrupted()
+
+
 
 @pytest.fixture
 def session_interrupt():

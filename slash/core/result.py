@@ -12,7 +12,7 @@ from vintage import deprecated
 from .. import hooks
 from .._compat import OrderedDict, itervalues
 from ..ctx import context
-from ..exception_handling import capture_sentry_exception
+from ..exception_handling import capture_sentry_exception, handling_exceptions
 from .. import exceptions
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
@@ -101,7 +101,9 @@ class Result(object):
             if not self.is_global_result():
                 self.mark_interrupted()
                 if not interrupted_test and not context.session.has_children():
-                    with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."):
+                    with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."),\
+                         handling_exceptions(swallow=True):
+
                         hooks.test_interrupt() # pylint: disable=no-member
             if not interrupted_session:
                 session_result.mark_interrupted()

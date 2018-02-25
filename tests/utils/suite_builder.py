@@ -61,6 +61,11 @@ class SuiteBuilderSuiteResult(object):
         assert len(self.slash_app.session.results) == num_tests
         return AssertAllHelper(self)
 
+    def assert_results(self, num_results):
+        results = list(self.slash_app.session.results.iter_test_results())
+        assert len(results) == num_results
+        return results
+
     def assert_session_error(self, error_substring):
         self.assert_all(0)
         errs = self.slash_app.session.results.global_result.get_errors()
