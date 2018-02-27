@@ -71,6 +71,7 @@ class Session(Activatable):
             assert ctx.context.result is None
             ctx.context.session = self
             ctx.context.result = self.results.global_result
+            self.results.global_result.mark_started()
             self._logging_context = self.logging.get_session_logging_context()
             self._logging_context.__enter__()
 
@@ -90,6 +91,7 @@ class Session(Activatable):
 
         self._logging_context.__exit__(*exc_info) # pylint: disable=no-member
         self._logging_context = None
+        self.results.global_result.mark_finished()
         ctx.pop_context()
 
     @property
@@ -105,7 +107,6 @@ class Session(Activatable):
             type(self).host_fqdn = socket.getfqdn()
         self.host_name = self.host_fqdn.split('.')[0]
         self.start_time = time.time()
-        self.results.global_result.mark_started()
         self.cleanups.push_scope('session-global')
         session_start_called = False
         try:
@@ -122,7 +123,6 @@ class Session(Activatable):
             raise
         finally:
             self._started = False
-            self.results.global_result.mark_finished()
             self.end_time = time.time()
 
             with handling_exceptions():

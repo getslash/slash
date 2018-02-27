@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`747` session.results.global_result.is_success() now returns False if any test in the session isn't successful
 * :feature:`-` Add ``slash rerun`` - given a session_id, run all the tests of this session
 * :feature:`740` session.results.current is now a complete synonym for slash.context.result
 * :feature:`702` Rename log.traceback_level to log.console_traceback_level

@@ -4,6 +4,7 @@ import pytest
 import slash
 from slash import Session
 from slash.core.result import Result, SessionResults
+from slash.exception_handling import handling_exceptions
 
 from .utils import TestCase, run_tests_assert_success
 
@@ -158,6 +159,18 @@ def test_is_global_result(suite, suite_test):
     suite_test.append_line('assert not slash.context.result.is_global_result()')
     result = suite.run()
     assert result.session.results.global_result.is_global_result()
+
+
+def test_global_result_is_success(suite, suite_test):
+    suite_test.when_run.fail()
+    assert not suite.run().session.results.global_result.is_success()
+
+
+def test_global_result_error_without_started_context():
+    with slash.Session() as session:
+        with handling_exceptions(swallow=True):
+            1/0 # pylint: disable=pointless-statement
+    assert not session.results.is_success()
 
 
 def test_session_cleanups_under_global_result(suite, suite_test):

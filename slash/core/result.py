@@ -287,9 +287,19 @@ class Result(object):
 
 class GlobalResult(Result):
 
+    def __init__(self, session_results=None):
+        super(GlobalResult, self).__init__()
+        self._session_results = session_results
+
     def is_global_result(self):
         return True
 
+    def is_success(self, allow_skips=False):
+        if not super(GlobalResult, self).is_success(allow_skips=allow_skips):
+            return False
+        if self._session_results is None:
+            return True
+        return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 
 
 class SessionResults(object):
@@ -297,7 +307,7 @@ class SessionResults(object):
     def __init__(self, session):
         super(SessionResults, self).__init__()
         self.session = session
-        self.global_result = GlobalResult()
+        self.global_result = GlobalResult(self)
         self._results_dict = OrderedDict()
         self._iterator = functools.partial(itervalues, self._results_dict)
 
@@ -350,14 +360,7 @@ class SessionResults(object):
 
         :param allow_skips: Whether to consider skips as unsuccessful
         """
-        if not self.global_result.is_success():
-            return False
-        for result in self._iterator():
-            if not result.is_finished() and not result.is_skip():
-                return False
-            if not result.is_success(allow_skips=allow_skips):
-                return False
-        return True
+        return self.global_result.is_success(allow_skips=allow_skips)
 
     def is_interrupted(self):
         """Indicates if this session was interrupted
