@@ -34,7 +34,7 @@ class SessionWarnings(object):
         warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
         self.add(warning)
         if not issubclass(category, LogbookWarning):
-            _native_logger.warning('{!r}', warning)
+            _native_logger.warning('{filename}:{lineno}: {warning!r}', filename=filename, lineno=lineno, warning=warning)
 
     def add(self, warning):
         hooks.warning_added(warning=warning) # pylint: disable=no-member

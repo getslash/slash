@@ -7,6 +7,7 @@ from vintage import deprecated
 
 import logbook
 import pytest
+import inspect
 
 import slash
 
@@ -49,13 +50,22 @@ def test_warning_added_hook(suite, suite_test):
     assert warning_type == 'LogbookWarning'
 
 
+def _get_current_line_info():
+    frame = inspect.currentframe().f_back
+    return frame.f_code.co_filename, frame.f_lineno
+
+
 def test_native_warnings(message):
 
     def test_example():
         with logbook.TestHandler() as handler:
+            filename, line_no = _get_current_line_info()
             warnings.warn(message)
         assert len(handler.records) == 1
-        assert handler.records[0].message == message
+        rec_message = handler.records[0].message
+        assert rec_message.endswith(message)
+        assert filename in rec_message
+        assert str(line_no + 1) in rec_message
 
     s = run_tests_assert_success(test_example)
 
