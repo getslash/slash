@@ -264,6 +264,11 @@ def test_filtering_slash_logs(files_dir, config_override, level, core_log_level)
         else:
             assert debug_core_string not in logfile_data
 
+def test_log_names_with_timestamps(files_dir, config_override, suite):
+    config_override('log.core_log_level', logbook.TRACE)
+    config_override('log.session_subpath', '{timestamp:%Y-%m-%d-%H%M%S}/session.log')
+    config_override('log.subpath', '{timestamp:%Y-%m-%d-%H%M%S}/test.log')
+    suite.run()
 
 ################################################################################
 ## Fixtures

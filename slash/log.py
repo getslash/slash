@@ -1,3 +1,4 @@
+import datetime
 import numbers
 import os
 import sys
@@ -363,7 +364,7 @@ class _BubblingWrapper(logbook.Handler):
 
 
 def _format_log_path(p):
-    return p.format(context=_NormalizedObject(context))
+    return p.format(context=_NormalizedObject(context), timestamp=datetime.datetime.now())
 
 
 class RetainedLogHandler(logbook.TestHandler):
