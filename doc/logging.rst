@@ -33,6 +33,13 @@ You can use :attr:`slash.core.metadata.Metadata.test_index0` to include an ordin
 
     {context.session.id}/{context.test.__slash__.test_index0:03}-{context.test.id}.log
 
+Timestamps
+~~~~~~~~~~
+
+The current timestamp can also be used when formatting log paths. This is useful if you want to create log directories named according to the current date/time::
+
+  logs/{timestamp:%Y%m%d-%H%M%S}.log
+
 The Session Log
 ~~~~~~~~~~~~~~~
 
