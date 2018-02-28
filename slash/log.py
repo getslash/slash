@@ -134,6 +134,9 @@ class SessionLogging(object):
         self._set_formatting(self.console_handler, config.root.log.console_format or config.root.log.format)
         self._log_path_to_handler = {}
 
+    def get_active_log_paths(self):
+        return [log_path for log_path, handler in self._log_path_to_handler.items() if handler is not None]
+
     @contextmanager
     def get_test_logging_context(self, result):
         with self._get_file_logging_context(config.root.log.subpath, config.root.log.last_test_symlink) as (_, path):
