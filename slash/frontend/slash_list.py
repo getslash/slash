@@ -32,6 +32,7 @@ def _get_parser():
     parser.add_argument('--show-tags', dest='show_tags', action='store_true', default=False)
     parser.add_argument('--no-params', dest='show_params', action='store_false', default=True)
     parser.add_argument('--allow-empty', dest='allow_empty', action='store_true', default=False)
+    parser.add_argument('--warnings-as-errors', dest='warnings_as_errors', action='store_true', default=False)
     parser.add_argument('-r', '--relative-paths', action='store_true', default=False)
     parser.add_argument('--no-output', dest='show_output', action='store_false', default=True)
     parser.add_argument('--force-color', dest='force_color', action='store_true', default=False)
@@ -71,13 +72,15 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
             if parsed_args.only in (None, 'tests'):
                 _report_tests(parsed_args, runnables, _print)
 
+        if bool(session.warnings.warnings) and parsed_args.warnings_as_errors:
+            return -1
         if len(runnables):  # pylint: disable=len-as-condition
             return 0
     except CannotLoadTests as e:
         print('Could not load tests ({})'.format(e), file=error_stream)
         return -1
     print('No tests were found!', file=sys.stderr)
-    return not int(parsed_args.allow_empty)
+    return int(not parsed_args.allow_empty)
 
 
 def _report_tests(args, runnables, printer):
