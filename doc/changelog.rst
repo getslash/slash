@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`752` Added ``slash.ignore_warnings`` to filter unwanted warnings during sessions
 * :feature:`757` ``slash list tests`` now accepts the ``--warnings-as-errors`` flag, making it treat warnings it encounters as errors
 * :feature:`755` ``timestamp`` can now be used when formatting log path names
 * :feature:`747` session.results.global_result.is_success() now returns False if any test in the session isn't successful

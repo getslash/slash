@@ -75,6 +75,7 @@ Warnings
   :members:
   :special-members: 
 
+.. autofunction:: slash.ignore_warnings
 
 Hooks
 -----

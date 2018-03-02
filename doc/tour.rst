@@ -217,6 +217,8 @@ In many cases test executions succeed, but warnings are emitted. These warnings 
 
 Slash collects warnings emitted throughout the session in the form of either *warning logs* or the *native warnings mechanism*. The warnings are recorded in the ``session.warnings`` (instance of :class:`.warnings.SessionWarnings`) component, and cause the ``warning_added`` hook to be fired.
 
+.. note:: By default all native warnings are captured. In cases where you want to silence specific warnings, you can use the :func:`slash.ignore_warnings` function to handle them.
+
 
 Storing Additional Test Details
 -------------------------------
