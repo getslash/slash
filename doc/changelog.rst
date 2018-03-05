@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`664` Added ``metadata.set_file_path``, allowing integrations to set a custom file path to be associated with a loaded test
 * :feature:`752` Added ``slash.ignore_warnings`` to filter unwanted warnings during sessions
 * :feature:`757` ``slash list tests`` now accepts the ``--warnings-as-errors`` flag, making it treat warnings it encounters as errors
 * :feature:`755` ``timestamp`` can now be used when formatting log path names
