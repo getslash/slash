@@ -85,14 +85,26 @@ def test_add_error_log_traceback_variables(suite, suite_test, log_variables, con
     def __code__():          # pylint: disable=unused-variable
         # to avoid the line itself from being detected
         x_variable = 'x' * 3 # pylint: disable=unused-variable
+        class Object(object):
+
+            def __init__(self):
+                self.property_value = 'yyy'
+
+        self = Object() # pylint: disable=unused-variable
 
     suite_test.when_run.error()
     res = suite.run()
     result = res[suite_test]
+
     with open(result.get_log_path()) as f:
+        lines = f.readlines()
+
+    def _search_variable(variable_name, variable_value):
         found = False
-        for line in f:
-            if 'x_variable' in line and 'xxx' in line:
+        for line in lines:
+            if variable_name in line and variable_value in line:
                 found = True
                 break
-        assert found == log_variables
+        assert found == log_variables, 'Variable {!r} not found in traceback log!'.format(variable_name)
+    _search_variable('x_variable', 'xxx')
+    _search_variable('self.property_value', 'yyy')

@@ -219,11 +219,18 @@ class DistilledFrame(object):
         returned = '  {0.filename}, line {0.lineno}:\n'.format(self)
         returned += '    {.code_line}'.format(self)
         if include_vars and self.python_frame is not None:
-            for name, value in sorted(self.python_frame.f_locals.items()):
+            for name, value in _unwrap_self_locals(self.python_frame.f_locals.items()):
                 returned += '\n\t- {}: {}'.format(name, _safe_repr(value, truncate=False))
             returned += '\n'
         return returned
 
+
+def _unwrap_self_locals(local_pairs):
+    for name, value in local_pairs:
+        yield name, value
+        if name == 'self':
+            for attr_name, attr_value in value.__dict__.items():
+                yield 'self.{}'.format(attr_name), attr_value
 
 
 def iter_distilled_object_attributes(obj):
