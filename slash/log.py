@@ -225,7 +225,7 @@ class SessionLogging(object):
             if config.root.log.compression.algorithm == "gzip":
                 log_path += ".gz"
             elif config.root.log.compression.algorithm == "brotli":
-                log_path += ".brotli"
+                log_path += ".br"
             else:
                 raise InvalidConfiguraion("Unsupported compression method: {}".format(config.root.log.compression.algorithm))
         return log_path
