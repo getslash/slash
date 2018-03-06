@@ -34,6 +34,9 @@ class _Cmdline(object):
         self.metavar = metavar
         self.append = append
 
+    def __str__(self):
+        return self.arg or repr(self)
+
     def configure_parser(self, parser, path, node):
         """
         Add all required flags to a parser to support updating the config value from commandline
