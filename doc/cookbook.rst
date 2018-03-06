@@ -22,10 +22,12 @@ The above code is best placed in a ``slashconf.py`` file at the root of your tes
 Interactive Tests
 -----------------
 
+.. _cookbook-interactive-namespace:
+
 Controlling Interactive Namespaces from Plugins
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can customize the namespace available by default to interactive tests run with Slash (like ``slash run -i``) using the special hook :ref:`before_interactive_shell`:
+You can customize the namespace available by default to interactive tests run with Slash (like ``slash run -i``) using the special hook :ref:`hooks.before_interactive_shell`:
 
 .. code-block:: python
 

@@ -10,9 +10,9 @@ class HookListDoc(Directive):
     optional_arguments = 0
     def run(self):
         returned = []
-        all_hooks = []
         for hook in sorted(gossip.get_group("slash").get_hooks(), key=lambda hook:hook.name):
             section = nodes.section(ids=[hook.name], names=['hooks.{}'.format(hook.name)])
+            self.state.document.note_explicit_target(section)
             returned.append(section)
             title = "slash.hooks.{0}".format(hook.name)
             args = hook.get_argument_names()
