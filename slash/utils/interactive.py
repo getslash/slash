@@ -5,6 +5,7 @@ import time
 import datetime
 from contextlib import contextmanager
 from .. import hooks
+from ..conf import config
 from ..ctx import context
 from ..core import metadata
 from ..core.function_test import FunctionTestFactory
@@ -38,7 +39,7 @@ def start_interactive_shell(**namespace):
 
     Any keyword argument specified will be available in the shell ``globals``.
     """
-    if context.g is not None:
+    if context.g is not None and config.root.interactive.expose_g_globals:
         namespace.update(context.g.__dict__)
 
     hooks.before_interactive_shell(namespace=namespace)  # pylint: disable=no-member

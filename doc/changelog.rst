@@ -2,6 +2,7 @@ Changelog
 =========
 
 * :feature:`697` Added ``slash.before_interactive_shell`` hook
+* :feature:`-` Added a configuration option preventing ``slash.g`` from being available in interactive namespaces
 * :feature:`664` Added ``metadata.set_file_path``, allowing integrations to set a custom file path to be associated with a loaded test
 * :feature:`752` Added ``slash.ignore_warnings`` to filter unwanted warnings during sessions
 * :feature:`757` ``slash list tests`` now accepts the ``--warnings-as-errors`` flag, making it treat warnings it encounters as errors
