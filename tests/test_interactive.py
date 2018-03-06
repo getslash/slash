@@ -1,6 +1,7 @@
 # pylint: disable=redefined-outer-name
 from munch import Munch
 import pytest
+import gossip
 import slash
 from slash.utils import interactive
 from slash import start_interactive_shell
@@ -20,15 +21,19 @@ def test_interactive_test(suite, interactive_checkpoint):
 def test_interactive_scope(forge, with_session):
     interact_mock = forge.replace(interactive, '_interact')
 
-    interact_mock({'x': 2, 'y': 3})
+    def _add_namespace_var(namespace):
+        namespace['z'] = 4
+
+    interact_mock({'x': 2, 'y': 3, 'z': 4})
     forge.replay()
 
-    if with_session:
-        with slash.Session():
-            slash.g.x = 2
-            start_interactive_shell(y=3)
-    else:
-        start_interactive_shell(x=2, y=3)
+    with gossip.registered('slash.before_interactive_shell', _add_namespace_var):
+        if with_session:
+            with slash.Session():
+                slash.g.x = 2
+                start_interactive_shell(y=3)
+        else:
+            start_interactive_shell(x=2, y=3)
 
 
 def test_interactive_planned_tests(interactive_checkpoint, suite):

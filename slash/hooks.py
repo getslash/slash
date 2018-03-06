@@ -62,6 +62,8 @@ _define('before_worker_start', doc="Called in parallel execution mode, before th
 _define('prepare_notification', doc='Called with a message object prior to it being sent via the notifications plugin (if enabled)',
         arg_names=("message",))
 
+_define('before_interactive_shell', doc='Called before starting interactive shell', arg_names=("namespace",))
+
 _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()
 _slash_group.set_exception_policy(gossip.RaiseDefer())

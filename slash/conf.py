@@ -91,6 +91,10 @@ config = Config({
         "resume_state_path": "~/.slash/session_states" // Doc("Path to store or load session's resume data"),
         "message_assertion_introspection": True // Doc("When False, failing assertions which have messages attached will not emit introspection info"),
     },
+    "interactive": {
+        "expose_g_globals": True // Doc("When False, slash.g won't be added to interactive test namespaces"),
+    },
+
     "parallel": {
         "num_workers": 0 // Doc("Parallel execution") // Cmdline(arg='--parallel', metavar="NUM_WORKERS"),
         "worker_id": None // Doc("Worker_id") // Cmdline(arg='--parallel-worker-id', metavar="WORKER_ID"),

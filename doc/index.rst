@@ -38,6 +38,7 @@ Table Of Contents
    tags
    fixtures
    errors
+   warnings
    customizing_slash
    configuration
    logging
