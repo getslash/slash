@@ -315,3 +315,17 @@ def yield_fixture_decorator(request):
     if should_use_explicitly:
         return slash.yield_fixture
     return slash.fixture
+
+
+@pytest.fixture  # pylint: disable=unused-argument
+def xunit_filename(tmpdir, request, config_override):  # pylint: disable=unused-argument
+    xunit_filename = str(tmpdir.join('xunit.xml'))
+    slash.plugins.manager.activate('xunit')
+
+    slash.config.root.plugin_config.xunit.filename = xunit_filename
+
+    @request.addfinalizer
+    def deactivate():  # pylint: disable=unused-variable
+        slash.plugins.manager.deactivate('xunit')
+
+    return xunit_filename
