@@ -98,3 +98,23 @@ def test_invalid_param_values(invalid_value):
 ])
 def test_valid_param_values(valid_value):
     slash.param(valid_value)
+
+
+def test_generator_fixture_param_labels(suite_builder):
+    # pylint: disable=no-member, protected-access, undefined-variable,unused-variable, reimported, redefined-outer-name
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+
+        @slash.generator_fixture
+        def param():
+            yield 'value1' // slash.param('first_value')
+            yield 'value2' // slash.param('second_value')
+
+        def test_1(param):
+            slash.context.result.data['value'] = param
+
+    suite_builder.build().run().assert_success(2).with_data([
+        {'value': 'value1'},
+        {'value': 'value2'},
+    ])
