@@ -4,6 +4,7 @@ import threading
 import time
 import datetime
 from contextlib import contextmanager
+from .. import hooks
 from ..ctx import context
 from ..core import metadata
 from ..core.function_test import FunctionTestFactory
@@ -40,6 +41,7 @@ def start_interactive_shell(**namespace):
     if context.g is not None:
         namespace.update(context.g.__dict__)
 
+    hooks.before_interactive_shell(namespace=namespace)  # pylint: disable=no-member
     _interact(namespace)
 
 def _start_interactive_test():
