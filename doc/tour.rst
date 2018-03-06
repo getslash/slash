@@ -1,5 +1,5 @@
-Whirlwind Tour of Slash
-=======================
+Getting Started with Slash
+==========================
 
 .. _tour:
 
@@ -209,16 +209,6 @@ When a requirement fails, the test is skipped without even being started, and ap
 
 .. note::
    Requirements are evaluated during the load phase of the tests, so they are usually checked before any test started running. This means that if you're relying on a transient state that can be altered by other tests, you have to use skips instead. Requirements are useful for checking environmental constraints that are unlikely to change as a result of the session being run.
-
-Warnings
---------
-
-In many cases test executions succeed, but warnings are emitted. These warnings can mean a lot of things, and in some cases even invalidate the success of the test completely.
-
-Slash collects warnings emitted throughout the session in the form of either *warning logs* or the *native warnings mechanism*. The warnings are recorded in the ``session.warnings`` (instance of :class:`.warnings.SessionWarnings`) component, and cause the ``warning_added`` hook to be fired.
-
-.. note:: By default all native warnings are captured. In cases where you want to silence specific warnings, you can use the :func:`slash.ignore_warnings` function to handle them.
-
 
 Storing Additional Test Details
 -------------------------------
