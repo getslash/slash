@@ -2,7 +2,6 @@
 import os
 
 import pytest
-import slash
 
 from xml.etree import ElementTree
 
@@ -109,21 +108,32 @@ def test_event(request):
     return func
 
 
-@pytest.fixture  # pylint: disable=unused-argument
-def xunit_filename(tmpdir, request, config_override):  # pylint: disable=unused-argument
-    xunit_filename = str(tmpdir.join('xunit.xml'))
-    slash.plugins.manager.activate('xunit')
+@pytest.mark.parametrize('action', ['skipped', 'error', 'failure', 'success'])
+def test_xunit_parallel_suite(parallel_suite, xunit_filename, action):
+    test = parallel_suite[3]
+    if action == 'skipped':
+        test.when_run.skip()
+    elif action == 'failure':
+        test.when_run.fail()
+    elif action == 'error':
+        test.when_run.raise_exception()
+    else:
+        assert action == 'success', 'Unsupported action'
+    parallel_suite.run()
 
-    slash.config.root.plugin_config.xunit.filename = xunit_filename
+    root = validate_xml(xunit_filename, suite=parallel_suite)
+    if action != 'success':
+        for child in root:
+            if len(child) > 0: # pylint: disable=len-as-condition
+                [element] = child
+                break
+        else:
+            assert False, 'no child matching test found'
+        assert element.tag == action
 
-    @request.addfinalizer
-    def deactivate():  # pylint: disable=unused-variable
-        slash.plugins.manager.deactivate('xunit')
-
-    return xunit_filename
 
 
-def validate_xml(xml_filename):
+def validate_xml(xml_filename, suite=None):
     with open(xml_filename) as f:
         etree = ElementTree.parse(f)
 
@@ -132,6 +142,9 @@ def validate_xml(xml_filename):
 
     _validate_counters(root)
 
+    if suite is not None:
+        assert len(root) == len(suite)
+
     for child in list(root):
         assert child.tag == 'testcase'
         assert child.get('name')
@@ -139,7 +152,7 @@ def validate_xml(xml_filename):
 
         for subchild in child.getchildren():
             assert subchild.tag in ['skipped', 'error', 'failure']
-
+    return root
 
 def _validate_counters(element):
     for number in ['errors', 'failures', 'skipped']:
