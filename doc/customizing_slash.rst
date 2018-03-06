@@ -134,7 +134,7 @@ In the real world, you want to test integrated products. These are often physica
 		class ProductTestingPlugin(slash.plugins.PluginInterface):
 
 		    def get_name(self):
-		        return 'your-product'
+		        return 'your product'
 
 		    def configure_argument_parser(self, parser):
 		        parser.add_argument('-t', '--target', 
@@ -166,18 +166,17 @@ Slash supports a hierarchical configuration facility, described in :ref:`the rel
 		@slash.plugins.active
 		class ProductTestingPlugin(slash.plugins.PluginInterface):
 		    ...
-		    def activate(self):
-		        slash.config.extend({
-			    'product': {
-			        'api_timeout_seconds': 50
-			    }
-			})
+		    def get_name(self):
+		        return 'your product'
+
+		    def get_default_config(self):
+		        return {'api_timeout_seconds': 50}
 
 		    ...
 		    def session_start(self):
 		        slash.g.target = Target(
 			    self.target_address, 
-			    timeout=slash.config.root.product.api_timeout_seconds)
+			    timeout=slash.config.root.plugin_config.your_product.api_timeout_seconds)
 		    
 
 We use the :func:`slash.plugins.PluginInterface.activate` method to control what happens when our plugin is **activated**. Note that this happens very early in the execution phase - even before tests are loaded to be executed.
@@ -223,14 +222,10 @@ Below is the final code for the ``.slashrc`` file for our project:
         class ProductTestingPlugin(slash.plugins.PluginInterface):
         
             def get_name(self):
-                return 'your-product'
+                return 'your product'
         
-            def activate(self):
-                slash.config.extend({
-                    'product': {
-                        'api_timeout_seconds': 50
-                    }
-                })
+            def get_default_config(self):
+                return {'api_timeout_seconds': 50}
         
             def configure_argument_parser(self, parser):
                 parser.add_argument('-t', '--target',
@@ -241,6 +236,6 @@ Below is the final code for the ``.slashrc`` file for our project:
         
             def session_start(self):
                 slash.g.target = Target(
-                    self.target_address, timeout=slash.config.root.product.api_timeout_seconds)
+                    self.target_address, timeout=slash.config.root.plugin_config.your_product.api_timeout_seconds)
 
 

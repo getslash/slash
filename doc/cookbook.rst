@@ -52,7 +52,7 @@ You can also configure extre session paths, for example from plugins:
     class MyPlugin(slash.plugins.PluginInterface):
 
         def get_name(self):
-            return "my_plugin"
+            return "my plugin"
 
         def get_default_config(self):
             retrun {'extra_log_path': ''}
