@@ -51,7 +51,7 @@ One case that is not easily covered by the assert statement is asserting Excepti
 
 	  assert caught.exception.param == 'some_value'
 
-:func:`slash.assert_raises` will raise ``TestFailed`` exception in case the expected exception was not raised:
+:func:`slash.assert_raises` will raise ``ExpectedExceptionNotCaught`` exception in case the expected exception was not raised:
 
 .. code:: python
 
@@ -59,7 +59,7 @@ One case that is not easily covered by the assert statement is asserting Excepti
 	 ...    pass
 	 Traceback (most recent call last):
 	     ...
-	 TestFailed: ...
+	 ExpectedExceptionNotCaught: ...
 
 In a case where the test author wants to allow a specific exception but not to enforce its propagation (e.g. allowing a timing issue to be present), :func:`slash.allowing_exceptions` can be used.
 

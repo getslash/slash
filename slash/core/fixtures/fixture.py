@@ -1,11 +1,12 @@
 import itertools
-
 from collections import OrderedDict
 
 from orderedset import OrderedSet
 
 from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
+from ..._compat import ExitStack
+from ...ctx import context
 from .namespace import Namespace
 from .parameters import iter_parametrization_fixtures
 from .fixture_base import FixtureBase
@@ -54,7 +55,10 @@ class Fixture(FixtureBase):
         if self.info.needs_this:
             assert 'this' not in kwargs
             kwargs['this'] = active_fixture
-        return self.fixture_func(**kwargs)
+        with ExitStack() as stack:
+            if context.session is not None:
+                stack.enter_context(context.session.cleanups.default_scope_override(self.info.scope_name))
+            return self.fixture_func(**kwargs)
 
     def get_requirements(self, store):
         fixture_requirements = get_requirements(self.fixture_func)

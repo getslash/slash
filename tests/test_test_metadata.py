@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 from .utils import TestCase
 from .utils import run_tests_assert_success
 import itertools
@@ -81,13 +82,11 @@ def test_test_index(suite):
     assert index > 0
 
 
-def test_set_test_name(suite, suite_test):
-    result = suite.run()[suite_test]
-    metadata = result.test_metadata
-    assert metadata.file_path in str(metadata)
+def test_set_test_name(test_metadata):
+    assert test_metadata.file_path in str(test_metadata)
     custom_name = 'some_custom_name'
-    metadata.set_test_full_name(custom_name)
-    assert str(metadata) == '<{0}>'.format(custom_name)
+    test_metadata.set_test_full_name(custom_name)
+    assert str(test_metadata) == '<{0}>'.format(custom_name)
 
 
 def test_class_name_with_dot_parameters():
@@ -102,6 +101,24 @@ def test_class_name_with_dot_parameters():
         loader = slash.loader.Loader()
         [test] = loader.get_runnables(test_something)  # pylint: disable=unbalanced-tuple-unpacking
         assert test.__slash__.class_name is None
+
+
+def test_set_file_path(test_metadata):
+    file_path = '/tmp/file_path.py'
+    assert file_path not in test_metadata.address
+    test_metadata.set_file_path(file_path)
+    assert test_metadata.file_path == file_path
+    assert file_path in test_metadata.address
+
+
+def test_mark_interactive(test_metadata):
+    test_metadata.mark_interactive()
+    assert test_metadata.is_interactive()
+
+
+@pytest.fixture
+def test_metadata(suite, suite_test):
+    return suite.run()[suite_test].test_metadata
 
 
 class TestMetadataTest(TestCase):

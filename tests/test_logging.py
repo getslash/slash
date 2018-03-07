@@ -3,13 +3,14 @@ import functools
 import os
 
 import logbook
-
+import brotli
+import gzip
 import gossip
 import pytest
 import slash
 
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase
-
+from .utils.suite_writer import Suite
 
 def test_console_format(suite, suite_test, config_override, tmpdir):
     config_override('log.format', 'file: {record.message}')
@@ -43,6 +44,62 @@ def test_global_result_get_log_path(files_dir, suite):
     assert summary.session.results.global_result.get_log_path() is not None
     assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
 
+def _decompress(input_file_name, use_gzip=True):
+    if use_gzip:
+        with gzip.open(input_file_name, 'rb') as in_f:
+            return in_f.read().decode()
+    else:
+        with open(input_file_name, 'rb') as in_f:
+            return brotli.decompress(in_f.read()).decode()
+
+@pytest.mark.parametrize('compression_enabled', [True, False])
+@pytest.mark.parametrize('compression_method', ['gzip', 'brotli'])
+@pytest.mark.parametrize('use_rotating_raw_file', [True, False])
+def test_logs_compression(files_dir, suite, config_override, compression_enabled, compression_method, use_rotating_raw_file):
+    config_override("log.compression.enabled", compression_enabled)
+    config_override("log.compression.algorithm", compression_method)
+    config_override("log.compression.use_rotating_raw_file", use_rotating_raw_file)
+    summary = suite.run()
+    session_log_path = summary.session.results.global_result.get_log_path()
+
+    if compression_enabled:
+        #validate file names
+        if compression_method is "gzip":
+            session_log_path.endswith("gz")
+        else:
+            assert session_log_path.endswith(".br")
+
+        assert summary.session.results.global_result.get_log_path().startswith(str(files_dir))
+
+        raw_file_name = session_log_path[:session_log_path.rfind(".")]
+        if use_rotating_raw_file:
+            assert os.path.exists(raw_file_name)
+        else:
+            assert not os.path.exists(raw_file_name)
+
+        #validate compressing successfully
+        if use_rotating_raw_file:
+            decompressed_logs = _decompress(session_log_path, compression_method == "gzip")
+            with open(raw_file_name, 'r') as raw_file:
+                assert decompressed_logs.endswith(raw_file.read())
+    else:
+        assert session_log_path.endswith(".log")
+
+def test_compressing_to_unified_file(files_dir, suite, config_override):
+    config_override("log.compression.enabled", True)
+    config_override("log.subpath", slash.config.root.log.session_subpath)
+    config_override("log.compression.use_rotating_raw_file", True)
+    config_override("log.compression.algorithm", "gzip")
+    summary = suite.run()
+    session_log_path = summary.session.results.global_result.get_log_path()
+
+    raw_file_name = session_log_path[:session_log_path.rfind(".")]
+    assert os.path.exists(raw_file_name)
+
+    #validate compressing successfully
+    decompressed_logs = _decompress(session_log_path, use_gzip=True)
+    with open(raw_file_name, 'r') as raw_file:
+        assert decompressed_logs.endswith(raw_file.read())
 
 def test_log_file_colorize(files_dir, config_override, suite, suite_test):
     config_override('log.colorize', True)
@@ -139,6 +196,27 @@ def test_errors_log_for_test(suite, suite_test, errors_log_path, logs_dir):
         lines = f.read().splitlines()
         assert error_line in lines
 
+@pytest.mark.parametrize('should_keep_failed_tests', [True, False])
+def test_logs_deletion(suite, suite_test, errors_log_path, logs_dir, config_override, should_keep_failed_tests):
+    config_override('log.cleanup.enabled', True)
+    config_override('log.cleanup.keep_failed', should_keep_failed_tests)
+
+    suite_test.when_run.fail()
+    summary = suite.run()
+    remaining_files = []
+    logs_files_dir = os.path.join(str(logs_dir), 'files')
+    for dirname, _, files in os.walk(str(logs_dir)):
+        for filename in files:
+            f = os.path.join(dirname, filename)
+            if os.path.isfile(f) and not os.path.islink(f):
+                remaining_files.append(f)
+    if should_keep_failed_tests:
+        for file_path in [summary[suite_test].get_log_path(), summary.session.results.global_result.get_log_path()]:
+            assert file_path in remaining_files
+        assert os.listdir(logs_files_dir)
+    else:
+        assert len(remaining_files) == 0   # pylint: disable=len-as-condition
+        assert not os.listdir(logs_files_dir)
 
 def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
     @gossip.register('slash.session_start')
@@ -159,10 +237,45 @@ def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
         assert lines[0] in f.read().splitlines()
 
 
+@pytest.mark.parametrize('level', ['info', 'error'])
+@pytest.mark.parametrize('core_log_level', [logbook.WARNING, logbook.TRACE])
+def test_filtering_slash_logs(files_dir, config_override, level, core_log_level):
+    config_override('log.core_log_level', core_log_level)
+    assert slash.config.root.log.truncate_console_lines
 
+    suite = Suite()
+    suite_test = suite.add_test(type='function')
+    long_string = 'a' * 1000
+    suite_test.append_line('slash.logger.{level}({msg!r})'.format(msg=long_string, level=level))
+    summary = suite.run()
+    result = summary.get_all_results_for_test(suite_test)[0]
+
+    with open(result.get_log_path()) as logfile:
+        logfile_data = logfile.read()
+        assert long_string in logfile_data
+
+    debug_core_string = 'slash.loader: Checking'
+    debug_bypass_string = 'slash.runner: #'
+    with open(summary.session.results.global_result.get_log_path()) as logfile:
+        logfile_data = logfile.read()
+        assert debug_bypass_string in logfile_data
+        if core_log_level == logbook.TRACE:
+            assert debug_core_string in logfile_data
+        else:
+            assert debug_core_string not in logfile_data
+
+def test_log_names_with_timestamps(files_dir, config_override, suite):
+    config_override('log.core_log_level', logbook.TRACE)
+    config_override('log.session_subpath', '{timestamp:%Y-%m-%d-%H%M%S}/session.log')
+    config_override('log.subpath', '{timestamp:%Y-%m-%d-%H%M%S}/test.log')
+    suite.run()
 
 ################################################################################
 ## Fixtures
+
+@pytest.fixture(autouse=True)
+def override_log_level(config_override):
+    config_override('log.core_log_level', logbook.TRACE)
 
 @pytest.fixture
 def session():
@@ -173,7 +286,7 @@ def session():
 @pytest.fixture
 def errors_log_path(request, config_override, tmpdir, logs_dir):
     subpath = 'subdir/errors.log'
-    config_override('log.errors_subpath', subpath)
+    config_override('log.highlights_subpath', subpath)
     return logs_dir.join('files').join(subpath)
 
 

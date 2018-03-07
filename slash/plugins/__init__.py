@@ -1,9 +1,12 @@
 import collections
+from contextlib import contextmanager
 import os
+import re
 import sys
 
 from emport import import_file
 from sentinels import NOTHING
+from vintage import warn_deprecation
 
 import gossip
 import gossip.hooks
@@ -16,6 +19,7 @@ from .interface import PluginInterface
 
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
+_DEPRECATED_CHARACTERS = '-_'
 RegistrationInfo = collections.namedtuple("RegistrationInfo", ("hook_name", "expect_exists"))
 PluginInfo = collections.namedtuple("PluginInfo", ("plugin_instance", "is_internal"))
 
@@ -25,14 +29,37 @@ class IncompatiblePlugin(ValueError):
 class UnknownPlugin(ValueError):
     pass
 
+class IllegalPluginName(ValueError):
+    pass
+
+
 class PluginManager(object):
     def __init__(self):
         super(PluginManager, self).__init__()
         self._installed = {}
+        self._cmd_line_to_name = {}
+        self._config_to_name = {}
         self._pending_activation = set()
         self._pending_deactivation = set()
         self._active = set()
         self.install_builtin_plugins()
+
+    @contextmanager
+    def restoring_state_context(self):
+        previous_installed = self._installed.copy()
+        previous_active = {name: self._installed[name] for name in self._active}
+        try:
+            yield
+        finally:
+            for name in set(previous_installed) - set(self._installed):
+                self.install(previous_installed[name].plugin_instance)
+            for name in set(previous_active) - self._active:
+                self.activate(name)
+            for name in self._active - set(previous_active):
+                self.deactivate(name)
+            for name in set(self._installed) - set(previous_installed):
+                self.uninstall(name)
+
 
     def discover(self):
         """
@@ -100,8 +127,16 @@ class PluginManager(object):
         if not isinstance(plugin, PluginInterface):
             raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))
         plugin_name = plugin.get_name()
+        if re.search(r'[^A-Za-z0-9_ -]', plugin_name):
+            raise IllegalPluginName("Illegal plugin name: {}".format(plugin_name))
+
+        if any(char in plugin_name for char in _DEPRECATED_CHARACTERS):
+            warn_deprecation("In the future, dashes and underscore will not be allowed in plugin names - "
+                             "spaces should be used instead (plugin name: {!r})".format(plugin_name))
         self._configure(plugin)
         self._installed[plugin_name] = PluginInfo(plugin, is_internal)
+        self._cmd_line_to_name[self.normalize_command_line_name(plugin_name)] = plugin_name
+        self._config_to_name[self.normalize_config_name(plugin_name)] = plugin_name
         if not hasattr(plugin, '__toggles__'):
             plugin.__toggles__ = {
                 'session': gossip.Toggle(),
@@ -141,7 +176,12 @@ class PluginManager(object):
         except IncompatiblePlugin:
             pass
         self._unconfigure(plugin)
-        self._installed.pop(plugin.get_name())
+        plugin_name = plugin.get_name()
+        self._installed.pop(plugin_name)
+        cmd_name = self.normalize_command_line_name(plugin_name)
+        self._cmd_line_to_name.pop(cmd_name, None)
+        config_name = self.normalize_config_name(plugin_name)
+        self._config_to_name.pop(config_name, None)
 
     def uninstall_all(self):
         """
@@ -195,6 +235,12 @@ class PluginManager(object):
             if plugin_name in self._active:
                 self.deactivate(plugin_name)
 
+    def normalize_command_line_name(self, plugin_name):
+        return plugin_name.replace(' ', '-')
+
+    def normalize_config_name(self, plugin_name):
+        return plugin_name.replace(' ', '_')
+
     def deactivate(self, plugin):
         """
         Deactivates a plugin, unregistering all of its hook callbacks
@@ -213,12 +259,20 @@ class PluginManager(object):
     def _configure(self, plugin):
         cfg = plugin.get_config()
         if cfg is not None:
-            config['plugin_config'].extend({plugin.get_name(): cfg})
+            warn_deprecation('PluginInterface.get_config() is deprecated. '
+                             'Please use PluginInterface.get_default_config() instead')
+        else:
+            cfg = plugin.get_default_config()
+        if cfg is not None:
+            plugin_name = plugin.get_name()
+            config_name = self.normalize_config_name(plugin_name)
+            config['plugin_config'].extend({config_name: cfg})
 
     def _unconfigure(self, plugin):
         plugin_config = config['plugin_config']
-        if plugin.get_name() in plugin_config:
-            plugin_config.pop(plugin.get_name())
+        config_name = self.normalize_config_name(plugin.get_name())
+        if config_name in plugin_config:
+            plugin_config.pop(config_name)
 
     def _get_token(self, plugin_name):
         return "slash.plugins.{0}".format(plugin_name)
@@ -229,15 +283,27 @@ class PluginManager(object):
             return None
         return plugin_info.plugin_instance
 
+    def _get_installed_plugin_instance_by_type(self, plugin_class):
+        for plugin in self._installed.values():
+            if type(plugin.plugin_instance) is plugin_class: # pylint: disable=unidiomatic-typecheck
+                return plugin.plugin_instance
+        return None
+
     def _get_installed_plugin(self, plugin):
         if isinstance(plugin, str):
             plugin_name = plugin
-            plugin = self._get_installed_plugin_instance_by_name(plugin_name)
+            if plugin_name in self._cmd_line_to_name:
+                plugin_name = self._cmd_line_to_name[plugin_name]
+            plugin_instance = self._get_installed_plugin_instance_by_name(plugin_name)
+        elif isinstance(plugin, type):
+            plugin_instance = self._get_installed_plugin_instance_by_type(plugin)
+            plugin_name = plugin_instance.get_name() if plugin_instance is not None else repr(plugin)
         else:
+            plugin_instance = plugin
             plugin_name = plugin.get_name()
-        if plugin is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin:
+        if plugin_instance is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin_instance:
             raise UnknownPlugin("Unknown plugin: {0}".format(plugin_name))
-        return plugin
+        return plugin_instance
 
     def _get_plugin_registrations(self, plugin):
         plugin_name = plugin.get_name()

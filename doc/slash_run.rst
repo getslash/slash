@@ -1,7 +1,7 @@
 .. _slash_run:
 
-A Closer Look at ``slash run``
-==============================
+Running Tests
+=============
 
 The main front-end for Slash is the ``slash run`` utility, invoked from the command line. It has several interesting options worth mentioning.
 
@@ -25,7 +25,9 @@ You can also read tests from file or files which contain paths to run. Whitespac
 
   $ slash run -f file1.txt -f file2.txt
 
-Lines in suite files can optionally contain filters, restricting the tests actually loaded from them::
+Lines in suite files can optionally contain filters and repeat directive.
+
+Filter allows restricting the tests actually loaded from them::
 
   # my_suite_file.txt
   # this is the first test file
@@ -34,6 +36,15 @@ Lines in suite files can optionally contain filters, restricting the tests actua
   /path/to/other_tests.py # filter: not dangerous
 
 .. seealso:: The filter syntax is exactly like ``-k`` described below
+
+Repeat allows to repeat a line::
+
+  # my_suite_file.txt
+  # the next line will be repeated twice
+  /path/to/other_tests.py # repeat: 2
+  # you can use filter and repeat together
+  /path/to/other_tests.py # filter: not dangerous, repeat: 2
+
 
 Debugging & Failures
 --------------------
@@ -75,6 +86,21 @@ The ``-o`` flag enables us to override specific paths in the configuration, prop
 
 .. seealso:: configuration
 
+Running Interactively
+---------------------
+
+As a part of the development cycle, it is often useful or even necessary to run your infrastructure in interactive mode. This allows users to experiment with your framework and learn how to use it.
+
+Slash supports running interactively out-of-the-box, using the ``-i`` flag to ``slash run``::
+
+  $ slash run -i
+
+This will invoke an interactive IPython shell, initialized with your project's environment (and, of course, a valid Slash session).
+
+By default, the namespace in which the interactive test runs contains all content of the ``slash.g`` global container. You can disable this behavior by setting :ref:`conf.interactive.expose_g_globals` to ``False``.
+
+.. seealso:: :ref:`cookbook-interactive-namespace`
+
 
 Resuming Previous Sessions
 --------------------------
@@ -85,3 +111,12 @@ When you run a session that fails, Slash automatically saves the tests intended 
 
 This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for resuming.
 
+
+Rerunning Previous Sessions
+---------------------------
+
+You can rerun all the tests of a previous session, given the session's tests were reported. This might be helpful when reproducing a run of specific worker, for example. You can use ``slash rerun``::
+
+  $ slash rerun -vv <session id>
+
+This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for rerunning.

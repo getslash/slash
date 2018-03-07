@@ -129,5 +129,34 @@ def test_slash_list_suite_file_incorrect_names(tmpdir, invalid, allow_empty):
             raise NotImplementedError() # pragma: no cover
 
 
+@pytest.mark.parametrize('no_tests', [True, False])
+def test_slash_list_with_warnings(tmpdir, no_tests):
+    with tmpdir.join('test_file.py').open('w') as fp:
+        _print = functools.partial(print, file=fp)
+        _print('import warnings')
+        _print('from slash import hooks')
+
+        _print()
+        _print('warnings.warn("Some warning")')
+        _print('@hooks.after_session_start.register')
+        _print('def _warn():')
+        _print('    warnings.warn("Some warning")')
+
+        if not no_tests:
+            _print()
+            _print('def test_me():')
+            _print('    pass')
+
+    error_stream = StringIO()
+    args = [fp.name, '--warnings-as-errors']
+    if no_tests:
+        args.append('--allow-empty')
+    result = slash_list(args, error_stream=error_stream)
+
+    errors = error_stream.getvalue()
+    assert 'Could not load tests' not in errors
+    assert result != 0
+
+
 def _strip(line):
     return re.sub(r'\x1b\[.+?m', '', line).strip()

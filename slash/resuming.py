@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 from slash.plugins import manager
 from ast import literal_eval
 from .utils.path import ensure_directory
+from .conf import config
 
-_RESUME_DIR = os.path.expanduser("~/.slash/session_states")
 _DB_NAME = 'resume_state.db'
 _MAX_DAYS_SAVED_SESSIONS = 10
 _logger = logbook.Logger(__name__)
@@ -48,8 +48,9 @@ class ResumedTestData(object):
 
 
 def _init_db():
-    ensure_directory(_RESUME_DIR)
-    engine = create_engine('sqlite:///{0}/{1}'.format(_RESUME_DIR, _DB_NAME))
+    resume_dir = os.path.expanduser(config.root.run.resume_state_path)
+    ensure_directory(resume_dir)
+    engine = create_engine('sqlite:///{0}/{1}'.format(resume_dir, _DB_NAME))
     _session.configure(bind=engine)
     Base.metadata.create_all(engine)
 
@@ -116,8 +117,10 @@ def get_last_resumeable_session_id():
         return session_id.session_id
 
 
-def get_tests_to_resume(session_id):
+def get_tests_from_previous_session(session_id, get_successful_tests=False):
     returned = []
+    if get_successful_tests:
+        return get_tests_from_remote_session(session_id, get_successful=True)
     with connecting_to_db() as conn:
          # pylint: disable=no-member
         session_metadata = conn.query(SessionMetadata).filter(SessionMetadata.session_id == session_id).first()
@@ -133,11 +136,11 @@ def get_tests_to_resume(session_id):
                 returned.append(new_entry)
     if not returned:
         _logger.debug('No local entry for session {0}, searching remote session'.format(session_id))
-        returned = resume_remote_session(session_id)
+        returned = get_tests_from_remote_session(session_id)
     return returned
 
 
-def resume_remote_session(session_id):
+def get_tests_from_remote_session(session_id, get_successful=False):
     active_plugins = manager.get_active_plugins()
     backslash_plugin = active_plugins.get('backslash', None)
     if not backslash_plugin:
@@ -146,7 +149,7 @@ def resume_remote_session(session_id):
         raise CannotResume("Backslash plugin doesn't support remote resuming")
     if not backslash_plugin.is_session_exist(session_id):
         raise CannotResume("Could not find resume data for session {0}".format(session_id))
-    remote_tests = backslash_plugin.get_tests_to_resume(session_id)
+    remote_tests = backslash_plugin.get_tests_to_resume(session_id, get_successful)
     returned = [ResumedTestData(test.info['file_name'], test.info['name'], test.variation) for test in remote_tests]
     return returned
 

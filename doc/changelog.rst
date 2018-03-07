@@ -1,6 +1,40 @@
 Changelog
 =========
 
+* :release:`1.5.0 <7-3-2018>`
+* :feature:`697` Added ``slash.before_interactive_shell`` hook
+* :feature:`-` Added a configuration option preventing ``slash.g`` from being available in interactive namespaces
+* :feature:`664` Added ``metadata.set_file_path``, allowing integrations to set a custom file path to be associated with a loaded test
+* :feature:`752` Added ``slash.ignore_warnings`` to filter unwanted warnings during sessions
+* :feature:`757` ``slash list tests`` now accepts the ``--warnings-as-errors`` flag, making it treat warnings it encounters as errors
+* :feature:`755` ``timestamp`` can now be used when formatting log path names
+* :feature:`747` session.results.global_result.is_success() now returns False if any test in the session isn't successful
+* :feature:`-` Add ``slash rerun`` - given a session_id, run all the tests of this session
+* :feature:`740` session.results.current is now a complete synonym for slash.context.result
+* :feature:`702` Rename log.traceback_level to log.console_traceback_level
+* :feature:`681` Added a new hook, ``log_file_closed``, and added configuration ``log.cleanup`` to enable removing log files after they are closed
+* :feature:`719` Added log.core_log_level, allowing limiting the verbosity of logs initiated from Slash itself
+* :feature:`-` ``-X`` can now be used to turn off stop-on-error behavior. Useful if you have it on by default through a configuration file
+* :feature:`711` Logs can now optionally be compressed on-the-fly through the ``log.compression.enabled`` configuration parameter
+* :feature:`723` Add configuration for resume state path location
+* :bug:`721 major` Add timeout to sending emails through SMTP
+* :feature:`-` Support fixture keyword arguments for ``generator_fixture``
+* :feature:`712` Added ``--pdb-filter`` - a new command-line flag that allows the user to enter pdb only on specific caught exceptions, based on pattern matching (similar to ``-k``)
+* :bug:`714 major` Session cleanups now happen under the global result object
+* :bug:`669 major` Session-scoped fixtures now properly register cleanups on session scope as expected
+* :bug:`710 major` Fix sorting when repeat-all option is use
+* :feature:`698` By setting ``log.traceback_variables`` to ``True``, traceback variable values will now be written to the debug log upon failures/errors
+* :feature:`704` Error objects now have their respective ``exc_info`` attribute containing the exception info for the current info (if available). This deprecates the use of the ``locals``/``globals`` attributes on traceback frames.
+* :feature:`-` During the execution of ``error_added`` hooks, traceback frame objects now have ``python_frame``, containing the original Pythonic frame that yielded them. Those are cleared soon after the hook is called.
+* :feature:`-` Suite files can now have a ``repeat: X`` marker to make the test run multiple times (Thanks @pierreluctg!)
+* :bug:`671 major` Help for ``slash resume`` is now more helpful
+* :feature:`685` use.X is now a shortcut for use('x') for fixture annotations
+* :feature:`692` Enhance errors summary log to session highlights log (configuration changed: ``log.errors_subpath`` -> ``log.highlights_subpath``)
+* :feature:`658` Deprecate ``PluginInterface.get_config()`` and rename it to ``PluginInterface.get_default_config()``
+* :bug:`- major` Fix tests loading order for some FS types
+* :feature:`689` Added a new hook, ``interruption_added``, for registering exceptions which cause test/session interruptions
+* :feature:`686` ``assert_raises`` raises ``ExpectedExceptionNotCaught`` if exception wasn't caught also allowing inspection of the expected exception object
+* :bug:`684 major` Optimize test loading with ``--repeat-each`` and ``--repeat-all``
 * :bug:`679 major` Fix coloring console for non TTY stdout
 * :feature:`675` Emit native python warnings for logbook warning level
 * :feature:`661` Support PDB notifications by notifications plugin

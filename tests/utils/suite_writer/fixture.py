@@ -63,7 +63,7 @@ class Fixture(Function):
 
         for name, param in itertools.chain(
                 ((p.name, p) for p in self._parameters),
-                ((alias or f.name, f) for alias, f in self._fixtures),
+                ((alias or f.name, f) for alias, f, _ in self._fixtures),
         ):
             returned += '{0!r}: {1},'.format(param.id, name)
         returned += '} }'

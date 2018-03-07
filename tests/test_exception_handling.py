@@ -7,7 +7,7 @@ import slash
 import logbook
 from slash import exception_handling
 from slash._compat import ExitStack, PYPY
-from slash.exceptions import SkipTest, TestFailed
+from slash.exceptions import SkipTest, ExpectedExceptionNotCaught
 from slash.utils import debug
 
 from .utils import CustomException, TestCase
@@ -217,12 +217,13 @@ def test_assert_raises(exc_types, message):
 def test_assert_raises_that_not_raises(message):
     expected_substring = message or 'not raised'
     try:
-        with slash.assert_raises(Exception, msg=message):
+        with slash.assert_raises(CustomException, msg=message):
             pass
-    except TestFailed as e:
+    except ExpectedExceptionNotCaught as e:
         assert expected_substring in str(e)
+        assert e.expected_types == (CustomException,)
     else:
-        raise Exception('TestFailed exception was not raised :(')
+        raise Exception('ExpectedExceptionNotCaught exception was not raised :(')
 
 
 @pytest.mark.parametrize('with_session', [True, False])

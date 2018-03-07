@@ -282,12 +282,10 @@ class FixtureStore(object):
 
         fixtureobj = self.get_fixture_by_id(parameter_or_fixture.info.id)
         if isinstance(fixtureobj, Parametrization):
-            value = parameter_or_fixture.values[variation.param_value_indices[fixture_id]]
+            value = parameter_or_fixture.get_value_by_index(variation.param_value_indices[fixture_id])
         else:
             value = self.get_fixture_value(parameter_or_fixture)
 
-        if isinstance(parameter_or_fixture, Parametrization):
-            value = parameter_or_fixture.transform(value)
         return value
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):

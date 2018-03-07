@@ -22,9 +22,11 @@ class Variation(object):
         self.param_value_indices = param_value_indices
         self.id = {}
         self.values = {}
+        self.labels = {}
         for param_name, param in param_name_bindings.items():
             value_index = self.id[param_name] = param_value_indices[param.info.id]
             self.values[param_name] = param.get_value_by_index(value_index)
+            self.labels[param_name] = param.values[value_index].label
         self.safe_repr = self._get_safe_repr()
 
     def _get_safe_repr(self):
@@ -34,11 +36,14 @@ class Variation(object):
         return ','.join('{}={}'.format(key, returned[key]) for key in sorted(returned))
 
     def _format_parameter_value_safe(self, name, value):
+        label = self.labels[name]
+
+        if isinstance(label, str):
+            return label
         value = str(value)
         if self._is_printable(value):
             return str(value)
-        param_index = self.id[name]
-        return '{}{}'.format(name, param_index)
+        return '{}{}'.format(name, label)
 
     def _is_printable(self, value):
         if not isinstance(value, _PRINTABLE_TYPES):

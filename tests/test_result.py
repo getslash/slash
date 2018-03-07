@@ -4,6 +4,7 @@ import pytest
 import slash
 from slash import Session
 from slash.core.result import Result, SessionResults
+from slash.exception_handling import handling_exceptions
 
 from .utils import TestCase, run_tests_assert_success
 
@@ -160,19 +161,44 @@ def test_is_global_result(suite, suite_test):
     assert result.session.results.global_result.is_global_result()
 
 
+def test_global_result_is_success(suite, suite_test):
+    suite_test.when_run.fail()
+    assert not suite.run().session.results.global_result.is_success()
+
+
+def test_global_result_error_without_started_context():
+    with slash.Session() as session:
+        with handling_exceptions(swallow=True):
+            1/0 # pylint: disable=pointless-statement
+    assert not session.results.is_success()
+
+
+def test_session_cleanups_under_global_result(suite, suite_test):
+
+    @suite_test.append_body
+    def __code__(): # pylint: disable=unused-variable
+        def cleanup():
+            slash.context.result.data['ok'] = True
+        slash.add_cleanup(cleanup, scope='session')
+
+    res = suite.run()
+    assert res.session.results.global_result.data['ok']
+
+
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
-@pytest.mark.parametrize('errors_subpath', [None, 'my_errors.log'])
-def test_log_paths(log_path, errors_subpath, config_override, logs_dir):
+@pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.highlights_subpath'])
+@pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
+def test_log_paths(log_path, log_subpath, config_path, config_override, logs_dir):
     # pylint: disable=protected-access
     extra_logs = ['/my/extra/log_{}'.format(i) for i in range(2)]
 
-    config_override('log.errors_subpath', errors_subpath)
+    config_override(config_path, log_subpath)
     with slash.Session() as curr_session:
         result = curr_session.results.global_result
         result.set_log_path(log_path)
         expected_logs = [log_path] if log_path else []
-        if errors_subpath:
-            expected_logs.append(logs_dir.join('files').join(errors_subpath))
+        if log_subpath:
+            expected_logs.append(logs_dir.join('files').join(log_subpath))
         assert result.get_log_path() is log_path
         assert result.get_log_paths() == expected_logs
         for extra_log in extra_logs:

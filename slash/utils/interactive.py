@@ -1,7 +1,11 @@
 from __future__ import print_function
 
 import threading
+import time
+import datetime
 from contextlib import contextmanager
+from .. import hooks
+from ..conf import config
 from ..ctx import context
 from ..core import metadata
 from ..core.function_test import FunctionTestFactory
@@ -35,9 +39,10 @@ def start_interactive_shell(**namespace):
 
     Any keyword argument specified will be available in the shell ``globals``.
     """
-    if context.g is not None:
+    if context.g is not None and config.root.interactive.expose_g_globals:
         namespace.update(context.g.__dict__)
 
+    hooks.before_interactive_shell(namespace=namespace)  # pylint: disable=no-member
     _interact(namespace)
 
 def _start_interactive_test():
@@ -50,8 +55,11 @@ def generate_interactive_test():
     returned.__slash__.mark_interactive()
     return returned
 
+def _humanize_time_delta(seconds):
+    return str(datetime.timedelta(seconds=seconds)).partition('.')[0]
+
 @contextmanager
-def notify_if_slow_context(message, slow_seconds=1, end_message=None):
+def notify_if_slow_context(message, slow_seconds=1, end_message=None, show_duration=True):
     evt = threading.Event()
     evt.should_report_end_msg = False
     def notifier():
@@ -59,11 +67,15 @@ def notify_if_slow_context(message, slow_seconds=1, end_message=None):
             context.session.reporter.report_message(message)
             evt.should_report_end_msg = True
     thread = threading.Thread(target=notifier)
+    start_time = time.time()
     thread.start()
+
     try:
         yield
     finally:
         evt.set()
         thread.join()
         if evt.should_report_end_msg and end_message is not None:
+            if show_duration:
+                end_message += ' (took {})'.format(_humanize_time_delta(time.time() - start_time))
             context.session.reporter.report_message(end_message)

@@ -1,5 +1,1 @@
-# These are needed to build the documentation
--e .
-releases
-alabaster
-Sphinx>1.4
+-e .[doc]

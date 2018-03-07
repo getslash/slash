@@ -17,7 +17,8 @@ def test_normal_sorting(test_dir, names):
 def test_custom_ordering(test_dir, names, indices):
     @slash.hooks.tests_loaded.register # pylint: disable=no-member
     def tests_loaded(tests):                # pylint: disable=unused-variable
-        for (test, new_index) in zip(tests, indices):
+        for index, (test, new_index) in enumerate(zip(tests, indices)):
+            assert test.__slash__.file_path.endswith(names[index]), 'Tests are loaded in incorrect order'
             test.__slash__.set_sort_key(new_index)
     assert get_file_names(load(test_dir)) == _sorted_by_indices(names, indices)
 

@@ -1,12 +1,12 @@
 # pylint: disable=redefined-outer-name
 import pytest
 import slash.resuming
-from slash.resuming import (CannotResume, get_last_resumeable_session_id, get_tests_to_resume)
+from slash.resuming import (CannotResume, get_last_resumeable_session_id, get_tests_from_previous_session)
 
 
 def test_resume_no_session():
     with pytest.raises(CannotResume):
-        get_tests_to_resume("nonexisting_session")
+        get_tests_from_previous_session("nonexisting_session")
 
 def test_get_last_resumeable_session(suite):
     suite[len(suite) // 2].when_run.fail()
@@ -24,7 +24,7 @@ def test_resume(suite):
         if index > fail_index:
             test.expect_not_run()
     result = suite.run(additional_args=['-x'])
-    resumed = get_tests_to_resume(result.session.id)
+    resumed = get_tests_from_previous_session(result.session.id)
 
     assert len(resumed) + result.session.results.get_num_started() - 1 == len(suite)
 
@@ -36,7 +36,7 @@ def test_resume_with_parametrization(suite, suite_test):
     fail_index = len(suite) // 2
     suite[fail_index].when_run.fail()
     summary = suite.run()
-    resumed = get_tests_to_resume(summary.session.id)
+    resumed = get_tests_from_previous_session(summary.session.id)
 
     assert len(summary.get_all_results_for_test(suite_test)) == num_values1 * num_values2
     assert len(resumed) == 1

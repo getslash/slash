@@ -191,3 +191,31 @@ def test_adding_session_scoped_cleanups_from_test_end_allowed(suite, suite_test,
 
     suite.run()
     assert checkpoint.called_count == len(suite)
+
+
+def test_adding_cleanups_from_test_fixtures(suite, suite_test):
+    fixture = suite.slashconf.add_fixture(scope='session')
+    @fixture.append_body
+    def __code__():
+        @slash.add_cleanup
+        def cleanup():
+            slash.context.result.data['fixture_called'] = True
+
+    suite_test.depend_on_fixture(fixture)
+    res = suite.run()
+    assert 'fixture_called' not in res[suite_test].data
+    assert res.session.results.global_result.data['fixture_called']
+
+
+def test_adding_cleanups_from_test_fixtures_with_specific_scope(suite, suite_test):
+    fixture = suite.slashconf.add_fixture(scope='session')
+    @fixture.append_body
+    def __code__():
+        def cleanup():
+            slash.context.result.data['fixture_called'] = True
+        slash.add_cleanup(cleanup, scope='test')
+
+    suite_test.depend_on_fixture(fixture)
+    res = suite.run()
+    assert res[suite_test].data['fixture_called']
+    assert 'fixture_called' not in res.session.results.global_result.data

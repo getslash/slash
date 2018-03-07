@@ -1,8 +1,12 @@
+import collections
 import itertools
 from contextlib import contextmanager
 from uuid import uuid4
 from .code_element import CodeElement
 from .parameter import Parameter
+
+
+_FixtureSpec = collections.namedtuple('_FixtureSpec', ['alias_name', 'fixture', 'alias_with_attribute'])
 
 
 class Function(CodeElement):
@@ -24,7 +28,7 @@ class Function(CodeElement):
         self._decorators.append(decorator_string)
 
     def get_fixtures(self):
-        return [f for _, f in self._fixtures]
+        return [f for _, f, _ in self._fixtures]
 
     def get_parameters(self):
         return self._parameters
@@ -34,9 +38,9 @@ class Function(CodeElement):
         self._parameters.append(returned)
         return returned
 
-    def depend_on_fixture(self, f, alias=False):
+    def depend_on_fixture(self, f, alias=False, alias_with_attribute=False):
         alias_name = 'alias_{}'.format(str(uuid4()).replace('-', '')) if alias else None
-        self._fixtures.append((alias_name, f))
+        self._fixtures.append(_FixtureSpec(alias_name, f, alias_with_attribute))
         return f
 
     def _write_event(self, code_formatter, eventcode):
@@ -134,7 +138,7 @@ class Function(CodeElement):
     def _iter_notify_parameters(self):
         return itertools.chain(
             self._parameters,
-            (f for _, f in self._fixtures if f.is_generator_fixture()))
+            (f for _, f, _ in self._fixtures if f.is_generator_fixture()))
 
     def _get_function_name(self):
         if self._name is None:
@@ -148,9 +152,12 @@ class Function(CodeElement):
     def _get_argument_strings(self):
         for p in self._parameters:
             yield p.name
-        for alias, f in self._fixtures:
+        for alias, f, alias_with_attribute in self._fixtures:
             if alias is not None:
-                yield '{}: slash.use({!r})'.format(alias, f.name)
+                if alias_with_attribute:
+                    yield '{}: slash.use.{}'.format(alias, f.name)
+                else:
+                    yield '{}: slash.use({!r})'.format(alias, f.name)
             else:
                 yield f.name
 

@@ -29,7 +29,7 @@ class Test(Function, Element):
         return '{}:{}'.format(filepath, name)
 
     def repeat(self, num_repetitions):
-        self.add_decorator('slash.repeat({0})'.format(num_repetitions))
+        self.add_decorator('slash.repeat({})'.format(num_repetitions))
         self.expect_repetition(num_repetitions)
 
     def expect_repetition(self, num_repetitions):

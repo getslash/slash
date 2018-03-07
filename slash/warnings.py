@@ -10,7 +10,12 @@ from .utils.warning_capture import warning_callback_context
 from .ctx import context
 from contextlib import contextmanager
 
+
 _native_logger = logbook.Logger('slash.native_warnings')
+
+
+class LogbookWarning(UserWarning):
+    pass
 
 class SessionWarnings(object):
     """
@@ -24,13 +29,18 @@ class SessionWarnings(object):
     def capture_context(self):
         warnings.simplefilter('always')
         warnings.filterwarnings('ignore', category=ImportWarning)
+
         with warning_callback_context(self._capture_native_warning):
             yield
 
     def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
         warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
+        for ignored_warning in _ignored_warnings:
+            if ignored_warning.matches(warning):
+                return
         self.add(warning)
-        _native_logger.warning('{!r}', warning)
+        if not issubclass(category, LogbookWarning):
+            _native_logger.warning('{filename}:{lineno}: {warning!r}', filename=filename, lineno=lineno, warning=warning)
 
     def add(self, warning):
         hooks.warning_added(warning=warning) # pylint: disable=no-member
@@ -68,20 +78,22 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
         return record.level == self.level
 
     def emit(self, record):
-        warning = RecordedWarning.from_log_record(record, self)
-        self.session_warnings.add(warning)
+        warnings.warn_explicit(message=record.message, category=LogbookWarning, filename=record.filename,
+                               lineno=record.lineno, module=record.module)
+
 
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
 class RecordedWarning(object):
 
-    def __init__(self, details, message):
+    def __init__(self, details, message, category=None):
         super(RecordedWarning, self).__init__()
         self.details = details
         self.details['session_id'] = context.session_id
         self.details['test_id'] = context.test_id
         self.details.setdefault('func_name', None)
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
+        self.category = category
         self._repr = message
 
     @classmethod
@@ -100,7 +112,7 @@ class RecordedWarning(object):
             'type': category.__name__,
             'filename': filename,
             'lineno': lineno,
-            }, message=message)
+            }, message=message, category=category)
 
     @property
     def message(self):
@@ -120,3 +132,46 @@ class RecordedWarning(object):
 
     def __repr__(self):
         return self._repr
+
+class _IgnoredWarning(object):
+
+    def __init__(self, category, filename, lineno, message):
+        self.category = category
+        self.filename = filename
+        self.lineno = lineno
+        self.message = message
+
+    def matches(self, warning):
+        if self.category is not None and issubclass(warning.category, self.category):
+            return True
+
+        if self.filename is not None and warning.filename == self.filename:
+            return True
+
+        if self.lineno is not None and warning.lineno == self.lineno:
+            return True
+
+        if self.message is not None:
+            if hasattr(self.message, 'match'):
+                if self.message.match(warning.message):
+                    return True
+            elif self.message == warning.message:
+                return True
+        return False
+
+_ignored_warnings = []
+
+
+def ignore_warnings(category=None, message=None, filename=None, lineno=None):
+    """
+    Ignores warnings of specific origin (category/filename/lineno/message) during the session. Unlike
+    Python's default ``warnings.filterwarnings``, the parameters are matched only if specified (not defaulting to "match all"). Message can also be a
+    regular expression object compiled with ``re.compile``.
+
+        slash.ignore_warnings(category=CustomWarningCategory)
+    """
+    _ignored_warnings.append(_IgnoredWarning(category=category, filename=filename, lineno=lineno, message=message))
+
+
+def clear_ignored_warnings():
+    del _ignored_warnings[:]

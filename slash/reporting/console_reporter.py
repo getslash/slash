@@ -4,6 +4,7 @@ import itertools
 import os
 import sys
 
+import vintage
 from py.io import TerminalWriter
 from textwrap import wrap
 
@@ -180,7 +181,7 @@ class ConsoleReporter(ReporterInterface):
             self._report_result_warning_summary(session)
 
         msg = 'Session ended.'
-        msg += ' {0} successful, {1} skipped, {2} failures, {3} errors.'.format(
+        msg += ' {} successful, {} skipped, {} failed, {} erroneous.'.format(
             session.results.get_num_successful(
             ), session.results.get_num_skipped(include_not_run=False),
             session.results.get_num_failures(), session.results.get_num_errors())
@@ -257,26 +258,26 @@ class ConsoleReporter(ReporterInterface):
             self._report_traceback(err_type, err)
 
     def _report_traceback(self, err_type, err):
-        traceback_level = config.root.log.traceback_level
-        if not err.traceback or traceback_level == NO_TRACEBACK:
+        console_traceback_level = config.root.log.console_traceback_level
+        if not err.traceback or console_traceback_level == NO_TRACEBACK:
             frames = []
-        elif traceback_level == SINGLE_FRAME:
+        elif console_traceback_level == SINGLE_FRAME:
             frames = [err.traceback.frames[-1]]
         else:
             frames = err.traceback.frames
         for frame_iteration, frame in iteration(frames):
-            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+            if console_traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
 
                 if not frame_iteration.first:
                     self._terminal.sep('- ')
             self._terminal.write(
                 ' {0}:{1}\n'.format(frame.filename, frame.lineno), **theme('tb-frame-location'))
 
-            if traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
+            if console_traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
 
             self._write_frame_code(
-                frame, include_context=(traceback_level >= ALL_FRAMES_WITH_CONTEXT))
+                frame, include_context=(console_traceback_level >= ALL_FRAMES_WITH_CONTEXT))
             if frame_iteration.last:
                 self._terminal.write(err_type, **theme('tb-error'))
                 self._terminal.write(
@@ -312,9 +313,12 @@ class ConsoleReporter(ReporterInterface):
         self._terminal.write(msg, **theme('test-skip-message'))
 
     def _write_frame_locals(self, frame):
-        if not frame.locals and not frame.globals:
+        with vintage.get_no_deprecations_context():
+            locals = frame.locals
+            globals = frame.globals
+        if not locals and not globals:
             return
-        for index, (name, value) in enumerate(itertools.chain(iteritems(frame.locals), iteritems(frame.globals))):
+        for index, (name, value) in enumerate(itertools.chain(iteritems(locals), iteritems(globals))):
             if index > 0:
                 self._terminal.write(', ')
             self._terminal.write(

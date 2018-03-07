@@ -46,7 +46,7 @@ def run_tests(iterable, stop_on_error=None):
                 context.session.reporter.report_file_start(test_filename)
                 last_filename = test_filename
             context.session.reporter.report_test_start(test)
-            _logger.notice("#{}: {}", test.__slash__.test_index1, test.__slash__.address, extra={'to_error_log': 1})
+            _logger.notice("#{}: {}", test.__slash__.test_index1, test.__slash__.address, extra={'highlight': True, 'filter_bypass': True})
 
             _run_single_test(test, test_iterator)
 
@@ -87,7 +87,7 @@ def _run_single_test(test, test_iterator):
     with ExitStack() as exit_stack:
 
         # sets the current result, test id etc.
-        result = exit_stack.enter_context(_get_test_context(test))
+        result, prev_result = exit_stack.enter_context(_get_test_context(test))
 
         with handling_exceptions():
 
@@ -97,7 +97,7 @@ def _run_single_test(test, test_iterator):
                 return
 
             result.mark_started()
-            with TestStartEndController(result) as controller:
+            with TestStartEndController(result, prev_result) as controller:
                 try:
                     try:
                         with handling_exceptions(swallow=True):
@@ -152,8 +152,9 @@ def _process_exclusions(test):
 
 class TestStartEndController(object):
 
-    def __init__(self, result):
+    def __init__(self, result, prev_result):
         self._result = result
+        self._prev_result = prev_result
         self._started = False
 
     def __enter__(self):
@@ -168,9 +169,13 @@ class TestStartEndController(object):
     def end(self):
         if self._started:
             self._started = False
-            with context.session.cleanups.forbid_implicit_scoping_context():
-                hooks.test_end() # pylint: disable=no-member
-            self._result.mark_finished()
+            try:
+                with context.session.cleanups.forbid_implicit_scoping_context():
+                    hooks.test_end() # pylint: disable=no-member
+                    self._result.mark_finished()
+            finally:
+                context.result = self._prev_result
+
 
     def __exit__(self, *args):
         self.end()
@@ -211,9 +216,9 @@ def _get_test_context(test, logging=True):
         prev_result = context.result
         context.result = result
         try:
-            with (context.session.logging.get_test_logging_context() if logging else ExitStack()):
+            with (context.session.logging.get_test_logging_context(result) if logging else ExitStack()):
                 _logger.debug("Started test #{0.__slash__.test_index1}: {0}", test)
-                yield result
+                yield result, prev_result
         finally:
             context.result = prev_result
 

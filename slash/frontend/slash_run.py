@@ -5,7 +5,7 @@ from ..app import Application
 from ..conf import config
 from ..exception_handling import handling_exceptions
 from ..exceptions import CannotLoadTests, InteractiveParallelNotAllowed
-from ..resuming import (get_last_resumeable_session_id, get_tests_to_resume, save_resume_state, clean_old_entries)
+from ..resuming import (get_last_resumeable_session_id, get_tests_from_previous_session, save_resume_state, clean_old_entries)
 from ..runner import run_tests
 from ..utils.suite_files import iter_suite_file_paths
 from ..utils.tmux_utils import run_slash_in_tmux
@@ -15,12 +15,16 @@ from ..parallel.worker import Worker
 
 _logger = logbook.Logger(__name__)
 
-def slash_run(args, report_stream=None, resume=False, app_callback=None, working_directory=None):
+def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=None, working_directory=None):
 
     if report_stream is None:
         report_stream = sys.stderr
     app = Application()
-    app.arg_parser.set_positional_metavar('TEST')
+    if resume:
+        app.arg_parser.set_positional_metavar('SESSION-ID', plural=False)
+        app.arg_parser.set_description('Resumes a previously run session by running only unsuccessful on unfinished tests')
+    else:
+        app.arg_parser.set_positional_metavar('TEST')
     if working_directory is not None:
         app.set_working_directory(working_directory)
     app.set_argv(args)
@@ -41,11 +45,13 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
                     if is_child():
                         worker = Worker(config.root.parallel.worker_id, app.session.id)
                         worker.connect_to_server()
-                    if resume:
+                    if resume or rerun:
                         session_ids = app.positional_args
                         if not session_ids:
                             session_ids = [get_last_resumeable_session_id()]
-                        to_resume = [x for session_id in session_ids for x in get_tests_to_resume(session_id)]
+                        get_successful_tests = False if resume else True
+                        to_resume = [x for session_id in session_ids for x in \
+                                     get_tests_from_previous_session(session_id, get_successful_tests=get_successful_tests)]
                         collected = app.test_loader.get_runnables(to_resume, prepend_interactive=app.parsed_args.interactive)
                     else:
                         collected = _collect_tests(app, args)
@@ -75,6 +81,7 @@ def slash_run(args, report_stream=None, resume=False, app_callback=None, working
     return app
 
 slash_resume = functools.partial(slash_run, resume=True)
+slash_rerun = functools.partial(slash_run, rerun=True)
 
 def is_parallel():
     return config.root.parallel.num_workers

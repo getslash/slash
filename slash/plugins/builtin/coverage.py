@@ -16,7 +16,7 @@ class Plugin(PluginInterface):
     def get_name(self):
         return "coverage"
 
-    def get_config(self):
+    def get_default_config(self):
         return {
             'config_filename': False // Cmdline(arg='--cov-config') // Doc('Coverage configuration file'),
             'report_type': 'html' // Cmdline(arg='--cov-report') // Doc('Coverage report format'),

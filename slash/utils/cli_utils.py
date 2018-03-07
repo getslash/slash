@@ -30,7 +30,7 @@ def configure_arg_parser_by_plugins(parser):
     for plugin in itervalues(plugins.manager.get_installed_plugins()):
         group = parser.add_argument_group('Options for {}{}'.format(
             '' if plugins.manager.is_internal_plugin(plugin) else '--with-',
-            plugin.get_name()))
+            plugins.manager.normalize_command_line_name(plugin.get_name())))
         plugin.configure_argument_parser(group)
 
 def configure_arg_parser_by_config(parser, config=None):
@@ -77,7 +77,10 @@ def get_modified_configuration_from_args_context(parser, args, config=None):
             new_value = cmdline.update_value(old_value, args)
             if new_value != old_value:
                 to_restore.append((path, cfg.get_value()))
-                config.assign_path(path, new_value, deduce_type=True, default_type=str)
+                try:
+                    config.assign_path(path, new_value, deduce_type=True, default_type=str)
+                except ValueError:
+                    parser.error('Invalid value for {}: {!r}'.format(cmdline, new_value))
         for override in args.config_overrides:
             if "=" not in override:
                 parser.error("Invalid config override: {0}".format(override))
@@ -105,12 +108,18 @@ class SlashArgumentParser(argparse.ArgumentParser):
     def _deduce_program_name(self):
         returned = os.path.basename(sys.argv[0])
         if len(sys.argv) > 1:
-            returned += " {0}".format(sys.argv[1])
+            returned += " {}".format(sys.argv[1])
         return returned
 
-    def set_positional_metavar(self, metavar):
+    def set_positional_metavar(self, metavar, plural=True):
         self._positionals_metavar = metavar
-        self.usage += ' {0} [{0} [...]]'.format(metavar)
+        if plural:
+            self.usage += ' {0} [{0} [...]]'.format(metavar)
+        else:
+            self.usage += ' {}'.format(metavar)
+
+    def set_description(self, description):
+        self.description = description
 
 
 COLOR_RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL  # pylint: disable=no-member

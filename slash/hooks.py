@@ -34,6 +34,7 @@ _define('test_avoided', doc="Called when a test is skipped completely (not even 
 _define('test_start', doc="Called right after a test starts")
 _define('test_distributed', doc="Called in parallel mode, after the parent sent a test to child)", arg_names=('test_logical_id', 'worker_session_id',)) # pylint: disable=line-too-long
 _define('test_end', doc="Called right before a test ends, regardless of the reason for termination")
+_define('log_file_closed', doc="Called right after a log file was closed", arg_names=('path', 'result',))
 _define('before_test_cleanups', doc="Called right before a test cleanups are executed")
 _define('test_success', doc="Called on test success")
 _define('test_error', doc="Called on test error")
@@ -42,6 +43,8 @@ _define('test_skip', doc="Called on test skip", arg_names=("reason",))
 _define('worker_connected', doc="Called on new worker startup", arg_names=("session_id",))
 
 _define('error_added', doc='Called when an error is added to a result (either test result or global)', arg_names=('error', 'result'))
+_define('interruption_added', doc='Called when an exception is encountered that triggers test or session interruption',
+        arg_names=('result', 'exception'))
 _define('fact_set', doc='Called when a fact is set for a test', arg_names=['name', 'value'])
 _define('warning_added', doc='Called when a warning is captured by Slash', arg_names=('warning',))
 
@@ -58,6 +61,8 @@ _define('before_worker_start', doc="Called in parallel execution mode, before th
 
 _define('prepare_notification', doc='Called with a message object prior to it being sent via the notifications plugin (if enabled)',
         arg_names=("message",))
+
+_define('before_interactive_shell', doc='Called before starting interactive shell', arg_names=("namespace",))
 
 _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()

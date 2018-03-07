@@ -5,14 +5,19 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+
+matrix:
+  include:
+    - python: "3.6"
+      env: TRAVIS_PYLINT=true
+
 # command to run tests, e.g. python setup.py test
 install: 
   - pip install virtualenv
   - pip install codecov
 script: 
   - make env
-  - make test
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then make pylint; fi
+  - if [[ $TRAVIS_PYLINT != 'true' ]]; then make test; else make pylint; fi
 after_success:
   - codecov
 after_failure:

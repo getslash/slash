@@ -12,7 +12,7 @@ from vintage import deprecated
 from .. import hooks
 from .._compat import OrderedDict, itervalues
 from ..ctx import context
-from ..exception_handling import capture_sentry_exception
+from ..exception_handling import capture_sentry_exception, handling_exceptions
 from .. import exceptions
 from ..utils.exception_mark import ExceptionMarker
 from ..utils.interactive import notify_if_slow_context
@@ -93,13 +93,17 @@ class Result(object):
         elif isinstance(exc_value, context.session.get_skip_exception_types()):
             self.add_skip(getattr(exc_value, 'reason', str(exc_value)))
         elif isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
+            err = Error.capture_exception(exc_info=exc_info)
+            hooks.interruption_added(result=self, exception=err) # pylint: disable=no-member
             session_result = context.session.results.global_result
             interrupted_test = self.is_interrupted()
             interrupted_session = session_result.is_interrupted()
             if not self.is_global_result():
                 self.mark_interrupted()
                 if not interrupted_test and not context.session.has_children():
-                    with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."):
+                    with notify_if_slow_context(message="Cleaning up test due to interrupt. Please wait..."),\
+                         handling_exceptions(swallow=True):
+
                         hooks.test_interrupt() # pylint: disable=no-member
             if not interrupted_session:
                 session_result.mark_interrupted()
@@ -225,11 +229,12 @@ class Result(object):
             if is_failure:
                 # force the error object to be marked as failure
                 error.mark_as_failure()
-            _logger.debug('Error added: {0}\n{0.traceback}', error, extra={'to_error_log': 1})
+            error.log_added()
             if append:
                 error_list.append(error)
             if not context.session or not context.session.has_children():
                 hooks.error_added(result=self, error=error)  # pylint: disable=no-member
+            error.forget_exc_info()
             return error
         except Exception:
             _logger.error("Failed to add error to result", exc_info=True)
@@ -282,9 +287,19 @@ class Result(object):
 
 class GlobalResult(Result):
 
+    def __init__(self, session_results=None):
+        super(GlobalResult, self).__init__()
+        self._session_results = session_results
+
     def is_global_result(self):
         return True
 
+    def is_success(self, allow_skips=False):
+        if not super(GlobalResult, self).is_success(allow_skips=allow_skips):
+            return False
+        if self._session_results is None:
+            return True
+        return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 
 
 class SessionResults(object):
@@ -292,7 +307,7 @@ class SessionResults(object):
     def __init__(self, session):
         super(SessionResults, self).__init__()
         self.session = session
-        self.global_result = GlobalResult()
+        self.global_result = GlobalResult(self)
         self._results_dict = OrderedDict()
         self._iterator = functools.partial(itervalues, self._results_dict)
 
@@ -335,10 +350,7 @@ class SessionResults(object):
 
         Otherwise, returns the global result object
         """
-        test_id = context.test_id
-        if test_id is None:
-            return self.global_result
-        return self._results_dict[test_id]
+        return context.result
 
     def __iter__(self):
         return self._iterator()
@@ -348,14 +360,7 @@ class SessionResults(object):
 
         :param allow_skips: Whether to consider skips as unsuccessful
         """
-        if not self.global_result.is_success():
-            return False
-        for result in self._iterator():
-            if not result.is_finished() and not result.is_skip():
-                return False
-            if not result.is_success(allow_skips=allow_skips):
-                return False
-        return True
+        return self.global_result.is_success(allow_skips=allow_skips)
 
     def is_interrupted(self):
         """Indicates if this session was interrupted

@@ -16,7 +16,7 @@ def check_duplicate_functions(path):
         code = f.read()
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
-        root = ast.parse(code)
+        root = ast.parse(code, filename=path)
     func_names = set()
     duplicates = set()
     for node in root.body:

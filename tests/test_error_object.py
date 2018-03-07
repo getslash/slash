@@ -1,12 +1,14 @@
 # pylint: disable=redefined-outer-name,unused-variable
 import json
 import os
+import types
 
 import emport
 
 import dessert
 import pytest
 from slash.core.error import Error
+from slash.exception_handling import mark_exception_frame_correction
 
 from .utils import without_pyc
 
@@ -35,6 +37,41 @@ def test_code_string(error):
 
     local_func_3 = global_func_3
     raise NotImplementedError()\n"""
+
+
+def test_error_exc_info(error):
+    assert error.exc_info is not None
+    assert isinstance(error.exc_info, tuple)
+    assert error.exc_info[0] is NotImplementedError
+    assert isinstance(error.exc_info[1], NotImplementedError)
+    assert isinstance(error.exc_info[2], types.TracebackType)
+
+
+def test_error_forget_exc_info(error):
+    error.forget_exc_info()
+    assert error.exc_info is None
+
+
+def test_error_exc_info_forgotten_by_default(suite, suite_test):
+    suite_test.when_run.error()
+    res = suite.run()[suite_test]
+    [err] = res.get_errors()
+    assert err.exc_info is None
+
+
+def test_error_frame_objects(error):
+    assert error.traceback.frames
+    for f in error.traceback.frames:
+        assert isinstance(f.python_frame, types.FrameType)
+
+
+def test_error_frame_objects_forgotten_by_default(suite, suite_test):
+    suite_test.when_run.error()
+    res = suite.run()[suite_test]
+    [err] = res.get_errors()
+    assert err.traceback.frames
+    for frame in err.traceback.frames:
+        assert frame.python_frame is None
 
 
 def test_frame_locals(error):
@@ -92,6 +129,29 @@ def test_error_mark_fatal(error):
     rv = error.mark_fatal()
     assert rv is error
     assert error.is_fatal()
+
+
+def test_error_frame_correction():
+
+    class CustomException(Exception):
+        pass
+
+    def f():
+        g()
+
+    def g():
+        h()
+
+    def h():
+        raise mark_exception_frame_correction(CustomException(), +2)
+
+    try:
+        f()
+    except CustomException:
+        err = Error.capture_exception()
+
+    assert err.traceback.frames[-1].func_name == 'f'
+
 
 ####
 

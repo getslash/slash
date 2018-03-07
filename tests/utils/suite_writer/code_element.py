@@ -1,7 +1,6 @@
-import py.code  # pylint: disable=no-name-in-module, import-error
-
 from slash._compat import StringIO
 from .element import Element
+from .utils import get_code_lines
 from ..code_formatter import CodeFormatter
 
 from contextlib import contextmanager
@@ -24,7 +23,7 @@ class CodeElement(Element):
         with self._body_context(code_formatter):
             self._write_body(code_formatter)
 
-    def append_body(self, code_element):
+    def _add_body(self, code_element, prepend):
         """An easier way to write multiline injected code:
 
         @code_element.append_body
@@ -33,14 +32,18 @@ class CodeElement(Element):
             for i in range(20):
                 some_other_code()
         """
-        source_lines = str(py.code.Code(code_element).source()).splitlines()  # pylint: disable=no-member
-        assert source_lines[0].startswith('@')
-        assert source_lines[1].startswith('def ')
-        assert source_lines[2][0].isspace()
-        for line in str(py.code.Source('\n'.join(source_lines[2:])).deindent()).splitlines():  # pylint: disable=no-member
-            self._body.append(line)
+        lines = get_code_lines(code_element)
+        if prepend:
+            self._body[:0] = lines
+        else:
+            self._body.extend(lines)
 
+    def append_body(self, code_element):
+        self._add_body(code_element, prepend=False)
     include = append_body
+
+    def prepend_body(self, code_element):
+        self._add_body(code_element, prepend=True)
 
     @contextmanager  # pylint: disable=unused-argument
     def _body_context(self, code_formatter):  # pylint: disable=unused-argument

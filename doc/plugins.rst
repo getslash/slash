@@ -119,13 +119,13 @@ In many cases you would like to receive options from the command line. Plugins c
 Plugin Configuration
 --------------------
 
-Plugins can override the :func:`config <slash.plugins.PluginInterface.get_config>` method to provide configuration to be placed under ``plugin_config.<plugin name>``:
+Plugins can override the :func:`config <slash.plugins.PluginInterface.get_default_config>` method to provide configuration to be placed under ``plugin_config.<plugin name>``:
 
 .. code-block:: python
 
  class LogCollectionPlugin(PluginInterface):
 
-     def get_config(self):
+     def get_default_config(self):
          return {
              'log_destination': '/some/default/path'
          }

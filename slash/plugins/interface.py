@@ -14,10 +14,18 @@ class PluginInterface(object):
         """
         pass
 
-    def get_config(self):
+    def get_default_config(self):
         """
         Optional: should return a dictionary or a confetti object which will be placed under
         ``slash.config.plugin_config.<plugin_name>``
+        """
+        pass
+
+    def get_config(self):
+        """
+        Use :meth:`.get_default_config()` instead.
+
+        .. deprecated:: 1.5.0
         """
         pass
 
@@ -26,7 +34,9 @@ class PluginInterface(object):
         """
         Returns configuration object for plugin
         """
-        return getattr(config.root.plugin_config, self.get_name())
+        from slash.plugins import manager
+        config_name = manager.normalize_config_name(self.get_name())
+        return getattr(config.root.plugin_config, config_name)
 
     def deactivate(self):
         """

@@ -12,6 +12,18 @@ def test_interruption(interrupted_suite, interrupted_index):
     interrupted_suite.run(expect_interruption=True)
 
 
+def test_interruption_added_to_result(interrupted_suite, interrupted_index):
+    caught = []
+    @gossip.register('slash.interruption_added')
+    def interruption_added(result, exception):
+        caught.append(exception)
+
+    summary = interrupted_suite.run(expect_interruption=True)
+    assert len(caught) == 1
+    [err] = caught              # pylint: disable=unbalanced-tuple-unpacking
+    assert err.exception_type is KeyboardInterrupt
+
+
 def test_interruption_triggers_gossip(request, interrupted_suite, interrupted_test):
     test_id = {'value': None}
 
@@ -142,6 +154,27 @@ def test_interrupted_with_custom_exception(suite, suite_test, request):
         t.expect_deselect()
 
     results = suite.run(expect_interruption=True)
+
+
+def test_test_interrupt_hook_exception(suite_builder):
+    # pylint: disable=reimported,redefined-outer-name
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+
+        @slash.hooks.test_interrupt.register # pylint: disable=no-member
+        def test_interrupt(**_):
+            1/0 # pylint: disable=pointless-statement
+
+
+        def test_1():
+            raise KeyboardInterrupt()
+
+        def test_2():
+            pass
+
+    [res] = suite_builder.build().run().assert_results(1)
+    assert res.is_interrupted()
 
 
 

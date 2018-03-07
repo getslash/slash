@@ -164,7 +164,7 @@ def handle_exception(exc_info, context=None):
 
 
 def mark_exception_handled(e):
-    mark_exception(e, "handled", True)
+    return mark_exception(e, "handled", True)
 
 
 def is_exception_handled(e):
@@ -207,6 +207,15 @@ def mark_exception_fatal(exception):
     """
     mark_exception(exception, "fatal", True)
     return exception
+
+
+def mark_exception_frame_correction(exception, correction=+1):
+    current_correction = get_exception_frame_correction(exception)
+    return mark_exception(exception, 'frame_correction', current_correction + correction)
+
+
+def get_exception_frame_correction(exception):
+    return get_exception_mark(exception, 'frame_correction', 0)
 
 
 def is_exception_fatal(exception):

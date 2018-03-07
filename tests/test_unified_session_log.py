@@ -1,6 +1,6 @@
 # pylint: disable=redefined-outer-name
 from uuid import uuid4
-
+import logbook
 import pytest
 
 
@@ -28,6 +28,7 @@ def test_result(unified_run, suite_test):
 
 @pytest.fixture
 def unified_run(suite, suite_test, tmpdir, config_override, log_marker):
+    config_override('log.core_log_level', logbook.TRACE)
     config_override('log.unified_session_log', True)
     config_override('log.root', str(tmpdir))
     config_override('log.session_subpath', 'session.log')

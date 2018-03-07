@@ -3,6 +3,7 @@ import itertools
 import inspect
 
 from sentinels import NOTHING
+import six
 
 from ...ctx import context
 from ..._compat import izip, iteritems
@@ -58,6 +59,10 @@ class FixtureInfo(object):
         else:
             self.needs_this = False
 
+    @property
+    def scope_name(self):
+        return _SCOPES_BY_ID[self.scope]
+
 def get_scope_by_name(scope_name):
     return _SCOPES[scope_name]
 
@@ -70,7 +75,7 @@ _SCOPES = dict(
 _SCOPES_BY_ID = dict((id, name) for (name, id) in iteritems(_SCOPES))
 
 
-def generator_fixture(func):
+def generator_fixture(func=None, **kw):
     """A utility for generating parametrization values from a generator:
 
     >>> @slash.generator_fixture
@@ -82,12 +87,15 @@ def generator_fixture(func):
     """
     from .parameters import parametrize
 
+    if func is None:
+        return functools.partial(generator_fixture, **kw)
+
     @parametrize('param', list(func()))
     def new_func(param):
         return param
 
-    new_func.__name__ = func.__name__
-    return _ensure_fixture_info(func=new_func)
+    kw.setdefault('name', func.__name__)
+    return _ensure_fixture_info(func=new_func, **kw)
 
 
 def yield_fixture(func=None, **kw):
@@ -122,16 +130,34 @@ def yield_fixture(func=None, **kw):
         return value
     return new_func
 
-class use(object):
-    """Allows tests to use fixtures under different names
 
-    def test_something(m: use('microwave')):
-        ...
+
+class _use_type(type):
+
+    def __getattr__(cls, attr):
+        if attr.startswith('_'):
+            raise AttributeError(attr)
+        return cls(attr)
+
+
+class use(six.with_metaclass(_use_type)): # pylint: disable=no-init
     """
+    Allows tests to use fixtures under different names:
 
+    >>> def test_something(m: use('microwave')):
+    ...    ...
+
+    For cosmetic purposes, you can also use ``use`` with attribute access:
+
+    >>> def test_something(m: use.microwave):
+    ...    ...
+
+    """
     def __init__(self, real_fixture_name):
-        super(use, self).__init__()
         self.real_fixture_name = real_fixture_name
+
+    def __repr__(self):
+        return '<slash.use({!r})>'.format(self.real_fixture_name)
 
 
 def get_real_fixture_name_from_argument(argument):

@@ -15,11 +15,12 @@ from .conf import config
 from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
+from .core.markers import repeat_marker
 from . import hooks
 from .core.runnable_test import RunnableTest
 from .core.test import Test, TestTestFactory, is_valid_test_name
 from .core.function_test import FunctionTestFactory
-from .exception_handling import handling_exceptions
+from .exception_handling import handling_exceptions, mark_exception_handled, get_exception_frame_correction
 from .exceptions import CannotLoadTests
 from .core.runnable_test_factory import RunnableTestFactory
 from .utils.pattern_matching import Matcher
@@ -54,8 +55,7 @@ class Loader(object):
 
     def get_runnables(self, paths, prepend_interactive=False):
         assert context.session is not None
-        sources = (t for repetition in range(config.root.run.repeat_all)
-                   for t in self._generate_test_sources(paths))
+        sources = self._generate_repeats(self._generate_test_sources(paths))
         returned = self._collect(sources)
         self._duplicate_funcs |= self._local_config.duplicate_funcs
         for (path, name, line) in sorted(self._duplicate_funcs):
@@ -65,8 +65,26 @@ class Loader(object):
             returned.insert(0, generate_interactive_test())
 
         hooks.tests_loaded(tests=returned) # pylint: disable=no-member
-        returned.sort(key=lambda test: test.__slash__.get_sort_key())
+        returned.sort(key=lambda test: (
+            test.__slash__.repeat_all_index, test.__slash__.get_sort_key()
+        ))
         return returned
+
+
+    def _generate_repeats(self, tests):
+        returned = []
+        repeat_each = config.root.run.repeat_each
+        for test in tests:
+            for i in range(repeat_each * repeat_marker.get_value(test.get_test_function(), 1)):
+                returned.append(test.clone() if i else test)
+        num_tests = len(returned)
+        for i in range(config.root.run.repeat_all - 1):
+            for test in itertools.islice(returned, 0, num_tests):
+                clone = test.clone()
+                clone.__slash__.repeat_all_index = i + 1
+                returned.append(clone)
+        return returned
+
 
     def _collect(self, iterator):
         returned = []
@@ -173,9 +191,11 @@ class Loader(object):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
-                    tb_file, tb_lineno, _, _ = traceback.extract_tb(sys.exc_info()[2])[-1]
-                    raise CannotLoadTests(
-                        "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
+
+                    tb_file, tb_lineno, _, _ = _extract_tb()
+                    raise mark_exception_handled(
+                        CannotLoadTests(
+                            "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e)))
                 if module is not None:
                     self._duplicate_funcs |= check_duplicate_functions(file_path)
                     with self._adding_local_fixtures(file_path, module):
@@ -246,6 +266,11 @@ def _walk(p):
         return
 
     for path, dirnames, filenames in os.walk(p):
-        dirnames[:] = [dirname for dirname in dirnames if not dirname.startswith('.')]
+        dirnames[:] = sorted(dirname for dirname in dirnames if not dirname.startswith('.'))
         for filename in sorted(filenames):
             yield os.path.join(path, filename)
+
+def _extract_tb():
+    _, exc_value, exc_tb = sys.exc_info()
+    returned = traceback.extract_tb(exc_tb)
+    return returned[-1 - get_exception_frame_correction(exc_value)]

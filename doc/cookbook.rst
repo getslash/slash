@@ -19,6 +19,31 @@ Slash offers a hook called ``tests_loaded`` which can be used, among else, to co
 The above code is best placed in a ``slashconf.py`` file at the root of your test repository.
 
 
+Interactive Tests
+-----------------
+
+.. _cookbook-interactive-namespace:
+
+Controlling Interactive Namespaces from Plugins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can customize the namespace available by default to interactive tests run with Slash (like ``slash run -i``) using the special hook :ref:`hooks.before_interactive_shell`:
+
+.. code-block:: python
+
+                class MyPlugin(PluginInterface):
+
+                    ...
+                    def before_interactive_shell(self, namespace):
+                        namespace['lab_name'] = 'MicrowaveLab'
+
+Now when running your session interactively you'll get::
+
+  $ slash run -i
+  In [1]: lab_name
+  Out[1]: 'MicrowaveLab'
+
+
 Logging
 -------
 
@@ -52,9 +77,9 @@ You can also configure extre session paths, for example from plugins:
     class MyPlugin(slash.plugins.PluginInterface):
 
         def get_name(self):
-            return "my_plugin"
+            return "my plugin"
 
-        def get_config(self):
+        def get_default_config(self):
             retrun {'extra_log_path': ''}
 
         def session_start(self):

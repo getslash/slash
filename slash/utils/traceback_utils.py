@@ -7,6 +7,8 @@ import sys
 import traceback
 import types
 
+from vintage import deprecated
+
 from .._compat import PY2
 from .. import context
 from .python import get_underlying_func
@@ -33,17 +35,22 @@ def get_traceback_string(exc_info=None):
     return "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
 
 
-def distill_traceback(tb, **kw):
-    return _distill_frames(_get_tb_frames(tb), **kw)
+def distill_traceback(tb, frame_correction=0, **kw):
+    frames = _get_tb_frames(tb)
+    if frame_correction:
+        frames = frames[:len(frames) - frame_correction]
+    return _distill_frames(frames, **kw)
 
 
-def distill_call_stack(**kw):
-    return _distill_frames(_get_sys_trace_frames(), **kw)
+def distill_call_stack(frame_correction=0, **kw):
+    frames = _get_sys_trace_frames()
+    if frame_correction:
+        frames = frames[:len(frames) - frame_correction + 1]
+    return _distill_frames(frames, **kw)
 
 
-def _distill_frames(frames, frame_correction=0):
+def _distill_frames(frames):
     returned = DistilledTraceback()
-    frames = frames[:len(frames)-frame_correction+1]
     for frame in frames:
         if isinstance(frame, tuple):
             frame, lineno = frame
@@ -127,20 +134,24 @@ class DistilledTraceback(object):
             return self.frames[-1]
 
     def __repr__(self):
-        return '\n'.join(str(frame) for frame in self.frames)
+        return self.to_string()
+
+    def to_string(self, include_vars=False):
+        return '\n'.join(frame.to_string(include_vars=include_vars) for frame in self.frames)
 
 
 class DistilledFrame(object):
 
     def __init__(self, frame, lineno=None):
         super(DistilledFrame, self).__init__()
+        self.python_frame = frame
         self.filename = os.path.abspath(frame.f_code.co_filename)
         if lineno is None:
             lineno = frame.f_lineno
         self.lineno = lineno
         self.func_name = frame.f_code.co_name
-        self.locals = self._capture_locals(frame)
-        self.globals = self._capture_globals(frame)
+        self._locals = self._capture_locals(frame)
+        self._globals = self._capture_globals(frame)
         self.code_line = linecache.getline(self.filename, self.lineno).rstrip()
         self.code_string = "".join(
             linecache.getline(self.filename, lineno)
@@ -151,13 +162,28 @@ class DistilledFrame(object):
         else:
             self._is_in_test_code = False
 
+    @property
+    @deprecated(since='1.5.0')
+    def locals(self):
+        return self._locals
+
+    @property
+    @deprecated(since='1.5.0')
+    def globals(self):
+        return self._globals
+
+    def forget_python_frame(self):
+        self.python_frame = None
+
     def is_in_test_code(self):
         return self._is_in_test_code
 
     def to_dict(self):
         serialized = {}
-        for attr in ['filename', 'lineno', 'func_name', 'locals', 'globals', 'code_line', 'code_string']:
+        for attr in ['filename', 'lineno', 'func_name', 'code_line', 'code_string']:
             serialized[attr] = getattr(self, attr)
+        serialized['globals'] = self._globals
+        serialized['locals'] = self._locals
         serialized['is_in_test_code'] = self._is_in_test_code
         return serialized
 
@@ -187,8 +213,24 @@ class DistilledFrame(object):
             yield 'self.{}'.format(attr), value
 
     def __repr__(self):
-        return '{0.filename}, line {0.lineno}:\n    {0.code_line}'.format(self)
+        return self.to_string()
 
+    def to_string(self, include_vars=False):
+        returned = '  {0.filename}, line {0.lineno}:\n'.format(self)
+        returned += '    {.code_line}'.format(self)
+        if include_vars and self.python_frame is not None:
+            for name, value in _unwrap_self_locals(self.python_frame.f_locals.items()):
+                returned += '\n\t- {}: {}'.format(name, _safe_repr(value, truncate=False))
+            returned += '\n'
+        return returned
+
+
+def _unwrap_self_locals(local_pairs):
+    for name, value in local_pairs:
+        yield name, value
+        if name == 'self':
+            for attr_name, attr_value in value.__dict__.items():
+                yield 'self.{}'.format(attr_name), attr_value
 
 
 def iter_distilled_object_attributes(obj):

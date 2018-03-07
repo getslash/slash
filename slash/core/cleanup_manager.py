@@ -26,6 +26,7 @@ class CleanupManager(object):
         self._scopes_by_name = {}
         self._pending = []
         self._allow_implicit_scopes = True
+        self._default_scope = None
 
     @contextmanager
     def forbid_implicit_scoping_context(self):
@@ -49,7 +50,7 @@ class CleanupManager(object):
         :param kwargs: keyword arguments to pass to the cleanup function
         """
 
-        scope_name = kwargs.pop('scope', None)
+        scope_name = kwargs.pop('scope', self._default_scope)
 
         critical = kwargs.pop('critical', False)
         success_only = kwargs.pop('success_only', False)
@@ -87,6 +88,15 @@ class CleanupManager(object):
             yield
         finally:
             self.pop_scope(scope)
+
+    @contextmanager
+    def default_scope_override(self, scope):
+        prev = self._default_scope
+        self._default_scope = scope
+        try:
+            yield
+        finally:
+            self._default_scope = prev
 
     @property
     def latest_scope(self):

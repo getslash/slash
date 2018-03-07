@@ -1,6 +1,6 @@
 from uuid import uuid4
 import pytest
-
+import logbook
 
 @pytest.mark.parametrize('failure_type', ['failure', 'error'])
 @pytest.mark.parametrize('use_custom_message', [True, False])
@@ -73,3 +73,38 @@ def test_session_level_add_error_message(suite, suite_test):
     assert len(errors) == 1
     [err] = errors
     assert err.message == 'session: add_error'
+
+
+@pytest.mark.parametrize('log_variables', [True, False])
+def test_add_error_log_traceback_variables(suite, suite_test, log_variables, config_override, tmpdir):
+    config_override('log.core_log_level', logbook.TRACE)
+    config_override('log.traceback_variables', log_variables)
+    config_override('log.root', str(tmpdir.join('logs')))
+
+    @suite_test.prepend_body
+    def __code__():          # pylint: disable=unused-variable
+        # to avoid the line itself from being detected
+        x_variable = 'x' * 3 # pylint: disable=unused-variable
+        class Object(object):
+
+            def __init__(self):
+                self.property_value = 'yyy'
+
+        self = Object() # pylint: disable=unused-variable
+
+    suite_test.when_run.error()
+    res = suite.run()
+    result = res[suite_test]
+
+    with open(result.get_log_path()) as f:
+        lines = f.readlines()
+
+    def _search_variable(variable_name, variable_value):
+        found = False
+        for line in lines:
+            if variable_name in line and variable_value in line:
+                found = True
+                break
+        assert found == log_variables, 'Variable {!r} not found in traceback log!'.format(variable_name)
+    _search_variable('x_variable', 'xxx')
+    _search_variable('self.property_value', 'yyy')

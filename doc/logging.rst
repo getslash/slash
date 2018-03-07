@@ -33,6 +33,13 @@ You can use :attr:`slash.core.metadata.Metadata.test_index0` to include an ordin
 
     {context.session.id}/{context.test.__slash__.test_index0:03}-{context.test.id}.log
 
+Timestamps
+~~~~~~~~~~
+
+The current timestamp can also be used when formatting log paths. This is useful if you want to create log directories named according to the current date/time::
+
+  logs/{timestamp:%Y%m%d-%H%M%S}.log
+
 The Session Log
 ~~~~~~~~~~~~~~~
 
@@ -40,12 +47,21 @@ Another important config path is :ref:`conf.log.session_subpath`. In this subpat
 
 The session log, by default, does not contain logs from tests, as they are redirected to test log files. However, setting the :ref:`conf.log.unified_session_log` to ``True`` will cause the session log to contain *all* logs from all tests.
 
-The Error Log
-~~~~~~~~~~~~~
+The Highlights Log
+~~~~~~~~~~~~~~~~~~
 
-You can optionally control a separate log file in which only errors and failures are to be logged, through the :ref:`conf.log.errors_subpath` configuration variable. 
+Slash allows you to configure a separate log file to receive "highlight" logs from your sessions. This isn't necessarily related to the log level, as any log emitted can be marked as a "highlight". This is particularly useful if you have infrequent operations that you'd like to track and skim occasionally.
 
-If set, this variable will hold the subpath (with optional formatting as described above) for a file which will contain only added errors throughout the tests and/or session. This is useful to quickly sift through your runs to only spot the errors, without having to skim through overly verbose debug logs.
+To configure a log location for your highlight logs, set the :ref:`conf.log.highlights_subpath` configuration path. To emit a highlight log, just pass ``{'highlight': True}`` to the required log's ``extra`` dict:
+
+.. code-block:: python
+       
+   slash.logger.info("hey", extra={"highlight": True})
+
+.. tip:: The :ref:`conf.log.highlights_subpath` configuration path is treated just like other logging subpaths, and thus supports all substitutions and formatting mentioned above
+
+.. note:: All errors emitted in a session are automatically added to the highlights log
+
 
 Last Log Symlinks
 -----------------
