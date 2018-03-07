@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`1.5.0 <7-3-2018>`
 * :feature:`697` Added ``slash.before_interactive_shell`` hook
 * :feature:`-` Added a configuration option preventing ``slash.g`` from being available in interactive namespaces
 * :feature:`664` Added ``metadata.set_file_path``, allowing integrations to set a custom file path to be associated with a loaded test
