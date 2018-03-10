@@ -229,7 +229,7 @@ def _unwrap_self_locals(local_pairs):
     for name, value in local_pairs:
         yield name, value
         if name == 'self':
-            for attr_name, attr_value in value.__dict__.items():
+            for attr_name, attr_value in getattr(value, '__dict__', {}).items():
                 yield 'self.{}'.format(attr_name), attr_value
 
 
