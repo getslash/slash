@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :release:`1.5.1 <10-3-2018>`
+* :bug:`767` Fixed traceback variable capture for cases where ``self=None``
 * :release:`1.5.0 <7-3-2018>`
 * :feature:`590` Add support for labeling parametrization variations
 * :feature:`697` Added ``slash.before_interactive_shell`` hook
