@@ -94,13 +94,13 @@ class Test(RunnableTest):
     def get_address_in_factory(self):
         returned = ''
         if self._test_method_name is not None:
-            returned += ".{0}".format(self._test_method_name)
+            returned += ".{}".format(self._test_method_name)
         return returned
 
     def _get_call_string(self, kwargs):
         if not kwargs:
             return ""
-        return "({0})".format(", ".join("{0}={1!r}".format(k, v) for k, v in iteritems(kwargs)))
+        return "({})".format(", ".join("{}={!r}".format(k, v) for k, v in iteritems(kwargs)))
 
     def get_requirements(self):
         test_requirements = get_requirements(type(self)) + get_requirements(self.get_test_function())
@@ -138,7 +138,7 @@ class Test(RunnableTest):
         pass
 
     def _format_kwargs(self, kwargs):
-        return ", ".join("{0}={1!r}".format(x, y) for x, y in iteritems(kwargs))
+        return ", ".join("{}={!r}".format(x, y) for x, y in iteritems(kwargs))
 
 def abstract_test_class(cls):
     """

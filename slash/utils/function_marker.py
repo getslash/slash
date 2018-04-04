@@ -15,7 +15,7 @@ class Marker(object):
         super(Marker, self).__init__()
         self._name = name
         self._value = value
-        self._mark = '__marked_{0}__'.format(self._name)
+        self._mark = '__marked_{}__'.format(self._name)
         self._append = append
 
     def __call__(self, func):

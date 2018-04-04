@@ -42,14 +42,14 @@ def local_conf(local_conf_dir):
 def local_conf_dir(tmpdir, expected_dict):
     returned = tmpdir
     for i, (key, value) in enumerate(iteritems(expected_dict)):
-        returned = returned.join('subdir{0}'.format(i))
+        returned = returned.join('subdir{}'.format(i))
         returned.mkdir()
 
         with returned.join('slashconf.py').open('w') as f:
-            f.write('{0} = [{1!r}]'.format(key, value))
+            f.write('{} = [{!r}]'.format(key, value))
     return returned
 
 
 @pytest.fixture
 def expected_dict():
-    return OrderedDict(('key_{0}'.format(i), 'value_{0}_{1}'.format(i, uuid1())) for i in range(10))
+    return OrderedDict(('key_{}'.format(i), 'value_{}_{}'.format(i, uuid1())) for i in range(10))

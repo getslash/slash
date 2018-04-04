@@ -24,7 +24,7 @@ class Metadata(object):
         if factory is not None:
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
-            assert self.module_name, 'Could not find module for {0}'.format(test)
+            assert self.module_name, 'Could not find module for {}'.format(test)
             self._file_path = factory.get_filename()
             self.factory_name = factory.get_factory_name()
         else:
@@ -68,7 +68,7 @@ class Metadata(object):
         if self._address_override is not None:
             return self._address_override
 
-        returned = '{0}:{1}'.format(self.file_path, self.address_in_file)
+        returned = '{}:{}'.format(self.file_path, self.address_in_file)
         if self.variation:
             returned += '({})'.format(self.variation.safe_repr)
         return returned
@@ -121,7 +121,7 @@ class Metadata(object):
         return self.test_index0 + 1
 
     def __repr__(self):
-        return '<{0}>'.format(self.address)
+        return '<{}>'.format(self.address)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

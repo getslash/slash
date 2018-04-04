@@ -24,7 +24,7 @@ _COMMANDS = {
 def _get_parser():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="Available commands:\n\t{0}".format("\n\t".join(sorted(_COMMANDS))),
+        epilog="Available commands:\n\t{}".format("\n\t".join(sorted(_COMMANDS))),
         usage="%(prog)s command...",
     )
 
@@ -40,7 +40,7 @@ def main():
     with _setup_logging_context(args):
         module_name = _COMMANDS.get(args.cmd)
         if not module_name:
-            parser.error("No such command: {0}".format(args.cmd))
+            parser.error("No such command: {}".format(args.cmd))
         module_name, func_name = module_name.split(":")
         module = __import__(module_name, fromlist=[""])
         func = getattr(module, func_name)
@@ -50,7 +50,7 @@ def main():
     return returned
 
 def slash_version(_):
-    print('Slash v{0}'.format(__version__))
+    print('Slash v{}'.format(__version__))
     return 0
 
 ################################## Boilerplate ################################

@@ -120,7 +120,7 @@ class CleanupManager(object):
 
         _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
         scope = self._scope_stack[-1]
-        assert scope.name == scope_name, 'Attempted to pop scope {0!r}, but current scope is {1!r}'.format(scope_name, scope.name)
+        assert scope.name == scope_name, 'Attempted to pop scope {!r}, but current scope is {!r}'.format(scope_name, scope.name)
         try:
             self.call_cleanups(
                 scope=scope,
@@ -175,7 +175,7 @@ class _Cleanup(object):
             raise
 
     def __repr__(self):
-        return "{0} ({1},{2})".format(self.func, self.args, self.kwargs)
+        return "{} ({},{})".format(self.func, self.args, self.kwargs)
 
 
 class _Scope(object):

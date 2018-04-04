@@ -13,7 +13,7 @@ class Class(TestContainer, CodeElement, Element):
         self._decorators = []
         self.file = file
         self.suite = file.suite
-        self.name = 'Test{0}'.format(self.id)
+        self.name = 'Test{}'.format(self.id)
         self.before = self.after = None
 
     def add_before_method(self):
@@ -40,7 +40,7 @@ class Class(TestContainer, CodeElement, Element):
         for d in self._decorators:
             code_formatter.write('@')
             code_formatter.writeln(d)
-        code_formatter.writeln('class {0}(slash.Test):'.format(self.name))
+        code_formatter.writeln('class {}(slash.Test):'.format(self.name))
         with code_formatter.indented():
 
             if self.before is not None:

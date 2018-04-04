@@ -92,7 +92,7 @@ class FixtureTree(object):
         self._cleanups_made = set()
         self._fixture_store = fixture_store
         self._fixtures = {}
-        self._fixture_namegen = ('fixture_{0:05}'.format(x)
+        self._fixture_namegen = ('fixture_{:05}'.format(x)
                                  for x in itertools.count(1000))
         self._required_names = []
         self._populate_fixtures()
@@ -112,7 +112,7 @@ class FixtureTree(object):
         assert self._values[name] == value
 
     def make_value(self, name):
-        assert name not in self._values, 'Fixture generated more than once! (scope={0})'.format(
+        assert name not in self._values, 'Fixture generated more than once! (scope={})'.format(
             get_scope_name_by_scope(self._fixtures[name].__slash_fixture__.scope))
         value = str(uuid1())
         self._values[name] = value
@@ -174,7 +174,7 @@ class FixtureTree(object):
         buff = StringIO()
         code = CodeFormatter(buff)
         code.writeln(
-            'def {0}(this, {1}):'.format(name, ', '.join(dependent_names)))
+            'def {}(this, {}):'.format(name, ', '.join(dependent_names)))
         with code.indented():
             for dependent_name in dependent_names:
                 code.writeln(
@@ -182,8 +182,8 @@ class FixtureTree(object):
             code.writeln('@this.add_cleanup')
             code.writeln('def cleanup():')
             with code.indented():
-                code.writeln('tree.cleanup({0!r})'.format(name))
-            code.writeln('return tree.make_value({0!r})'.format(name))
+                code.writeln('tree.cleanup({!r})'.format(name))
+            code.writeln('return tree.make_value({!r})'.format(name))
         globs = {'tree': self}
         exec(buff.getvalue(), globs)  # pylint: disable=exec-used
         return slash.fixture(scope=scope)(globs[name])

@@ -32,10 +32,9 @@ class Application(object):
             t = s.add_test()
             if self._args.use_fixtures and index % _FIXTURE_FREQ == 0:
                 if index % 2 == 0:
-                    f = t.depend_on_fixture(t.file.add_fixture())
+                    t.depend_on_fixture(t.file.add_fixture())
                 else:
-                    f = t.depend_on_fixture(s.slashconf.add_fixture())
-                #f.parametrize()
+                    t.depend_on_fixture(s.slashconf.add_fixture())
 
             if self._args.use_parameters and index % _PARAM_FREQ == 0:
                 t.parametrize()
@@ -51,7 +50,7 @@ class Application(object):
             elif element == 'i':
                 t.when_run.interrupt()
             else:
-                parser.error("Unknown marker: {0!r}".format(element))
+                parser.error("Unknown marker: {!r}".format(element))
 
         s.commit()
 

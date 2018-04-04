@@ -46,7 +46,7 @@ class Namespace(object):
         if default is not NOTHING:
             return default
 
-        raise UnknownFixtures('Fixture {0!r} not found!'.format(name))
+        raise UnknownFixtures('Fixture {!r} not found!'.format(name))
 
     def add_name(self, name, fixture_id):
         assert isinstance(fixture_id, Number)

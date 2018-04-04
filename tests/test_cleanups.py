@@ -96,7 +96,7 @@ def test_add_skip_from_fixture_cleanup(suite, suite_test, cleanup_mechanism):
     suite_test.expect_skip()
     fixture = suite.slashconf.add_fixture()
     suite_test.depend_on_fixture(fixture)
-    cleanup = fixture.add_deferred_event(decorator='{0}.add_cleanup'.format(cleanup_mechanism), extra_code=['slash.skip_test()'])
+    cleanup = fixture.add_deferred_event(decorator='{}.add_cleanup'.format(cleanup_mechanism), extra_code=['slash.skip_test()'])
     summary = suite.run()
     assert summary.events[cleanup].timestamp
 

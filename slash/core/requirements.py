@@ -39,7 +39,7 @@ class Requirement(object):
         if isinstance(self._req, bool):
             return '?'
         if hasattr(self._req, '__name__'):
-            return '<{0.__name__}>'.format(self._req)
+            return '<{.__name__}>'.format(self._req)
         return repr(self._req)
 
     def is_met(self):

@@ -31,7 +31,7 @@ def test_session_errors(suite, xunit_filename):
 
 def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
     for key, value in details.items():
-        suite_test.append_line('slash.context.result.set_test_detail({0!r}, {1!r})'.format(key, value))
+        suite_test.append_line('slash.context.result.set_test_detail({!r}, {!r})'.format(key, value))
 
     suite.run()
     testcase_xml = _get_testcase_xml(suite_test, xunit_filename)
@@ -44,7 +44,7 @@ def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
 def test_xunit_plugin_add_failure_error(suite, suite_test, xunit_filename, errtype):
     num_errors = 3
     for _ in range(num_errors):
-        suite_test.append_line('slash.add_{0}("some message")'.format(errtype))
+        suite_test.append_line('slash.add_{}("some message")'.format(errtype))
     if errtype == 'error':
         suite_test.expect_error()
     else:

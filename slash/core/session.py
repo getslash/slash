@@ -27,7 +27,7 @@ class Session(Activatable):
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
         self.parent_session_id = config.root.parallel.parent_session_id
-        self.id = "{0}_0".format(uuid.uuid1()) if not self.parent_session_id else \
+        self.id = "{}_0".format(uuid.uuid1()) if not self.parent_session_id else \
                     "{}_{}".format(self.parent_session_id.split('_')[0], config.root.parallel.worker_id)
         self.id_space = IDSpace(self.id)
         self.test_index_counter = itertools.count()

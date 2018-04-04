@@ -131,7 +131,7 @@ def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test
 
 @pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])
 def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
-    config_override('log.{0}'.format(symlink_name), 'some/subdir')
+    config_override('log.{}'.format(symlink_name), 'some/subdir')
     assert suite.run().ok()
 
 
@@ -380,7 +380,7 @@ class LoggingTest(TestCase):
 
     def _test_test_logs_written(self):
         for test_metadata in self.tests_metadata:
-            test_dir = "{0:03}-{1}".format(test_metadata.test_index0, test_metadata.id)
+            test_dir = "{:03}-{}".format(test_metadata.test_index0, test_metadata.id)
             log_path = os.path.join(
                 self.log_path, self.session.id, test_dir, "debug.log")
             with open(log_path) as f:
@@ -406,7 +406,7 @@ class LoggingTest(TestCase):
                 filename = os.path.join(path, filename)
                 with open(filename) as f:
                     assert _silenced_logger.name not in f.read(
-                    ), "Silenced logs appear in log file {0}".format(filename)
+                    ), "Silenced logs appear in log file {}".format(filename)
 
 
 class ExtraLoggersTest(TestCase):

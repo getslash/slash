@@ -125,7 +125,7 @@ class PluginManager(object):
         :class:`slash.plugins.PluginInterface`.
         """
         if not isinstance(plugin, PluginInterface):
-            raise IncompatiblePlugin("Invalid plugin type: {0!r}".format(type(plugin)))
+            raise IncompatiblePlugin("Invalid plugin type: {!r}".format(type(plugin)))
         plugin_name = plugin.get_name()
         if re.search(r'[^A-Za-z0-9_ -]', plugin_name):
             raise IllegalPluginName("Illegal plugin name: {}".format(plugin_name))
@@ -154,7 +154,7 @@ class PluginManager(object):
     def install_builtin_plugins(self):
         for builtin_plugin_module in self._iter_builtin_plugin_modules():
             module = __import__(
-                "slash.plugins.builtin.{0}".format(builtin_plugin_module),
+                "slash.plugins.builtin.{}".format(builtin_plugin_module),
                 fromlist=[""]
             )
             self.install(module.Plugin())
@@ -275,7 +275,7 @@ class PluginManager(object):
             plugin_config.pop(config_name)
 
     def _get_token(self, plugin_name):
-        return "slash.plugins.{0}".format(plugin_name)
+        return "slash.plugins.{}".format(plugin_name)
 
     def _get_installed_plugin_instance_by_name(self, plugin_name):
         plugin_info = self._installed.get(plugin_name)
@@ -302,7 +302,7 @@ class PluginManager(object):
             plugin_instance = plugin
             plugin_name = plugin.get_name()
         if plugin_instance is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin_instance:
-            raise UnknownPlugin("Unknown plugin: {0}".format(plugin_name))
+            raise UnknownPlugin("Unknown plugin: {}".format(plugin_name))
         return plugin_instance
 
     def _get_plugin_registrations(self, plugin):
@@ -334,7 +334,7 @@ class PluginManager(object):
             else:
                 if method_name.startswith('_'):
                     continue
-                registration_list = [RegistrationInfo("slash.{0}".format(method_name), True)]
+                registration_list = [RegistrationInfo("slash.{}".format(method_name), True)]
 
             for registration_info in registration_list:
                 if registration_info.hook_name is None:
@@ -385,7 +385,7 @@ class PluginManager(object):
             hook.register_no_op(provides=global_provides, token=self._get_token(plugin_name))
 
         if unknown:
-            raise IncompatiblePlugin("Unknown hooks: {0}".format(", ".join(unknown)))
+            raise IncompatiblePlugin("Unknown hooks: {}".format(", ".join(unknown)))
         return returned
 
 

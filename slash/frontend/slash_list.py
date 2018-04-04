@@ -90,7 +90,7 @@ def _report_tests(args, runnables, printer):
     visited = set()
 
     for runnable in runnables:
-        extra = "" if not args.show_tags else "  Tags: {0}".format(list(runnable.get_tags()))
+        extra = "" if not args.show_tags else "  Tags: {}".format(list(runnable.get_tags()))
         address = runnable.__slash__.address
         if not args.show_params:
             address = address.split('(')[0]
@@ -99,7 +99,7 @@ def _report_tests(args, runnables, printer):
         if address in visited:
             continue
         visited.add(address)
-        printer("{0}{1}".format(_title_style(address), extra))
+        printer("{}{}".format(_title_style(address), extra))
 
 
 def _convert_address_to_relpath(address):
@@ -129,12 +129,12 @@ def _report_fixtures(args, session, printer, used_fixtures):
         if fixture.is_override():
             additional_info += ' -- ' + _override_style('Override')
 
-        printer(_title_style('{0}{1}'.format(fixture.info.name, additional_info)))
+        printer(_title_style('{}{}'.format(fixture.info.name, additional_info)))
         if doc:
             for line in (_doc_style(doc)).split('\n'):
-                printer('    {0}'.format(line))
+                printer('    {}'.format(line))
 
-        printer('    Source: {0}:{1}'.format(
+        printer('    Source: {}:{}'.format(
             os.path.relpath(inspect.getsourcefile(fixture_func), args.paths[0] if args.paths else '.'),
             inspect.getsourcelines(fixture_func)[1]))
         printer('\n')
