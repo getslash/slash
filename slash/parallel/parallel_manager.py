@@ -61,6 +61,7 @@ class ParallelManager(object):
             with open(os.devnull, 'w') as devnull:
                 proc = subprocess.Popen(worker_config.argv, stdin=devnull, stdout=devnull, stderr=devnull)
                 self.workers[worker_id] = proc
+        _logger.trace("Worker #{} command: {}", worker_id, ' '.join(worker_config.argv))
         self.max_worker_id += 1
 
 
