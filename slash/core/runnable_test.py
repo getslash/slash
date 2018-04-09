@@ -68,4 +68,4 @@ class RunnableTest(object):
         return self._fixture_namespace
 
     def __repr__(self):
-        return '<Runnable test {0!r}>'.format(self.__slash__)
+        return '<Runnable test {!r}>'.format(self.__slash__)

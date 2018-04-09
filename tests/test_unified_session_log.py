@@ -32,11 +32,11 @@ def unified_run(suite, suite_test, tmpdir, config_override, log_marker):
     config_override('log.unified_session_log', True)
     config_override('log.root', str(tmpdir))
     config_override('log.session_subpath', 'session.log')
-    suite_test.append_line('slash.logger.info({0!r})'.format(log_marker))
-    suite_test.append_line('slash.logger.warning({0!r})'.format('warning'))
+    suite_test.append_line('slash.logger.info({!r})'.format(log_marker))
+    suite_test.append_line('slash.logger.warning({!r})'.format('warning'))
     return suite.run()
 
 
 @pytest.fixture
 def log_marker():
-    return 'log_marker_{0}'.format(uuid4())
+    return 'log_marker_{}'.format(uuid4())

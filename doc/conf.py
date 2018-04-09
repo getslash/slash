@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, ast
+import os
+import sys
 import pkg_resources
 
 nitpicky = True

@@ -54,5 +54,5 @@ class SetMaker(object):
 
     def make_set(self, size=3):
         assert self.name not in self.cartesian.sets
-        returned = self.cartesian.sets[self.name] = ["{0}{1}".format(self.name, i) for i in range(size)]
+        returned = self.cartesian.sets[self.name] = ["{}{}".format(self.name, i) for i in range(size)]
         return returned

@@ -181,7 +181,7 @@ def test_builtin_plugins_hooks_start_condition():
     "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
     for hook_name, hook in hooks.get_all_hooks():  # pylint: disable=unused-variable
         for registration in hook.get_registrations():
-            assert registration.token.startswith('slash.'), 'Callback {0} is not a builtin!'.format(hook.full_name)
+            assert registration.token.startswith('slash.'), 'Callback {} is not a builtin!'.format(hook.full_name)
 
 def test_builtin_plugins_are_installed():
     installed = plugins.manager.get_installed_plugins()

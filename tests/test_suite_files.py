@@ -172,7 +172,7 @@ def filename(tmpdir):
 
 @pytest.fixture
 def paths(request, tmpdir, use_relpath_for_dir): # pylint: disable=redefined-outer-name
-    basenames = ['file{0}.py'.format(i) for i in range(10)]
+    basenames = ['file{}.py'.format(i) for i in range(10)]
     basenames.extend(['file100.py:SomeClass',
                       'file101.py:Someclass.test_method'])
     returned = [os.path.join(os.path.abspath(str(tmpdir)), b) for b in basenames]

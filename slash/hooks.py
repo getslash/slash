@@ -7,14 +7,14 @@ from .conf import config
 def register(func):
     """A shortcut for registering hook functions by their names
     """
-    return gossip.register('slash.{0}'.format(func.__name__))(func)
+    return gossip.register('slash.{}'.format(func.__name__))(func)
 
 
 def _deprecated_to_gossip(func):
     return deprecated(since="0.6.0", message="Use gossip instead")(func)
 
 def _define(hook_name, **kwargs):
-    hook = gossip.define("slash.{0}".format(hook_name), **kwargs)
+    hook = gossip.define("slash.{}".format(hook_name), **kwargs)
     globals()[hook_name] = hook
     return hook
 
@@ -88,7 +88,7 @@ def ensure_custom_hook(hook_name):
     Like :func:`.add_custom_hook`, only forgives if the hook already exists
     """
     try:
-        return gossip.get_hook("slash.{0}".format(hook_name))
+        return gossip.get_hook("slash.{}".format(hook_name))
     except LookupError:
         return _define(hook_name)
 
@@ -97,7 +97,7 @@ def remove_custom_hook(hook_name):
     """
     Removes a hook from the set of available hooks
     """
-    gossip.get_hook("slash.{0}".format(hook_name)).undefine()
+    gossip.get_hook("slash.{}".format(hook_name)).undefine()
     globals().pop(hook_name)
 
 @_deprecated_to_gossip
@@ -118,4 +118,4 @@ def get_hook_by_name(hook_name):
     """
     Returns a hook (if exists) by its name, otherwise returns None
     """
-    return gossip.get_hook('slash.{0}'.format(hook_name))
+    return gossip.get_hook('slash.{}'.format(hook_name))

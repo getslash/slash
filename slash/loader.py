@@ -59,7 +59,7 @@ class Loader(object):
         returned = self._collect(sources)
         self._duplicate_funcs |= self._local_config.duplicate_funcs
         for (path, name, line) in sorted(self._duplicate_funcs):
-            _logger.warning('Duplicate function definition, File: {}, Name: {}, Line: {}'.format(path, name, line))
+            _logger.warning('Duplicate function definition, File: {}, Name: {}, Line: {}', path, name, line)
 
         if prepend_interactive:
             returned.insert(0, generate_interactive_test())

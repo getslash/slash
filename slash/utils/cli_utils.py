@@ -83,13 +83,13 @@ def get_modified_configuration_from_args_context(parser, args, config=None):
                     parser.error('Invalid value for {}: {!r}'.format(cmdline, new_value))
         for override in args.config_overrides:
             if "=" not in override:
-                parser.error("Invalid config override: {0}".format(override))
+                parser.error("Invalid config override: {}".format(override))
             path, _ = override.split("=", 1)
             to_restore.append((path, config.get_path(path)))
             try:
                 config.assign_path_expression(override, deduce_type=True, default_type=str)
             except ValueError:
-                parser.error("Invalid value for config override: {0}".format(override))
+                parser.error("Invalid value for config override: {}".format(override))
         yield
     finally:
         for path, prev_value in reversed(to_restore):

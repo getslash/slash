@@ -4,7 +4,7 @@ class EventRecorder(object):
         self.events = {}
         self.timestamp = 0
     def record(self, event_name, **kwargs):
-        assert event_name not in self.events, "Event {0} already recorded".format(event_name)
+        assert event_name not in self.events, "Event {} already recorded".format(event_name)
         self.timestamp += 1
         self.events[event_name] = Event(self.timestamp, kwargs)
     def __getitem__(self, event_name):

@@ -70,7 +70,7 @@ class VariationFactory(object):
 
             arg_name = argument.name
             if namespace is not None:
-                arg_name = '{0}:{1}'.format(namespace, arg_name)
+                arg_name = '{}:{}'.format(namespace, arg_name)
 
             self._populate_param_name_bindings(arg_name, fixture)
             self._arg_name_bindings[arg_name] = fixture

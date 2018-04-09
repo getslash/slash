@@ -49,7 +49,7 @@ class SlashRunResult(object):
         return matching[0]
 
     def __repr__(self):
-        return '<Summary ({0})>'.format(self.session.results)
+        return '<Summary ({})>'.format(self.session.results)
 
 
 class Tracker(object):
@@ -60,12 +60,12 @@ class Tracker(object):
         self.active_fixtures = {}
 
     def notify_fixture_start(self, f_id, value):
-        _logger.debug('started fixture {0}', f_id)
+        _logger.debug('started fixture {}', f_id)
         assert f_id not in self.active_fixtures
         self.active_fixtures[f_id] = value
 
     def notify_fixture_end(self, f_id):
-        _logger.debug('ended fixture {0}', f_id)
+        _logger.debug('ended fixture {}', f_id)
         self.active_fixtures.pop(f_id)
 
     def notify_parameter_value(self, p_id, value):
@@ -86,7 +86,7 @@ class Event(object):
         return self.timestamp < other_event.timestamp
 
     def __repr__(self):
-        return '<Event #{0}: {1}>'.format(self.timestamp, self.args)
+        return '<Event #{}: {}>'.format(self.timestamp, self.args)
 
 
 class Events(object):

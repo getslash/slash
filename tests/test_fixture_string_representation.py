@@ -20,7 +20,7 @@ def test_safe_repr_parameters(fixture_store, parametrized_func, params, param_na
     assert len(variations) == len(cartesian_product)
     variation_names = set(str(v.safe_repr) for v in variations)
     assert len(variation_names) == len(cartesian_product)
-    assert variation_names == set(','.join('{0}={1}'.format(name, combination[name]) for name in sorted(param_names))
+    assert variation_names == set(','.join('{}={}'.format(name, combination[name]) for name in sorted(param_names))
                                   for combination in cartesian_product)
 
 def test_safe_repr_fixtures(fixture_store):
@@ -51,7 +51,7 @@ def test_safe_repr_fixtures(fixture_store):
     assert len(variations) == len(first_param_values) * len(second_param_values)
 
     assert set(str(variation.safe_repr) for variation in variations) == {
-        'first_fixture.value={0},second_fixture.value={1}'.format(i, j)
+        'first_fixture.value={},second_fixture.value={}'.format(i, j)
         for i, j in itertools.product(first_param_values, second_param_values)
     }
 
@@ -59,7 +59,7 @@ def test_safe_repr_fixtures(fixture_store):
 def parametrized_func(params, param_names):
     buff = StringIO()
     formatter = CodeFormatter(buff)
-    formatter.writeln('def f({0}):'.format(', '.join(param_names)))
+    formatter.writeln('def f({}):'.format(', '.join(param_names)))
     with formatter.indented():
         formatter.writeln('pass')
     globs = {}

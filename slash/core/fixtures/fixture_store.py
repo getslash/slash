@@ -184,7 +184,7 @@ class FixtureStore(object):
 
     def _raise_cyclic_dependency_error(self, fixtureobj, path, new_id):
         raise CyclicFixtureDependency(
-            'Cyclic fixture dependency detected in {0}: {1}'.format(
+            'Cyclic fixture dependency detected in {}: {}'.format(
                 fixtureobj.info.func.__code__.co_filename,
                 ' -> '.join(self._fixtures_by_id[f_id].info.name
                             for f_id in path + [new_id])))
@@ -224,7 +224,7 @@ class FixtureStore(object):
         if existing_fixture is not None:
             return existing_fixture.fixture_func
         if is_valid_test_name(fixture_info.name):
-            raise InvalidFixtureName('Invalid fixture name: {0.name}'.format(fixture_info))
+            raise InvalidFixtureName('Invalid fixture name: {.name}'.format(fixture_info))
         fixture_object = Fixture(self, fixture_func)
         current_namespace = self._namespaces[-1]
         current_namespace.add_name(fixture_info.name, fixture_info.id)
@@ -313,7 +313,7 @@ class FixtureStore(object):
 
         if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
-                'Fixture {0!r} is a part of a dependency cycle!'.format(name))
+                'Fixture {!r} is a part of a dependency cycle!'.format(name))
 
         active_fixture = self.get_active_fixture(fixture)
 
@@ -339,7 +339,7 @@ class FixtureStore(object):
         kwargs = {}
 
         if fixture.keyword_arguments is None:
-            raise UnresolvedFixtureStore('Fixture {0} is unresolved!'.format(fixture.info.name))
+            raise UnresolvedFixtureStore('Fixture {} is unresolved!'.format(fixture.info.name))
 
         for required_name, needed_fixture in iteritems(fixture.keyword_arguments):
             if needed_fixture.is_parameter():

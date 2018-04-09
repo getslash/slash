@@ -64,7 +64,7 @@ def test_sigterm_interrupt(suite, suite_test):
 
 @pytest.mark.parametrize('hook_name', ['session_start', 'test_start'])
 def test_sigterm_on_hook(suite, hook_name):
-    @gossip.register('slash.{0}'.format(hook_name))
+    @gossip.register('slash.{}'.format(hook_name))
     def session_start():  # pylint: disable=unused-variable
         raise slash.exceptions.TerminatedException('Terminated by signal')
 

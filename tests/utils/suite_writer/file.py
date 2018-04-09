@@ -19,7 +19,7 @@ class File(TestContainer, CodeElement):
         self._fixtures = []
 
         if relpath is None:
-            relpath = 'test_{0}.py'.format(self.id)
+            relpath = 'test_{}.py'.format(self.id)
         self._relpath = relpath
 
     @property
@@ -27,10 +27,10 @@ class File(TestContainer, CodeElement):
         return os.path.basename(self._relpath)
 
     def add_hook_event(self, hook_name, extra_args=(), evt_name='evt'):
-        self.append_line('@slash.hooks.{0}.register'.format(hook_name))
-        event_code = '{0}_{1}'.format(evt_name, uuid4())
+        self.append_line('@slash.hooks.{}.register'.format(hook_name))
+        event_code = '{}_{}'.format(evt_name, uuid4())
         self.append_line('def _hook():')
-        self.append_line('    __ut__.events.add({0!r}, {1})'.format(
+        self.append_line('    __ut__.events.add({!r}, {})'.format(
             event_code, ', '.join(extra_args)))
         return event_code
 

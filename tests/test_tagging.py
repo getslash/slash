@@ -98,9 +98,9 @@ def _tag_class_and_method(taggable, tags):
 
 
 def _get_slash_tag_string(tag_name, tag_value):
-    returned = 'slash.tag({0!r}'.format(tag_name)
+    returned = 'slash.tag({!r}'.format(tag_name)
     if tag_value is not NOTHING:
-        returned += ', {0!r}'.format(tag_value)
+        returned += ', {!r}'.format(tag_value)
     returned += ')'
     return returned
 

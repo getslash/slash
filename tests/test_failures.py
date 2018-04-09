@@ -21,8 +21,8 @@ def test_adding_errors(error_adder, test_type):
     test = suite.add_test(type=test_type)
 
     for i in range(2):
-        test.append_line('slash.{0}("msg{1}")'.format(error_adder, i))
-    test.append_line('slash.{0}(object())'.format(error_adder))
+        test.append_line('slash.{}("msg{}")'.format(error_adder, i))
+    test.append_line('slash.{}(object())'.format(error_adder))
 
     if error_adder == 'add_error':
         test.expect_error()

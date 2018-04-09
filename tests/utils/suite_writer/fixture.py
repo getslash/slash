@@ -30,19 +30,19 @@ class Fixture(Function):
 
         self._write_event(code_formatter, 'fixture_start')
         code_formatter.writeln(
-            '__ut__.notify_fixture_start({0!r}, {1})'.format(self.id, self.get_value_string()))
+            '__ut__.notify_fixture_start({!r}, {})'.format(self.id, self.get_value_string()))
         code_formatter.writeln('@this.add_cleanup')
         code_formatter.writeln('def cleanup():')
         with code_formatter.indented():
             self._write_event(code_formatter, 'fixture_end')
             code_formatter.writeln(
-                '__ut__.notify_fixture_end({0!r})'.format(self.id))
+                '__ut__.notify_fixture_end({!r})'.format(self.id))
 
         super(Fixture, self)._write_prologue(code_formatter)
 
     def _write_return(self, code_formatter):
         code_formatter.writeln(
-            'return {0}'.format(self.get_value_string()))
+            'return {}'.format(self.get_value_string()))
 
     def _write_fixture_decorator(self, code_formatter):
 
@@ -54,18 +54,18 @@ class Fixture(Function):
 
         code_formatter.write('@slash.fixture')
         if params:
-            code_formatter.write('({0})'.format(', '.join(
-                '{0}={1!r}'.format(k, v) for k, v in params.items())))
+            code_formatter.write('({})'.format(', '.join(
+                '{}={!r}'.format(k, v) for k, v in params.items())))
         code_formatter.writeln()
 
     def get_value_string(self):
-        returned = '{{"value": {0!r}, "params": {{'.format(self.name)
+        returned = '{{"value": {!r}, "params": {{'.format(self.name)
 
         for name, param in itertools.chain(
                 ((p.name, p) for p in self._parameters),
                 ((alias or f.name, f) for alias, f, _ in self._fixtures),
         ):
-            returned += '{0!r}: {1},'.format(param.id, name)
+            returned += '{!r}: {},'.format(param.id, name)
         returned += '} }'
         return returned
 
@@ -73,4 +73,4 @@ class Fixture(Function):
         return itertools.chain(['this'], super(Fixture, self)._get_argument_strings())
 
     def __repr__(self):
-        return '<Fixture {0}>'.format(self.name)
+        return '<Fixture {}>'.format(self.name)

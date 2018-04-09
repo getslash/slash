@@ -13,7 +13,7 @@ class ConfigDoc(Directive):
             section = nodes.section(names=["conf." + path])
             self.state.document.note_explicit_target(section)
             section.append(nodes.title(text=path))
-            section.append(nodes.strong(text="Default: {0}".format(leaf.get_value())))
+            section.append(nodes.strong(text="Default: {}".format(leaf.get_value())))
             if leaf.metadata and "doc" in leaf.metadata:
                 section.append(nodes.paragraph(text=str(leaf.metadata["doc"])))
             returned.append(section)

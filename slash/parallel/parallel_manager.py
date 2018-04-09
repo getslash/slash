@@ -46,7 +46,7 @@ class ParallelManager(object):
 
     def start_worker(self):
         worker_id = str(self.max_worker_id)
-        _logger.notice("Starting worker number {}".format(worker_id))
+        _logger.notice("Starting worker number {}", worker_id)
         new_args = self.args[:] + ["--parallel-worker-id", worker_id]
         worker_config = WorkerConfiguration(new_args)
         hooks.before_worker_start(worker_config=worker_config) # pylint: disable=no-member
@@ -72,7 +72,7 @@ class ParallelManager(object):
         self.server_thread.start()
 
     def get_proxy(self):
-        return xmlrpc_client.ServerProxy('http://{0}:{1}'.format(config.root.parallel.server_addr, self.server.port))
+        return xmlrpc_client.ServerProxy('http://{}:{}'.format(config.root.parallel.server_addr, self.server.port))
 
     def kill_workers(self):
         if config.root.tmux.enabled:
@@ -103,7 +103,7 @@ class ParallelManager(object):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
             if time.time() - self.server.start_time > config.root.parallel.worker_connect_timeout * self.workers_num:
                 _logger.error("Timeout: Not all clients connected to server, terminating")
-                _logger.error("Clients connected: {}".format(self.server.clients_last_communication_time.keys()))
+                _logger.error("Clients connected: {}", self.server.clients_last_communication_time.keys())
                 self.kill_workers()
                 self.report_worker_error_logs()
                 raise ParallelTimeout("Not all clients connected")
@@ -112,7 +112,7 @@ class ParallelManager(object):
     def check_worker_timed_out(self):
         for worker_id, last_connection_time in iteritems(self.server.get_workers_last_connection_time()):
             if time.time() - last_connection_time > config.root.parallel.communication_timeout_secs:
-                _logger.error("Worker {} is down, terminating session".format(worker_id))
+                _logger.error("Worker {} is down, terminating session", worker_id)
                 self.report_worker_error_logs()
                 if not config.root.tmux.enabled:
                     if self.workers[worker_id].poll() is None:
@@ -123,13 +123,15 @@ class ParallelManager(object):
 
     def check_no_requests_timeout(self):
         if time.time() - self.server.last_request_time > config.root.parallel.no_request_timeout:
-            _logger.error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
+            _logger.error("No request sent to server for {} seconds, terminating",
+                          config.root.parallel.no_request_timeout)
             if self.server.has_connected_clients():
-                _logger.error("Clients that are still connected to server: {}".format(self.server.clients_last_communication_time.keys()))
+                _logger.error("Clients that are still connected to server: {}",
+                              self.server.clients_last_communication_time.keys())
             if self.server.has_more_tests():
-                _logger.error("Number of unstarted tests: {}".format(self.server.unstarted_tests.qsize()))
+                _logger.error("Number of unstarted tests: {}", self.server.unstarted_tests.qsize())
             if self.server.executing_tests:
-                _logger.error("Currently executed tests indexes: {}".format(self.server.executing_tests.values()))
+                _logger.error("Currently executed tests indexes: {}", self.server.executing_tests.values())
             self.kill_workers()
             self.report_worker_error_logs()
             raise ParallelTimeout("No request sent to server for {} seconds".format(config.root.parallel.no_request_timeout))

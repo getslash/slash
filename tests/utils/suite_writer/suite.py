@@ -87,7 +87,7 @@ class Suite(object):
         elif type == 'method':
             returned = self.add_method_test()
         else:
-            raise NotImplementedError('Unknown test type {0!r}'.format(type))  # pragma: no cover
+            raise NotImplementedError('Unknown test type {!r}'.format(type))  # pragma: no cover
         assert returned in self._notified
         return returned
 
