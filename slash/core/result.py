@@ -276,7 +276,8 @@ class Result(object):
     has_fatal_exception = has_fatal_errors
 
     def __repr__(self):
-        return "< Result ({})>".format(
+        return "<{} ({})>".format(
+            self.__class__.__name__,
             ", ".join(
                 attr
                 for attr in ("success", "error", "failure", "skip", "finished", "interrupted")
