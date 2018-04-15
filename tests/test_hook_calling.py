@@ -249,6 +249,7 @@ class HookCallingTest(TestCase):
             self.plugin2.after_session_start()
 
         self.plugin1.session_end()
+        self.plugin1.after_session_end()
 
         self.forge.replay()
         # get:

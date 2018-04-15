@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`782` Added new hooks: ``before_session_cleanup``, ``after_session_end``
 * :release:`1.5.1 <10-3-2018>`
 * :bug:`767` Fixed traceback variable capture for cases where ``self=None``
 * :release:`1.5.0 <7-3-2018>`

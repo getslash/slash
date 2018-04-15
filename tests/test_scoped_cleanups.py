@@ -29,13 +29,39 @@ def test_cleanups_from_test_start(suite):
         def cleanup():
             events.append(('test_cleanup', test_id))
 
+    @slash.hooks.register
+    def before_session_cleanup():
+        events.append('before_session_cleanup')
+
+    @slash.hooks.register
+    def session_start():
+        slash.add_cleanup(events.append, args=(('session_cleanup', 1),))
+        slash.add_cleanup(events.append, args=(('session_cleanup', 2),))
+
+    @slash.hooks.register
+    def after_session_end():
+        events.append('after_session_end')
+
+    @slash.hooks.register
+    def session_end():
+        events.append('session_end')
+
     suite.run()
 
-    assert len(events) == len(suite) * 2 == num_tests * 2
+    expected_session_cleanup = [
+        'before_session_cleanup',
+        ('session_cleanup', 2),
+        ('session_cleanup', 1),
+        'session_end',
+        'after_session_end',
+    ]
+    assert len(events) - len(expected_session_cleanup) == len(suite) * 2 == num_tests * 2
+
     expected = []
     for test_id in test_ids:
         expected.append(('test_start', test_id))
         expected.append(('test_cleanup', test_id))
+    expected.extend(expected_session_cleanup)
     assert events == expected
 
 
