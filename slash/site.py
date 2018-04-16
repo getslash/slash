@@ -34,7 +34,10 @@ def _load_local_slashrc(working_directory=None):
     path = os.path.expanduser(config.root.run.project_customization_file_path)
     if not os.path.isabs(path) and working_directory is not None:
         path = os.path.join(working_directory, path)
-    _load_file_if_exists(os.path.abspath(path))
+    path = os.path.abspath(path)
+    _load_file_if_exists(path)
+    if config.root.run.project_name is None:
+        config.root.run.project_name = os.path.basename(os.path.dirname(path))
 
 def _load_file_if_exists(path):
     if path is not None and os.path.isfile(path):
