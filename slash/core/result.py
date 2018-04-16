@@ -232,7 +232,8 @@ class Result(object):
             error.log_added()
             if append:
                 error_list.append(error)
-            if not context.session or not context.session.has_children():
+            #report children errors or parent session errors only
+            if not context.session or not context.session.has_children() or self.is_global_result():
                 hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             error.forget_exc_info()
             return error
@@ -300,6 +301,8 @@ class GlobalResult(Result):
             return False
         if self._session_results is None:
             return True
+        if self._session_results.session.has_children() and self._session_results.session.parallel_manager.server.worker_session_error_reported:
+            return False
         return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 
 

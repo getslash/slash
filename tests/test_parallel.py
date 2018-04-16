@@ -163,6 +163,26 @@ def test_session_warnings(parallel_suite):
     [w] = session_results.warnings
     assert w.message == 'message'
 
+def test_child_session_errors(parallel_suite):
+    parallel_suite[0].expect_failure()
+    parallel_suite[0].append_line("import slash")
+    parallel_suite[0].append_line("slash.context.session.results.global_result.add_error('bla')")
+    session_results = parallel_suite.run(num_workers=1, verify=False).session
+    assert not session_results.results.is_success()
+    assert session_results.parallel_manager.server.worker_session_error_reported
+
+def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
+    parallel_suite[0].expect_failure()
+    parallel_suite[0].append_line("import slash")
+    parallel_suite[0].append_line("def a():")
+    parallel_suite[0].append_line("   def _cleanup():")
+    parallel_suite[0].append_line("      slash.add_error('Session cleanup')")
+    parallel_suite[0].append_line("   slash.add_cleanup(_cleanup, scope='session')")
+    parallel_suite[0].append_line("a()")
+    session_results = parallel_suite.run(num_workers=1, verify=False).session
+    assert not session_results.results.is_success()
+    assert session_results.parallel_manager.server.worker_session_error_reported
+
 def test_traceback_vars(parallel_suite):
     #code to be inserted:
         #     def test_traceback_frames():

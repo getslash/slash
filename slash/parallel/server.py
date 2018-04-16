@@ -40,6 +40,7 @@ class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
         self.host = config.root.parallel.server_addr
+        self.worker_session_error_reported = False
         self.interrupted = False
         self.state = ServerStates.NOT_INITIALIZED
         self.port = None
@@ -183,6 +184,11 @@ class Server(object):
             context.session.warnings.add(warning)
         except TypeError:
             _logger.error('Error when deserializing warning, not adding it')
+
+    @server_func
+    def report_session_error(self, client_id, session_error):
+        self.worker_session_error_reported = True
+        _logger.error("Client_id {} sent session error: {}", client_id, session_error)
 
     def should_wait_for_request(self):
         return self.has_connected_clients() or self.has_more_tests()
