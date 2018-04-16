@@ -65,7 +65,7 @@ def run_tests(iterable, stop_on_error=None):
             complete = True
     finally:
         if config.root.parallel.worker_id is None:
-            context.session.scope_manager.flush_remaining_scopes()
+            context.session.initiate_cleanup()
 
     if config.root.parallel.worker_id is None:
         _mark_unrun_tests(test_iterator)
@@ -116,7 +116,7 @@ def _run_single_test(test, test_iterator):
                         controller.end()
 
                         with handling_exceptions(swallow=True):
-                            context.session.scope_manager.flush_remaining_scopes()
+                            context.session.initiate_cleanup()
 
                 except context.session.get_skip_exception_types():
                     pass

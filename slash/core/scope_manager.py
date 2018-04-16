@@ -39,6 +39,9 @@ class ScopeManager(object):
     def get_current_stack(self):
         return self._scopes[:]
 
+    def has_active_scopes(self):
+        return bool(self._scopes)
+
     def _push_scope(self, scope):
         self._scopes.append(scope)
         _logger.trace('Pushed scope {0}', scope)
@@ -54,5 +57,6 @@ class ScopeManager(object):
         _logger.trace('Popped scope {0}', popped)
 
     def flush_remaining_scopes(self):
+        _logger.trace('Flushing remaining scopes: {}', self._scopes)
         call_all_raise_first([functools.partial(self._pop_scope, s)
                               for s in self._scopes[::-1]])

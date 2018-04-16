@@ -27,6 +27,9 @@ _define('tests_loaded', doc='Called when Slash finishes loading a batch of tests
 _define('before_session_start', doc="Entry point which is called before session_start, useful for configuring plugins and other global resources")
 _define('after_session_start', doc="Second entry point for session start, useful for plugins relying on other plugins' session_start routine")
 
+_define('before_session_cleanup', doc="Called right before session cleanup begins")
+_define('after_session_end', doc="Called right after session_end hook")
+
 _define('configure', doc='Configuration hook that happens during commandline parsing, and before plugins are activated. It is a convenient point to override plugin activation settings')  # pylint: disable=line-too-long
 
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
