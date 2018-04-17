@@ -75,6 +75,7 @@ class CleanupManager(object):
                 raise IncorrectScope('Incorrect scope specified: {!r}'.format(scope_name))
             scope = self._scopes_by_name[scope_name][-1]
 
+        _logger.trace("Adding cleanup to scope {}: {}", scope, added)
         if scope is None:
             self._pending.append(added)
         else:
@@ -184,3 +185,6 @@ class _Scope(object):
         super(_Scope, self).__init__()
         self.name = name
         self.cleanups = []
+
+    def __repr__(self):
+        return "<Scope: {}>".format(self.name)
