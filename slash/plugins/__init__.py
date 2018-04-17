@@ -7,7 +7,6 @@ import sys
 from emport import import_file
 from sentinels import NOTHING
 from vintage import warn_deprecation
-
 import gossip
 import gossip.hooks
 
@@ -15,8 +14,11 @@ from .. import hooks
 from .._compat import itervalues, reraise
 from ..conf import config
 from ..utils.marks import mark, try_get_mark
+from ..utils import parallel_utils
 from .interface import PluginInterface
+import logbook
 
+_logger = logbook.Logger(__name__)
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 _DEPRECATED_CHARACTERS = '-_'
@@ -119,6 +121,23 @@ class PluginManager(object):
         plugin_name = plugin if isinstance(plugin, str) else plugin.get_name()
         return self._installed[plugin_name].is_internal
 
+    def _is_parallel_supported(self, plugin):
+        if not parallel_utils.is_parallel_session():
+            return False
+        plugin_parallel_mode = try_get_mark(plugin, 'parallel_mode', parallel_utils.ParallelPluginModes.ENABLED)
+        if plugin_parallel_mode == parallel_utils.ParallelPluginModes.ENABLED:
+            return False
+        if (plugin_parallel_mode == parallel_utils.ParallelPluginModes.DISABLED) \
+            or (plugin_parallel_mode == parallel_utils.ParallelPluginModes.PARENT_ONLY and parallel_utils.is_child_session()) \
+            or (plugin_parallel_mode == parallel_utils.ParallelPluginModes.CHILD_ONLY and parallel_utils.is_parent_session()):
+            return True
+        return False
+
+    def configure_for_parallel_mode(self):
+        for plugin in self.get_installed_plugins().values():
+            if self._is_parallel_supported(plugin):
+                self.deactivate_later(plugin)
+
     def install(self, plugin, activate=False, activate_later=False, is_internal=False):
         """
         Installs a plugin object to the plugin mechanism. ``plugin`` must be an object deriving from
@@ -199,6 +218,8 @@ class PluginManager(object):
         """
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
+        if self._is_parallel_supported(plugin):
+            _logger.warn("Activating plugin {} though it's configuration for parallel mode doesn't fit to current session".format(plugin.get_name()))
         plugin.activate()
         for hook, callback, kwargs in self._get_plugin_registrations(plugin):
             hook.register(callback, **kwargs)
@@ -398,6 +419,11 @@ def registers_on(hook_name):
     Specifying ``registers_on(None)`` means that this is not a hook entry point at all.
     """
     return mark("register_on", hook_name, append=True)
+
+def parallel_mode(state):
+    possible_values = parallel_utils.parallel_mark_values
+    assert state in possible_values, "parallel mode value must be one of {}".format(possible_values)
+    return mark("parallel_mode", state)
 
 def register_if(condition):
     """Marks the decorated plugins method to only be registered if *condition* is ``True``
