@@ -30,7 +30,7 @@ def _interact(ns):
 def _is_exception_in_ipython_eval(exc_tb):
     while exc_tb.tb_next is not None:
         exc_tb = exc_tb.tb_next
-    return exc_tb.tb_frame.f_code.co_filename.startswith('<')
+    return exc_tb.tb_frame.f_code.co_filename.lower().startswith('<ipython')
 
 def start_interactive_shell(**namespace):
     """
