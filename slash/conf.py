@@ -86,6 +86,7 @@ config = Config({
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
         "repeat_all": 1 // Doc("Repeat all suite a specified amount of times") // Cmdline(arg='--repeat-all', metavar="NUM_TIMES"),
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
+        "project_name": None,
         "project_customization_file_path": "./.slashrc",
         "user_customization_file_path": "~/.slash/slashrc",
         "resume_state_path": "~/.slash/session_states" // Doc("Path to store or load session's resume data"),
