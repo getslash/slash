@@ -242,3 +242,40 @@ Additionally, it provides access to instances of registered plugins by their nam
 This could be used to access plugin attributes whose modification (e.g. by fixtures) can alter the plugin's behavior.
 
 ..  LocalWords:  plugins Plugin plugin inheritence
+
+
+Plugins and Parallel Runs
+-------------------------
+
+.. index::
+   double: parallel; plugins
+
+Not all plugins can support :ref:`parallel execution <parallel>`, and for others implementing
+support for it can be much harder than supporting non-parallel runs alone.
+
+To deal with this, in addition to possible mistakes or corruption caused by plugins incorrectly used
+in parallel mode, Slash requires each plugin to indicate whether or not it supports parallel
+execution. The assumption is that by default plugins do not support parallel runs at all.
+
+To indicate that your plugin supports parallel execution, use the  :func:`plugins.parallel_mode
+<slash.plugins.parallel_mode>` marker:
+
+.. code-block:: python
+
+                from slash.plugins import PluginInterface, parallel_mode
+
+                @parallel_mode('enabled')
+                class MyPlugin(PluginInterface):
+                    ...
+
+``parallel_mode`` supports the following modes:
+
+* ``disabled`` - meaning the plugin does not support parallel execution at all. This is the default.
+* ``parent-only`` - meaning the plugin supports parallel execution, but should be active only on the
+  parent process.
+* ``child-only`` - meaning the plugin should only be activated on worker/child processes executing
+  the actual tests.
+* ``enabled`` - meaning the plugin supports parallel execution, both on parent and child.
+                 
+                
+ 

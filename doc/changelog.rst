@@ -2,6 +2,9 @@ Changelog
 =========
 
 * :bug:`783` Session errors in children are now handled and reported when running with parallel
+* :feature:`785` Plugins can now be marked to indicate whether or not they support parallel
+  execution, using ``slash.plugins.parallel_mode``. To avoid errors, Slash assumes that unmarked
+  plugins do not support parallel execution.
 * :feature:`779` Added ``config.root.run.project_name``, which can be configured to hold the name of the current project. It defaults to the name of the directory in which your project's .slashrc is located
 * :bug:`772 major` Fix handling exceptions which raised from None in interactive session
 * :feature:`782` Added new hooks: ``before_session_cleanup``, ``after_session_end``

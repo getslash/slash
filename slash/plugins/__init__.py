@@ -420,15 +420,22 @@ def registers_on(hook_name):
     """
     return mark("register_on", hook_name, append=True)
 
-def parallel_mode(state):
+
+def parallel_mode(mode):
+    """Marks compatibility of a specific plugin to parallel execution.
+
+    :param mode: Can be either ``disabled``, ``enabled``, ``parent-only`` or ``child-only``
+    """
     possible_values = parallel_utils.parallel_mark_values
-    assert state in possible_values, "parallel mode value must be one of {}".format(possible_values)
-    return mark("parallel_mode", state)
+    assert mode in possible_values, "parallel mode value must be one of {}".format(possible_values)
+    return mark("parallel_mode", mode)
+
 
 def register_if(condition):
     """Marks the decorated plugins method to only be registered if *condition* is ``True``
     """
     return mark("register_if", condition)
+
 
 def active(plugin_class):
     """Decorator for automatically installing and activating a plugin upon definition
@@ -441,7 +448,6 @@ def active(plugin_class):
 
 def needs(what):
     return mark("plugin_needs", what, append=True)
-
 
 def provides(what):
     return mark("plugin_provides", what, append=True)
