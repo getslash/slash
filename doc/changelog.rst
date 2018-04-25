@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`783` Session errors in children are now handled and reported when running with parallel
 * :feature:`779` Added ``config.root.run.project_name``, which can be configured to hold the name of the current project. It defaults to the name of the directory in which your project's .slashrc is located
 * :bug:`772 major` Fix handling exceptions which raised from None in interactive session
 * :feature:`782` Added new hooks: ``before_session_cleanup``, ``after_session_end``

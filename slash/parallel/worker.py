@@ -10,7 +10,6 @@ from ..hooks import register
 from ..ctx import context
 from ..runner import run_tests
 from ..conf import config
-
 _logger = logbook.Logger(__name__)
 
 class Worker(object):
@@ -34,6 +33,10 @@ class Worker(object):
             _logger.error("Failed to pickle warning. Message: {}, File: {}, Line: {}",
                           warning.message, warning.filename, warning.lineno)
 
+    def error_added(self, error, result):
+        if result.is_global_result():
+            self.client.report_session_error(self.client_id, error.message)
+
     def write_to_error_file(self, msg):
         try:
             file_name = "{}-{}.log".format(config.root.parallel.worker_error_file, self.client_id)
@@ -54,6 +57,7 @@ class Worker(object):
         if os.getpid() != os.getpgid(0):
             os.setsid()
         register(self.warning_added)
+        register(self.error_added)
         collection = [(test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id) for test in collected_tests]
 
         if not self.client.validate_collection(self.client_id, collection):
@@ -62,9 +66,9 @@ class Worker(object):
             return
 
         stop_event = threading.Event()
-        tr = threading.Thread(target=self.keep_alive, args=(stop_event,))
-        tr.setDaemon(True)
-        tr.start()
+        watchdog_thread = threading.Thread(target=self.keep_alive, args=(stop_event,))
+        watchdog_thread.setDaemon(True)
+        watchdog_thread.start()
         should_stop = False
         with app.session.get_started_context():
             try:
@@ -99,10 +103,10 @@ class Worker(object):
             else:
                 context.session.mark_complete()
                 stop_event.set()
-                tr.join()
+                watchdog_thread.join()
+                context.session.initiate_cleanup()
                 self.client.disconnect(self.client_id)
             finally:
-                context.session.initiate_cleanup()
                 if not stop_event.is_set():
                     stop_event.set()
-                    tr.join()
+                    watchdog_thread.join()
