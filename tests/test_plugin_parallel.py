@@ -7,7 +7,7 @@ import slash.plugins
 
 
 @pytest.mark.parametrize('session_state', ['not_parallel', 'parent', 'child'])
-@pytest.mark.parametrize('plugin_parallel_mode', parallel_utils.parallel_mark_values)
+@pytest.mark.parametrize('plugin_parallel_mode', parallel_utils.ParallelPluginModes.MODES)
 def test_parallel_mode(plugin, config_override, session_state, plugin_parallel_mode):
     slash.plugins.manager._pending_deactivation = set()
 
