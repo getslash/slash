@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`528` ``slash.exclude`` can now exclude combinations of parameter values
 * :bug:`783` Session errors in children are now handled and reported when running with parallel
 * :feature:`785` Plugins can now be marked to indicate whether or not they support parallel
   execution, using ``slash.plugins.parallel_mode``. To avoid errors, Slash assumes that unmarked
