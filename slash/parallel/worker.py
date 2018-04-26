@@ -102,9 +102,9 @@ class Worker(object):
                 raise
             else:
                 context.session.mark_complete()
+                context.session.initiate_cleanup()
                 stop_event.set()
                 watchdog_thread.join()
-                context.session.initiate_cleanup()
                 self.client.disconnect(self.client_id)
             finally:
                 if not stop_event.is_set():
