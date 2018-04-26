@@ -4,7 +4,7 @@ from ...conf import config
 from ...ctx import session
 from ...exception_handling import handling_exceptions
 from ...utils.conf_utils import Cmdline
-
+from slash.plugins import parallel_mode
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from vintage import warn_deprecation
@@ -81,7 +81,7 @@ class Message(object):
         return self._get_html_template().render(message=self, **self.kwargs)
 
 
-
+@parallel_mode('parent-only')
 class Plugin(PluginInterface):
     """Enables notifications for successful and failed test runs through various providers (NMA, Prowl, Pushover etc.)
     For more information see https://slash.readthedocs.org/en/master/builtin_plugins.html#notifications
