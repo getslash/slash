@@ -58,21 +58,28 @@ class Metadata(object):
     def file_path(self):
         return self._file_path
 
-    @property
-    def address(self):
+    def get_address(self, raw_params=False):
         """
         String identifying the test, to be used when logging or displaying
         results in the console generally it is composed of the file path and
         the address inside the file
+
+        :param raw_params: If ``True``, emit the full parametrization values are interpolated into the returned
+           string
         """
         if self._address_override is not None:
             return self._address_override
 
         returned = '{}:{}'.format(self.file_path, self.address_in_file)
         if self.variation:
-            returned += '({})'.format(self.variation.safe_repr)
+            returned += '({})'.format(
+                ', '.join('{}={!r}'.format(key, value) for key, value in self.variation.values.items())
+                if raw_params
+                else self.variation.safe_repr
+            )
         return returned
 
+    address = property(get_address)
 
     def allocate_id(self):
         assert self.id is None

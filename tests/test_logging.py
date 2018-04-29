@@ -270,12 +270,51 @@ def test_log_names_with_timestamps(files_dir, config_override, suite):
     config_override('log.subpath', '{timestamp:%Y-%m-%d-%H%M%S}/test.log')
     suite.run()
 
+
+@pytest.mark.parametrize('raw_values', [True, False])
+def test_show_raw_param_values(suite_builder, raw_values, config_override, unified_session_log_path):
+    config_override('log.show_raw_param_values', raw_values)
+
+
+    # pylint: disable=unused-variable
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash # pylint: disable=redefined-outer-name, reimported
+
+
+        @slash.parametrize('param', [object()])
+        def test_1(param):
+            pass
+
+    res = suite_builder.build().run().assert_success(1).slash_app.session.results
+    with unified_session_log_path.open() as f:
+        log_text = f.read()
+
+
+    raw_log = 'param=<object object at 0x'
+
+    if raw_values:
+        assert raw_log in log_text
+    else:
+        assert 'test_1(param=param0)' in log_text
+        assert raw_log not in log_text
+
+
 ################################################################################
 ## Fixtures
+
+@pytest.fixture
+def unified_session_log_path(logs_dir, config_override):
+    config_override('log.root', str(logs_dir))
+    config_override('log.session_subpath', 'session.log')
+    config_override('log.unified_session_log', True)
+    return logs_dir.join('session.log')
+
 
 @pytest.fixture(autouse=True)
 def override_log_level(config_override):
     config_override('log.core_log_level', logbook.TRACE)
+
 
 @pytest.fixture
 def session():

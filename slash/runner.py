@@ -46,7 +46,13 @@ def run_tests(iterable, stop_on_error=None):
                 context.session.reporter.report_file_start(test_filename)
                 last_filename = test_filename
             context.session.reporter.report_test_start(test)
-            _logger.notice("#{}: {}", test.__slash__.test_index1, test.__slash__.address, extra={'highlight': True, 'filter_bypass': True})
+            _logger.notice(
+                "#{}: {}",
+                test.__slash__.test_index1,
+                test.__slash__.get_address(
+                    raw_params=config.root.log.show_raw_param_values
+                ),
+                extra={'highlight': True, 'filter_bypass': True})
 
             _run_single_test(test, test_iterator)
 
