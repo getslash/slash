@@ -1,6 +1,7 @@
 import pytest
 import slash.plugins
 from .conftest import Checkpoint
+from .utils import maybe_decorate
 from slash.plugins import PluginInterface
 from gossip.exceptions import CannotResolveDependencies
 
@@ -10,20 +11,20 @@ from gossip.exceptions import CannotResolveDependencies
 def test_needs_provides_plugin_name(needs_decorate_method, provides_decorate_method, checkpoint1, checkpoint2):
 
     @slash.plugins.active  # pylint: disable=abstract-method, unused-variable
-    @_maybe_decorate(slash.plugins.needs('p'), not needs_decorate_method)
+    @maybe_decorate(slash.plugins.needs('p'), not needs_decorate_method)
     @autoname
     class NeedsPlugin(PluginInterface):
 
-        @_maybe_decorate(slash.plugins.needs('p'), needs_decorate_method)
+        @maybe_decorate(slash.plugins.needs('p'), needs_decorate_method)
         def session_start(self):
             checkpoint2()
 
     @slash.plugins.active  # pylint: disable=abstract-method, unused-variable
-    @_maybe_decorate(slash.plugins.provides('p'), not provides_decorate_method)
+    @maybe_decorate(slash.plugins.provides('p'), not provides_decorate_method)
     @autoname
     class ProvidesPlugin(PluginInterface):
 
-        @_maybe_decorate(slash.plugins.provides('p'), provides_decorate_method)
+        @maybe_decorate(slash.plugins.provides('p'), provides_decorate_method)
         def session_start(self):
             checkpoint1()
 
@@ -253,13 +254,13 @@ def test_provides_needs_with_inheritence_on_class_level(checkpoint, checkpoint1,
     '''
     # pylint: disable=abstract-method
 
-    @_maybe_decorate(slash.plugins.provides('x'), provides_parent_level)
+    @maybe_decorate(slash.plugins.provides('x'), provides_parent_level)
     class PluginAParent(slash.plugins.interface.PluginInterface):
 
         def test_start(self):
             pass
 
-    @_maybe_decorate(slash.plugins.provides('x'), not provides_parent_level)
+    @maybe_decorate(slash.plugins.provides('x'), not provides_parent_level)
     class PluginA(PluginAParent):
 
         def get_name(self):
@@ -269,14 +270,14 @@ def test_provides_needs_with_inheritence_on_class_level(checkpoint, checkpoint1,
             checkpoint1()
 
 
-    @_maybe_decorate(slash.plugins.needs('x'), needs_parent_level)
+    @maybe_decorate(slash.plugins.needs('x'), needs_parent_level)
     class PluginBParent(slash.plugins.interface.PluginInterface):
 
         def error_added(self, result, error): # pylint: disable=unused-argument
             checkpoint()
 
 
-    @_maybe_decorate(slash.plugins.needs('x'), not needs_parent_level)
+    @maybe_decorate(slash.plugins.needs('x'), not needs_parent_level)
     class PluginB(PluginBParent):
 
         def get_name(self):
@@ -561,14 +562,6 @@ def test_provides_needs_with_child_overrides():
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_end()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x', 'y', 'z'])
-
-def _maybe_decorate(decorator, flag):
-
-    def returned(func):
-        if flag:
-            func = decorator(func)
-        return func
-    return returned
 
 
 def autoname(plugin):
