@@ -36,10 +36,13 @@ def active(plugin_class):
 
     return plugin_class
 
+
 def needs(what):
     return mark("plugin_needs", what, append=True)
+
 
 def provides(what):
     return mark("plugin_provides", what, append=True)
 
-from .plugin_manager import manager, IncompatiblePlugin, UnknownPlugin, IllegalPluginName
+
+from .plugin_manager import manager, IncompatiblePlugin, UnknownPlugin, IllegalPluginName # pylint: disable=unused-import
