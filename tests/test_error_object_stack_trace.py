@@ -55,7 +55,7 @@ def error(get_error_adder, use_exception):
 
     with slash.Session() as s:
         f1()
-    [err] = s.results.global_result.get_errors()
+    [err] = s.results.global_result.get_errors() # pylint: disable=unbalanced-tuple-unpacking
     return err
 
 
