@@ -1,9 +1,11 @@
 import collections
 import gossip
+import itertools
 import os
 import re
 import sys
 from .interface import PluginInterface
+from .registration_info import RegistrationInfo
 from .._compat import itervalues, reraise
 from ..utils.marks import try_get_mark
 from ..utils import parallel_utils
@@ -16,7 +18,6 @@ import logbook
 
 _logger = logbook.Logger(__name__)
 
-RegistrationInfo = collections.namedtuple("RegistrationInfo", ("hook_name", "expect_exists"))
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 PluginInfo = collections.namedtuple("PluginInfo", ("plugin_instance", "is_internal"))
 _DEPRECATED_CHARACTERS = '-_'
@@ -346,11 +347,11 @@ class PluginManager(object):
             registration_list = try_get_mark(method, 'register_on', NOTHING)
 
             if registration_list is not NOTHING:
-                registration_list = [RegistrationInfo(hook_name, False) for hook_name in registration_list]
+                registration_list = registration_list[:]
             else:
                 if method_name.startswith('_'):
                     continue
-                registration_list = [RegistrationInfo("slash.{}".format(method_name), True)]
+                registration_list = [RegistrationInfo("slash.{}".format(method_name), expect_exists=True)]
 
             for registration_info in registration_list:
                 if registration_info.hook_name is None:
@@ -360,8 +361,17 @@ class PluginManager(object):
                 if not try_get_mark(method, 'register_if', True):
                     continue
 
-                plugin_needs = try_get_mark(method, 'plugin_needs', []) + global_needs
-                plugin_provides = try_get_mark(method, 'plugin_provides', []) + global_provides
+                plugin_needs = list(
+                    itertools.chain(
+                        try_get_mark(method, 'plugin_needs', []),
+                        global_needs,
+                        registration_info.register_kwargs.get('needs', [])))
+
+                plugin_provides = list(
+                    itertools.chain(
+                        try_get_mark(method, 'plugin_provides', []),
+                        global_provides,
+                        registration_info.register_kwargs.get('provides', [])))
 
                 try:
                     if registration_info.expect_exists:
@@ -377,11 +387,12 @@ class PluginManager(object):
                 assert hook is not None
                 register_no_op_hooks.discard(registration_info.hook_name)
 
-                kwargs = {
+                kwargs = registration_info.register_kwargs.copy()
+                kwargs.update({
                     'needs': plugin_needs,
                     'provides': plugin_provides,
                     'token': self._get_token(plugin_name),
-                }
+                })
                 if registration_info.hook_name == 'slash.session_start':
                     has_session_start = True
                     kwargs['toggles_on'] = plugin.__toggles__['session']
