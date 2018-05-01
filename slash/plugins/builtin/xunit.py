@@ -12,7 +12,8 @@ from slash import context
 from xml.etree.ElementTree import (
     tostring as xml_to_string,
     Element as E,
-    )
+    SubElement as SE
+)
 
 class Plugin(PluginInterface):
     """
@@ -48,6 +49,27 @@ class Plugin(PluginInterface):
     def _get_test_case_element(self, test):
         return E('testcase', dict(name=str(test), classname="{}.{}".format(test.__class__.__module__, test.__class__.__name__), time="0"))
 
+    def _detail2xml(self, tag, name, value):
+        r = E(tag, {'name': name})
+        if isinstance(value, (dict, tuple, list)):
+            r = self._build_xml(r, value)
+        else:
+            r.attrib['value'] = value
+        return r
+
+    def _build_xml(self, r, d):
+        if isinstance(d, dict):
+            for k, v in d.iteritems():
+                s = SE(r, k)
+                self._build_xml(s, v)
+        elif isinstance(d, (tuple, list)):
+            for v in d:
+                s = SE(r, 'i')
+                self._build_xml(s, v)
+        else:
+            r.text = str(d)
+        return r
+
     def session_end(self):
 
         if config.root.parallel.worker_id is not None:
@@ -76,12 +98,14 @@ class Plugin(PluginInterface):
                 self._add_element(test, 'skipped', {'type': skip or ''})
 
             for detail_name, detail_value in result.details.all().items():
-                self._add_element(test, 'detail', {'name': detail_name, 'value': detail_value})
+                if not isinstance(detail_value, list):
+                    detail_value = [detail_value]
+
+                for value in detail_value:
+                    value = self._detail2xml('detail', detail_name, value)
+                    test.append(value)
 
             e.append(test)
-
-
-
 
         with open(slash_config.root.plugin_config.xunit.filename, "wb") as outfile:
             outfile.write(xml_to_string(e))
