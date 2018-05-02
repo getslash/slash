@@ -100,9 +100,6 @@ class Metadata(object):
 
     def mark_interactive(self):
         self._interactive = True
-        self.set_file_path('<Interactive>')
-        self.set_test_full_name('Interactive')
-        self.factory_name = 'Interactive'
         self.set_sort_key(0)
 
     @property
