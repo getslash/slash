@@ -53,6 +53,9 @@ def generate_interactive_test():
     returned.__slash__ = metadata.Metadata(None, returned)
     returned.__slash__.allocate_id()
     returned.__slash__.mark_interactive()
+    returned.__slash__.set_file_path('<Interactive>')
+    returned.__slash__.set_test_full_name('Interactive')
+    returned.__slash__.factory_name = 'Interactive'
     return returned
 
 def _humanize_time_delta(seconds):
