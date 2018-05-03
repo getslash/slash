@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`672` Support dynamic parameters, computed only once the test using them actually starts
 * :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
 * :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
 * :release:`1.6.0 <6-5-2018>`

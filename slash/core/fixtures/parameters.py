@@ -2,18 +2,20 @@ import operator
 import re
 from contextlib import contextmanager
 from sentinels import NOTHING
-
+from ...conf import config
 from ..._compat import iteritems
 from ...exceptions import ParameterException
 from ...exception_handling import mark_exception_frame_correction
 from ...utils.python import wraps, get_argument_names
 from .fixture_base import FixtureBase
 from .utils import FixtureInfo, get_scope_by_name
+import logbook
+logger = logbook.Logger(__name__)
 
 _PARAM_INFO_ATTR_NAME = '__slash_parametrize__'
 
 
-def parametrize(parameter_name, values):
+def parametrize(parameter_name, values, compute=None):
     """Decorator to create multiple test cases out of a single function or module, where the cases vary by the value of ``parameter_name``,
     as iterated through ``values``.
     """
@@ -38,7 +40,7 @@ def parametrize(parameter_name, values):
         else:
             returned = func
 
-        params.add_options(parameter_name, values)
+        params.add_options(parameter_name, values, compute)
         return returned
 
     return decorator
@@ -95,7 +97,7 @@ class ParameterizationInfo(object):
         self._extra_params = {}
         self.path = '{}:{}'.format(func.__module__, func.__name__)
 
-    def add_options(self, param_name, values):
+    def add_options(self, param_name, values, compute):
         if param_name in self._params:
             raise ParameterException('{!r} already parametrized for {}'.format(
             param_name, self.path))
@@ -106,7 +108,7 @@ class ParameterizationInfo(object):
         else:
             names = param_name
 
-        values = _normalize_values(values, num_params=len(names))
+        values = _normalize_values(values, num_params=len(names), compute=compute)
 
         p = Parametrization(values=values, path='{}.{}'.format(self.path, param_name))
         for index, name in enumerate(names):
@@ -144,13 +146,13 @@ class Parametrization(FixtureBase):
         self.scope = get_scope_by_name('test')
         self.transform = transform
 
-    def get_value_by_index(self, index):
-        return self.transform(self._compute_value(self.values[index]))
+    def get_value_by_index(self, index, compute=False):
+        return self.transform(self._compute_value(self.values[index], compute=compute))
 
-    def _compute_value(self, param):
+    def _compute_value(self, param, compute=False):
         if isinstance(param, list):
-            return [p.value for p in param]
-        return param.value
+            return [p.compute_value() for p in param] if compute else [p.get_value() for p in param]
+        return param.compute_value() if compute else param.get_value()
 
     def is_parameter(self):
         return True
@@ -174,42 +176,63 @@ class Parametrization(FixtureBase):
 
 class ParametrizationValue(object):
 
-    def __init__(self, label, value=NOTHING):
+    def __init__(self, label, value=NOTHING, compute=None):
         super(ParametrizationValue, self).__init__()
         self._validate_label(label)
         self.label = label
-        self.value = value
+        self._value = value
+        if compute is not None:
+            assert callable(compute)
+        self._compute = compute
+
+    def compute_value(self):
+        if self._compute is not None:
+            self._value = self._compute()
+            if config.root.log.show_raw_param_values:
+                logger.info("Value of parameter {} changed to {}", self.label, self._value)
+        return self._value
+
+    def get_value(self):
+        return self._value
+
+    def get_compute(self):
+        return self._compute
 
     def _validate_label(self, label):
         if isinstance(label, str) and not re.match(r'^[a-zA-Z_][0-9a-zA-Z_]{0,29}$', label):
             raise RuntimeError('Invalid label: {!r}'.format(label))
 
     def __rfloordiv__(self, other):
-        assert self.value is NOTHING, 'Parameter already has a value'
-        self.value = other
+        assert self._value is NOTHING, 'Parameter already has a value'
+        self._value = other
         return self
 
 
-def _normalize_values(values, num_params=1):
+def _normalize_values(values, num_params=1, compute=None):
     returned = []
     for index, value in enumerate(values):
+        param = _normalize_single_value(value, default_label=index, compute=compute)
+        if num_params > 1 and param.get_compute() is None:
+            if not isinstance(param.get_value(), (tuple, list)):
+                raise RuntimeError('Invalid parametrization value (expected sequence): {!r}'.format(param.get_value()))
+            if len(param.get_value()) != num_params:
+                raise RuntimeError('Invalid parametrization value (invalid length, expected {}): {!r}'.format(num_params, param.get_value()))
 
-        value = _normalize_single_value(value, default_label=index)
-        if num_params > 1:
-            if not isinstance(value.value, (tuple, list)):
-                raise RuntimeError('Invalid parametrization value (expected sequence): {!r}'.format(value.value))
-            if len(value.value) != num_params:
-                raise RuntimeError('Invalid parametrization value (invalid length, expected {}): {!r}'.format(num_params, value.value))
-
-        returned.append(value)
+        returned.append(param)
     return returned
 
 
-def _normalize_single_value(value, default_label):
-    if not isinstance(value, ParametrizationValue):
-        value = ParametrizationValue(label=default_label, value=value)
-    if value.value is NOTHING:
+def _normalize_single_value(value, default_label, compute=None):
+    if isinstance(value, ParametrizationValue):
+        compute = value.get_compute()
+    else:
+        value = ParametrizationValue(label=default_label, value=value, compute=compute)
+    if compute is None and value.get_value() is NOTHING:
         raise mark_exception_frame_correction(
             RuntimeError('Parameter {} has no value defined!'.format(value.label)),
+            +4)
+    if compute is not None and value.get_value() is not NOTHING:
+        raise mark_exception_frame_correction(
+            RuntimeError('Parameter {} has both value and compute defined!'.format(value.label)),
             +4)
     return value

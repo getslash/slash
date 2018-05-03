@@ -11,12 +11,12 @@ from .utils.code_formatter import CodeFormatter
 
 
 def test_safe_repr_parameters(fixture_store, parametrized_func, params, param_names):
-
     variations = list(
         fixture_store.iter_parametrization_variations(funcs=[parametrized_func]))
 
     cartesian_product = list(iter_cartesian_dicts(params))
-
+    for variation in variations:
+        variation.resolve_static_values()
     assert len(variations) == len(cartesian_product)
     variation_names = set(str(v.safe_repr) for v in variations)
     assert len(variation_names) == len(cartesian_product)
@@ -47,7 +47,8 @@ def test_safe_repr_fixtures(fixture_store):
 
     variations = list(
         fixture_store.iter_parametrization_variations(funcs=[test_func]))
-
+    for variation in variations:
+        variation.resolve_static_values()
     assert len(variations) == len(first_param_values) * len(second_param_values)
 
     assert set(str(variation.safe_repr) for variation in variations) == {

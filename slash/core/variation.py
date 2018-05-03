@@ -1,6 +1,7 @@
 from numbers import Number
 import string
 
+from .. import hooks
 from .._compat import string_types
 
 _PRINTABLE_TYPES = (Number,) + string_types
@@ -23,15 +24,42 @@ class Variation(object):
         self.id = {}
         self.values = {}
         self.labels = {}
+        self.params = {}
         for param_name, param in param_name_bindings.items():
             value_index = self.id[param_name] = param_value_indices[param.info.id]
-            self.values[param_name] = param.get_value_by_index(value_index)
+            self.params[param_name] = param
             self.labels[param_name] = param.values[value_index].label
         self.safe_repr = self._get_safe_repr()
 
+    def resolve_static_values(self):
+        if self.values:
+            return
+        for param_name, param in self.params.items():
+            self.values[param_name] = param.get_value_by_index(self.id[param_name])
+        self.safe_repr = self._get_safe_repr()
+
+    def resolve_dynamic_values(self):
+        for param_name, param in self.params.items():
+            self.values[param_name] = param.get_value_by_index(self.id[param_name], compute=True)
+        self.safe_repr = self._get_safe_repr()
+        hooks.after_parameters_computation() # pylint: disable=no-member
+
+    def get_computed_parameter_names(self):
+        ret = []
+        for name, parametrization in self.params.items():
+            if len(parametrization.values) == 1 and parametrization.values[0].get_compute() is not None:
+                ret += name
+        return ret
+
+    def forget_computed_parameter_values(self):
+        for param_name in self.get_computed_parameter_names():
+            self.values[param_name] = None
+        self.safe_repr = self._get_safe_repr()
+
     def _get_safe_repr(self):
+        iterable = self.values if self.values else self.params
         returned = {}
-        for name, value in self.values.items():
+        for name, value in iterable.items():
             returned[name] = self._format_parameter_value_safe(name, value)
         return ','.join('{}={}'.format(key, returned[key]) for key in sorted(returned))
 
