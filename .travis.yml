@@ -31,3 +31,4 @@ deploy:
     on:
       tags: true
       repo: getslash/slash
+      python: "3.6"
