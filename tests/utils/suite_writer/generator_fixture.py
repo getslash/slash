@@ -18,15 +18,15 @@ class GeneratorFixture(Function):
         super(GeneratorFixture, self)._write_decorators(code_formatter)
 
     def _get_function_name(self):
-        return 'fx_{0}'.format(self.id)
+        return 'fx_{}'.format(self.id)
 
     def _write_return(self, code_formatter):
         for value in self.values:
             code_formatter.writeln(
-                'yield {0!r}'.format(value))
+                'yield {!r}'.format(value))
 
     def _get_argument_strings(self):
         return []
 
     def __repr__(self):
-        return '<Generator Fixture {0}>'.format(self.name)
+        return '<Generator Fixture {}>'.format(self.name)

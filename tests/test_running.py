@@ -10,7 +10,7 @@ from slash.runner import run_tests
 @pytest.mark.parametrize('adder', ['add_failure', 'add_error'])
 def test_stop_on_error_with_error_and_skip(suite, adder):
     suite_test = suite[2]
-    suite_test.append_line('slash.{0}("err")'.format(adder))
+    suite_test.append_line('slash.{}("err")'.format(adder))
     suite_test.append_line('slash.skip_test()')
     suite_test.expect_skip()
 
@@ -59,7 +59,7 @@ def test_simple_run(suite):
 
 def test_iter_results_ordering(suite):
     for index, test in enumerate(suite):
-        test.append_line('slash.context.result.data["index"] = {0}'.format(index))
+        test.append_line('slash.context.result.data["index"] = {}'.format(index))
 
     results = list(suite.run().session.results.iter_test_results())
 
@@ -156,13 +156,13 @@ def fatal_error_adder(request, failure_type):
         if request.param == 'raising':
             test.append_line(
                 'from slash.exception_handling import mark_exception_fatal')
-            test.append_line('raise mark_exception_fatal({0}())'.format('AssertionError' if failure_type == 'failure' else 'Exception'))
+            test.append_line('raise mark_exception_fatal({}())'.format('AssertionError' if failure_type == 'failure' else 'Exception'))
         elif request.param == 'adding':
-            test.append_line('slash.add_{0}("msg").mark_fatal()'.format(failure_type))
+            test.append_line('slash.add_{}("msg").mark_fatal()'.format(failure_type))
         else:
             raise NotImplementedError() # pragma: no cover
 
-        getattr(test, 'expect_{0}'.format(failure_type))()
+        getattr(test, 'expect_{}'.format(failure_type))()
     return adder
 
 

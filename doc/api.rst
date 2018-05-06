@@ -90,6 +90,8 @@ Plugins
 
 .. autofunction:: slash.plugins.active
 
+.. autofunction:: slash.plugins.parallel_mode
+
 .. autofunction:: slash.plugins.registers_on
 
 .. autofunction:: slash.plugins.register_if

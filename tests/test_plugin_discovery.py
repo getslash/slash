@@ -25,7 +25,7 @@ def expected_names(root_path):
             "a/p3.py",
             "a/b/c/p4.py",
     ]):
-        plugin_name = "auto_plugin_{0}".format(index)
+        plugin_name = "auto_plugin_{}".format(index)
         path = os.path.join(root_path, path)
         if not os.path.isdir(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))

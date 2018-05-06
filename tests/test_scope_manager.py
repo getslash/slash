@@ -80,7 +80,7 @@ def tests_by_module():
 
     with slash.Session():
         for module_index in range(num_modules):
-            module_name = '__module_{0}'.format(module_index)
+            module_name = '__module_{}'.format(module_index)
             returned.append([])
             for test_index in range(num_tests_per_module):  # pylint: disable=unused-variable
                 [test] = make_runnable_tests(test_func)  # pylint: disable=unbalanced-tuple-unpacking

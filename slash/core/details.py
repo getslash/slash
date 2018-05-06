@@ -17,7 +17,7 @@ class Details(object):
         """
         lst = self._details.setdefault(key, [])
         if not isinstance(lst, list):
-            raise TypeError('Cannot append value to a {0.__class__.__name__!r} value'.format(lst))
+            raise TypeError('Cannot append value to a {.__class__.__name__!r} value'.format(lst))
         lst.append(value)
         if self._set_callback is not None:
             self._set_callback(key, lst)

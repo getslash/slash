@@ -123,7 +123,7 @@ class Error(object):
             return self.traceback.cause.func_name
 
     def __repr__(self):
-        return self.message
+        return '<{0.__class__.__name__}: {0.message}>'.format(self)
 
     def get_detailed_traceback_str(self):
         """Returns a formatted traceback string for the exception caught
@@ -143,12 +143,12 @@ class Error(object):
                                     if index == 0:
                                         f.writeln(title)
                                         f.indent()
-                                    f.writeln(' - {0}: {1}'.format(var_name, var_repr['value']))
+                                    f.writeln(' - {}: {}'.format(var_name, var_repr['value']))
                             f.dedent()
             self._cached_detailed_traceback_str = stream.getvalue()
 
         return self._cached_detailed_traceback_str
 
     def get_detailed_str(self):
-        return '{0}*** {1}'.format(
+        return '{}*** {}'.format(
             self.get_detailed_traceback_str(), self)

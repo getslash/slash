@@ -61,7 +61,7 @@ class TerminalWriterWrapper(object):
         """Write a left-justified line filled with the separator until the end of the line"""
 
         self._do_write(
-            '{0} {1}\n'.format(msg, sep * ((self._get_full_width() - 1 - len(msg)) // len(sep))), **kw)
+            '{} {}\n'.format(msg, sep * ((self._get_full_width() - 1 - len(msg)) // len(sep))), **kw)
 
     def write_box(self, headline, msg, **kw):
         box_width = min(self._get_full_width(), 60)
@@ -73,16 +73,16 @@ class TerminalWriterWrapper(object):
 
         def write_line(line_to_write):
             eol_padding = box_width - (len(line_to_write) + 3)
-            self._do_write('* {0}{1}*\n'.format(line_to_write, ' ' * eol_padding), **kw)
+            self._do_write('* {}{}*\n'.format(line_to_write, ' ' * eol_padding), **kw)
 
-        self._do_write('\n** {0} {1}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)
+        self._do_write('\n** {} {}\n'.format(headline, '*' * (box_width - (len(headline) + 4))), **kw)
         for line in msg.split('\n'):
             if not line:
                 write_line('')
             else:
                 for sub_line in wrap(line, line_width):
                     write_line(sub_line)
-        self._do_write('{0}\n\n'.format('*' * box_width), **kw)
+        self._do_write('{}\n\n'.format('*' * box_width), **kw)
 
     def sep(self, *args, **kw):
         self._line = ''
@@ -131,7 +131,7 @@ class ConsoleReporter(ReporterInterface):
 
     def report_before_debugger(self, exc_info):
         self.notify_before_console_output()
-        self._terminal.write('Exception caught in debugger: {0} {1}\n'.format(
+        self._terminal.write('Exception caught in debugger: {} {}\n'.format(
             exc_info[0], exc_info[1]), **theme('inline-error'))
         self.notify_after_console_output()
 
@@ -151,7 +151,7 @@ class ConsoleReporter(ReporterInterface):
         elif stillworking:
             return
 
-        self._terminal.write('{0} tests collected{1}'.format(
+        self._terminal.write('{} tests collected{}'.format(
             len(collected), '...' if stillworking else '   \n'), white=True, bold=True)
 
     def _is_verbose(self, level):
@@ -185,12 +185,13 @@ class ConsoleReporter(ReporterInterface):
             session.results.get_num_successful(
             ), session.results.get_num_skipped(include_not_run=False),
             session.results.get_num_failures(), session.results.get_num_errors())
-
         not_run = session.results.get_num_not_run()
         if not_run:
-            msg += ' {0} not run.'.format(not_run)
+            msg += ' {} not run.'.format(not_run)
+        if session.has_children() and session.parallel_manager.server.worker_session_error_reported:
+            msg += " Found session errors in children."
 
-        msg += ' Total duration: {0}'.format(
+        msg += ' Total duration: {}'.format(
             self._format_duration(session.duration))
         self._terminal.sep('=', msg, **header_format)
 
@@ -208,7 +209,7 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_test_summary_header(self, index, test_result):
         self._terminal.lsep(
-            "=", '== #{0}: {1}'.format(index + 1, test_result.test_metadata.address), **theme('test-error-header'))
+            "=", '== #{}: {}'.format(index + 1, test_result.test_metadata.address), **theme('test-error-header'))
 
     def _get_result_info_generators(self, test_result):
         returned = []
@@ -226,13 +227,13 @@ class ConsoleReporter(ReporterInterface):
         for i, (_, warnings) in iteration(iteritems(warnings_by_key)):
             if i.first:
                 self._terminal.sep(
-                    '=', 'Warnings ({0} total)'.format(len(session.warnings)), yellow=True)
+                    '=', 'Warnings ({} total)'.format(len(session.warnings)), yellow=True)
             self._terminal.write(
                 ' * {d[filename]}:{d[lineno]:03} -- '.format(d=warnings[0].details), yellow=True)
             self._terminal.write(
                 warnings[0].details['message'], yellow=True, bold=True)
             self._terminal.write(
-                ' (Repeated {0} times)\n'.format(len(warnings)), yellow=True)
+                ' (Repeated {} times)\n'.format(len(warnings)), yellow=True)
 
     def _verobsity_allows(self, level):
         return self._level <= level
@@ -251,10 +252,10 @@ class ConsoleReporter(ReporterInterface):
                 len(all_errs),
                 err_type,
                 err.time.to('local'),
-                ' - {0}'.format(err.message) if not err.traceback else '')
+                ' - {}'.format(err.message) if not err.traceback else '')
             self._terminal.lsep(' -', err_header, **theme('error-separator-dash'))
             if err.has_custom_message():
-                self._terminal.write(' {0}\n'.format(err.message), **theme('tb-error-message'))
+                self._terminal.write(' {}\n'.format(err.message), **theme('tb-error-message'))
             self._report_traceback(err_type, err)
 
     def _report_traceback(self, err_type, err):
@@ -271,7 +272,7 @@ class ConsoleReporter(ReporterInterface):
                 if not frame_iteration.first:
                     self._terminal.sep('- ')
             self._terminal.write(
-                ' {0}:{1}\n'.format(frame.filename, frame.lineno), **theme('tb-frame-location'))
+                ' {}:{}\n'.format(frame.filename, frame.lineno), **theme('tb-frame-location'))
 
             if console_traceback_level >= ALL_FRAMES_WITH_CONTEXT_AND_VARS:
                 self._write_frame_locals(frame)
@@ -296,7 +297,7 @@ class ConsoleReporter(ReporterInterface):
         for index, (key, value) in enumerate(detail_items):
             if index == 0:
                 self._terminal.write(' - Additional Details:\n', **theme('test-additional-details-header'))
-            self._terminal.write('    > {0}: {1!r}\n'.format(key, value), **theme('test-additional-details'))
+            self._terminal.write('    > {}: {!r}\n'.format(key, value), **theme('test-additional-details'))
 
     def _indent_with(self, text, indent):
         if isinstance(indent, int):
@@ -307,7 +308,7 @@ class ConsoleReporter(ReporterInterface):
         msg = '\tSkipped'
         skip_reasons = [r for r in result.get_skips() if r is not None]
         if skip_reasons:
-            msg += ' ({0})'.format(', '.join(skip_reasons))
+            msg += ' ({})'.format(', '.join(skip_reasons))
         msg += '\n'
 
         self._terminal.write(msg, **theme('test-skip-message'))
@@ -322,7 +323,7 @@ class ConsoleReporter(ReporterInterface):
             if index > 0:
                 self._terminal.write(', ')
             self._terminal.write(
-                '    {0}: '.format(name), **theme('frame-local-varname'))
+                '    {}: '.format(name), **theme('frame-local-varname'))
             self._terminal.write(value['value'])
         self._terminal.write('\n\n')
 
@@ -394,7 +395,7 @@ class ConsoleReporter(ReporterInterface):
     def _report_test_error_failure_added(self, test, e, errtype):  # pylint: disable=unused-argument
         if test is None:
             if e.exception_type is None or not issubclass(e.exception_type, CLI_ABORT_EXCEPTIONS):
-                self._terminal.line('Session error caught -- {0}\n'.format(e), **theme('inline-error'))
+                self._terminal.line('Session error caught -- {}\n'.format(e), **theme('inline-error'))
         else:
             self._file_failed = True
             if not self._verobsity_allows(VERBOSITIES.NOTICE):
@@ -414,7 +415,7 @@ class ConsoleReporter(ReporterInterface):
 
     def report_error_message(self, message):
         self.notify_before_console_output()
-        self._terminal.write('ERROR: {0}'.format(message), **theme('inline-error'))
+        self._terminal.write('ERROR: {}'.format(message), **theme('inline-error'))
         self._terminal.write('\n')
         self.notify_after_console_output()
 
@@ -423,4 +424,4 @@ class ConsoleReporter(ReporterInterface):
         duration /= 60
         minutes = duration % 60
         hours = duration / 60
-        return '{0:02}:{1:02}:{2:02}'.format(int(hours), int(minutes), int(seconds))
+        return '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds))

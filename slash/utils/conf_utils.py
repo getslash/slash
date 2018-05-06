@@ -1,7 +1,7 @@
 import itertools
 from confetti import Metadata
 
-_dest_generator = ("dest_{0}".format(i) for i in itertools.count())
+_dest_generator = ("dest_{}".format(i) for i in itertools.count())
 
 # for use with callbacks
 def _set_true(_):

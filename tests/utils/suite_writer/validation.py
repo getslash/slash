@@ -51,7 +51,7 @@ def _validate_single_test(test, results):
 
                     break
             else:
-                assert False, 'Could not find parameter set {0}'.format(
+                assert False, 'Could not find parameter set {}'.format(
                     param_values)
 
     assert not results, 'Unmatched results exist'
@@ -100,7 +100,7 @@ def _validate_single_test_result(test, result):
     elif expected == 'FAIL':
         assert result.is_failure(), 'Test did not fail as expected'
     elif expected == 'SUCCESS':
-        assert result.is_success(), 'Test {0} unexpectedly unsuccessful:\n{1}'.format(
+        assert result.is_success(), 'Test {} unexpectedly unsuccessful:\n{}'.format(
             test.id, list(itertools.chain(result.get_errors(), result.get_failures())))
     elif expected == 'INTERRUPT':
         assert result.is_interrupted(), 'Test did not get interrupted as expected'
@@ -110,7 +110,7 @@ def _validate_single_test_result(test, result):
         assert result.is_not_run()
     else:
         raise NotImplementedError(
-            'Unknown expected result: {0!r}'.format(expected))  # pragma: no cover
+            'Unknown expected result: {!r}'.format(expected))  # pragma: no cover
 
 
 def _group_results_by_test_id(suite, run_result):
@@ -131,7 +131,7 @@ def _group_results_by_test_id(suite, run_result):
         if not test.is_selected():
             unseen.pop(test_id, None)
 
-    assert not unseen, 'Expected results not found ({0})'.format(unseen)
+    assert not unseen, 'Expected results not found ({})'.format(unseen)
 
     return groups
 

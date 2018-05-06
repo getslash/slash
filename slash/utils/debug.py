@@ -33,7 +33,7 @@ def _notify_going_into_debugger(exc_info):
     if context.session is not None:
         context.session.reporter.report_before_debugger(exc_info)
     else:
-        print('\nException caught in debugger: {0}'.format(traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()))
+        print('\nException caught in debugger: {}'.format(traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()))
 
 def _only_tb(exc_info):  # pragma: no cover
     return (exc_info[2],)

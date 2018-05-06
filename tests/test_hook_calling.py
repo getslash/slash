@@ -77,7 +77,7 @@ def test_no_error_hooks_called_on_success(suite):
     called = []
 
     for hook_name in ['test_error', 'test_failure', 'test_skip', 'error_added']:
-        gossip.register(lambda name=hook_name, **kw: called.append(name), 'slash.{0}'.format(hook_name))
+        gossip.register(lambda name=hook_name, **kw: called.append(name), 'slash.{}'.format(hook_name))
 
     suite.run()
     assert not called
@@ -249,6 +249,7 @@ class HookCallingTest(TestCase):
             self.plugin2.after_session_start()
 
         self.plugin1.session_end()
+        self.plugin1.after_session_end()
 
         self.forge.replay()
         # get:

@@ -119,6 +119,7 @@ class Application(object):
             self.session = Session(reporter=self.get_reporter(), console_stream=self._report_stream)
 
             trigger_hook.configure() # pylint: disable=no-member
+            plugins.manager.configure_for_parallel_mode()
             plugins.manager.activate_pending_plugins()
             cli_utils.configure_plugins_from_args(self._parsed_args)
 

@@ -38,7 +38,7 @@ class ColorString(ColorStringBase):
         return str(self._string)
 
     def get_colored(self):
-        return "{0}{1}{2}".format(getattr(colorama.Fore, self._color.upper()), self._string, colorama.Fore.RESET) # pylint: disable=no-member
+        return "{}{}{}".format(getattr(colorama.Fore, self._color.upper()), self._string, colorama.Fore.RESET) # pylint: disable=no-member
 
 class ColorCompoundString(ColorStringBase):
 

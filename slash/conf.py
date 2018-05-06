@@ -61,6 +61,8 @@ config = Config({
         "last_test_symlink": None // Doc("If set, specifies a symlink path to the last test log file in each run"),
         "last_failed_symlink": None // Doc("If set, specifies a symlink path to the last failed test log file"),
         "show_manual_errors_tb": True // Doc("Show tracebacks for errors added via slash.add_error"),
+        "show_raw_param_values": False // Doc("Makes test start logs contain the raw values of test parameters"),
+
         "silence_loggers": [] // Doc("Logger names to silence"),
         "format": None // Doc("Format of the log line, as passed on to logbook. None will use the default format"),
         "console_format": None // Doc("Optional format to be used for console output. Defaults to the regular format"),
@@ -86,6 +88,7 @@ config = Config({
         "repeat_each": 1 // Doc("Repeat each test a specified amount of times") // Cmdline(arg='--repeat-each', metavar="NUM_TIMES"),
         "repeat_all": 1 // Doc("Repeat all suite a specified amount of times") // Cmdline(arg='--repeat-all', metavar="NUM_TIMES"),
         "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
+        "project_name": None,
         "project_customization_file_path": "./.slashrc",
         "user_customization_file_path": "~/.slash/slashrc",
         "resume_state_path": "~/.slash/session_states" // Doc("Path to store or load session's resume data"),

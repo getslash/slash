@@ -67,7 +67,7 @@ class Variation(object):
         return not (self == other)  # pylint: disable=superfluous-parens,unneeded-not
 
     def __repr__(self):
-        return 'Variation({0})'.format(', '.join('{0}={1}'.format(key, value) for key, value in self.param_value_indices.items()))
+        return 'Variation({})'.format(', '.join('{}={}'.format(key, value) for key, value in self.param_value_indices.items()))
 
     def __nonzero__(self):
         return bool(self.param_value_indices)

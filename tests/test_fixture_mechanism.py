@@ -30,7 +30,7 @@ def test_fixture_initialization_order_is_preserved(store):
     store.resolve()
     d = store.get_fixture_dict(['fixture1', 'fixture2', 'fixture3'])
     for i in [1, 2, 3]:
-        assert d['fixture{0}'.format(i)] == i
+        assert d['fixture{}'.format(i)] == i
 
 
 def test_fixture_id_remains_even_when_context_popped(store):
@@ -316,12 +316,12 @@ def test_fixture_dependency(store):
     @slash.fixture
     def fixture1(fixture2):
         assert fixture2 == 'fixture2_value_0'
-        return 'fixture1_value_{0}'.format(next(counter))
+        return 'fixture1_value_{}'.format(next(counter))
 
     @store.add_fixture
     @slash.fixture
     def fixture2():
-        return 'fixture2_value_{0}'.format(next(counter))
+        return 'fixture2_value_{}'.format(next(counter))
 
     store.resolve()
 
@@ -537,7 +537,7 @@ def session_scoped_fixture(store, cleanup_map):
 
 def _get_scoped_fixture(scope, store, cleanup_map):
     @store.add_fixture
-    @slash.fixture(scope=scope, name='{0}_scoped_fixture'.format(scope))
+    @slash.fixture(scope=scope, name='{}_scoped_fixture'.format(scope))
     def fixture(this):
 
         @this.add_cleanup
@@ -549,4 +549,4 @@ def _get_scoped_fixture(scope, store, cleanup_map):
 
 
 def ok(s):
-    return 'ok_{0}'.format(s)
+    return 'ok_{}'.format(s)

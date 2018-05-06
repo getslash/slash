@@ -31,7 +31,7 @@ def test_requirements(suite, suite_test, requirement_fullfilled, use_fixtures, u
     else:
         retval = requirement_fullfilled
 
-    suite_test.add_decorator('slash.requires((lambda: {0}), {1!r})'.format(retval, message if use_message and not message_in_retval else ''))
+    suite_test.add_decorator('slash.requires((lambda: {}), {!r})'.format(retval, message if use_message and not message_in_retval else ''))
     if not requirement_fullfilled:
         suite_test.expect_skip()
 

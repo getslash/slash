@@ -46,24 +46,24 @@ class Function(CodeElement):
     def _write_event(self, code_formatter, eventcode):
         if self.suite.debug_info:
             code_formatter.writeln(
-                '__ut__.events.add({0!r}, {1!r})'.format(
+                '__ut__.events.add({!r}, {!r})'.format(
                     eventcode, self.id))
 
     def add_deferred_event(self, decorator=None, name='deferred', extra_code=(), adder=None):
-        event = '{0}_{1}'.format(name, uuid4())
+        event = '{}_{}'.format(name, uuid4())
         self._deferred_events.append({
             'decorator': decorator, 'event': event, 'extra_code': extra_code, 'adder': adder})
         return event
 
     def add_event(self, name='event'):
-        event = '{0}_{1}'.format(name, uuid4())
+        event = '{}_{}'.format(name, uuid4())
         self._events.append(event)
         return (event, self.id)
 
     @contextmanager
     def _body_context(self, code_formatter):
         self._write_decorators(code_formatter)
-        code_formatter.writeln('def {0}({1}):'.format(
+        code_formatter.writeln('def {}({}):'.format(
             self._get_function_name(),
             self._get_parameter_string()))
 
@@ -100,13 +100,13 @@ class Function(CodeElement):
         if not self.suite.debug_info:
             return
         for index, deferred in enumerate(self._deferred_events, 1):
-            deferred_func_name = '_deferred{0}'.format(index)
+            deferred_func_name = '_deferred{}'.format(index)
             adder = deferred['adder']
             if adder is None:
-                code_formatter.writeln('@{0[decorator]}'.format(deferred))
-            code_formatter.writeln('def {0}():'.format(deferred_func_name))
+                code_formatter.writeln('@{[decorator]}'.format(deferred))
+            code_formatter.writeln('def {}():'.format(deferred_func_name))
             with code_formatter.indented():
-                code_formatter.writeln('__ut__.events.add({0[event]!r})'.format(deferred))
+                code_formatter.writeln('__ut__.events.add({[event]!r})'.format(deferred))
                 for line in deferred['extra_code']:
                     code_formatter.writeln(line)
             if adder is not None:
@@ -129,10 +129,10 @@ class Function(CodeElement):
 
         for p in self._iter_notify_parameters():
             if self.suite.is_parallel:
-                code_formatter.writeln("slash.context.result.data.setdefault('param_values', {{}})[{0!r}] = {1}".format(
+                code_formatter.writeln("slash.context.result.data.setdefault('param_values', {{}})[{!r}] = {}".format(
                     p.id, p.name))
             else:
-                code_formatter.writeln('__ut__.notify_parameter_value({0!r}, {1})'.format(
+                code_formatter.writeln('__ut__.notify_parameter_value({!r}, {})'.format(
                     p.id, p.name))
 
     def _iter_notify_parameters(self):

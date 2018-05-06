@@ -24,7 +24,7 @@ class Metadata(object):
         if factory is not None:
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
-            assert self.module_name, 'Could not find module for {0}'.format(test)
+            assert self.module_name, 'Could not find module for {}'.format(test)
             self._file_path = factory.get_filename()
             self.factory_name = factory.get_factory_name()
         else:
@@ -58,21 +58,28 @@ class Metadata(object):
     def file_path(self):
         return self._file_path
 
-    @property
-    def address(self):
+    def get_address(self, raw_params=False):
         """
         String identifying the test, to be used when logging or displaying
         results in the console generally it is composed of the file path and
         the address inside the file
+
+        :param raw_params: If ``True``, emit the full parametrization values are interpolated into the returned
+           string
         """
         if self._address_override is not None:
             return self._address_override
 
-        returned = '{0}:{1}'.format(self.file_path, self.address_in_file)
+        returned = '{}:{}'.format(self.file_path, self.address_in_file)
         if self.variation:
-            returned += '({})'.format(self.variation.safe_repr)
+            returned += '({})'.format(
+                ', '.join('{}={!r}'.format(key, value) for key, value in self.variation.values.items())
+                if raw_params
+                else self.variation.safe_repr
+            )
         return returned
 
+    address = property(get_address)
 
     def allocate_id(self):
         assert self.id is None
@@ -93,9 +100,6 @@ class Metadata(object):
 
     def mark_interactive(self):
         self._interactive = True
-        self.set_file_path('<Interactive>')
-        self.set_test_full_name('Interactive')
-        self.factory_name = 'Interactive'
         self.set_sort_key(0)
 
     @property
@@ -121,7 +125,7 @@ class Metadata(object):
         return self.test_index0 + 1
 
     def __repr__(self):
-        return '<{0}>'.format(self.address)
+        return '<{}>'.format(self.address)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

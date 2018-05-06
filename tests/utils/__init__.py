@@ -168,3 +168,12 @@ class Unprintable(object):
         1/0                     # pylint: disable=pointless-statement
 
     __str__ = __repr__
+
+
+def maybe_decorate(decorator, flag):
+
+    def returned(func):
+        if flag:
+            func = decorator(func)
+        return func
+    return returned

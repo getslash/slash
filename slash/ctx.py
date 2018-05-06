@@ -43,7 +43,7 @@ class NullContext(object):
 
     def __setattr__(self, attr, value):
         raise AttributeError(
-            "Cannot set attribute {0!r} on null context".format(attr))
+            "Cannot set attribute {!r} on null context".format(attr))
 
     @property
     def _always_none(self):

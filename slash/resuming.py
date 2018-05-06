@@ -50,7 +50,7 @@ class ResumedTestData(object):
 def _init_db():
     resume_dir = os.path.expanduser(config.root.run.resume_state_path)
     ensure_directory(resume_dir)
-    engine = create_engine('sqlite:///{0}/{1}'.format(resume_dir, _DB_NAME))
+    engine = create_engine('sqlite:///{}/{}'.format(resume_dir, _DB_NAME))
     _session.configure(bind=engine)
     Base.metadata.create_all(engine)
 
@@ -113,7 +113,7 @@ def get_last_resumeable_session_id():
         session_id = conn.query(SessionMetadata).filter(SessionMetadata.src_folder == current_folder) \
                                                 .order_by(SessionMetadata.created_at.desc()).first()
         if not session_id:
-            raise CannotResume("No sessions found for folder {0}".format(current_folder))
+            raise CannotResume("No sessions found for folder {}".format(current_folder))
         return session_id.session_id
 
 
@@ -127,7 +127,7 @@ def get_tests_from_previous_session(session_id, get_successful_tests=False):
         if session_metadata:
             session_tests = conn.query(ResumeState).filter(ResumeState.session_id == session_id).all()
             if not session_tests:
-                _logger.debug('Found session {0} locally, but no failed tests exist'.format(session_id))
+                _logger.debug('Found session {} locally, but no failed tests exist', session_id)
                 return returned
             for test in session_tests:
                 new_entry = ResumedTestData(test.file_name, test.function_name)
@@ -135,7 +135,7 @@ def get_tests_from_previous_session(session_id, get_successful_tests=False):
                     new_entry.variation = literal_eval(test.variation)
                 returned.append(new_entry)
     if not returned:
-        _logger.debug('No local entry for session {0}, searching remote session'.format(session_id))
+        _logger.debug('No local entry for session {}, searching remote session', session_id)
         returned = get_tests_from_remote_session(session_id)
     return returned
 
@@ -148,7 +148,7 @@ def get_tests_from_remote_session(session_id, get_successful=False):
     if not hasattr(backslash_plugin, 'is_session_exist') or not hasattr(backslash_plugin, 'get_tests_to_resume'):
         raise CannotResume("Backslash plugin doesn't support remote resuming")
     if not backslash_plugin.is_session_exist(session_id):
-        raise CannotResume("Could not find resume data for session {0}".format(session_id))
+        raise CannotResume("Could not find resume data for session {}".format(session_id))
     remote_tests = backslash_plugin.get_tests_to_resume(session_id, get_successful)
     returned = [ResumedTestData(test.info['file_name'], test.info['name'], test.variation) for test in remote_tests]
     return returned

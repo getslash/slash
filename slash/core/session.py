@@ -27,7 +27,7 @@ class Session(Activatable):
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
         self.parent_session_id = config.root.parallel.parent_session_id
-        self.id = "{0}_0".format(uuid.uuid1()) if not self.parent_session_id else \
+        self.id = "{}_0".format(uuid.uuid1()) if not self.parent_session_id else \
                     "{}_{}".format(self.parent_session_id.split('_')[0], config.root.parallel.worker_id)
         self.id_space = IDSpace(self.id)
         self.test_index_counter = itertools.count()
@@ -131,7 +131,17 @@ class Session(Activatable):
             if session_start_called:
                 with handling_exceptions():
                     hooks.session_end()  # pylint: disable=no-member
+                with handling_exceptions():
+                    hooks.after_session_end()  # pylint: disable=no-member
             self.reporter.report_session_end(self)
+
+    def initiate_cleanup(self):
+        if not self.scope_manager.has_active_scopes():
+            return
+        with handling_exceptions(swallow=True):
+            hooks.before_session_cleanup()  # pylint: disable=no-member
+        with handling_exceptions(swallow=True):
+            self.scope_manager.flush_remaining_scopes()
 
     def mark_complete(self):
         self._complete = True

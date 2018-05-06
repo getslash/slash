@@ -39,7 +39,7 @@ class FixtureInfo(object):
         self.id = next(_id_gen)
         if name is None:
             if func is None:
-                name = '__unnamed_{0}'.format(self.id)
+                name = '__unnamed_{}'.format(self.id)
             else:
                 name = func.__name__
         if scope is None:

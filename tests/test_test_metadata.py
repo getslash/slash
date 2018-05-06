@@ -86,7 +86,7 @@ def test_set_test_name(test_metadata):
     assert test_metadata.file_path in str(test_metadata)
     custom_name = 'some_custom_name'
     test_metadata.set_test_full_name(custom_name)
-    assert str(test_metadata) == '<{0}>'.format(custom_name)
+    assert str(test_metadata) == '<{}>'.format(custom_name)
 
 
 def test_class_name_with_dot_parameters():
@@ -146,7 +146,7 @@ class TestMetadataTest(TestCase):
             self.assertIs(test.__slash__, result.test_metadata)
 
     def test_simple_test_address(self):
-        self.assertEqual(self.results[0].test_metadata.address, "{0}:T001.test_method".format(self.filename))
+        self.assertEqual(self.results[0].test_metadata.address, "{}:T001.test_method".format(self.filename))
 
     def test_parameterized_test_address(self):
         parameterized = set(x.test_metadata.address for x in self.results[1:])

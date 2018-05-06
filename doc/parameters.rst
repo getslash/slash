@@ -164,3 +164,20 @@ This also works for parameters of fixtures (for more information about fixtures 
            ...
 
 
+Exclusions also work on sets of parameters:
+
+.. code-block:: python
+
+       import slash
+
+       SUPPORTED_SIZES = [10, 15, 20, 25]
+
+       @slash.exclude(('car.size', 'car.color'), [(10, 'red'), (20, 'blue')])
+       def test_car(car):
+           ...
+
+       @slash.parametrize('size', SUPPORTED_SIZES)
+       @slash.parametrize('color', ['red', 'green', 'blue'])
+       @slash.fixture
+       def car(size): # <-- red cars of size 10 and blue cars of size 20 will be skipped
+           ...

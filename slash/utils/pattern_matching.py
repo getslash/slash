@@ -22,7 +22,7 @@ class Include(object):
         return self.pattern in metadata.address
 
     def __repr__(self):
-        return '<{0}{1}>'.format(self.pattern, ' (only tags)' if self.only_tags else '')
+        return '<{}{}>'.format(self.pattern, ' (only tags)' if self.only_tags else '')
 
 
 class BinaryMatching(object):

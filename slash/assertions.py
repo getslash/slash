@@ -13,7 +13,7 @@ sys.modules["slash.should"] = sys.modules[__name__]
 _logger = logbook.Logger(__name__)
 
 def _deprecated(func, message=None):
-    return deprecated(since='0.19.0', what='slash.should.{0.__name__}'.format(func),
+    return deprecated(since='0.19.0', what='slash.should.{.__name__}'.format(func),
                       message=message or 'Use plain assertions instead')(func)
 
 
@@ -26,7 +26,7 @@ def _binary_assertion(name, operator_func):
                 op.inverse_func).to_expression(a, b))
             raise TestFailed(msg)
     _assertion.__name__ = name
-    _assertion.__doc__ = "Asserts **{0}**".format(
+    _assertion.__doc__ = "Asserts **{}**".format(
         op.to_expression("ARG1", "ARG2"))
     _assertion = _deprecated(_assertion)
     return _assertion
@@ -41,7 +41,7 @@ def _unary_assertion(name, operator_func):
                 op.inverse_func).to_expression(a))
             raise TestFailed(msg)
     _assertion.__name__ = name
-    _assertion.__doc__ = "Asserts **{0}**".format(op.to_expression("ARG"))
+    _assertion.__doc__ = "Asserts **{}**".format(op.to_expression("ARG"))
     _assertion = _deprecated(_assertion)
     return _assertion
 
@@ -49,7 +49,7 @@ def _unary_assertion(name, operator_func):
 def _get_message(msg, description):
     if msg is None:
         return description
-    return "{0} ({1})".format(msg, description)
+    return "{} ({})".format(msg, description)
 
 equal = _binary_assertion("equal", operator.eq)
 assert_equal = assert_equals = equal = equal
@@ -145,7 +145,7 @@ class _CaughtContext(object):
             expected_classes = self._expected_classes
             if not isinstance(expected_classes, tuple):
                 expected_classes = (expected_classes, )
-            msg = "{0} not raised".format("/".join(e.__name__ for e in expected_classes))
+            msg = "{} not raised".format("/".join(e.__name__ for e in expected_classes))
         if self._ensure_caught:
             raise ExpectedExceptionNotCaught(msg, self._expected_classes)
         _logger.debug(msg)

@@ -364,7 +364,8 @@ class _BubblingWrapper(logbook.Handler):
 
 
 def _format_log_path(p):
-    return p.format(context=_NormalizedObject(context), timestamp=datetime.datetime.now())
+    return p.format(context=_NormalizedObject(context), timestamp=datetime.datetime.now(),
+                    project_name=config.root.run.project_name)
 
 
 class RetainedLogHandler(logbook.TestHandler):

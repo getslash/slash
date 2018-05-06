@@ -56,8 +56,8 @@ def test_loader_warns_duplicate_test_funcs(tmpdir):
     full_path = tests_dir.join('.dir').join('test_something.py')
     test_name = 'test_something'
     with full_path.open('w', ensure=True) as f:
-        f.write('def {0}():\n    assert True\n'.format(test_name))
-        f.write('def {0}():\n    assert True\n'.format(test_name))
+        f.write('def {}():\n    assert True\n'.format(test_name))
+        f.write('def {}():\n    assert True\n'.format(test_name))
     with Session() as session:
         Loader().get_runnables([str(full_path)])
         assert len(session.warnings) == 1
@@ -103,10 +103,10 @@ def test_iter_specific_factory(suite, suite_test, specific_method, with_paramete
     else:
         factory_name = suite_test.name
 
-    pattern = '{0}:{1}'.format(os.path.join(path, suite_test.file.get_relative_path()), factory_name)
+    pattern = '{}:{}'.format(os.path.join(path, suite_test.file.get_relative_path()), factory_name)
     if suite_test.cls is not None and specific_method:
         assert len(suite_test.cls.tests) > 1
-        pattern += '.{0}'.format(suite_test.name)
+        pattern += '.{}'.format(suite_test.name)
     suite.run(args=[pattern])
 
 

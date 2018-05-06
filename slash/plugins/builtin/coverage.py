@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from slash import config as slash_config
 
 from ...utils.conf_utils import Cmdline, Doc
+from ...utils import parallel_utils
 from ..interface import PluginInterface
 
 _DATA_FILENAME = '.coverage'
@@ -32,9 +33,11 @@ class Plugin(PluginInterface):
             raise RuntimeError('The coverage plugin requires the coverage package to be installed. Please run `pip install coverage` to install it')
 
         sources = slash_config.root.plugin_config.coverage.sources or None
-
+        data_file_name = _DATA_FILENAME
+        if parallel_utils.is_child_session():
+            data_file_name += "." + slash_config.root.parallel.worker_id
         self._cov = coverage.Coverage(
-            data_file=_DATA_FILENAME,
+            data_file=data_file_name,
             config_file=slash_config.root.plugin_config.coverage.config_filename,
             source=sources,
         )
@@ -58,6 +61,10 @@ class Plugin(PluginInterface):
         if slash_config.root.plugin_config.coverage.report:
             for reporter in self._reporters:
                 try:
+                    if parallel_utils.is_child_session():
+                        continue
+                    elif parallel_utils.is_parent_session():
+                        self._cov.combine()
                     reporter()
                 except CoverageException as e:
                     if 'no data' not in str(e).lower():

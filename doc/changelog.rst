@@ -1,6 +1,17 @@
 Changelog
 =========
 
+* :release:`1.6.0 <6-5-2018>`
+* :feature:`771` Keyword arguments to ``registers_on`` now get forwarded to Gossip's ``register`` API
+* :feature:`769` Added a new configuration flag, ``log.show_raw_param_values``, defaulting to ``False``. If set to True, log lines for beginnings of tests will contain actual parametrization values instead of format-safe strings.
+* :feature:`528` ``slash.exclude`` can now exclude combinations of parameter values
+* :bug:`783` Session errors in children are now handled and reported when running with parallel
+* :feature:`785` Plugins can now be marked to indicate whether or not they support parallel
+  execution, using ``slash.plugins.parallel_mode``. To avoid errors, Slash assumes that unmarked
+  plugins do not support parallel execution.
+* :feature:`779` Added ``config.root.run.project_name``, which can be configured to hold the name of the current project. It defaults to the name of the directory in which your project's .slashrc is located
+* :bug:`772 major` Fix handling exceptions which raised from None in interactive session
+* :feature:`782` Added new hooks: ``before_session_cleanup``, ``after_session_end``
 * :release:`1.5.1 <10-3-2018>`
 * :bug:`767` Fixed traceback variable capture for cases where ``self=None``
 * :release:`1.5.0 <7-3-2018>`

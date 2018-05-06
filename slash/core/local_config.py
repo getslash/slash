@@ -43,7 +43,7 @@ class LocalConfig(object):
     def _traverse_upwards(self, path):
         path = os.path.abspath(path)
         if not os.path.exists(path):
-            raise RuntimeError("Path doesn't exist: {0}".format(path))
+            raise RuntimeError("Path doesn't exist: {}".format(path))
 
         if os.path.isfile(path):
             path = os.path.dirname(path)

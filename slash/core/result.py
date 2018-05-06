@@ -60,7 +60,7 @@ class Result(object):
                 try:
                     serialized_object[key] = pickle.dumps(value)
                 except (pickle.PicklingError, TypeError):
-                    _logger.debug('Failed serializing result, skipping this value. key = {}'.format(key))
+                    _logger.debug('Failed serializing result, skipping this value. key = {}', key)
                     capture_sentry_exception()
         return serialized_object
 
@@ -69,7 +69,7 @@ class Result(object):
             try:
                 self.__dict__[key] = unpickle(value)
             except TypeError:
-                _logger.error('Error when deserialize reult, skipping this value. key = {}'.format(key))
+                _logger.error('Error when deserialize reult, skipping this value. key = {}', key)
         for failure in self._failures:
             self.add_failure(failure, append=False)
         for error in self._errors:
@@ -232,7 +232,8 @@ class Result(object):
             error.log_added()
             if append:
                 error_list.append(error)
-            if not context.session or not context.session.has_children():
+            #report children errors or parent session errors only
+            if not context.session or not context.session.has_children() or self.is_global_result():
                 hooks.error_added(result=self, error=error)  # pylint: disable=no-member
             error.forget_exc_info()
             return error
@@ -276,11 +277,12 @@ class Result(object):
     has_fatal_exception = has_fatal_errors
 
     def __repr__(self):
-        return "< Result ({0})>".format(
+        return "<{} ({})>".format(
+            self.__class__.__name__,
             ", ".join(
                 attr
                 for attr in ("success", "error", "failure", "skip", "finished", "interrupted")
-                if getattr(self, "is_{0}".format(attr))()
+                if getattr(self, "is_{}".format(attr))()
             )
         )
 
@@ -299,6 +301,8 @@ class GlobalResult(Result):
             return False
         if self._session_results is None:
             return True
+        if self._session_results.session.has_children() and self._session_results.session.parallel_manager.server.worker_session_error_reported:
+            return False
         return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 
 
@@ -315,7 +319,7 @@ class SessionResults(object):
         return len(self._results_dict)
 
     def __repr__(self):
-        return '<Results: {0} successful, {1} errors, {2} failures, {3} skips>'.format(
+        return '<Results: {} successful, {} errors, {} failures, {} skips>'.format(
             self.get_num_successful(),
             self.get_num_errors(),
             self.get_num_failures(),
@@ -424,7 +428,7 @@ class SessionResults(object):
         """Returns the result stored belonging to a given test
         """
         if test.__slash__ is None:
-            raise LookupError("Could not find result for {0}".format(test))
+            raise LookupError("Could not find result for {}".format(test))
         return self._results_dict[test.__slash__.id]
 
     def __getitem__(self, test):

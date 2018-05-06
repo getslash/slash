@@ -8,7 +8,7 @@ from slash._compat import PY2
 from slash import hooks, plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
-from .utils import NamedPlugin
+from .utils import NamedPlugin, maybe_decorate
 
 
 
@@ -27,6 +27,39 @@ def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
     gossip.trigger('slash.some_method_here')
     assert not checkpoint.called
 
+
+@pytest.mark.parametrize('class_level_needs', [True, False])
+@pytest.mark.parametrize('class_level_provides', [True, False])
+def test_registers_on_kwargs(class_level_needs, class_level_provides):
+
+    needs_decorator = plugins.needs('other_requirement')
+    provides_decorator = plugins.provides('another_provided_requirement')
+
+    @slash.plugins.active  # pylint: disable=unused-variable
+    @maybe_decorate(needs_decorator, class_level_needs)
+    @maybe_decorate(provides_decorator, class_level_provides)
+    class SamplePlugin(PluginInterface):
+
+        def get_name(self):
+            return 'sample'
+
+        @plugins.registers_on('some.hook', provides=['provided_requirement'], needs=['some_requirement'], tags=['tag'])
+        @maybe_decorate(needs_decorator, not class_level_needs)
+        @maybe_decorate(provides_decorator, not class_level_provides)
+        def plugin_method(self):
+            pass
+
+
+    @gossip.register('some.hook', provides=['some_requirement', 'other_requirement'])
+    def _unused():
+        pass
+
+    gossip.trigger('some.hook')
+    hook = gossip.get_hook('some.hook')
+    [registration] = [reg for reg in hook.get_registrations() if reg.func.__name__ == 'plugin_method']
+    assert registration.tags == {'tag'}
+    assert registration.needs == frozenset(['some_requirement', 'other_requirement'])
+    assert registration.provides == frozenset(['provided_requirement', 'another_provided_requirement'])
 
 
 def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
@@ -181,7 +214,7 @@ def test_builtin_plugins_hooks_start_condition():
     "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
     for hook_name, hook in hooks.get_all_hooks():  # pylint: disable=unused-variable
         for registration in hook.get_registrations():
-            assert registration.token.startswith('slash.'), 'Callback {0} is not a builtin!'.format(hook.full_name)
+            assert registration.token.startswith('slash.'), 'Callback {} is not a builtin!'.format(hook.full_name)
 
 def test_builtin_plugins_are_installed():
     installed = plugins.manager.get_installed_plugins()

@@ -35,7 +35,7 @@ class Fixture(FixtureBase):
     parametrization_ids = None
 
     def __repr__(self):
-        return '<Function Fixture around {0}>'.format(self.fixture_func)
+        return '<Function Fixture around {}>'.format(self.fixture_func)
 
     def is_override(self):
         parent = self.namespace.get_parent()
@@ -88,11 +88,11 @@ class Fixture(FixtureBase):
                 needed_fixture = self.namespace.get_fixture_by_name(get_real_fixture_name_from_argument(arg))
 
                 if needed_fixture.scope < self.scope: # pylint: disable=no-member
-                    raise InvalidFixtureScope('Fixture {0} is dependent on {1}, which has a smaller scope ({2} > {3})'.format(
+                    raise InvalidFixtureScope('Fixture {} is dependent on {}, which has a smaller scope ({} > {})'.format(
                         self.info.name, param_name, self.scope, needed_fixture.scope)) # pylint: disable=no-member
 
                 if needed_fixture is self:
-                    raise CyclicFixtureDependency('Cyclic fixture dependency detected in {0}: {1} depends on itself'.format(
+                    raise CyclicFixtureDependency('Cyclic fixture dependency detected in {}: {} depends on itself'.format(
                         self.info.func.__code__.co_filename,
                         self.info.name))
                 keyword_arguments[param_name] = needed_fixture

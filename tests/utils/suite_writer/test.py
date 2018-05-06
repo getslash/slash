@@ -85,7 +85,7 @@ class Test(Function, Element):
         super(Test, self)._write_epilogue(code_formatter)
 
     def _get_function_name(self):
-        return 'test_{0}'.format(self.id)
+        return 'test_{}'.format(self.id)
 
 
 class WhenRunHelper(object):

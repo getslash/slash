@@ -261,7 +261,7 @@ def _safe_repr(value, truncate=True):
     try:
         returned = repr(value)
     except Exception:  # pylint: disable=broad-except
-        return "[Unprintable {0!r} object]".format(type(value).__name__)
+        return "[Unprintable {!r} object]".format(type(value).__name__)
 
     if truncate and len(returned) > _MAX_VARIABLE_VALUE_LENGTH:
         returned = returned[:_MAX_VARIABLE_VALUE_LENGTH - 3] + '...'
