@@ -6,6 +6,9 @@ python:
   - "3.5"
   - "3.6"
 
+env:
+  - TRAVIS_PYLINT=false
+
 matrix:
   include:
     - python: "3.6"
@@ -32,3 +35,4 @@ deploy:
       tags: true
       repo: getslash/slash
       python: "3.6"
+      condition: $TRAVIS_PYLINT=false
