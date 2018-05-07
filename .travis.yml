@@ -34,4 +34,4 @@ deploy:
       tags: true
       repo: getslash/slash
       python: "3.6"
-      condition: $TRAVIS_PYLINT=false
+      condition: $TRAVIS_PYLINT = 'false'
