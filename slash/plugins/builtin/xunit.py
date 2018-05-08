@@ -59,7 +59,7 @@ class Plugin(PluginInterface):
 
     def _build_xml(self, r, d):
         if isinstance(d, dict):
-            for k, v in d.iteritems():
+            for k, v in d.items():
                 s = SE(r, k)
                 self._build_xml(s, v)
         elif isinstance(d, (tuple, list)):
