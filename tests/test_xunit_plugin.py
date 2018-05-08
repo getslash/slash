@@ -69,9 +69,22 @@ def _get_testcase_xml(suite_test, filename):
     return match[0]
 
 
-@pytest.fixture
-def details():
-    return {'detail1': 'value1', 'detail2': 'value2'}
+@pytest.fixture(params=['set', 'append', 'complex'])
+def details(request, result):
+    if request.param == 'set':
+        result.details.set('detail1', 'value1')
+        result.details.set('detail2', 'value2')
+
+    if request.param == 'append':
+        result.details.append('detail1', 'value1')
+        result.details.append('detail1', 'value2')
+
+    if request.param == 'append':
+        result.details.append('detail1', 'value1')
+        result.details.append(
+            'detail1', {'complex': ['value2', 'value3', 4, 5]})
+
+    return result.details.all()
 
 
 @pytest.fixture  # pylint: disable=unused-argument
