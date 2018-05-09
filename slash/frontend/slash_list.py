@@ -22,6 +22,7 @@ _title_style = make_styler(colorama.Fore.WHITE + colorama.Style.BRIGHT)  # pylin
 _unused_style = make_styler(colorama.Fore.YELLOW)  # pylint: disable=no-member
 _doc_style = make_styler(colorama.Fore.GREEN + colorama.Style.BRIGHT)  # pylint: disable=no-member
 _override_style = make_styler(colorama.Fore.YELLOW + colorama.Style.BRIGHT)  # pylint: disable=no-member
+_error_style = make_styler(colorama.Fore.RED)  # pylint: disable=no-member
 
 
 def _get_parser():
@@ -49,7 +50,7 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
     parsed_args = parser.parse_args(args)
 
     _print = Printer(report_stream, enable_output=parsed_args.show_output, force_color=parsed_args.force_color,
-                     enable_color=parsed_args.enable_color)
+                     enable_color=parsed_args.enable_color, error_stream=error_stream)
     try:
         with slash.Session() as session:
             slash.site.load()
@@ -77,7 +78,7 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
         if len(runnables):  # pylint: disable=len-as-condition
             return 0
     except CannotLoadTests as e:
-        print('Could not load tests ({})'.format(e), file=error_stream)
+        _print(_error_style('Could not load tests ({})'.format(e)), error=True)
         return -1
     print('No tests were found!', file=sys.stderr)
     return int(not parsed_args.allow_empty)
