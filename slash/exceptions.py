@@ -63,6 +63,10 @@ class InvalidFixtureName(FixtureException):
     pass
 
 
+class ParameterException(CannotLoadTests):
+    pass
+
+
 class IncorrectScope(SlashException):
     pass
 

@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from sentinels import NOTHING
 
 from ..._compat import iteritems
+from ...exceptions import ParameterException
 from ...exception_handling import mark_exception_frame_correction
 from ...utils.python import wraps, get_argument_names
 from .fixture_base import FixtureBase
@@ -95,7 +96,9 @@ class ParameterizationInfo(object):
         self.path = '{}:{}'.format(func.__module__, func.__name__)
 
     def add_options(self, param_name, values):
-        assert param_name not in self._params
+        if param_name in self._params:
+            raise ParameterException('{!r} already parametrized for {}'.format(
+            param_name, self.path))
         values = list(values)
 
         if not isinstance(param_name, (list, tuple)):
