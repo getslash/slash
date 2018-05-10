@@ -63,15 +63,16 @@ def forge(request):
     return returned
 
 
+@pytest.fixture(autouse=True)
+def backup_config(request):
+    slash.config.backup()
+    request.addfinalizer(slash.config.restore)
+    return slash.config
+
+
 @pytest.fixture
-def config_override(request):
-
+def config_override():
     def _override(path, value):
-        prev_value = slash.config.get_config(path).get_value()
-
-        @request.addfinalizer
-        def restore():  # pylint: disable=unused-variable
-            slash.config.assign_path(path, prev_value)
         slash.config.assign_path(path, value)
     return _override
 
