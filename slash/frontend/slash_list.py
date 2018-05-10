@@ -35,6 +35,7 @@ def _get_parser():
     parser.add_argument('--allow-empty', dest='allow_empty', action='store_true', default=False)
     parser.add_argument('--warnings-as-errors', dest='warnings_as_errors', action='store_true', default=False)
     parser.add_argument('-r', '--relative-paths', action='store_true', default=False)
+    parser.add_argument('-k', '--filter-strings', action='append', metavar='FILTER')
     parser.add_argument('--no-output', dest='show_output', action='store_false', default=True)
     parser.add_argument('--force-color', dest='force_color', action='store_true', default=False)
     parser.add_argument('--no-color', dest='enable_color', action='store_false', default=True)
@@ -48,6 +49,9 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
 
     parser = _get_parser()
     parsed_args = parser.parse_args(args)
+
+    if parsed_args.filter_strings:
+        config.root.run.filter_strings.extend(parsed_args.filter_strings)
 
     _print = Printer(report_stream, enable_output=parsed_args.show_output, force_color=parsed_args.force_color,
                      enable_color=parsed_args.enable_color, error_stream=error_stream)
