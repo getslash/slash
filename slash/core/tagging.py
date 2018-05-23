@@ -3,6 +3,7 @@ import functools
 from sentinels import NOTHING
 
 from .._compat import iteritems
+from ..exceptions import TaggingConflict
 
 _TAGS_NAME = '__slash_tags__'
 
@@ -12,7 +13,8 @@ def tag_test(test, tag_name, tag_value):
     if tags is NO_TAGS:
         tags = Tags()
         setattr(test, _TAGS_NAME, tags)
-    assert tag_name not in tags
+    if tags.get(tag_name, NOTHING) not in (tag_value, NOTHING):
+        raise TaggingConflict('Tag {} is already set on {}'.format(tag_name, test))
     tags[tag_name] = tag_value
     return test
 
@@ -52,6 +54,9 @@ class Tags(object):
         new_tags = self._tags.copy()
         new_tags.update(other._tags) # pylint: disable=protected-access
         return Tags(new_tags)
+
+    def get(self, *args, **kwargs):
+        return self._tags.get(*args, **kwargs)
 
     def matches_pattern(self, pattern):
         if '=' in pattern:

@@ -67,6 +67,10 @@ class ParameterException(CannotLoadTests):
     pass
 
 
+class TaggingConflict(CannotLoadTests):
+    pass
+
+
 class IncorrectScope(SlashException):
     pass
 

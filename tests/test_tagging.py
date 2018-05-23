@@ -5,6 +5,7 @@ import pytest
 import slash
 from sentinels import NOTHING
 from slash.core.tagging import NO_TAGS, Tags, get_tags
+from slash.exceptions import TaggingConflict
 from slash.loader import Loader
 
 from .utils.suite_writer.method_test import MethodTest
@@ -63,6 +64,36 @@ def test_metadata_tags(suite, suite_test, tagging_strategy, tags):
     for tag_name, tag_value in tags:
         assert result.test_metadata.tags.has_tag(tag_name)
         assert result.test_metadata.tags[tag_name] == tag_value
+
+
+def test_tagging_twice_forbidden_different_values():
+    @slash.tag('something', 1)
+    def test_something():
+        pass
+
+    tagger = slash.tag('something', 2)
+    with pytest.raises(TaggingConflict):
+        tagger(test_something)
+
+
+def test_tagging_twice_allowed_same_values():
+    @slash.tag('something', 1)
+    def test_something():
+        pass
+
+    tagger = slash.tag('something', 1)
+    tagger(test_something)
+
+
+def test_tagging_twice_allowed_no_value():
+    @slash.tag('something')
+    def test_something():
+        pass
+
+    tagger = slash.tag('something')
+    tagger(test_something)
+
+
 
 # more tags in test_pattern_matching.py
 
