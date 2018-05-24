@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
 * :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
 * :release:`1.6.0 <6-5-2018>`
 * :feature:`771` Keyword arguments to ``registers_on`` now get forwarded to Gossip's ``register`` API
