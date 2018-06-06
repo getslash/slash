@@ -55,6 +55,10 @@ class UnknownFixtures(FixtureException):
     pass
 
 
+class ComputedParameterExcluded(CannotLoadTests):
+    pass
+
+
 class InvalidFixtureScope(FixtureException):
     pass
 

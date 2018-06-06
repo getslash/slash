@@ -118,6 +118,8 @@ class Server(object):
         _logger.debug("Worker {} validated tests successfully", client_id)
         if self.num_collections_validated >= config.root.parallel.num_workers and self.state == ServerStates.WAIT_FOR_COLLECTION_VALIDATION:
             _logger.notice("All workers collected tests successfully, start serving tests")
+            for test in self.tests:
+                test.get_variation().resolve_static_values()
             self.state = ServerStates.SERVE_TESTS
         return True
 

@@ -34,7 +34,7 @@ def test_resolve_fixture_object():
 
     _resolve = functools.partial(s.fixture_store.resolve_name, start_point=tests[0])
     def _resolve_values(path):
-        return [v.value for v in _resolve(path).values]
+        return [v.get_value() for v in _resolve(path).values]
 
     # check simple resolutions
     assert _resolve('fixture2').info is fixture2.__slash_fixture__

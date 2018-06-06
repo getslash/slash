@@ -35,6 +35,7 @@ _define('configure', doc='Configuration hook that happens during commandline par
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")
 _define('test_avoided', doc="Called when a test is skipped completely (not even started)", arg_names=('reason',))
 _define('test_start', doc="Called right after a test starts")
+_define('after_parameters_computation', doc="Called after computed parmaeters are populated with values")
 _define('test_distributed', doc="Called in parallel mode, after the parent sent a test to child)", arg_names=('test_logical_id', 'worker_session_id',)) # pylint: disable=line-too-long
 _define('test_end', doc="Called right before a test ends, regardless of the reason for termination")
 _define('log_file_closed', doc="Called right after a log file was closed", arg_names=('path', 'result',))

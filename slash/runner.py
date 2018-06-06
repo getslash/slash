@@ -38,6 +38,7 @@ def run_tests(iterable, stop_on_error=None):
     complete = False
     try:
         for test in test_iterator:
+            test.get_variation().resolve_static_values()
             if config.root.run.dump_variation:
                 _dump_variation(test)
             _set_test_metadata(test)
@@ -110,10 +111,12 @@ def _run_single_test(test, test_iterator):
                             context.session.scope_manager.begin_test(test)
                             try:
                                 controller.start()
+                                test.get_variation().resolve_dynamic_values()
                                 with handling_exceptions(swallow=True):
                                     test.run()
                             finally:
                                 context.session.scope_manager.end_test(test)
+                                test.get_variation().forget_computed_parameter_values()
                     except context.session.get_skip_exception_types():
                         pass
 

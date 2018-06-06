@@ -1,8 +1,8 @@
 from ..ctx import context
-from ..exceptions import UnknownFixtures
+from ..exceptions import UnknownFixtures, ComputedParameterExcluded
 from .fixtures.parameters import Parametrization
 from . import markers
-
+from sentinels import NOTHING
 
 def exclude(names, values):
     """
@@ -43,6 +43,9 @@ def is_excluded(test):
             except LookupError:
                 raise UnknownFixtures('{!r} cannot be excluded for {!r}'.format(parameter_name, test))
             value = param.get_value_by_index(param_index)
+            if value is NOTHING:
+                raise ComputedParameterExcluded('computed parameter values cannot be excluded for parameter {!r} in test {!r}'\
+                                                .format(parameter_name, test.id))
             values.append(value)
 
         if tuple(values) in value_sets:
