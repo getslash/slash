@@ -2,7 +2,7 @@
 import functools
 
 import pytest
-
+import itertools
 import slash
 from slash.exceptions import UnknownFixtures
 
@@ -94,3 +94,29 @@ def test_invalid_name():
     with slash.Session() as s:
         with pytest.raises(UnknownFixtures):
             s.fixture_store.resolve_name('', start_point=object())
+
+
+def test_resolve_fixture_parameterization_with_scopes(suite_builder):
+    # pylint: disable=unused-variable
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash # pylint: disable=redefined-outer-name, reimported
+        @slash.parametrize('x', [1, 2])
+        @slash.fixture(scope='session')
+        def session_fixture(x):
+            return x
+
+        @slash.parametrize('x', [3, 4])
+        @slash.fixture(scope='module')
+        def module_fixture(x):
+            return x
+
+        @slash.parametrize('x', [5, 6])
+        @slash.fixture
+        def fixture_test(x):
+            return x
+
+        def test_1(session_fixture, module_fixture, fixture_test):
+            slash.context.result.data['params'] = (session_fixture, module_fixture, fixture_test)
+
+    suite_builder.build().run().assert_success(8).with_data([{'params': x} for x in list(itertools.product(range(1, 3), range(3, 5), range(5, 7)))])

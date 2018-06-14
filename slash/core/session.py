@@ -16,7 +16,7 @@ from ..warnings import SessionWarnings
 from .fixtures.fixture_store import FixtureStore
 from .result import SessionResults
 from .scope_manager import ScopeManager
-
+from .variation import Variations
 
 class Session(Activatable):
     """ Represents a slash session
@@ -41,6 +41,7 @@ class Session(Activatable):
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)
         self.current_parallel_test_index = None
+        self.variations = Variations()
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults(self)
         if reporter is None:

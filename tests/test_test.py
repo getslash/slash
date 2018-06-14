@@ -25,12 +25,12 @@ class TestTest(TestCase):
                 events.append("test_2")
         with slash.Session():
             tests = make_runnable_tests(Test)
-        for test in tests:
-            self.assertIsInstance(test, Test)
-        self.assertEqual(len(tests), 2)
-        tests.sort(key=lambda test: test._test_method_name)  # pylint: disable=protected-access
-        for test in tests:
-            test.run()
+            for test in tests:
+                self.assertIsInstance(test, Test)
+            self.assertEqual(len(tests), 2)
+            tests.sort(key=lambda test: test._test_method_name)  # pylint: disable=protected-access
+            for test in tests:
+                test.run()
         self.assertEqual(events, ["before", "test_1", "after", "before", "test_2", "after"])
 
     def test_before_failures(self):
@@ -45,8 +45,8 @@ class TestTest(TestCase):
                 events.append("after")
         with slash.Session():
             [test] = make_runnable_tests(Test)  # pylint: disable=unbalanced-tuple-unpacking
-        with self.assertRaises(CustomException):
-            test.run()
+            with self.assertRaises(CustomException):
+                test.run()
         self.assertEqual(events, [])
 
     def test_after_failures(self):

@@ -2,6 +2,7 @@ import collections
 import sys
 from contextlib import contextmanager
 
+from slash import ctx
 import logbook
 from orderedset import OrderedSet
 
@@ -289,7 +290,6 @@ class FixtureStore(object):
         return value
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
-
         if self._unresolved_fixture_ids:
             raise UnresolvedFixtureStore()
 
@@ -314,11 +314,15 @@ class FixtureStore(object):
         if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
                 'Fixture {!r} is a part of a dependency cycle!'.format(name))
-
         active_fixture = self.get_active_fixture(fixture)
-
         if active_fixture is not None:
-            return active_fixture.value
+            for param_id in fixture.parametrization_ids:
+                if ctx.session.variations.is_param_variation_changed(param_id):
+                    self._deactivate_fixture(active_fixture.fixture)
+                    active_fixture = fixture
+                    break
+            else:
+                return active_fixture.value
 
         self._computing.add(fixture.info.id)
         try:

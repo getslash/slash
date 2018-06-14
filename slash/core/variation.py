@@ -1,11 +1,33 @@
 from numbers import Number
 import string
-
 from .._compat import string_types
 
 _PRINTABLE_TYPES = (Number,) + string_types
 _PRINTABLE_CHARS = set(string.ascii_letters) | set(string.digits) | set("-_")
 
+class Variations(object):
+    def __init__(self):
+        self._current_variation = None
+        self._prev_variation = None
+
+    def get_current_variation(self):
+        return self._current_variation
+
+    def set_current_variation(self, new_variation):
+        if new_variation is None:
+            self._prev_variation = self._current_variation
+        self._current_variation = new_variation
+
+    def is_param_variation_changed(self, param_id):
+        if self._current_variation == self._prev_variation:
+            return False
+        if self._current_variation is None or self._prev_variation is None:
+            return True
+        [current_value, prev_value] = [x.param_value_indices.get(param_id, None) for x in [self._current_variation, self._prev_variation]]
+        return current_value != prev_value
+
+    def get_variation_from_param_id(self, param_id):
+        return self._current_variation.param_value_indices[param_id]
 
 class Variation(object):
 
