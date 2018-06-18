@@ -85,8 +85,9 @@ def handling_exceptions(fake_traceback=True, **kwargs):
         # Only in CPython we're able to fake the original, full traceback
         try:
             fake_tbs = create_traceback_proxy(frame_correction=2)
-        except (KeyError, IndexError):
+        except (KeyError, IndexError) as e:
             _logger.warn("Could not extract full traceback for exceptions handling")
+            _logger.trace("Extraction failure: {!r}", e, exc_info=True)
             fake_tbs = tuple()
     else:
         fake_tbs = tuple()
