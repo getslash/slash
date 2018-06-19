@@ -57,6 +57,19 @@ def test_fancy_message(long_headline, multiline):
         assert output.getvalue().count(message) == 1
 
 
+def test_console_reporter_with_closed_stream(forge):
+    def raise_io_error(*args, **kwargs):
+        raise IOError('args: {!r}, kwargs: {!r}'.format(args, kwargs))
+    output = StringIO()
+    reporter = ConsoleReporter(logbook.TRACE, output)
+    forge.replace_with(reporter._terminal._writer, 'write', raise_io_error)  # pylint: disable=protected-access
+    reporter.report_message('Hello')
+    reporter.report_error_message('Error')
+
+    forge.replay()
+    forge.restore_all_replacements()
+
+
 @pytest.fixture(params=list(range(logbook.DEBUG, logbook.CRITICAL + 1)))
 def level(request):
     return request.param
