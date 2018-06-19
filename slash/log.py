@@ -6,7 +6,6 @@ from contextlib import contextmanager, closing
 
 import logbook  # pylint: disable=F0401
 import logbook.more
-from vintage import warn_deprecation
 
 from . import context
 from ._compat import ExitStack
@@ -199,12 +198,7 @@ class SessionLogging(object):
     @contextmanager
     def _get_error_logging_context(self):
         with ExitStack() as stack:
-            path = config.root.log.errors_subpath
-            if path:
-                warn_deprecation('log.errors_subpath configuration is deprecated since 1.5.0. '
-                                 'Please use log.highlights_subpath instead')
-            else:
-                path = config.root.log.highlights_subpath
+            path = config.root.log.highlights_subpath
             def _error_added_filter(record, handler): # pylint: disable=unused-argument
                 return record.extra.get('highlight')
 

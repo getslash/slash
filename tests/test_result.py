@@ -186,10 +186,9 @@ def test_session_cleanups_under_global_result(suite, suite_test):
 
 
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
-@pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.highlights_subpath'])
 @pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
-def test_log_paths(log_path, log_subpath, config_path, config_override, logs_dir):
-    # pylint: disable=protected-access
+def test_log_paths(log_path, log_subpath, config_override, logs_dir):
+    config_path = 'log.highlights_subpath'
     extra_logs = ['/my/extra/log_{}'.format(i) for i in range(2)]
 
     config_override(config_path, log_subpath)
