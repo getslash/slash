@@ -96,7 +96,7 @@ class VariationFactory(object):
 
     def iter_variations(self):
         needed_ids = OrderedSet()
-
+        self._needed_fixtures.sort(key=lambda x: x.info.scope, reverse=True)
         for fixture in self._needed_fixtures:
             needed_ids.update(self._store.get_all_needed_fixture_ids(fixture))
 
