@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`810 major` Fixed handling of notification messages containing curly braces
 * :feature:`693` Remove backwards compatibility for ``log.errors_subpath`` configuration. Use ``log.highlights_subpath`` configuration instead.
 * :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
 * :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
