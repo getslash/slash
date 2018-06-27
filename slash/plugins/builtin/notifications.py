@@ -194,6 +194,7 @@ class Plugin(PluginInterface):
         return session.results.is_success(allow_skips=True)
 
     def _get_message(self, short_message, is_pdb):
+        short_message = _escape_format(short_message)
         result_str = 'entered PDB' if is_pdb else ("Succeeded" if self._finished_successfully() else "Failed")
         kwargs = {
             'session_id': session.id,
@@ -243,3 +244,7 @@ class Plugin(PluginInterface):
                 continue
             with handling_exceptions(swallow=True):
                 notifier_func(message)
+
+
+def _escape_format(s):
+    return s.replace('{', '{{').replace('}', '}}')
