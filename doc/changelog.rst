@@ -5,6 +5,8 @@ Changelog
 * :feature:`693` Remove backwards compatibility for ``log.errors_subpath`` configuration. Use ``log.highlights_subpath`` configuration instead.
 * :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
 * :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
+* :release:`1.6.1 <1-7-2018>`
+* :bug:`-` Fix support for Python 3.7
 * :release:`1.6.0 <6-5-2018>`
 * :feature:`771` Keyword arguments to ``registers_on`` now get forwarded to Gossip's ``register`` API
 * :feature:`769` Added a new configuration flag, ``log.show_raw_param_values``, defaulting to ``False``. If set to True, log lines for beginnings of tests will contain actual parametrization values instead of format-safe strings.
