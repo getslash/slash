@@ -11,7 +11,7 @@ Logbook>=1.2.0
 orderedset>=2.0.0
 requests>=1.1.0
 SQLAlchemy
-tmuxp
+libtmux
 raven
 py>=1.5.0
 pyparsing
