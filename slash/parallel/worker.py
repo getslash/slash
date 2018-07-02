@@ -107,6 +107,7 @@ class Worker(object):
                 watchdog_thread.join()
                 self.client.disconnect(self.client_id)
             finally:
+                context.session.initiate_cleanup()
                 if not stop_event.is_set():
                     stop_event.set()
                     watchdog_thread.join()

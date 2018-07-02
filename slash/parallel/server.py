@@ -172,6 +172,7 @@ class Server(object):
         self.state = ServerStates.STOP_SERVE
 
     def session_interrupted(self):
+        context.session.results.global_result.mark_interrupted()
         self.interrupted = True
         if self.state != ServerStates.STOP_SERVE:
             self.state = ServerStates.STOP_TESTS_SERVING

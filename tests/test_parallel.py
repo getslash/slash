@@ -81,7 +81,8 @@ def test_server_fails(parallel_suite):
 
     for test in parallel_suite:
         test.expect_deselect()
-    parallel_suite.run(expect_interruption=True)
+    results = parallel_suite.run(expect_interruption=True).session.results
+    assert not results.is_success(allow_skips=True)
 
 
 #test slash features with parallel
