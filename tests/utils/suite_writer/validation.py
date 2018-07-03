@@ -11,6 +11,10 @@ _logger = logbook.Logger(__name__)
 
 
 def validate_run(suite, run_result, expect_interruption, expect_session_errors):
+    if expect_interruption:
+        assert run_result.session.results.global_result.is_interrupted(), \
+        'Session global result is not marked as interrupted, even though interruption was expected'
+
     if expect_interruption or not run_result.session.results.is_success(allow_skips=True):
         assert run_result.exit_code != 0, '`slash run` unexpectedly returned 0'
     else:
