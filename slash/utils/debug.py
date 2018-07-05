@@ -57,7 +57,7 @@ def debug_if_needed(exc_info=None):
         exc_info = sys.exc_info()
     if exc_info[0] is None:
         return
-    if isinstance(exc_info[1], context.session.get_skip_exception_types()) and not config.root.debug.debug_skips:
+    if context.session and isinstance(exc_info[1], context.session.get_skip_exception_types()) and not config.root.debug.debug_skips:
         return
     if isinstance(exc_info[1], (SystemExit,) + exceptions.INTERRUPTION_EXCEPTIONS):
         return

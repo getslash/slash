@@ -8,15 +8,24 @@ from slash.exceptions import INTERRUPTION_EXCEPTIONS
 from slash.utils import debug
 
 
-def test_debug_if_needed_regular_exception(replaced_checkpoint, exc_info, debug_enabled):  # pylint: disable=unused-argument
+@pytest.mark.usefixtures("debug_enabled")
+def test_debug_if_needed_regular_exception(replaced_checkpoint, exc_info):
     with slash.Session():
         debug.debug_if_needed(exc_info)
     assert replaced_checkpoint.called
 
-def test_debug_if_needed_not_called(replaced_checkpoint, skipped_exc_info, debug_enabled):  # pylint: disable=unused-argument
+
+@pytest.mark.usefixtures("debug_enabled")
+def test_debug_if_needed_not_called(replaced_checkpoint, skipped_exc_info):
     with slash.Session():
         debug.debug_if_needed(skipped_exc_info)
     assert not replaced_checkpoint.called
+
+
+@pytest.mark.usefixtures("debug_enabled")
+def test_debug_if_needed_without_session(exc_info, replaced_checkpoint):
+    debug.debug_if_needed(exc_info)
+    assert replaced_checkpoint.called
 
 
 @pytest.mark.parametrize('filter_strings,should_pdb', [
