@@ -3,6 +3,7 @@ import sys
 import emport
 
 from slash.core.error import Error
+from slash.utils import traceback_utils
 from slash.utils.traceback_utils import _MAX_VARIABLE_VALUE_LENGTH
 
 
@@ -101,3 +102,18 @@ def test_self_attribute_throws():
     assert 'self' in locals
     for key in locals:
         assert 'self.' not in key
+
+
+class NonReprable(object):
+    def __repr__(self):
+        raise Exception('Repr error')
+
+
+def test_safe_repr_for_non_repable_object():
+    # pylint: disable=protected-access
+    obj = NonReprable()
+    returned = traceback_utils._safe_repr(obj, blacklisted_types=())
+    assert 'unprintable' in returned.lower()
+
+    returned = traceback_utils._safe_repr(obj, blacklisted_types=(NonReprable,))
+    assert 'unprintable' not in returned.lower()

@@ -11,6 +11,7 @@ from vintage import deprecated
 
 from .._compat import PY2
 from .. import context
+from ..conf import config
 from .python import get_underlying_func
 
 
@@ -51,6 +52,7 @@ def distill_call_stack(frame_correction=0, **kw):
 
 def _distill_frames(frames):
     returned = DistilledTraceback()
+    repr_blacklisted_types = tuple(config.root.log.repr_blacklisted_types)
     for frame in frames:
         if isinstance(frame, tuple):
             frame, lineno = frame
@@ -59,7 +61,7 @@ def _distill_frames(frames):
         if _is_frame_and_below_muted(frame):
             break
         if not _is_frame_muted(frame):
-            returned.frames.append(DistilledFrame(frame, lineno))
+            returned.frames.append(DistilledFrame(frame, lineno, repr_blacklisted_types=repr_blacklisted_types))
     return returned
 
 
@@ -142,7 +144,7 @@ class DistilledTraceback(object):
 
 class DistilledFrame(object):
 
-    def __init__(self, frame, lineno=None):
+    def __init__(self, frame, lineno=None, repr_blacklisted_types=None):
         super(DistilledFrame, self).__init__()
         self.python_frame = frame
         self.filename = os.path.abspath(frame.f_code.co_filename)
@@ -150,6 +152,9 @@ class DistilledFrame(object):
             lineno = frame.f_lineno
         self.lineno = lineno
         self.func_name = frame.f_code.co_name
+        if repr_blacklisted_types is None:
+            repr_blacklisted_types = tuple(config.root.log.repr_blacklisted_types)
+        self._repr_blacklisted_types = repr_blacklisted_types
         self._locals = self._capture_locals(frame)
         self._globals = self._capture_globals(frame)
         self.code_line = linecache.getline(self.filename, self.lineno).rstrip()
@@ -189,7 +194,7 @@ class DistilledFrame(object):
 
     def _capture_globals(self, frame):
         used_globals = set(frame.f_code.co_names)
-        return dict((global_name, {"value": _safe_repr(value)})
+        return dict((global_name, {"value": _safe_repr(value, self._repr_blacklisted_types)})
                     for global_name, value in frame.f_globals.items()
                     if global_name in used_globals and self._is_global_included(value))
 
@@ -199,7 +204,7 @@ class DistilledFrame(object):
         return True
 
     def _capture_locals(self, frame):
-        return dict((local_name, {"value": _safe_repr(local_value)})
+        return dict((local_name, {"value": _safe_repr(local_value, self._repr_blacklisted_types)})
                     for key, value in frame.f_locals.items()
                     if "@" not in key
                     for local_name, local_value in self._unwrap_local(key, value))
@@ -220,7 +225,7 @@ class DistilledFrame(object):
         returned += '    {.code_line}'.format(self)
         if include_vars and self.python_frame is not None:
             for name, value in _unwrap_self_locals(self.python_frame.f_locals.items()):
-                returned += '\n\t- {}: {}'.format(name, _safe_repr(value, truncate=False))
+                returned += '\n\t- {}: {}'.format(name, _safe_repr(value, self._repr_blacklisted_types, truncate=False))
             returned += '\n'
         return returned
 
@@ -252,16 +257,20 @@ def iter_distilled_object_attributes(obj):
 
 
 def distill_object_attributes(obj, truncate=True):
-
-    return {attr: value if isinstance(value, _ALLOWED_ATTRIBUTE_TYPES) else _safe_repr(value, truncate=truncate)
+    repr_blacklisted_types = tuple(config.root.log.repr_blacklisted_types)
+    return {attr: value if isinstance(value, _ALLOWED_ATTRIBUTE_TYPES) else _safe_repr(value, repr_blacklisted_types,
+                                                                                       truncate=truncate)
             for attr, value in iter_distilled_object_attributes(obj)}
 
 
-def _safe_repr(value, truncate=True):
-    try:
-        returned = repr(value)
-    except Exception:  # pylint: disable=broad-except
-        return "[Unprintable {!r} object]".format(type(value).__name__)
+def _safe_repr(value, blacklisted_types, truncate=True):
+    if blacklisted_types and isinstance(value, blacklisted_types):
+        returned = "<{!r} object {:x}>".format(type(value).__name__, id(value))
+    else:
+        try:
+            returned = repr(value)
+        except Exception:  # pylint: disable=broad-except
+            returned = "[Unprintable {!r} object]".format(type(value).__name__)
 
     if truncate and len(returned) > _MAX_VARIABLE_VALUE_LENGTH:
         returned = returned[:_MAX_VARIABLE_VALUE_LENGTH - 3] + '...'
