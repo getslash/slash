@@ -47,6 +47,7 @@ config = Config({
                                                     increase_doc='Make console less verbose (can be specified multiple times)'),
         "core_log_level": logbook.WARNING // Doc("Minimal level of slash log messages to show"),
         "color_console": None // Cmdline(on='--force-color', off='--no-color'),
+        "repr_blacklisted_types": [] // Doc("Blacklisted types that should not be repred in traceback"),
         "traceback_variables": False // Doc("Logs values of variables in traceback frames for added errors"),
         "console_traceback_level": 2 // Doc("Detail level of tracebacks") // Cmdline(arg="--tb"),
         "truncate_console_lines": True // Doc("truncate long log lines on the console") // Cmdline(arg='--truncate-console-lines', metavar='yes/no'),
