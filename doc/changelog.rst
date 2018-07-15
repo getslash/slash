@@ -6,6 +6,7 @@ Changelog
 * :feature:`693` Remove backwards compatibility for ``log.errors_subpath`` configuration. Use ``log.highlights_subpath`` configuration instead.
 * :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
 * :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
+* :release:`1.6.3 <15-7-2018>`
 * :release:`1.6.1 <1-7-2018>`
 * :bug:`-` Fix support for Python 3.7
 * :release:`1.6.0 <6-5-2018>`
