@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`1.6.3 <15-7-2018>`
 * :release:`1.6.1 <1-7-2018>`
 * :bug:`-` Fix support for Python 3.7
 * :release:`1.6.0 <6-5-2018>`
