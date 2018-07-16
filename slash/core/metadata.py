@@ -2,6 +2,7 @@ import itertools
 import sys
 
 from ..ctx import context
+from ..exceptions import SlashInternalError
 
 _sort_key_generator = itertools.count(1)
 
@@ -24,7 +25,9 @@ class Metadata(object):
         if factory is not None:
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
-            assert self.module_name, 'Could not find module for {}'.format(test)
+            if not self.module_name:
+                raise SlashInternalError('Could not find module for {}'.format(test))
+
             self._file_path = factory.get_filename()
             self.factory_name = factory.get_factory_name()
         else:
@@ -32,7 +35,8 @@ class Metadata(object):
             self._file_path = sys.modules[self.module_name].__file__
             self.factory_name = '?'
         self.variation = test.get_variation()
-        assert self.variation is not None
+        if self.variation is None:
+            raise SlashInternalError('{} has no variations'.format(test))
 
         self._address_override = None
         #: Address string to identify the test inside the file from which it was loaded
@@ -82,7 +86,8 @@ class Metadata(object):
     address = property(get_address)
 
     def allocate_id(self):
-        assert self.id is None
+        if self.id is not None:
+            raise SlashInternalError('id field of metadata object should be None, is {}'.format(self.id))
         self.id = context.session.id_space.allocate()
 
     def set_sort_key(self, key):

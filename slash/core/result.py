@@ -419,7 +419,9 @@ class SessionResults(object):
         return itertools.chain(self.iter_test_results(), [self.global_result])
 
     def create_result(self, test):
-        assert test.__slash__.id not in self._results_dict
+        if test.__slash__.id in self._results_dict:
+            raise exceptions.SlashInternalError("{} shouldn't appear in results dict before adding its result".format(test.__slash__.id))
+
         returned = Result(test.__slash__)
         self._results_dict[test.__slash__.id] = returned
         return returned

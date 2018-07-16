@@ -1,3 +1,4 @@
+from .exceptions import SlashInternalError
 from .reporting.null_reporter import NullReporter
 
 __all__ = ["context", "session", "test", "test_id", "g", "internal_globals"]
@@ -79,7 +80,9 @@ class _ContextStack(object):
         return ctx
 
     def pop(self):
-        assert self._stack
+        if not self._stack:
+            raise SlashInternalError('Attempting to pop context with empty stack')
+
         if len(self._stack) == 1:
             raise RuntimeError("No more contexts to pop")
         return self._stack.pop(-1)

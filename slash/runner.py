@@ -8,7 +8,7 @@ from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions
-from .exceptions import NoActiveSession
+from .exceptions import NoActiveSession, SlashInternalError
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.exclusions import is_excluded
@@ -202,7 +202,9 @@ def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
 
 def _set_test_metadata(test):
     ensure_test_metadata(test)
-    assert test.__slash__.test_index0 is None
+    if test.__slash__.test_index0 is not None:
+        raise SlashInternalError('Test index of {} should be None when setting test metadata but is {}'
+                                 .format(test, test.__slash__.test_index0))
     test.__slash__.test_index0 = next(context.session.test_index_counter) if config.root.parallel.worker_id is None \
                                  else context.session.current_parallel_test_index
 

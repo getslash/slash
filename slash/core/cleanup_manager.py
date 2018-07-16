@@ -7,7 +7,7 @@ from vintage import warn_deprecation
 from .. import hooks
 from ..ctx import context
 from ..exception_handling import handling_exceptions
-from ..exceptions import CannotAddCleanup, IncorrectScope
+from ..exceptions import CannotAddCleanup, IncorrectScope, SlashInternalError
 
 _logger = logbook.Logger(__name__)
 
@@ -121,7 +121,8 @@ class CleanupManager(object):
 
         _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
         scope = self._scope_stack[-1]
-        assert scope.name == scope_name, 'Attempted to pop scope {!r}, but current scope is {!r}'.format(scope_name, scope.name)
+        if scope.name != scope_name:
+            raise SlashInternalError('Attempted to pop scope {!r}, but current scope is {!r}'.format(scope_name, scope.name))
         try:
             self.call_cleanups(
                 scope=scope,
