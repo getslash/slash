@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`804 major` Swallow IO Errors from console reporter
 * :bug:`812 major` Fixed debug_if_needed when called before session initialized
 * :bug:`810 major` Fixed handling of notification messages containing curly braces
 * :feature:`693` Remove backwards compatibility for ``log.errors_subpath`` configuration. Use ``log.highlights_subpath`` configuration instead.
