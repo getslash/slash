@@ -91,6 +91,13 @@ class TmuxExecutableNotFound(SlashException):
     pass
 
 
+class SlashInternalError(SlashException):
+    def __str__(self):
+        return "\n".join(("INTERNAL ERROR:",
+                          super(SlashInternalError, self).__str__(),
+                          "Please open issue at: https://github.com/getslash/slash/issues/new"))
+
+
 class TestFailed(AssertionError):
 
     """
