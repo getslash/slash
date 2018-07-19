@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :release:`1.6.4 <19-7-2018>`
+* :bug:`820` Fix error handling when capturing distilled tracebacks
 * :release:`1.6.3 <15-7-2018>`
 * :release:`1.6.1 <1-7-2018>`
 * :bug:`-` Fix support for Python 3.7

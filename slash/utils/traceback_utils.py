@@ -207,11 +207,11 @@ class DistilledFrame(object):
         return dict((local_name, {"value": _safe_repr(local_value, self._repr_blacklisted_types)})
                     for key, value in frame.f_locals.items()
                     if "@" not in key
-                    for local_name, local_value in self._unwrap_local(key, value))
+                    for local_name, local_value in self._unwrap_local(key, value, self._repr_blacklisted_types))
 
-    def _unwrap_local(self, local_name, local_value):
+    def _unwrap_local(self, local_name, local_value, repr_blacklisted_types):
         yield local_name, local_value
-        if local_name != 'self':
+        if local_name != 'self' or isinstance(local_value, repr_blacklisted_types):
             return
 
         for attr, value in iter_distilled_object_attributes(local_value):
@@ -224,17 +224,18 @@ class DistilledFrame(object):
         returned = '  {0.filename}, line {0.lineno}:\n'.format(self)
         returned += '    {.code_line}'.format(self)
         if include_vars and self.python_frame is not None:
-            for name, value in _unwrap_self_locals(self.python_frame.f_locals.items()):
+            for name, value in _unwrap_self_locals(self.python_frame.f_locals.items(), self._repr_blacklisted_types):
                 returned += '\n\t- {}: {}'.format(name, _safe_repr(value, self._repr_blacklisted_types, truncate=False))
             returned += '\n'
         return returned
 
 
-def _unwrap_self_locals(local_pairs):
+def _unwrap_self_locals(local_pairs, blacklisted_types):
     for name, value in local_pairs:
+
         yield name, value
-        if name == 'self':
-            for attr_name, attr_value in getattr(value, '__dict__', {}).items():
+        if name == 'self' and not isinstance(value, blacklisted_types):
+            for attr_name, attr_value in iter_distilled_object_attributes(value):
                 yield 'self.{}'.format(attr_name), attr_value
 
 
@@ -265,7 +266,7 @@ def distill_object_attributes(obj, truncate=True):
 
 def _safe_repr(value, blacklisted_types, truncate=True):
     if blacklisted_types and isinstance(value, blacklisted_types):
-        returned = "<{!r} object {:x}>".format(type(value).__name__, id(value))
+        returned = _format_repr_skip_string(value)
     else:
         try:
             returned = repr(value)
@@ -275,3 +276,7 @@ def _safe_repr(value, blacklisted_types, truncate=True):
     if truncate and len(returned) > _MAX_VARIABLE_VALUE_LENGTH:
         returned = returned[:_MAX_VARIABLE_VALUE_LENGTH - 3] + '...'
     return returned
+
+
+def _format_repr_skip_string(value):
+    return "<{!r} object {:x}>".format(type(value).__name__, id(value))
