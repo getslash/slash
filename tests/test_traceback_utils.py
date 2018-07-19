@@ -117,3 +117,27 @@ def test_safe_repr_for_non_repable_object():
 
     returned = traceback_utils._safe_repr(obj, blacklisted_types=(NonReprable,))
     assert 'unprintable' not in returned.lower()
+
+
+class NonDictable(object):
+
+    def __getattribute__(self, attr):
+        if attr == '__dict__':
+            raise Exception('dict error')
+        return super(NonDictable, self).__getattribute__(attr)
+
+    def method(self):
+        1/0 # pylint: disable=pointless-statement
+
+
+def test_dict_getting_raises_exception():
+
+    def func():
+        x = NonDictable()
+        x.method()
+
+    try:
+        func()
+    except ZeroDivisionError:
+        error_string = Error(exc_info=sys.exc_info()).traceback.to_string(include_vars=True)
+    assert 'self:' in error_string
