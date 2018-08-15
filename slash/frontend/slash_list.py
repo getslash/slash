@@ -56,8 +56,8 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
     _print = Printer(report_stream, enable_output=parsed_args.show_output, force_color=parsed_args.force_color,
                      enable_color=parsed_args.enable_color, error_stream=error_stream)
     try:
+        slash.site.load()
         with slash.Session() as session:
-            slash.site.load()
 
             if not parsed_args.paths and not parsed_args.suite_files:
                 parsed_args.paths = config.root.run.default_sources
