@@ -52,6 +52,12 @@ class RunnableTest(object):
                 returned.append((req, reason))
         return returned
 
+    def _get_fixture_tags(self):
+        tags = NO_TAGS
+        for fixture in self.get_required_fixture_objects():
+            tags += fixture.get_tags(self._fixture_store)
+        return tags
+
     def _get_fixtures_requirements(self):
         fixture_requirements = [item for fixture in self.get_required_fixture_objects() for item in fixture.get_requirements(self._fixture_store)]
         autouse_fixture_requirements = [item for fixture in self._fixture_store.iter_autouse_fixtures_in_namespace(self.get_fixture_namespace()) \

@@ -12,6 +12,7 @@ from .parameters import iter_parametrization_fixtures
 from .fixture_base import FixtureBase
 from .utils import get_real_fixture_name_from_argument
 from ..requirements import get_requirements
+from ..tagging import get_tags, NO_TAGS, Tags
 
 _fixture_id = itertools.count()
 
@@ -25,6 +26,14 @@ class Fixture(FixtureBase):
         self.info = self.fixture_func.__slash_fixture__
         self.scope = self.info.scope
         self.namespace = Namespace(store, store.get_current_namespace())
+
+    def get_tags(self, store):
+        current_fixture_tags = get_tags(self.fixture_func)
+        returned = current_fixture_tags.copy() if current_fixture_tags is not NO_TAGS else Tags()
+        required_fixtures_tags = [fixture.get_tags(store) for fixture in store.get_required_fixture_objects(self.fixture_func, self.namespace)]
+        for tags in required_fixtures_tags:
+            returned.update(tags)
+        return returned
 
     def is_parameter(self):
         return False
