@@ -111,7 +111,7 @@ class Server(object):
 
     @server_func
     def validate_collection(self, client_id, client_collection):
-        if not self.collection == client_collection:
+        if set(self.collection) - set(client_collection):
             _logger.error("Client_id {} sent wrong collection", client_id)
             return False
         self.num_collections_validated += 1
