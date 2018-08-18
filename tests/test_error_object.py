@@ -74,6 +74,7 @@ def test_error_frame_objects_forgotten_by_default(suite, suite_test):
         assert frame.python_frame is None
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_frame_locals(error):
     assert error.traceback.frames[-3].locals == {
         "local_func_1": {
@@ -91,11 +92,13 @@ def test_to_list(error):
     json.dumps(serialized)
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_frame_locals_no_assertion_markers(assertion_error):
     for var_name, _ in assertion_error.cause.locals.items():
         assert "@" not in var_name
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_frame_globals(error):
     assert error.traceback.frames[-3].globals == {
         "global_func_1": {

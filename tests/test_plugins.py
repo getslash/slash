@@ -5,7 +5,7 @@ import gossip
 import pytest
 import slash
 from slash._compat import PY2
-from slash import hooks, plugins
+from slash import plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
 from .utils import NamedPlugin, maybe_decorate
@@ -212,7 +212,7 @@ def test_register_custom_hooks_strict_group():
 
 def test_builtin_plugins_hooks_start_condition():
     "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
-    for hook_name, hook in hooks.get_all_hooks():  # pylint: disable=unused-variable
+    for hook in gossip.get_group('slash').get_hooks():
         for registration in hook.get_registrations():
             assert registration.token.startswith('slash.'), 'Callback {} is not a builtin!'.format(hook.full_name)
 
@@ -225,6 +225,7 @@ def test_builtin_plugins_are_installed():
         assert filename[:(-3)] in installed
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_get_installed_plugins():
 
     class CustomPlugin(PluginInterface):
@@ -256,7 +257,7 @@ def test_cannot_install_incompatible_subclasses(no_plugins):
 
 
 def test_install_uninstall(no_plugins):
-    plugin_name = "some_plugin_name"
+    plugin_name = "some plugin name"
 
     class CustomPlugin(PluginInterface):
 

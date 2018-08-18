@@ -171,7 +171,7 @@ def validate_xml(xml_filename, suite=None):
         assert child.get('name')
         assert child.get('time')
 
-        for subchild in child.getchildren():
+        for subchild in iter(child):
             assert subchild.tag in ['skipped', 'error', 'failure']
     return root
 

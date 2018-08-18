@@ -3,10 +3,10 @@ from contextlib import contextmanager
 from .function import CodeElement, Method
 from .element import Element
 from .method_test import MethodTest
-from .test_container import TestContainer
+from .test_container import SuiteWriterTestContainer
 
 
-class Class(TestContainer, CodeElement, Element):
+class Class(SuiteWriterTestContainer, CodeElement, Element):
 
     def __init__(self, suite, file):
         super(Class, self).__init__(suite)

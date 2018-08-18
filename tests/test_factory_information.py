@@ -3,7 +3,7 @@ import pytest
 
 import slash
 from slash.core.function_test import FunctionTestFactory
-from slash.core.test import TestTestFactory
+from slash.core.test import TestTestFactory as _TestTestFactory
 
 
 def test_factory_name(factory, expected_factory_name):
@@ -58,7 +58,7 @@ def expected_module_name(factory, explicit):
 def explicit(request):
     return request.param
 
-@pytest.fixture(params=[FunctionTestFactory, TestTestFactory])
+@pytest.fixture(params=[FunctionTestFactory, _TestTestFactory])
 def factory_class(request):
     return request.param
 
@@ -69,7 +69,7 @@ def factory_param(factory_class):
             pass
 
         return test_something
-    elif factory_class is TestTestFactory:
+    elif factory_class is _TestTestFactory:
 
         class ExampleTest(slash.Test):
 

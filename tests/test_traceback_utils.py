@@ -1,6 +1,7 @@
 import sys
 
 import emport
+import vintage
 
 from slash.core.error import Error
 from slash.utils import traceback_utils
@@ -98,9 +99,10 @@ def test_self_attribute_throws():
     else:
         assert False, 'Did not raise'
 
-    locals = error.traceback.frames[-1].locals
-    assert 'self' in locals
-    for key in locals:
+    with vintage.get_no_deprecations_context():
+        locals_ = error.traceback.frames[-1].locals
+    assert 'self' in locals_
+    for key in locals_:
         assert 'self.' not in key
 
 

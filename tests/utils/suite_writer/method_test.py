@@ -1,9 +1,9 @@
 import itertools
 
-from .test import Test
+from .test import SuiteWriterTest
 
 
-class MethodTest(Test):  # pylint: disable=abstract-method
+class MethodTest(SuiteWriterTest):  # pylint: disable=abstract-method
 
     def __init__(self, suite, cls):
         super(MethodTest, self).__init__(suite, cls.file)
