@@ -13,6 +13,9 @@ from contextlib import contextmanager
 
 _native_logger = logbook.Logger('slash.native_warnings')
 
+def capture_all_warnings():
+    warnings.simplefilter('always')
+    warnings.filterwarnings('ignore', category=ImportWarning)
 
 class LogbookWarning(UserWarning):
     pass
@@ -27,17 +30,20 @@ class SessionWarnings(object):
 
     @contextmanager
     def capture_context(self):
-        warnings.simplefilter('always')
-        warnings.filterwarnings('ignore', category=ImportWarning)
-
+        capture_all_warnings()
         with warning_callback_context(self._capture_native_warning):
             yield
 
-    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
-        warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
+    def warning_should_be_filtered(self, warning):
         for ignored_warning in _ignored_warnings:
             if ignored_warning.matches(warning):
-                return
+                return True
+        return False
+
+    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
+        warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
+        if self.warning_should_be_filtered(warning):
+            return
         self.add(warning)
         if not issubclass(category, LogbookWarning):
             _native_logger.warning('{filename}:{lineno}: {warning!r}', filename=filename, lineno=lineno, warning=warning)
@@ -89,8 +95,8 @@ class RecordedWarning(object):
     def __init__(self, details, message, category=None):
         super(RecordedWarning, self).__init__()
         self.details = details
-        self.details['session_id'] = context.session_id
-        self.details['test_id'] = context.test_id
+        self.details['session_id'] = context.session_id if context.session else None
+        self.details['test_id'] = context.test_id if context.test_id else None
         self.details.setdefault('func_name', None)
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
         self.category = category
