@@ -56,10 +56,14 @@ class FixtureStore(object):
                 yield f
 
     def call_with_fixtures(self, test_func, namespace, trigger_test_start=False, trigger_test_end=False):
-
         if not nofixtures.is_marked(test_func):
             fixture_names = self.get_required_fixture_names(test_func)
             kwargs = self.get_fixture_dict(fixture_names, namespace)
+            used_fixtures_decorator_names = getattr(test_func, '__extrafixtures__', None)
+            if used_fixtures_decorator_names is not None:
+                used_fixture_names_only = set(used_fixtures_decorator_names) - set(fixture_names)
+                for name in used_fixture_names_only:
+                    self.get_fixture_value(namespace.get_fixture_by_name(name))
         else:
             kwargs = {}
 

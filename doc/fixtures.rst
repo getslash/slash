@@ -20,7 +20,7 @@ Slash represents fixtures in the form of arguments to your test function, thus d
 		    microwave.turn_on()
 		    assert microwave.get_state() == STATE_ON
 
-So far so good, but what exactly is *microwave*? Where does it come from? 
+So far so good, but what exactly is *microwave*? Where does it come from?
 
 The answer is that Slash is responsible of looking up needed fixtures for each test being run. Each function is examined, and telling by its arguments, Slash goes ahead and looks for a fixture definition called *microwave*.
 
@@ -37,8 +37,8 @@ The fixture definition is where the logic of your fixture goes. Let's write the 
 
 		@slash.fixture
 		def microwave():
-		    # initialization of the actual microwave instance   
-		    return Microwave(...)  
+		    # initialization of the actual microwave instance
+		    return Microwave(...)
 
 
 In addition to the test file itself, you can also put your fixtures in a file called `slashconf.py`, and put it in your test directory. Multiple such files can exist, and a test automatically "inherits" fixtures from the entire directory hierarchy above it.
@@ -65,7 +65,7 @@ Opting Out of Fixtures
 In some cases you may want to turn off Slash's automatic deduction of parameters as fixtures. For instance in the following case you want to explicitly call a version of a base class's ``before`` method:
 
 .. code-block:: python
-       
+
        >>> class BaseTest(slash.Test):
        ...     def before(self, param):
        ...         self._construct_case_with(param)
@@ -79,7 +79,7 @@ In some cases you may want to turn off Slash's automatic deduction of parameters
 This case would fail to load, since Slash will assume ``param`` is a fixture name and will not find such a fixture to use. The solution is to use :func:`slash.nofixtures` on the parent class's ``before`` method to mark that ``param`` is *not* a fixture name:
 
 .. code-block:: python
-       
+
        >>> class BaseTest(slash.Test):
        ...     @slash.nofixtures
        ...     def before(self, param):
@@ -130,7 +130,7 @@ As you add more parametrizations into dependent fixtures in the dependency graph
 Fixture Requirements
 --------------------
 
-.. index:: 
+.. index::
    pair: fixtures; requirements
 
 It is possible to specify requirements for fixture functions, very much like :ref:`test requirements <requirements>`. Fixtures for which requirements are not met will prevent their dependent tests from being run, being skipped instead:
@@ -143,7 +143,7 @@ It is possible to specify requirements for fixture functions, very much like :re
                     ...
 
 .. seealso:: :ref:`requirements`
-                
+
 
 Fixture Scopes
 --------------
@@ -164,7 +164,7 @@ Slash also supports *session* and *module* scoped fixtures. *Session fixtures* l
 		    @this.add_cleanup
 		    def cleanup():
 		        print('Hurray! the session has ended')
-		
+
 
 		@slash.fixture(scope='module')
 		def some_module_fixture(this):
@@ -179,11 +179,11 @@ Test Start/End for Widely Scoped Fixtures
 When a fixture is scoped wider than a single test, it is useful to add custom callbacks to the fixtures to be called when a test starts or ends. This is done via the ``this.test_start`` and ``this.test_end`` callbacks, which are specific to the current fixture.
 
 .. code-block:: python
-       
+
     @slash.fixture(scope='module')
     def background_process(this):
         process = SomeComplexBackgroundProcess()
-	
+
 	@this.test_start
 	def on_test_start():
 	    process.make_sure_still_running()
@@ -198,7 +198,7 @@ When a fixture is scoped wider than a single test, it is useful to add custom ca
 
 
 .. note:: Exceptions propagating out of the ``test_start`` or ``test_end`` hooks will fail the test, possibly preventing it from starting properly
-		    
+
 
 Autouse Fixtures
 ----------------
@@ -217,13 +217,33 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 		    def cleanup():
 		        shutil.rmtree(directory)
 
+use_fixtures decorator
+----------------
+
+In some cases, you need to use a fixture and don't need its return value. In such cases, rather than passing the fixture's name as a parameter and not using it in the test, you can use the use_fixtures decorator, as follows:
+
+.. code-block:: python
+
+		@slash.fixture()
+		def used_fixture1():
+		    """do something"""
+		    pass
+		@slash.fixture()
+		def used_fixture2():
+				"""do another thing"""
+				pass
+		@slash.used_fixtures(["used_fixture1, used_fixture2"])
+		def test_something():
+      	pass
+
+
 Aliasing Fixtures
 -----------------
 
 In some cases you may want to name your fixtures descriptively, e.g.:
 
 .. code-block:: python
-       
+
        @slash.fixture
        def microwave_with_up_to_date_firmware(microwave):
            microwave.update_firmware()
@@ -232,7 +252,7 @@ In some cases you may want to name your fixtures descriptively, e.g.:
 Although this is a very nice practice, it makes tests clumsy and verbose:
 
 .. code-block:: python
-       
+
        def test_turning_off(microwave_with_up_to_date_firmware):
            microwave_with_up_to_date_firmware.turn_off()
 	   assert microwave_with_up_to_date_firmware.is_off()
@@ -241,7 +261,7 @@ Although this is a very nice practice, it makes tests clumsy and verbose:
 Fortunately, Slash allows you to *alias* fixtures, using the :func:`slash.use` shortcut:
 
 .. code-block:: python
-       
+
        def test_turning_off(m: slash.use('microwave_with_up_to_date_firmware')):
            m.turn_off()
 	   assert m.is_off()
@@ -262,7 +282,7 @@ Yielding Fixtures
 Fixtures defined as generators are automatically detected by Slash. In this mode, the fixture is run as a generator, with the yielded value acting as the fixture value. Code after the yield is treated as cleanup code (similar to using ``this.add_cleanup``):
 
 .. code-block:: python
-       
+
        @slash.fixture
        def microwave(model_name):
            m = Microwave(model_name)
@@ -277,7 +297,7 @@ Generator Fixtures
 :func:`slash.generator_fixture` is a shortcut for a fixture returning a single parametrization:
 
 .. code-block:: python
-       
+
        @slash.generator_fixture
        def model_types():
            for model_config in all_model_configs:
@@ -288,7 +308,7 @@ Generator Fixtures
 In general, this form:
 
 .. code-block:: python
-       
+
        @slash.generator_fixture
        def fixture():
            yield from x
@@ -296,14 +316,14 @@ In general, this form:
 is equivalent to this form:
 
 .. code-block:: python
-       
+
        @slash.fixture
        @slash.parametrize('param', x)
        def fixture(param):
            return param
 
 .. versionadded: 1.0
-		    
+
 
 Listing Available Fixtures
 --------------------------
