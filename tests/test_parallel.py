@@ -345,3 +345,11 @@ def test_worker_error_logs(parallel_suite, config_override):
     with open(file_path) as error_file:
         line = error_file.readline()
         assert 'interrupted' in line
+
+def test_shuffle(parallel_suite):
+    @slash.hooks.tests_loaded.register   # pylint: disable=no-member
+    def tests_loaded(tests):   # pylint: disable=unused-variable
+        for index, test in enumerate(reversed(tests)):
+            test.__slash__.set_sort_key(index)
+
+    parallel_suite.run()

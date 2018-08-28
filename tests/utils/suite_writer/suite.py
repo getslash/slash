@@ -136,7 +136,6 @@ class Suite(object):
         args.extend(additional_args)
         if self.is_parallel:
             args.extend(['--parallel', str(num_workers), '-vvvvv', '--parallel-addr', 'localhost'])
-            sort = False
         with self._capture_events(returned), self._custom_sorting(sort):
             with self._custom_slashrc(path):
                 app = slash_run(
