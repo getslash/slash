@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`837` Fix handling exceptions during ``_log_file_handler_context``
 * :release:`1.6.4 <19-7-2018>`
 * :bug:`820` Fix error handling when capturing distilled tracebacks
 * :release:`1.6.3 <15-7-2018>`
