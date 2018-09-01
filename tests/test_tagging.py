@@ -46,6 +46,14 @@ def test_tags_addition_regular():
     assert tags3._tags == {'a': 'b', 'c': 'd'}
 
 
+def test_tags_addition_conflicting_keys():
+    tags1 = Tags({'a': 'b'})
+    conlifcting_tags = Tags({'a': 'c'})
+    assert (tags1 + tags1)._tags == tags1._tags # pylint: disable=protected-access
+    with pytest.raises(TaggingConflict):
+        tags1 + conlifcting_tags # pylint: disable=pointless-statement
+
+
 def test_setting_getting_tags_on_metadata(taggable):
 
     slash.tag('tagname')(taggable)
@@ -94,6 +102,53 @@ def test_tagging_twice_allowed_no_value():
     tagger(test_something)
 
 
+def test_tagging_fixture(suite_builder):
+    # pylint: disable=unused-variable
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash # pylint: disable=redefined-outer-name, reimported
+        @slash.tag('tag-1')
+        @slash.fixture
+        def fixture1():
+            pass
+
+        @slash.tag('tag-2')
+        @slash.fixture
+        def fixture2(fixture1):  # pylint: disable=unused-argument
+            pass
+
+        @slash.tag('test-tag')
+        def test_depend_composite_fixture(fixture2):  # pylint: disable=unused-argument
+            assert set(slash.context.test.get_tags()) == {'tag-1', 'tag-2', 'test-tag'}
+
+        @slash.tag('test-tag')
+        def test_depend_simple_fixture(fixture1):  # pylint: disable=unused-argument
+            assert set(slash.context.test.get_tags()) == {'tag-1', 'test-tag'}
+
+        def test_no_fixtures():
+            assert not set(slash.context.test.get_tags())
+
+        @slash.tag('tag-1')
+        def test_and_fixture_same_tag(fixture1):  # pylint: disable=unused-argument
+            assert set(slash.context.test.get_tags()) == {'tag-1'}
+
+    suite_builder.build().run().assert_success(4)
+
+def test_fixture_and_test_overrides(suite_builder):
+    # pylint: disable=unused-variable
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash # pylint: disable=redefined-outer-name, reimported
+        @slash.tag('tag-1', 'fixture_value')
+        @slash.fixture
+        def fixture1():
+            pass
+
+        @slash.tag('tag-1', 'test_value')
+        def test_depend_composite_fixture(fixture1):  # pylint: disable=unused-argument
+            pass
+
+    suite_builder.build().run().assert_session_error("Conflicting tag")
 
 # more tags in test_pattern_matching.py
 
