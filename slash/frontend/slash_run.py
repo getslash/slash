@@ -16,7 +16,6 @@ from ..parallel.worker import Worker
 _logger = logbook.Logger(__name__)
 
 def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=None, working_directory=None):
-
     if report_stream is None:
         report_stream = sys.stderr
     app = Application()

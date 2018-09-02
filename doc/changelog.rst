@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`738` Collect warnings that were omitted before session started
 * :feature:`650` Fixtures can now be tagged the same way as tests
 * :feature:`803` Add exception class for internal Slash errors: ``SlashInternalError``
 * :bug:`804 major` Swallow IO Errors from console reporter
