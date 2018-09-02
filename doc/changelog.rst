@@ -9,6 +9,8 @@ Changelog
 * :feature:`693` Remove backwards compatibility for ``log.errors_subpath`` configuration. Use ``log.highlights_subpath`` configuration instead.
 * :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
 * :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
+* :release:`1.6.5 <2-9-2018>`
+* :bug:`837` Fix handling exceptions during ``_log_file_handler_context``
 * :release:`1.6.4 <19-7-2018>`
 * :bug:`820` Fix error handling when capturing distilled tracebacks
 * :release:`1.6.3 <15-7-2018>`
