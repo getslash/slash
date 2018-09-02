@@ -2,7 +2,7 @@ import datetime
 import numbers
 import os
 import sys
-from contextlib import contextmanager, closing
+from contextlib import contextmanager
 
 import logbook  # pylint: disable=F0401
 import logbook.more
@@ -260,19 +260,23 @@ class SessionLogging(object):
                 ensure_containing_directory(log_path)
                 if symlink:
                     self._try_create_symlink(log_path, symlink)
-                with closing(self._create_log_file_handler(log_path, bubble=bubble, use_compression=use_compression, \
-                                                           use_rotation=use_rotation, filter=filter)) as handler:
+                handler = self._create_log_file_handler(log_path, bubble=bubble, use_compression=use_compression,
+                                                        use_rotation=use_rotation, filter=filter)
+                try:
                     self._log_path_to_handler[log_path] = handler
                     self._set_formatting(handler, config.root.log.format)
-                    yield handler
-                self._log_path_to_handler[log_path] = None
-                hooks.log_file_closed(path=log_path, result=result)  # pylint: disable=no-member
-                if config.root.log.cleanup.enabled and self._should_delete_log(result):
-                    with handling_exceptions(swallow=True):
-                        os.remove(log_path)
-                        dir_path = os.path.dirname(log_path)
-                        if not os.listdir(dir_path) and dir_path != self._normalize_path(config.root.log.root):
-                            os.rmdir(dir_path)
+                    with handling_exceptions():
+                        yield handler
+                finally:
+                    handler.close()
+                    self._log_path_to_handler[log_path] = None
+                    hooks.log_file_closed(path=log_path, result=result)  # pylint: disable=no-member
+                    if config.root.log.cleanup.enabled and self._should_delete_log(result):
+                        with handling_exceptions(swallow=True):
+                            os.remove(log_path)
+                            dir_path = os.path.dirname(log_path)
+                            if not os.listdir(dir_path) and dir_path != self._normalize_path(config.root.log.root):
+                                os.rmdir(dir_path)
 
 
     def _normalize_path(self, p):
