@@ -2,6 +2,7 @@ Changelog
 =========
 
 * :feature:`650` Fixtures can now be tagged the same way as tests
+* :bug:`837 major` Fix handling exceptions during ``_log_file_handler_context``
 * :feature:`803` Add exception class for internal Slash errors: ``SlashInternalError``
 * :bug:`804 major` Swallow IO Errors from console reporter
 * :bug:`812 major` Fixed debug_if_needed when called before session initialized
