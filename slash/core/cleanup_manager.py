@@ -27,6 +27,12 @@ class CleanupManager(object):
         self._pending = []
         self._allow_implicit_scopes = True
         self._default_scope = None
+        self._current_scope = None
+
+    def get_current_scope_name(self):
+        if self._current_scope is None:
+            return None
+        return self._current_scope.name
 
     @contextmanager
     def forbid_implicit_scoping_context(self):
@@ -153,7 +159,12 @@ class CleanupManager(object):
                 continue
             with handling_exceptions(swallow=True):
                 _logger.trace("Calling cleanup: {0}", cleanup)
-                cleanup()
+                previous_scope = self._current_scope
+                self._current_scope = scope
+                try:
+                    cleanup()
+                finally:
+                    self._current_scope = previous_scope
 
 
 
