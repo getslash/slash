@@ -5,12 +5,12 @@ from .function import Function
 
 _SUCCESS, _FAIL, _ERROR, _INTERRUPT, _SKIP, _NOT_RUN = ['SUCCESS', 'FAIL', 'ERROR', 'INTERRUPT', 'SKIP', 'NOT_RUN']
 
-class Test(Function, Element):
+class SuiteWriterTest(Function, Element):
 
     cls = None
 
     def __init__(self, suite, file):
-        super(Test, self).__init__(suite)
+        super(SuiteWriterTest, self).__init__(suite)
         self.file = file
         self._expected_result = _SUCCESS
         self._selected = True
@@ -78,11 +78,11 @@ class Test(Function, Element):
 
     def _write_prologue(self, code_formatter):
         self._write_event(code_formatter, 'test_start')
-        super(Test, self)._write_prologue(code_formatter)
+        super(SuiteWriterTest, self)._write_prologue(code_formatter)
 
     def _write_epilogue(self, code_formatter):
         self._write_event(code_formatter, 'test_end')
-        super(Test, self)._write_epilogue(code_formatter)
+        super(SuiteWriterTest, self)._write_epilogue(code_formatter)
 
     def _get_function_name(self):
         return 'test_{}'.format(self.id)

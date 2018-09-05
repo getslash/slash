@@ -1,7 +1,7 @@
-from .test import Test
+from .test import SuiteWriterTest
 
 
-class NonMethodTest(Test):  # pylint: disable=abstract-method
+class NonMethodTest(SuiteWriterTest):  # pylint: disable=abstract-method
 
     cls = None
 

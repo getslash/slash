@@ -1,10 +1,10 @@
 from .element import Element
 
 
-class TestContainer(Element):
+class SuiteWriterTestContainer(Element):
 
     def __init__(self, suite):
-        super(TestContainer, self).__init__(suite)
+        super(SuiteWriterTestContainer, self).__init__(suite)
         self._tests = []
 
     @property

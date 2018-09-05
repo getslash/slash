@@ -34,7 +34,7 @@ def report_stream():
 class InternalPlugin(PluginInterface):
 
     def get_name(self):
-        return "internal-plugin"
+        return "internal plugin"
 
     def configure_argument_parser(self, parser):
         parser.add_argument("--internal-plugin-option")

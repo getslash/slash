@@ -122,6 +122,7 @@ def test_unknown_hook_names(request):
     assert re.search(r"\bUnknown hooks\b.*", str(caught.value))
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_custom_hook_names(request):
     "Make sure that plugins with unknown hook names get discarded"
     class Plugin(PluginInterface):

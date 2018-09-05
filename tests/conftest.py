@@ -13,6 +13,7 @@ import slash
 import slash.plugins
 from slash.loader import Loader
 from slash.core.result import GlobalResult, Result
+from vintage import get_no_deprecations_context
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
@@ -248,7 +249,7 @@ def plugin(no_plugins):  # pylint: disable=unused-argument
             self.session_start_call_count = 0
 
         def get_name(self):
-            return "start-session"
+            return "start session"
 
         def session_start(self):
             self.session_start_call_count += 1
@@ -316,6 +317,12 @@ def yield_fixture_decorator(request):
     if should_use_explicitly:
         return slash.yield_fixture
     return slash.fixture
+
+
+@pytest.yield_fixture
+def disable_vintage_deprecations():
+    with get_no_deprecations_context():
+        yield
 
 
 @pytest.fixture  # pylint: disable=unused-argument

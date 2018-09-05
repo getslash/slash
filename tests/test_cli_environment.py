@@ -1,4 +1,5 @@
 import sys
+import vintage
 
 from confetti.config import Config, ConfigProxy
 from slash import plugins
@@ -92,10 +93,12 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
     def setUp(self):
         super(PluginCommandLineArgumentsTest, self).setUp()
         self.plugin = SampleCommandLinePlugin(self.SAMPLE_NAME)
-        plugins.manager.install(self.plugin)
+        with vintage.get_no_deprecations_context():
+            plugins.manager.install(self.plugin)
         self.addCleanup(plugins.manager.uninstall, self.plugin)
         self.internal_plugin = InternalPlugin(self.INTERNAL_NAME)
-        plugins.manager.install(self.internal_plugin, is_internal=True)
+        with vintage.get_no_deprecations_context():
+            plugins.manager.install(self.internal_plugin, is_internal=True)
         self.addCleanup(plugins.manager.uninstall, self.internal_plugin)
         self._parser = cli_utils.SlashArgumentParser()
 

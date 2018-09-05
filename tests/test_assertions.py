@@ -7,13 +7,14 @@ import pytest
 
 import slash
 from slash import should
-from slash.exceptions import TestFailed, ExpectedExceptionNotCaught
+from slash.exceptions import TestFailed as _TestFailed, ExpectedExceptionNotCaught
 
 
 @pytest.mark.parametrize('pair', [
     (1, 1),
     (1, 1.00000001),
 ])
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_assert_almost_equal_positive(pair):
     a, b = pair
     slash.assert_almost_equal(a, b)
@@ -25,6 +26,7 @@ def test_assert_almost_equal_positive(pair):
     (1, 1.1, 0.5),
     (1.0001, 1.00009, 0.00002),
 ])
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_assert_almost_equal_positive_with_delta(combination):
     a, b, delta = combination
     slash.assert_almost_equal(a, b, delta)
@@ -35,18 +37,21 @@ def test_assert_almost_equal_positive_with_delta(combination):
     (1, 1.1, 0.00001),
     (1.0001, 1.00009, 0.000001),
 ])
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_assert_almost_equal_negative_with_delta(combination):
     a, b, delta = combination
     with pytest.raises(AssertionError):
         slash.assert_almost_equal(a, b, delta)
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_assert_equals():
     with checking(should.equal, should.not_equal):
         good(1, 1)
         bad(1, 2)
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_assert_empty():
     with checking(should.be_empty, should.not_be_empty):
         good([])
@@ -57,6 +62,7 @@ def test_assert_empty():
         bad(set([1, 2, 3]))
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_assert_isinstance():
     with checking(should.be_a, should.not_be_a):
         good(1, int)
@@ -67,12 +73,14 @@ def test_assert_isinstance():
         bad(None, str)
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_is_none():
     with checking(should.be_none, should.not_be_none):
         good(None)
         bad("None")
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_is():
     obj = object()
     with checking(should.be, should.not_be):
@@ -81,6 +89,7 @@ def test_is():
         bad({}, {})
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_truth():
     with checking(should.be_true, should.be_false):
         good(True)
@@ -90,6 +99,7 @@ def test_truth():
         bad({})
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_in():
     with checking(should.be_in, should.not_be_in):
         good(1, [1, 2, 3])
@@ -103,6 +113,7 @@ def test_in():
 
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 @pytest.mark.parametrize('func', [should.raise_exception, slash.assert_raises])
 def test_assert_raises(func):
     thrown = CustomException()
@@ -126,6 +137,7 @@ def test_assert_raises(func):
         assert False, "should.raise_exception allowed success"
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 @pytest.mark.parametrize('func', [should.raise_exception, slash.assert_raises])
 def test_assert_raises_multiple_exceptions(func):
     class CustomException1(Exception):
@@ -154,6 +166,7 @@ def test_assert_raises_multiple_exceptions(func):
 
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_raises_exception_multiple_classes():
     possible_exception_types = (CustomException, OtherException)
     for x in possible_exception_types:
@@ -191,7 +204,7 @@ def _test_assertion(args, positive):
     for msg in (None, _MESSAGE):
         try:
             negative_assertion(*(args + (msg,)))
-        except TestFailed as e:
+        except _TestFailed as e:
             if msg is not None:
                 assert msg in str(e)
         else:

@@ -41,7 +41,7 @@ def test_provides_globally_needs_globally(checkpoint1, checkpoint2):
     class PluginA(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         def session_start(self):
             checkpoint1()
@@ -54,7 +54,7 @@ def test_provides_globally_needs_globally(checkpoint1, checkpoint2):
     class PluginB(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         def session_start(self):
             checkpoint2()
@@ -69,7 +69,7 @@ def test_provides_globally_needs_globally(checkpoint1, checkpoint2):
     slash.hooks.session_start()  # pylint: disable=no-member
     assert checkpoint1.timestamp < checkpoint2.timestamp
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x'])
@@ -84,7 +84,7 @@ def test_provides_globally_needs_specific_hook(checkpoint1, checkpoint2):
     class PluginA(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         def session_start(self):
             checkpoint1()
@@ -96,7 +96,7 @@ def test_provides_globally_needs_specific_hook(checkpoint1, checkpoint2):
     class PluginB(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         @slash.plugins.needs('x')
         def session_start(self):
@@ -112,7 +112,7 @@ def test_provides_globally_needs_specific_hook(checkpoint1, checkpoint2):
     slash.hooks.session_start()  # pylint: disable=no-member
     assert checkpoint1.timestamp < checkpoint2.timestamp
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x'])
@@ -131,7 +131,7 @@ def test_provides_globally_needs_specific_hook_which_does_not_exist_at_a(checkpo
     class PluginA(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         def test_start(self):
             pass
@@ -140,7 +140,7 @@ def test_provides_globally_needs_specific_hook_which_does_not_exist_at_a(checkpo
     class PluginB(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         @slash.plugins.needs('x')
         def session_start(self):
@@ -156,7 +156,7 @@ def test_provides_globally_needs_specific_hook_which_does_not_exist_at_a(checkpo
     slash.hooks.session_start()  # pylint: disable=no-member
     assert checkpoint2.called
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x'])
@@ -173,7 +173,7 @@ def test_provides_specific_hook_needs_globally(checkpoint1, checkpoint2):
     class PluginA(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         @slash.plugins.provides('x')
         def session_start(self):
@@ -187,7 +187,7 @@ def test_provides_specific_hook_needs_globally(checkpoint1, checkpoint2):
     class PluginB(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         def session_start(self):
             checkpoint2()
@@ -213,7 +213,7 @@ def test_provides_specific_hook_needs_globally_with_this_hook_only(checkpoint1, 
     class PluginA(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         @slash.plugins.provides('x')
         def session_start(self):
@@ -227,7 +227,7 @@ def test_provides_specific_hook_needs_globally_with_this_hook_only(checkpoint1, 
     class PluginB(slash.plugins.interface.PluginInterface):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         def session_start(self):
             checkpoint2()
@@ -239,7 +239,7 @@ def test_provides_specific_hook_needs_globally_with_this_hook_only(checkpoint1, 
     slash.hooks.session_start()  # pylint: disable=no-member
     assert checkpoint1.timestamp < checkpoint2.timestamp
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x'])
@@ -264,7 +264,7 @@ def test_provides_needs_with_inheritence_on_class_level(checkpoint, checkpoint1,
     class PluginA(PluginAParent):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         def session_start(self):
             checkpoint1()
@@ -281,7 +281,7 @@ def test_provides_needs_with_inheritence_on_class_level(checkpoint, checkpoint1,
     class PluginB(PluginBParent):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         def session_start(self):
             checkpoint2()
@@ -298,7 +298,7 @@ def test_provides_needs_with_inheritence_on_class_level(checkpoint, checkpoint1,
     slash.hooks.error_added(result=None, error=None)  # pylint: disable=no-member
     assert checkpoint.called
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x'])
@@ -324,7 +324,7 @@ def test_provides_needs_in_both_inheritence_levels(checkpoint, checkpoint1, chec
     class PluginA(PluginAParent):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         def session_start(self):
             checkpoint1()
@@ -341,7 +341,7 @@ def test_provides_needs_in_both_inheritence_levels(checkpoint, checkpoint1, chec
     class PluginB(PluginBParent):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         def session_start(self):
             checkpoint2()
@@ -358,7 +358,7 @@ def test_provides_needs_in_both_inheritence_levels(checkpoint, checkpoint1, chec
     slash.hooks.error_added(result=None, error=None)  # pylint: disable=no-member
     assert checkpoint.called
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x', 'y'])
@@ -391,7 +391,7 @@ def test_provides_needs_with_inheritence_on_method_level(checkpoint):
     class PluginA(PluginAParent):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         @slash.plugins.provides('x')
         def session_start(self):
@@ -411,7 +411,7 @@ def test_provides_needs_with_inheritence_on_method_level(checkpoint):
     class PluginB(PluginBParent):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         @slash.plugins.needs('x')
         def test_start(self):
@@ -431,7 +431,7 @@ def test_provides_needs_with_inheritence_on_method_level(checkpoint):
     slash.hooks.error_added(result=None, error=None)  # pylint: disable=no-member
     assert checkpoint.called
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
     assert caught.value.unmet_dependencies == set(['x'])
@@ -474,7 +474,7 @@ def test_provides_needs_with_child_overrides():
     class PluginA(PluginAParent):
 
         def get_name(self):
-            return 'plugin_a'
+            return 'plugin a'
 
         @slash.plugins.provides('x')
         def session_start(self):
@@ -515,7 +515,7 @@ def test_provides_needs_with_child_overrides():
     class PluginB(PluginBParent):
 
         def get_name(self):
-            return 'plugin_b'
+            return 'plugin b'
 
         @slash.plugins.needs('z')
         def session_end(self):
@@ -541,7 +541,7 @@ def test_provides_needs_with_child_overrides():
     assert caught.value.unmet_dependencies == set(['z'])
 
 
-    slash.plugins.manager.deactivate('plugin_a')
+    slash.plugins.manager.deactivate('plugin a')
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
