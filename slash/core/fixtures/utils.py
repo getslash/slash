@@ -27,8 +27,10 @@ def fixture(func=None, name=None, scope=None, autouse=False):
     return _ensure_fixture_info(func=func, name=name, scope=scope, autouse=autouse)
 
 def use_fixtures(fixture_names):
+
     if not isinstance(fixture_names, list):
-        raise RuntimeError("use_fixtures decorator must get argument of type list, got {}".format(fixture_names))
+        raise RuntimeError("use_fixtures expects a list of fixture names as an argument (got {!r})".format(fixture_names))
+
     def decorator(func):
         extra_fixtures = getattr(func, '__extrafixtures__', None)
         if extra_fixtures is None:

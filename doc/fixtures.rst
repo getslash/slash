@@ -207,34 +207,36 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 
 .. code-block:: python
 
-		@slash.fixture(autouse=True, scope='session')
-		def temp_dir():
-		    """Create a temporary directory"""
-		    directory = '/some/directory'
-		    os.makedirs(directory)
+        @slash.fixture(autouse=True, scope='session')
+        def temp_dir():
+            """Create a temporary directory"""
+            directory = '/some/directory'
+            os.makedirs(directory)
 
-		    @this.add_cleanup
-		    def cleanup():
-		        shutil.rmtree(directory)
+            @this.add_cleanup
+            def cleanup():
+                shutil.rmtree(directory)
 
-use_fixtures decorator
-----------------
+The use_fixtures Decorator
+--------------------------
 
-In some cases, you need to use a fixture and don't need its return value. In such cases, rather than passing the fixture's name as a parameter and not using it in the test, you can use the use_fixtures decorator, as follows:
+In some cases, you may want to use a certain fixture but don't need its return value. In such cases, rather than using the fixture as an unused argument to your test function you can use the ``use_fixtures`` decorator. This decorator receives a list of fixture names and indicates that the decorated test needs them to run::
 
 .. code-block:: python
 
-		@slash.fixture()
-		def used_fixture1():
-		    """do something"""
-		    pass
-		@slash.fixture()
-		def used_fixture2():
-				"""do another thing"""
-				pass
-		@slash.used_fixtures(["used_fixture1, used_fixture2"])
-		def test_something():
-      	pass
+    @slash.fixture()
+    def used_fixture1():
+        """do something"""
+        pass
+    
+    @slash.fixture()
+    def used_fixture2():
+        """do another thing"""
+        pass
+    
+    @slash.use_fixtures(["used_fixture1, used_fixture2"])
+    def test_something():
+        pass
 
 
 Aliasing Fixtures
