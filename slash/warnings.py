@@ -147,22 +147,29 @@ class _IgnoredWarning(object):
         self.lineno = lineno
         self.message = message
 
+    @staticmethod
+    def _pattern_matches(regex_or_str, warning_str):
+        if regex_or_str is None:
+            return False
+        if regex_or_str == warning_str:
+            return True
+        elif hasattr(regex_or_str, 'match'):
+            if regex_or_str.match(warning_str):
+                return True
+        return False
+
     def matches(self, warning):
         if self.category is not None and issubclass(warning.category, self.category):
             return True
 
-        if self.filename is not None and warning.filename == self.filename:
+        if self._pattern_matches(self.filename, warning.filename):
             return True
 
         if self.lineno is not None and warning.lineno == self.lineno:
             return True
 
-        if self.message is not None:
-            if hasattr(self.message, 'match'):
-                if self.message.match(warning.message):
-                    return True
-            elif self.message == warning.message:
-                return True
+        if self._pattern_matches(self.message, warning.message):
+            return True
         return False
 
 _ignored_warnings = []
