@@ -23,6 +23,7 @@ class CustomWarning(UserWarning):
     (_warn('hello'), _catch(message=re.compile('^hello$')), True),
     (_warn('message', category=CustomWarning), _catch(category=CustomWarning), True),
     (_warn('message'), _catch(filename=__file__), False),
+    (_warn('message'), _catch(filename=re.compile('^{}$'.format(__file__))), False),
 ])
 def test_ignore_warnings(request, emitter, catch, can_test_negative):
 
