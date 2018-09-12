@@ -183,6 +183,10 @@ def ignore_warnings(category=None, message=None, filename=None, lineno=None):
     regular expression object compiled with ``re.compile``.
 
         slash.ignore_warnings(category=CustomWarningCategory)
+
+    .. note:: Filter arguments are treated as having an ``and`` logical relationship.
+
+    .. note:: Calling ignore_warnings() with no arguments will ignore **all** warnings
     """
     _ignored_warnings.append(_IgnoredWarning(category=category, filename=filename, lineno=lineno, message=message))
 
