@@ -159,18 +159,19 @@ class _IgnoredWarning(object):
         return False
 
     def matches(self, warning):
-        if self.category is not None and issubclass(warning.category, self.category):
-            return True
+        if self.category and not issubclass(warning.category, self.category):
+            return False
 
-        if self._pattern_matches(self.filename, warning.filename):
-            return True
+        if self.filename and not self._pattern_matches(self.filename, warning.filename):
+            return False
 
-        if self.lineno is not None and warning.lineno == self.lineno:
-            return True
+        if self.lineno and warning.lineno != self.lineno:
+            return False
 
-        if self._pattern_matches(self.message, warning.message):
-            return True
-        return False
+        if self.message and not self._pattern_matches(self.message, warning.message):
+            return False
+
+        return True
 
 _ignored_warnings = []
 

@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`846 major` Use AND operator between ``ignore_warnings`` parameters
 * :feature:`648` Add support for use_fixtures decotaror
 * :feature:`738` Collect warnings that were omitted before session started
 * :feature:`824` Support API to determine cleanup phase - ``get_current_cleanup_phase()`` and ``is_in_cleanup()``
