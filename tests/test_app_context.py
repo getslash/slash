@@ -1,11 +1,16 @@
 from slash.app import Application
+from slash import hooks
 
 from slash.reporting.console_reporter import ConsoleReporter
 
 
-def test_app_reporter():
+def test_app_reporter(checkpoint):
+    hooks.app_quit.register(checkpoint) # pylint: disable=no-member
     with Application() as app:
         assert isinstance(app.session.reporter, ConsoleReporter)
+        assert not checkpoint.called
+    assert checkpoint.called
+
 
 def test_custom_reporter():
 

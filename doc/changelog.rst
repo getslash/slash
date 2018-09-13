@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`843` Add ``slash.app_quit`` hook, a hook that is called whenever the Slash process finishes. This is useful to allow certain plugins to perform important cleanups on session-wide errors
 * :bug:`846 major` Use AND operator between ``ignore_warnings`` parameters
 * :feature:`648` Add support for use_fixtures decotaror
 * :feature:`738` Collect warnings that were omitted before session started

@@ -159,6 +159,7 @@ class Application(object):
         self._exit_stack.__exit__(exc_type, exc_value, exc_tb)
         self._exit_stack = None
         self._reset_parser()
+        trigger_hook.app_quit()  # pylint: disable=no-member
         return True
 
     def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
