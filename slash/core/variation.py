@@ -80,7 +80,9 @@ class Variation(object):
         return self._store.get_value(self, param)
 
     def dump_variation_dict(self):
-        #need to dump variation dict in a sorted way to ensure ordering between dict entries
+        # We re-construct the dictionary in a predictable order, since
+        # it has to be sorted the same way across both parents and children
+        # in parallel mode
         return json.dumps({k: v for k, v in sorted(self.id.items())})
 
     def __eq__(self, other):
