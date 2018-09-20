@@ -109,7 +109,7 @@ When you run a session that fails, Slash automatically saves the tests intended 
 
   $ slash resume -vv <session id>
 
-This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for resuming.
+This command receives all flags which can be passed to ``slash run``, but receives an id of a previously run session for resuming. All unsuccessful tests are then rerun in a new session. You can control whether to attempt failed tests first or planned (not started) tests through the ``--failed-first`` and ``--unstarted-first`` command-line flags respectively.
 
 
 Rerunning Previous Sessions
