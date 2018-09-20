@@ -69,8 +69,9 @@ def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=
                             run_tests(collected)
 
             finally:
-                save_resume_state(app.session.results)
-                clean_old_entries()
+                if not is_child():
+                    save_resume_state(app.session.results)
+                    clean_old_entries()
             if app.exit_code == 0 and not app.session.results.is_success(allow_skips=True):
                 app.set_exit_code(-1)
     except Exception:         # pylint: disable=broad-except
