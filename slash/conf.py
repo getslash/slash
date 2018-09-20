@@ -110,6 +110,11 @@ config = Config({
         "worker_error_file": "errors-worker" // Doc("worker error filename template"),
         "workers_error_dir": None // Doc("workers error directory") // Cmdline(arg='--workers-error-dir', metavar="WORKERS_ERROR_DIR"),
     },
+    "resume": {
+        "failed_first": False // Doc("Run failed tests of previous session before all others") // Cmdline(on='--failed-first', metavar="FAILED_FIRST"),
+        "unstarted_first": False // Doc("Run unstarted tests of previous session before all others") // Cmdline(on='--unstarted-first', metavar="UNSTARTED_FIRST"),
+        "state_retention_days": 10 // Doc("Number of days to keep session entries for resuming session")
+    },
     "tmux": {
         "enabled": False // Doc("Run inside tmux") // Cmdline(on="--tmux"),
         "use_panes": False // Doc("In parallel mode, run children inside panes and not windows") // Cmdline(on="--tmux-panes"),
