@@ -56,7 +56,11 @@ class Server(object):
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
         self.clients_last_communication_time = {}
-        self.collection = [[test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id] for test in self.tests]
+        self.collection = [[test.__slash__.file_path,
+                            test.__slash__.function_name,
+                            test.__slash__.variation.dump_variation_dict()]
+                           for test in self.tests]
+        self._sorted_collection = sorted(self.collection)
 
     def get_workers_last_connection_time(self):
         return copy.deepcopy(self.clients_last_communication_time)
@@ -110,8 +114,8 @@ class Server(object):
             self.state = ServerStates.WAIT_FOR_COLLECTION_VALIDATION
 
     @server_func
-    def validate_collection(self, client_id, client_collection):
-        if not self.collection == client_collection:
+    def validate_collection(self, client_id, sorted_client_collection):
+        if not self._sorted_collection == sorted_client_collection:
             _logger.error("Client_id {} sent wrong collection", client_id)
             return False
         self.num_collections_validated += 1
@@ -143,7 +147,7 @@ class Server(object):
             hooks.test_distributed(test_logical_id=test.__slash__.id, worker_session_id=self._get_worker_session_id(client_id)) # pylint: disable=no-member
             _logger.notice("#{}: {}, Client_id: {}", test_index + 1, test.__slash__.address, client_id,
                            extra={'highlight': True, 'filter_bypass': True})
-            return test_index
+            return (self.collection[test_index], test_index)
         else:
             _logger.debug("No unstarted tests, sending end to client_id {}", client_id)
             self.state = ServerStates.STOP_TESTS_SERVING

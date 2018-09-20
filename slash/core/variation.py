@@ -1,5 +1,6 @@
 from numbers import Number
 import string
+import json
 from .._compat import string_types
 
 _PRINTABLE_TYPES = (Number,) + string_types
@@ -77,6 +78,10 @@ class Variation(object):
 
     def get_param_value(self, param):
         return self._store.get_value(self, param)
+
+    def dump_variation_dict(self):
+        #need to dump variation dict in a sorted way to ensure ordering between dict entries
+        return json.dumps({k: v for k, v in sorted(self.id.items())})
 
     def __eq__(self, other):
         if isinstance(other, Variation):
