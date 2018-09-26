@@ -68,6 +68,10 @@ class Loader(object):
         returned.sort(key=lambda test: (
             test.__slash__.repeat_all_index, test.__slash__.get_sort_key()
         ))
+        for test in returned:
+            if test.__slash__.id is not None:
+                raise SlashInternalError('Slash ID of {!r} should be None, but is {}'.format(test, test.__slash__.id))
+            test.__slash__.allocate_id()
         return returned
 
 
@@ -91,10 +95,6 @@ class Loader(object):
         context.reporter.report_collection_start()
         try:
             for x in iterator:
-                if x.__slash__.id is not None:
-                    raise SlashInternalError('Slash ID of {!r} should be None, but is {}'.format(x, x.__slash__.id))
-
-                x.__slash__.allocate_id()
                 returned.append(x)
                 context.reporter.report_test_collected(returned, x)
         finally:

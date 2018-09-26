@@ -51,7 +51,6 @@ def _start_interactive_test():
 def generate_interactive_test():
     [returned] = FunctionTestFactory(_start_interactive_test).generate_tests(context.session.fixture_store)
     returned.__slash__ = metadata.Metadata(None, returned)
-    returned.__slash__.allocate_id()
     returned.__slash__.mark_interactive()
     returned.__slash__.set_file_path('<Interactive>')
     returned.__slash__.set_test_full_name('Interactive')
