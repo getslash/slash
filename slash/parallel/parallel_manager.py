@@ -78,13 +78,13 @@ class ParallelManager(object):
         if config.root.tmux.enabled:
             for worker_pid in self.server.worker_pids:
                 try:
-                    os.kill(worker_pid, signal.SIGINT)
+                    os.kill(worker_pid, signal.SIGTERM)
                 except OSError as err:
                     if err.errno != errno.ESRCH:
                         raise
         else:
             for worker in self.workers.values():
-                worker.send_signal(signal.SIGINT)
+                worker.send_signal(signal.SIGTERM)
 
     def report_worker_error_logs(self):
         found_worker_errors_file = False
