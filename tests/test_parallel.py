@@ -313,6 +313,7 @@ def test_timeout_no_request_to_server(config_override, runnable_test_dir):
         runnables = Loader().get_runnables(str(runnable_test_dir))
         parallel_manager = ParallelManager([])
         parallel_manager.start_server_in_thread(runnables)
+        parallel_manager.try_connect()
         parallel_manager.server.state = ServerStates.SERVE_TESTS
 
         with slash.assert_raises(ParallelTimeout) as caught:
@@ -351,5 +352,14 @@ def test_shuffle(parallel_suite):
     def tests_loaded(tests):   # pylint: disable=unused-variable
         for index, test in enumerate(reversed(tests)):
             test.__slash__.set_sort_key(index)
+
+    parallel_suite.run()
+
+def test_server_hanging_dont_cause_worker_timeouts(parallel_suite, config_override):
+    config_override("parallel.no_request_timeout", 1)
+
+    @slash.hooks.test_distributed.register   # pylint: disable=no-member
+    def test_distributed(test_logical_id, worker_session_id):   # pylint: disable=unused-variable, unused-argument
+        time.sleep(2)
 
     parallel_suite.run()

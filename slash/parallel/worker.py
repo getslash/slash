@@ -19,9 +19,10 @@ class Worker(object):
         self.client_id = client_id
         self.session_id = session_id
         self.server_addr = 'http://{}:{}'.format(config.root.parallel.server_addr, config.root.parallel.server_port)
+        self.keepalive_server_addr = 'http://{}:{}'.format(config.root.parallel.server_addr, config.root.parallel.keepalive_port)
 
     def keep_alive(self, stop_event):
-        proxy = xmlrpc_client.ServerProxy(self.server_addr)
+        proxy = xmlrpc_client.ServerProxy(self.keepalive_server_addr)
         while not stop_event.is_set():
             proxy.keep_alive(self.client_id)
             stop_event.wait(1)

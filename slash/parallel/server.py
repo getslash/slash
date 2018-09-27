@@ -1,6 +1,5 @@
 import copy
 import logbook
-import functools
 import time
 from enum import Enum
 from six.moves import queue
@@ -27,19 +26,41 @@ class ServerStates(Enum):
     STOP_TESTS_SERVING = 5
     STOP_SERVE = 6
 
-def server_func(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        self = args[0]
-        client_id = kwargs.pop('client_id', args[1])
+class KeepaliveServer(object):
+    def __init__(self):
+        super(KeepaliveServer, self).__init__()
+        self.clients_last_communication_time = {}
+        self.last_request_time = time.time()
+        self.state = ServerStates.NOT_INITIALIZED
+        self.port = None
+
+    def keep_alive(self, client_id):
         self.clients_last_communication_time[client_id] = self.last_request_time = time.time()
-        return func(*args)  # pylint: disable=not-callable
-    return wrapper
+        _logger.debug("Client_id {} sent keep_alive", client_id)
+
+    def stop_serve(self):
+        self.state = ServerStates.STOP_SERVE
+
+    def serve(self):
+        server = xmlrpc_server.SimpleXMLRPCServer((config.root.parallel.server_addr, 0), allow_none=True, logRequests=False)
+        try:
+            self.port = server.server_address[1]
+            self.state = ServerStates.WAIT_FOR_CLIENTS
+            server.register_instance(self)
+            _logger.debug("Starting Keepalive server")
+            while self.state != ServerStates.STOP_SERVE:
+                server.handle_request()
+            _logger.debug("Exiting KeepAlive server loop")
+        finally:
+            server.server_close()
+
+    def get_workers_last_connection_time(self):
+        return copy.deepcopy(self.clients_last_communication_time)
+
 
 class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
-        self.host = config.root.parallel.server_addr
         self.worker_session_error_reported = False
         self.interrupted = False
         self.state = ServerStates.NOT_INITIALIZED
@@ -49,33 +70,29 @@ class Server(object):
         self.executing_tests = {}
         self.finished_tests = []
         self.unstarted_tests = queue.Queue()
-        self.last_request_time = time.time()
         self.num_collections_validated = 0
         self.start_time = time.time()
         self.worker_pids = []
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
-        self.clients_last_communication_time = {}
+        self.connected_clients = set()
         self.collection = [[test.__slash__.file_path,
                             test.__slash__.function_name,
                             test.__slash__.variation.dump_variation_dict()]
                            for test in self.tests]
         self._sorted_collection = sorted(self.collection)
 
-    def get_workers_last_connection_time(self):
-        return copy.deepcopy(self.clients_last_communication_time)
-
     def _has_unstarted_tests(self):
         return not self.unstarted_tests.empty()
 
     def has_connected_clients(self):
-        return len(self.clients_last_communication_time) > 0
+        return len(self.connected_clients) > 0
 
     def has_more_tests(self):
         return len(self.finished_tests) < len(self.tests)
 
     def report_client_failure(self, client_id):
-        self.clients_last_communication_time.pop(client_id)
+        self.connected_clients.remove(client_id)
         test_index = self.executing_tests.get(client_id, None)
         if test_index is not None:
             _logger.error("Worker {} interrupted while executing test {}", client_id,
@@ -96,24 +113,19 @@ class Server(object):
     def _get_worker_session_id(self, client_id):
         return "worker_{}".format(client_id)
 
-    @server_func
-    def keep_alive(self, client_id):
-        _logger.debug("Client_id {} sent keep_alive", client_id)
-
-    @server_func
     def connect(self, client_id, client_pid):
         _logger.notice("Client_id {} connected", client_id)
+        self.connected_clients.add(client_id)
         client_session_id = '{}_{}'.format(context.session.id.split('_')[0], client_id)
         context.session.logging.create_worker_symlink(self._get_worker_session_id(client_id), client_session_id)
         hooks.worker_connected(session_id=client_session_id)  # pylint: disable=no-member
         self.worker_session_ids.append(client_session_id)
         self.worker_pids.append(client_pid)
         self.executing_tests[client_id] = None
-        if len(self.clients_last_communication_time) >= config.root.parallel.num_workers:
+        if len(self.connected_clients) >= config.root.parallel.num_workers:
             _logger.notice("All workers connected to server")
             self.state = ServerStates.WAIT_FOR_COLLECTION_VALIDATION
 
-    @server_func
     def validate_collection(self, client_id, sorted_client_collection):
         if not self._sorted_collection == sorted_client_collection:
             _logger.error("Client_id {} sent wrong collection", client_id)
@@ -125,13 +137,11 @@ class Server(object):
             self.state = ServerStates.SERVE_TESTS
         return True
 
-    @server_func
     def disconnect(self, client_id):
         _logger.notice("Client {} sent disconnect", client_id)
-        self.clients_last_communication_time.pop(client_id)
+        self.connected_clients.remove(client_id)
         self.state = ServerStates.STOP_TESTS_SERVING
 
-    @server_func
     def get_test(self, client_id):
         if not self.executing_tests[client_id] is None:
             _logger.error("Client_id {} requested new test without sending former result", client_id)
@@ -153,7 +163,6 @@ class Server(object):
             self.state = ServerStates.STOP_TESTS_SERVING
             return NO_MORE_TESTS
 
-    @server_func
     def finished_test(self, client_id, result_dict):
         _logger.debug("Client_id {} finished_test", client_id)
         test_index = self.executing_tests.get(client_id, None)
@@ -181,7 +190,6 @@ class Server(object):
         if self.state != ServerStates.STOP_SERVE:
             self.state = ServerStates.STOP_TESTS_SERVING
 
-    @server_func
     def report_warning(self, client_id, pickled_warning):
         _logger.notice("Client_id {} sent warning", client_id)
         try:
@@ -190,7 +198,6 @@ class Server(object):
         except TypeError:
             _logger.error('Error when deserializing warning, not adding it')
 
-    @server_func
     def report_session_error(self, client_id, session_error):
         self.worker_session_error_reported = True
         _logger.error("Client_id {} sent session error: {}", client_id, session_error)
@@ -199,7 +206,8 @@ class Server(object):
         return self.has_connected_clients() or self.has_more_tests()
 
     def serve(self):
-        server = xmlrpc_server.SimpleXMLRPCServer((self.host, config.root.parallel.server_port), allow_none=True, logRequests=False)
+        server = xmlrpc_server.SimpleXMLRPCServer((config.root.parallel.server_addr, config.root.parallel.server_port),\
+                                                  allow_none=True, logRequests=False)
         try:
             self.port = server.server_address[1]
             self.state = ServerStates.WAIT_FOR_CLIENTS

@@ -103,6 +103,7 @@ config = Config({
         "worker_id": None // Doc("Worker_id") // Cmdline(arg='--parallel-worker-id', metavar="WORKER_ID"),
         "server_addr": "localhost" // Doc("Server address") // Cmdline(arg='--parallel-addr', metavar="PARALLEL_SERVER_ADDRESS"),
         "server_port": 0 // Doc("Server port") // Cmdline(arg='--parallel-port', metavar="PARALLEL_SERVER_PORT"),
+        "keepalive_port": 0 // Doc("Keepalive port") // Cmdline(arg='--keepalive-port', metavar="KEEPALIVE_SERVER_PORT"),
         "parent_session_id": None // Doc("parent session id") // Cmdline(arg='--parallel-parent-session-id', metavar="MASTER_SESSION_ID"),
         "communication_timeout_secs": 60 // Doc("timeout of worker in seconds"),
         "worker_connect_timeout": 10 // Doc("timeout for each worker to connect"),

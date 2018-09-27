@@ -12,7 +12,7 @@ from .. import log
 from ..exceptions import INTERRUPTION_EXCEPTIONS, ParallelServerIsDown, ParallelTimeout
 from ..conf import config
 from ..ctx import context
-from .server import Server, ServerStates
+from .server import Server, ServerStates, KeepaliveServer
 from ..utils.tmux_utils import create_new_window, create_new_pane
 from .worker_configuration import WorkerConfiguration
 from .._compat import iteritems
@@ -23,6 +23,9 @@ log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
 
 TIME_BETWEEN_CHECKS = 2
 MAX_CONNECTION_RETRIES = 200
+
+def get_xmlrpc_proxy(address, port):
+    return xmlrpc_client.ServerProxy('http://{}:{}'.format(address, port))
 
 class ParallelManager(object):
     def __init__(self, args):
@@ -35,14 +38,15 @@ class ParallelManager(object):
         self.workers = {}
         self.max_worker_id = 1
         self.server_thread = None
+        self.keepalive_server = None
+        self.keepalive_server_thread = None
 
     def try_connect(self):
-        num_retries = 0
-        while self.server.state == ServerStates.NOT_INITIALIZED:
+        for _ in range(MAX_CONNECTION_RETRIES):
+            if self.server.state != ServerStates.NOT_INITIALIZED and self.keepalive_server.state != ServerStates.NOT_INITIALIZED:
+                return
             time.sleep(0.1)
-            if num_retries == MAX_CONNECTION_RETRIES:
-                raise ParallelServerIsDown("Cannot connect to XML_RPC server")
-            num_retries += 1
+        raise ParallelServerIsDown("Cannot connect to XML_RPC server")
 
     def start_worker(self):
         worker_id = str(self.max_worker_id)
@@ -70,9 +74,10 @@ class ParallelManager(object):
         self.server_thread = threading.Thread(target=self.server.serve, args=())
         self.server_thread.setDaemon(True)
         self.server_thread.start()
-
-    def get_proxy(self):
-        return xmlrpc_client.ServerProxy('http://{}:{}'.format(config.root.parallel.server_addr, self.server.port))
+        self.keepalive_server = KeepaliveServer()
+        self.keepalive_server_thread = threading.Thread(target=self.keepalive_server.serve, args=())
+        self.keepalive_server_thread.setDaemon(True)
+        self.keepalive_server_thread.start()
 
     def kill_workers(self):
         if config.root.tmux.enabled:
@@ -103,14 +108,14 @@ class ParallelManager(object):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
             if time.time() - self.server.start_time > config.root.parallel.worker_connect_timeout * self.workers_num:
                 _logger.error("Timeout: Not all clients connected to server, terminating")
-                _logger.error("Clients connected: {}", self.server.clients_last_communication_time.keys())
+                _logger.error("Clients connected: {}", self.server.connected_clients)
                 self.kill_workers()
                 self.report_worker_error_logs()
                 raise ParallelTimeout("Not all clients connected")
             time.sleep(TIME_BETWEEN_CHECKS)
 
     def check_worker_timed_out(self):
-        for worker_id, last_connection_time in iteritems(self.server.get_workers_last_connection_time()):
+        for worker_id, last_connection_time in iteritems(self.keepalive_server.get_workers_last_connection_time()):
             if time.time() - last_connection_time > config.root.parallel.communication_timeout_secs:
                 _logger.error("Worker {} is down, terminating session", worker_id)
                 self.report_worker_error_logs()
@@ -119,15 +124,15 @@ class ParallelManager(object):
                         self.workers[worker_id].kill()
                 elif not config.root.tmux.use_panes:
                     self.workers[worker_id].rename_window('stopped_client_{}'.format(worker_id))
-                self.get_proxy().report_client_failure(worker_id)
+                get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).report_client_failure(worker_id)
 
     def check_no_requests_timeout(self):
-        if time.time() - self.server.last_request_time > config.root.parallel.no_request_timeout:
+        if time.time() - self.keepalive_server.last_request_time > config.root.parallel.no_request_timeout:
             _logger.error("No request sent to server for {} seconds, terminating",
                           config.root.parallel.no_request_timeout)
             if self.server.has_connected_clients():
                 _logger.error("Clients that are still connected to server: {}",
-                              self.server.clients_last_communication_time.keys())
+                              self.server.connected_clients)
             if self.server.has_more_tests():
                 _logger.error("Number of unstarted tests: {}", self.server.unstarted_tests.qsize())
             if self.server.executing_tests:
@@ -150,6 +155,8 @@ class ParallelManager(object):
         self.try_connect()
         if not config.root.parallel.server_port:
             self.args.extend(['--parallel-port', str(self.server.port)])
+        if not config.root.parallel.keepalive_port:
+            self.args.extend(['--keepalive-port', str(self.keepalive_server.port)])
         try:
             for _ in range(self.workers_num):
                 self.start_worker()
@@ -160,7 +167,7 @@ class ParallelManager(object):
                 time.sleep(TIME_BETWEEN_CHECKS)
         except INTERRUPTION_EXCEPTIONS:
             _logger.error("Server interrupted, stopping workers and terminating")
-            self.get_proxy().session_interrupted()
+            get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).session_interrupted()
             self.kill_workers()
             raise
         finally:
@@ -174,5 +181,7 @@ class ParallelManager(object):
                             break
                         else:
                             time.sleep(0.5)
-            self.get_proxy().stop_serve()
+            get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).stop_serve()
+            get_xmlrpc_proxy(config.root.parallel.server_addr, self.keepalive_server.port).stop_serve()
             self.server_thread.join()
+            self.keepalive_server_thread.join()
