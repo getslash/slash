@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`12` Added a signal handling plugin (see documentation for more details)
 * :feature:`836` Resuming sessions now supports ``--failed-first`` and ``--unstarted-first`` to control the resuming priority
 * :feature:`843` Add ``slash.app_quit`` hook, a hook that is called whenever the Slash process finishes. This is useful to allow certain plugins to perform important cleanups on session-wide errors
 * :bug:`846 major` Use AND operator between ``ignore_warnings`` parameters

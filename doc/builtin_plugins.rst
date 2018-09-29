@@ -49,3 +49,13 @@ The xUnit plugin outputs an XML file when sessions finish running. The XML confo
 Use it by running with ``--with-xunit`` and by specifying the output filename with ``--xunit-filename``::
 
   $ slash run --with-xunit --xunit-filename xunit.xml
+
+
+Signal handling
+---------------
+
+The signal handling plugin allows users to register handlers for OS signals. By default, the plugin registers the following handlers (if supported by the OS):
+1. SIGUSR1 drops into debugger
+2. SIGUSR2 skips current test
+
+The plugin also supports registering additional signal handlers, as well as overriding the default ones, by using the ``register_handler`` function
