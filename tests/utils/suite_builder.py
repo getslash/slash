@@ -46,6 +46,7 @@ class SuiteBuilderSuite(object):
 
     def run(self):
         app = slash_run([self.path])
+        assert not app.session.has_internal_errors(), 'Session has internal errors!'
         return SuiteBuilderSuiteResult(app)
 
 

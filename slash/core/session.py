@@ -23,6 +23,7 @@ class Session(Activatable):
     """
 
     start_time = end_time = host_fqdn = host_name = None
+    _has_internal_errors = False
 
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
@@ -50,6 +51,12 @@ class Session(Activatable):
         self.cleanups = CleanupManager()
 
         self._skip_exc_types = (exceptions.SkipTest,)
+
+    def notify_internal_error(self):
+        self._has_internal_errors = True
+
+    def has_internal_errors(self):
+        return self._has_internal_errors
 
     def register_skip_exception(self, exc_type):
         self._skip_exc_types += (exc_type,)
