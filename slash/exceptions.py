@@ -92,6 +92,17 @@ class TmuxExecutableNotFound(SlashException):
 
 
 class SlashInternalError(SlashException):
+
+    def __init__(self, *args, **kwargs):
+        # Internal errors should basically never happen. This is why we use the constructor here to notify the active session that
+        # an internal error ocurred, for testability.
+        # It is highly unlikely that such exception objects would ever get constructed without being raised, and this helps overcome accidental
+        # catch-alls in exception handling
+        from slash.ctx import context
+        if context.session is not None:
+            context.session.notify_internal_error()
+        super(SlashInternalError, self).__init__(*args, **kwargs)
+
     def __str__(self):
         return "\n".join(("INTERNAL ERROR:",
                           super(SlashInternalError, self).__str__(),

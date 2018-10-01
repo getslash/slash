@@ -151,9 +151,12 @@ class Suite(object):
         if captured:
             assert len(captured) == 1
             returned.session = captured[0].session
+            assert not returned.session.has_internal_errors(), 'Session has internal errors!'
 
         if verify:
             validate_run(self, returned, expect_interruption=expect_interruption, expect_session_errors=expect_session_errors)
+
+
         return returned
 
     @contextmanager
