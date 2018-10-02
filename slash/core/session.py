@@ -146,10 +146,12 @@ class Session(Activatable):
     def initiate_cleanup(self):
         if not self.scope_manager.has_active_scopes():
             return
-        with handling_exceptions(swallow=True):
-            hooks.before_session_cleanup()  # pylint: disable=no-member
-        with handling_exceptions(swallow=True):
-            self.scope_manager.flush_remaining_scopes()
+        try:
+            with handling_exceptions(swallow=True):
+                hooks.before_session_cleanup()  # pylint: disable=no-member
+        finally:
+            with handling_exceptions(swallow=True):
+                self.scope_manager.flush_remaining_scopes()
 
     def mark_complete(self):
         self._complete = True
