@@ -216,13 +216,15 @@ def test_builtin_plugins_hooks_start_condition():
         for registration in hook.get_registrations():
             assert registration.token.startswith('slash.'), 'Callback {} is not a builtin!'.format(hook.full_name)
 
+
 def test_builtin_plugins_are_installed():
     installed = plugins.manager.get_installed_plugins()
     assert installed
     for filename in os.listdir(os.path.join(os.path.dirname(plugins.__file__), "builtin")):
         if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
             continue
-        assert filename[:(-3)] in installed
+        plugin_name = filename[:(-3)].replace('_', ' ')
+        assert plugin_name in installed
 
 
 @pytest.mark.usefixtures('disable_vintage_deprecations')
