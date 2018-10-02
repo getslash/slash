@@ -177,12 +177,9 @@ class Result(object):
         return self.is_started() and self.is_skip()
 
     def is_success(self, allow_skips=False):
-        if not self.is_started():
-            return allow_skips
-        returned = not self._errors and not self._failures and not self._interrupted
-        if not allow_skips:
-            returned &= not self._skips
-        return returned
+        if self._errors or self._failures or self._interrupted:
+            return False
+        return self.is_started() or allow_skips
 
     def is_success_finished(self):
         return self.is_success() and self.is_finished()
