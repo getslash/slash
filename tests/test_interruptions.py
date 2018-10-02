@@ -188,16 +188,23 @@ def test_test_interrupt_hook_exception(suite_builder):
     assert res.is_interrupted()
 
 
-@pytest.mark.parametrize('hook_name', ['before_session_cleanup'])
+@pytest.mark.parametrize('hook_name', ['before_session_cleanup', 'session_start'])
 def test_session_scope_interruption(hook_name, suite):
 
     @gossip.register('slash.{}'.format(hook_name))
     def hook(*_, **__):
         raise KeyboardInterrupt()
 
-    suite[-1].expect_interruption()
+    if hook_name == 'session_start':
+        for test in suite:
+            test.expect_deselect()
+    else:
+        assert hook_name == 'before_session_cleanup'
+        suite[-1].expect_interruption()
 
     results = suite.run(expect_interruption=True)
+
+    assert results.session.results.global_result.is_interrupted()
 
 
 @pytest.fixture
