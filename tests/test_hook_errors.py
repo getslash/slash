@@ -1,5 +1,4 @@
 import gossip
-import pytest
 import slash
 
 from .utils import CustomException, run_tests_in_session
