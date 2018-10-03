@@ -144,14 +144,13 @@ def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_
 
 
 @pytest.mark.parametrize(
-    'hook_exception', [
+    'hook_name,exception_type,should_raise', [
         ('slash.session_start', SessionStartException, True),
         ('slash.session_end', SessionEndException, True),
-        ('slash.test_end', CustomTestEndException, True),
+        ('slash.test_end', CustomTestEndException, False),
         ('slash.before_test_cleanups', BeforeTestCleanupException, False)])
 @pytest.mark.parametrize('debug_enabled', [True, False])
-def test_debugger_called_on_hooks(hook_exception, request, forge, config_override, checkpoint, debug_enabled):
-    hook_name, exception_type, should_raise = hook_exception
+def test_debugger_called_on_hooks(request, hook_name, exception_type, should_raise, forge, config_override, checkpoint, debug_enabled):
 
     @gossip.register(hook_name)
     def raise_exc():
