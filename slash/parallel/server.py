@@ -61,7 +61,7 @@ class KeepaliveServer(object):
 class Server(object):
     def __init__(self, tests):
         super(Server, self).__init__()
-        self.worker_session_error_reported = False
+        self.worker_error_reported = False
         self.interrupted = False
         self.state = ServerStates.NOT_INITIALIZED
         self.port = None
@@ -102,6 +102,7 @@ class Server(object):
                 self.finished_tests.append(test_index)
         self.state = ServerStates.STOP_TESTS_SERVING
         self._mark_unrun_tests()
+        self.worker_error_reported = True
 
     def _mark_unrun_tests(self):
         while self._has_unstarted_tests():
@@ -198,9 +199,9 @@ class Server(object):
         except TypeError:
             _logger.error('Error when deserializing warning, not adding it')
 
-    def report_session_error(self, client_id, session_error):
-        self.worker_session_error_reported = True
-        _logger.error("Client_id {} sent session error: {}", client_id, session_error)
+    def report_session_error(self, message):
+        self.worker_error_reported = True
+        _logger.error(message)
 
     def should_wait_for_request(self):
         return self.has_connected_clients() or self.has_more_tests()
