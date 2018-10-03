@@ -95,7 +95,7 @@ def _run_single_test(test, test_iterator):
         # sets the current result, test id etc.
         result, prev_result = exit_stack.enter_context(_get_test_context(test))
 
-        with handling_exceptions():
+        with handling_exceptions(swallow=True):
 
 
             should_run = _process_requirements_and_exclusions(test)

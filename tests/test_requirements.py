@@ -12,6 +12,18 @@ from slash._compat import ExitStack
 _UNMET_REQ_DECORATOR = 'slash.requires(lambda: False)'
 _MET_REQ_DECORATOR = 'slash.requires(lambda: True)'
 
+
+def test_requirements_raises_exception(suite, suite_test):
+    @suite_test.file.append_body
+    def __code__():  # pylint: disable=unused-variable
+        def fail_predicate():  # pylint: disable=unused-variable
+            raise Exception('Failing')
+    suite_test.add_decorator('slash.requires(fail_predicate)')
+    suite_test.expect_not_run()
+    summary = suite.run()
+    assert not summary.session.results.is_success(allow_skips=True)
+
+
 def test_requirements_mismatch_session_success(suite, suite_test):
     suite_test.add_decorator('slash.requires(False)')
     suite_test.expect_skip()
