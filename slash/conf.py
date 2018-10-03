@@ -93,6 +93,9 @@ config = Config({
         "user_customization_file_path": "~/.slash/slashrc",
         "resume_state_path": "~/.slash/session_states" // Doc("Path to store or load session's resume data"),
         "message_assertion_introspection": True // Doc("When False, failing assertions which have messages attached will not emit introspection info"),
+        "capture": {
+            "error_logs_as_errors": False // Doc("Add errors for error level logs"),
+        },
     },
     "interactive": {
         "expose_g_globals": True // Doc("When False, slash.g won't be added to interactive test namespaces"),

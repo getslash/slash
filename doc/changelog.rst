@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :feature:`825` Support capturing error logs as actual errors, when ``run.capture.error_logs_as_errors`` is enabled
 * :bug:`864 major` Fix handling of exceptions during ``_run_single_test()`` before test started
 * :feature:`12` Added a signal handling plugin (see documentation for more details)
 * :feature:`836` Resuming sessions now supports ``--failed-first`` and ``--unstarted-first`` to control the resuming priority

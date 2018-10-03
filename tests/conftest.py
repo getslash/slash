@@ -11,6 +11,7 @@ import gossip
 import pytest
 import slash
 import slash.plugins
+import logbook
 from slash.loader import Loader
 from slash.core.result import GlobalResult, Result
 from vintage import get_no_deprecations_context
@@ -337,3 +338,11 @@ def xunit_filename(tmpdir, request, config_override):  # pylint: disable=unused-
         slash.plugins.manager.deactivate('xunit')
 
     return xunit_filename
+
+
+@pytest.fixture
+def test_handler(request):
+    handler = logbook.TestHandler()
+    request.addfinalizer(slash.log.remove_all_extra_handlers)
+    slash.log.add_log_handler(handler)
+    return handler
