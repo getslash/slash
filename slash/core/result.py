@@ -301,7 +301,7 @@ class GlobalResult(Result):
             return False
         if self._session_results is None:
             return True
-        if self._session_results.session.has_children() and self._session_results.session.parallel_manager.server.worker_session_error_reported:
+        if self._session_results.session.has_children() and self._session_results.session.parallel_manager.server.worker_error_reported:
             return False
         return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 

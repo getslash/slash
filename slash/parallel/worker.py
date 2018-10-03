@@ -37,7 +37,7 @@ class Worker(object):
 
     def error_added(self, error, result):
         if result.is_global_result():
-            self.client.report_session_error(self.client_id, error.message)
+            self.client.report_session_error("Session error in client id {}: {}".format(self.client_id, error.message))
 
     def write_to_error_file(self, msg):
         try:

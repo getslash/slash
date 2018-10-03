@@ -170,7 +170,7 @@ def test_child_session_errors(parallel_suite):
     parallel_suite[0].append_line("slash.context.session.results.global_result.add_error('bla')")
     session_results = parallel_suite.run(num_workers=1, verify=False).session
     assert not session_results.results.is_success()
-    assert session_results.parallel_manager.server.worker_session_error_reported
+    assert session_results.parallel_manager.server.worker_error_reported
 
 def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     parallel_suite[0].expect_failure()
@@ -182,7 +182,7 @@ def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     parallel_suite[0].append_line("a()")
     session_results = parallel_suite.run(num_workers=1, verify=False).session
     assert not session_results.results.is_success()
-    assert session_results.parallel_manager.server.worker_session_error_reported
+    assert session_results.parallel_manager.server.worker_error_reported
 
 def test_traceback_vars(parallel_suite):
     #code to be inserted:
@@ -330,7 +330,7 @@ def test_children_not_connected_timeout(runnable_test_dir, config_override):
         time.sleep(0.1)
         with slash.assert_raises(ParallelTimeout) as caught:
             parallel_manager.wait_all_workers_to_connect()
-        assert caught.exception.args[0] == 'Not all clients connected'
+        assert 'Not all clients connected' in caught.exception.args[0]
 
 def test_worker_error_logs(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)

@@ -27,6 +27,16 @@ MAX_CONNECTION_RETRIES = 200
 def get_xmlrpc_proxy(address, port):
     return xmlrpc_client.ServerProxy('http://{}:{}'.format(address, port))
 
+def is_process_running(pid):
+    try:
+        os.kill(pid, 0)
+    except OSError as err:
+        if err.errno == errno.ESRCH:
+            return False
+        else:
+            raise
+    return True
+
 class ParallelManager(object):
     def __init__(self, args):
         super(ParallelManager, self).__init__()
@@ -103,15 +113,18 @@ class ParallelManager(object):
         if not found_worker_errors_file:
             _logger.error("No worker error files were found")
 
+    def handle_error(self, failure_message):
+        _logger.error(failure_message)
+        self.kill_workers()
+        self.report_worker_error_logs()
+        get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).report_session_error(failure_message)
+        raise ParallelTimeout(failure_message)
 
     def wait_all_workers_to_connect(self):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
             if time.time() - self.server.start_time > config.root.parallel.worker_connect_timeout * self.workers_num:
-                _logger.error("Timeout: Not all clients connected to server, terminating")
-                _logger.error("Clients connected: {}", self.server.connected_clients)
-                self.kill_workers()
-                self.report_worker_error_logs()
-                raise ParallelTimeout("Not all clients connected")
+                self.handle_error("Timeout: Not all clients connected to server, terminating.\n\
+                                   Clients connected: {}".format(self.server.connected_clients))
             time.sleep(TIME_BETWEEN_CHECKS)
 
     def check_worker_timed_out(self):
@@ -137,19 +150,7 @@ class ParallelManager(object):
                 _logger.error("Number of unstarted tests: {}", self.server.unstarted_tests.qsize())
             if self.server.executing_tests:
                 _logger.error("Currently executed tests indexes: {}", self.server.executing_tests.values())
-            self.kill_workers()
-            self.report_worker_error_logs()
-            raise ParallelTimeout("No request sent to server for {} seconds".format(config.root.parallel.no_request_timeout))
-
-    def is_process_running(self, pid):
-        try:
-            os.kill(pid, 0)
-        except OSError as err:
-            if err.errno == errno.ESRCH:
-                return False
-            else:
-                raise
-        return True
+            self.handle_error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
 
     def start(self):
         self.try_connect()
@@ -177,7 +178,7 @@ class ParallelManager(object):
             else:
                 for worker_pid in self.server.worker_pids:
                     for _ in range(10):
-                        if not self.is_process_running(worker_pid):
+                        if not is_process_running(worker_pid):
                             break
                         else:
                             time.sleep(0.5)
