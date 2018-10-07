@@ -151,7 +151,7 @@ class Result(object):
         return self._started
 
     def is_not_run(self):
-        return not self._started
+        return not self.is_started() and not self.has_errors_or_failures()
 
     def mark_started(self):
         self._started = True
