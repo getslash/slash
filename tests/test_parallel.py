@@ -356,10 +356,10 @@ def test_shuffle(parallel_suite):
     parallel_suite.run()
 
 def test_server_hanging_dont_cause_worker_timeouts(parallel_suite, config_override):
-    config_override("parallel.no_request_timeout", 1)
+    config_override("parallel.no_request_timeout", 2)
 
     @slash.hooks.test_distributed.register   # pylint: disable=no-member
     def test_distributed(test_logical_id, worker_session_id):   # pylint: disable=unused-variable, unused-argument
-        time.sleep(2)
+        time.sleep(3)
 
     parallel_suite.run()
