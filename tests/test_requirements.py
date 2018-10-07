@@ -40,7 +40,7 @@ def test_requirements_raises_exception(suite, suite_test):
         def fail_predicate():  # pylint: disable=unused-variable
             raise Exception('Failing')
     suite_test.add_decorator('slash.requires(fail_predicate)')
-    suite_test.expect_not_run()
+    suite_test.expect_error()
     summary = suite.run()
     assert not summary.session.results.is_success(allow_skips=True)
 
