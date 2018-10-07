@@ -2,6 +2,7 @@ import functools
 
 import logbook
 
+from ..exceptions import SlashInternalError
 from ..utils.python import call_all_raise_first
 
 _logger = logbook.Logger(__name__)
@@ -16,7 +17,8 @@ class ScopeManager(object):
 
     def begin_test(self, test):
         test_module = test.__slash__.module_name
-        assert test_module
+        if not test_module:
+            raise SlashInternalError("{!r} has no module name".format(test))
 
         if self._last_module is None:
             self._push_scope('session')
@@ -33,7 +35,9 @@ class ScopeManager(object):
         self._last_test = test
 
     def end_test(self, test):
-        assert test == self._last_test
+        if test != self._last_test:
+            raise SlashInternalError("Expected to pop {}, received {} instead".format(self._last_test, test))
+
         self._pop_scope('test')
 
     def get_current_stack(self):
@@ -51,7 +55,9 @@ class ScopeManager(object):
     def _pop_scope(self, scope):
         popped = self._scopes.pop()
         _logger.trace('Popping scope {0} (expected {1})', popped, scope)
-        assert popped == scope
+        if popped != scope:
+            raise SlashInternalError('Popped scope {}, expected {}'.format(popped, scope))
+
         call_all_raise_first([self._session.cleanups.pop_scope, self._session.fixture_store.pop_scope],
                              scope)
         _logger.trace('Popped scope {0}', popped)

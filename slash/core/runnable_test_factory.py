@@ -1,6 +1,7 @@
 import sys
 
 from .metadata import Metadata
+from ..exceptions import SlashInternalError
 
 
 class RunnableTestFactory(object):
@@ -52,7 +53,9 @@ class RunnableTestFactory(object):
         Do not override this method directly. Use :func:`.RunnableTestFactory._generate_tests` instead.
         """
         for test in self._generate_tests(fixture_store):
-            assert test.__slash__ is None
+            if test.__slash__ is not None:
+                raise SlashInternalError("{} has Metadata before generating it".format(test))
+
             test.__slash__ = Metadata(self, test)
             yield test
 

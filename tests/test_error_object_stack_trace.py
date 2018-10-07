@@ -11,6 +11,7 @@ def test_frame_order(error, use_exception):
         assert code_line == 'get_error_adder()("error message")'
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_self_variables(error):
     frame = error.traceback.frames[-3]
     assert frame.func_name == 'method1'

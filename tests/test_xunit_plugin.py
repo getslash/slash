@@ -35,8 +35,15 @@ def test_xunit_plugin_test_details(suite, suite_test, xunit_filename, details):
 
     suite.run()
     testcase_xml = _get_testcase_xml(suite_test, xunit_filename)
+    saved_details = {}
+    for d in testcase_xml.findall('detail'):
+        k = d.attrib['name']
+        if 'value' in d.attrib:
+            v = d.attrib['value']
+        else:
+            v = [child for child in d]
+        saved_details[k] = v
 
-    saved_details = dict((d.attrib['name'], d.attrib['value']) for d in testcase_xml.findall('detail'))
     assert saved_details
 
 
@@ -69,9 +76,23 @@ def _get_testcase_xml(suite_test, filename):
     return match[0]
 
 
-@pytest.fixture
-def details():
-    return {'detail1': 'value1', 'detail2': 'value2'}
+@pytest.fixture(params=['set', 'append', 'complex'])
+def details(request, result):
+
+    if request.param == 'set':
+        result.details.set('detail1', 'value1')
+        result.details.set('detail2', 'value2')
+
+    if request.param == 'append':
+        result.details.append('detail1', 'value1')
+        result.details.append('detail1', 'value2')
+
+    if request.param == 'complex':
+        result.details.append('detail1', 'value1')
+        result.details.append(
+            'detail1', {'complex': ['value2', 'value3']})
+
+    return result.details.all()
 
 
 @pytest.fixture  # pylint: disable=unused-argument
@@ -150,7 +171,7 @@ def validate_xml(xml_filename, suite=None):
         assert child.get('name')
         assert child.get('time')
 
-        for subchild in child.getchildren():
+        for subchild in iter(child):
             assert subchild.tag in ['skipped', 'error', 'failure']
     return root
 

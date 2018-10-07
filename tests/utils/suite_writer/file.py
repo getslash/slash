@@ -8,10 +8,10 @@ from .fixture import Fixture
 from .generator_fixture import GeneratorFixture
 from .nonmethod_test import NonMethodTest
 from .test_class import Class
-from .test_container import TestContainer
+from .test_container import SuiteWriterTestContainer
 
 
-class File(TestContainer, CodeElement):
+class File(SuiteWriterTestContainer, CodeElement):
 
     def __init__(self, suite, relpath=None):
         super(File, self).__init__(suite)

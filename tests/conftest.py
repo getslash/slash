@@ -11,8 +11,10 @@ import gossip
 import pytest
 import slash
 import slash.plugins
+import logbook
 from slash.loader import Loader
 from slash.core.result import GlobalResult, Result
+from vintage import get_no_deprecations_context
 
 from .utils.cartesian import Cartesian
 from .utils.suite_writer import Suite
@@ -63,15 +65,16 @@ def forge(request):
     return returned
 
 
+@pytest.fixture(autouse=True)
+def backup_config(request):
+    slash.config.backup()
+    request.addfinalizer(slash.config.restore)
+    return slash.config
+
+
 @pytest.fixture
-def config_override(request):
-
+def config_override():
     def _override(path, value):
-        prev_value = slash.config.get_config(path).get_value()
-
-        @request.addfinalizer
-        def restore():  # pylint: disable=unused-variable
-            slash.config.assign_path(path, prev_value)
         slash.config.assign_path(path, value)
     return _override
 
@@ -247,7 +250,7 @@ def plugin(no_plugins):  # pylint: disable=unused-argument
             self.session_start_call_count = 0
 
         def get_name(self):
-            return "start-session"
+            return "start session"
 
         def session_start(self):
             self.session_start_call_count += 1
@@ -317,6 +320,12 @@ def yield_fixture_decorator(request):
     return slash.fixture
 
 
+@pytest.yield_fixture
+def disable_vintage_deprecations():
+    with get_no_deprecations_context():
+        yield
+
+
 @pytest.fixture  # pylint: disable=unused-argument
 def xunit_filename(tmpdir, request, config_override):  # pylint: disable=unused-argument
     xunit_filename = str(tmpdir.join('xunit.xml'))
@@ -329,3 +338,11 @@ def xunit_filename(tmpdir, request, config_override):  # pylint: disable=unused-
         slash.plugins.manager.deactivate('xunit')
 
     return xunit_filename
+
+
+@pytest.fixture
+def test_handler(request):
+    handler = logbook.TestHandler()
+    request.addfinalizer(slash.log.remove_all_extra_handlers)
+    slash.log.add_log_handler(handler)
+    return handler

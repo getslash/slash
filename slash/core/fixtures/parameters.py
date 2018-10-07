@@ -2,8 +2,10 @@ import operator
 import re
 from contextlib import contextmanager
 from sentinels import NOTHING
+from slash import ctx
 
 from ..._compat import iteritems
+from ...exceptions import ParameterException
 from ...exception_handling import mark_exception_frame_correction
 from ...utils.python import wraps, get_argument_names
 from .fixture_base import FixtureBase
@@ -26,7 +28,7 @@ def parametrize(parameter_name, values):
             @wraps(func, preserve=['__slash_fixture__'])
             def new_func(*args, **kwargs):
                 # for better debugging. _current_variation gets set to None on context exit
-                variation = _current_variation
+                variation = ctx.session.variations.get_current_variation()
                 for name, param in params.iter_parametrization_fixtures():
                     value = variation.get_param_value(param)
                     if name not in kwargs:
@@ -60,19 +62,18 @@ def toggle(param_name):
     return parametrize(param_name, (True, False))
 
 
-_current_variation = None
-
 
 @contextmanager
 def bound_parametrizations_context(variation, fixture_store, fixture_namespace):
-    global _current_variation  # pylint: disable=global-statement
-    assert _current_variation is None
-    _current_variation = variation
+
+    assert ctx.session.variations.get_current_variation() is None
+    ctx.session.variations.set_current_variation(variation)
     try:
         fixture_store.activate_autouse_fixtures_in_namespace(fixture_namespace)
         yield
     finally:
-        _current_variation = None
+        ctx.session.variations.set_current_variation(None)
+
 
 
 def iter_parametrization_fixtures(func):
@@ -95,7 +96,9 @@ class ParameterizationInfo(object):
         self.path = '{}:{}'.format(func.__module__, func.__name__)
 
     def add_options(self, param_name, values):
-        assert param_name not in self._params
+        if param_name in self._params:
+            raise ParameterException('{!r} already parametrized for {}'.format(
+            param_name, self.path))
         values = list(values)
 
         if not isinstance(param_name, (list, tuple)):

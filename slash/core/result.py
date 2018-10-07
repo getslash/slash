@@ -151,7 +151,7 @@ class Result(object):
         return self._started
 
     def is_not_run(self):
-        return not self._started
+        return not self.is_started() and not self.has_errors_or_failures()
 
     def mark_started(self):
         self._started = True
@@ -177,12 +177,11 @@ class Result(object):
         return self.is_started() and self.is_skip()
 
     def is_success(self, allow_skips=False):
-        if not self.is_started():
+        if self._errors or self._failures or self._interrupted:
+            return False
+        if self._skips:
             return allow_skips
-        returned = not self._errors and not self._failures and not self._interrupted
-        if not allow_skips:
-            returned &= not self._skips
-        return returned
+        return self.is_started()
 
     def is_success_finished(self):
         return self.is_success() and self.is_finished()
@@ -301,7 +300,7 @@ class GlobalResult(Result):
             return False
         if self._session_results is None:
             return True
-        if self._session_results.session.has_children() and self._session_results.session.parallel_manager.server.worker_session_error_reported:
+        if self._session_results.session.has_children() and self._session_results.session.parallel_manager.server.worker_error_reported:
             return False
         return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 
@@ -419,7 +418,9 @@ class SessionResults(object):
         return itertools.chain(self.iter_test_results(), [self.global_result])
 
     def create_result(self, test):
-        assert test.__slash__.id not in self._results_dict
+        if test.__slash__.id in self._results_dict:
+            raise exceptions.SlashInternalError("{} shouldn't appear in results dict before adding its result".format(test.__slash__.id))
+
         returned = Result(test.__slash__)
         self._results_dict[test.__slash__.id] = returned
         return returned

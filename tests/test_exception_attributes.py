@@ -5,12 +5,14 @@ from slash.core.error import Error
 from .utils import Unprintable
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_exception_attributes(error):  # pylint: disable=redefined-outer-name, unused-argument
     attrs = error.exception_attributes
     assert attrs['x'] == 2
     assert isinstance(attrs['y'], str)
 
 
+@pytest.mark.usefixtures('disable_vintage_deprecations')
 def test_exception_attributes_with_message():
     assert Error('x').exception_attributes is None
 

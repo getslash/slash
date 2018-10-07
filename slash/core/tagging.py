@@ -3,6 +3,7 @@ import functools
 from sentinels import NOTHING
 
 from .._compat import iteritems
+from ..exceptions import TaggingConflict
 
 _TAGS_NAME = '__slash_tags__'
 
@@ -12,7 +13,8 @@ def tag_test(test, tag_name, tag_value):
     if tags is NO_TAGS:
         tags = Tags()
         setattr(test, _TAGS_NAME, tags)
-    assert tag_name not in tags
+    if tags.get(tag_name, NOTHING) not in (tag_value, NOTHING):
+        raise TaggingConflict('Tag {} is already set on {}'.format(tag_name, test))
     tags[tag_name] = tag_value
     return test
 
@@ -46,12 +48,30 @@ class Tags(object):
 
     has_tag = __contains__
 
+    def _check_conflicting_tags(self, other):
+        for tag_name, tag_value in other._tags.items(): # pylint: disable=protected-access
+            if self.get(tag_name, NOTHING) not in (tag_value, NOTHING):
+                raise TaggingConflict('Conflicting tag: {} when adding {}, {}'.format(tag_name, self, other))
+
     def __add__(self, other):
         if other is NO_TAGS:
             return self
+        self._check_conflicting_tags(other)
         new_tags = self._tags.copy()
         new_tags.update(other._tags) # pylint: disable=protected-access
         return Tags(new_tags)
+
+    def copy(self):
+        return Tags(self._tags.copy())
+
+    def update(self, other):
+        if other is NO_TAGS:
+            return
+        self._check_conflicting_tags(other)
+        self._tags.update(other._tags) # pylint: disable=protected-access
+
+    def get(self, *args, **kwargs):
+        return self._tags.get(*args, **kwargs)
 
     def matches_pattern(self, pattern):
         if '=' in pattern:

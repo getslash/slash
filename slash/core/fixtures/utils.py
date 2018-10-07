@@ -26,6 +26,22 @@ def fixture(func=None, name=None, scope=None, autouse=False):
         return yield_fixture(func=func, name=name, scope=scope, autouse=autouse)
     return _ensure_fixture_info(func=func, name=name, scope=scope, autouse=autouse)
 
+def use_fixtures(fixture_names):
+
+    if not isinstance(fixture_names, list):
+        raise RuntimeError("use_fixtures expects a list of fixture names as an argument (got {!r})".format(fixture_names))
+
+    def decorator(func):
+        extra_fixtures = getattr(func, '__extrafixtures__', None)
+        if extra_fixtures is None:
+            func.__extrafixtures__ = fixture_names
+        else:
+            func.__extrafixtures__.extend(fixture_names)
+        return func
+
+    return decorator
+
+
 nofixtures = function_marker('__slash_nofixtures__')
 nofixtures.__doc__ = 'Marks the decorated function as opting out of automatic fixture deduction. ' + \
                      'Slash will not attempt to parse needed fixtures from its argument list'
@@ -166,4 +182,4 @@ def get_real_fixture_name_from_argument(argument):
     return argument.name
 
 
-__all__ = ['fixture', 'nofixtures', 'generator_fixture', 'yield_fixture', 'use']
+__all__ = ['fixture', 'nofixtures', 'generator_fixture', 'yield_fixture', 'use', 'use_fixtures']

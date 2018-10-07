@@ -1,5 +1,6 @@
 # pylint: disable=import-error,no-name-in-module
 from __future__ import division
+import functools
 import itertools
 import os
 import sys
@@ -15,6 +16,7 @@ from ..log import VERBOSITIES
 from ..utils.iteration import iteration
 from ..utils.python import wraps
 from .reporter_interface import ReporterInterface
+from ..exception_handling import handling_exceptions
 
 # traceback levels
 NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH_CONTEXT_AND_VARS = range(
@@ -34,6 +36,14 @@ def from_verbosity(level):
 
         return new_func
     return decorator
+
+
+def swallowing_terminal_exceptions(func):
+    @functools.wraps(func)
+    def inner(*args, **kwargs):
+        with handling_exceptions(swallow_types=(IOError, OSError), swallow=True):
+            return func(*args, **kwargs)
+    return inner
 
 
 class TerminalWriterWrapper(object):
@@ -84,6 +94,7 @@ class TerminalWriterWrapper(object):
                     write_line(sub_line)
         self._do_write('{}\n\n'.format('*' * box_width), **kw)
 
+    @swallowing_terminal_exceptions
     def sep(self, *args, **kw):
         self._line = ''
         return self._writer.sep(*args, **kw)
@@ -96,6 +107,7 @@ class TerminalWriterWrapper(object):
     def _get_line_remainder(self, line):
         return line.rsplit('\r', 1)[-1].rsplit('\n', 1)[-1]
 
+    @swallowing_terminal_exceptions
     def line(self, *args, **kw):
         self._writer.line(*args, **kw)
         self._line = ''
@@ -111,6 +123,7 @@ class TerminalWriterWrapper(object):
             idx = len(self._line) - (len(self._line) % self._writer.fullwidth)
             self._do_write(self._line[idx:])
 
+    @swallowing_terminal_exceptions
     def _do_write(self, *args, **kwargs):
         return self._writer.write(*args, **kwargs)
 
@@ -188,7 +201,7 @@ class ConsoleReporter(ReporterInterface):
         not_run = session.results.get_num_not_run()
         if not_run:
             msg += ' {} not run.'.format(not_run)
-        if session.has_children() and session.parallel_manager.server.worker_session_error_reported:
+        if session.has_children() and session.parallel_manager.server.worker_error_reported:
             msg += " Found session errors in children."
 
         msg += ' Total duration: {}'.format(

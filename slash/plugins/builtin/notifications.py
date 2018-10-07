@@ -223,7 +223,7 @@ class Plugin(PluginInterface):
     def entering_debugger(self, exc_info):
         if not self.current_config.notify_on_pdb:
             return
-        self._notify_all(short_message=repr(exc_info[1]), is_pdb=True)
+        self._notify_all(short_message=_escape_format(repr(exc_info[1])), is_pdb=True)
 
     def session_end(self):
         if session.duration < self.current_config.notification_threshold:
@@ -243,3 +243,7 @@ class Plugin(PluginInterface):
                 continue
             with handling_exceptions(swallow=True):
                 notifier_func(message)
+
+
+def _escape_format(s):
+    return s.replace('{', '{{').replace('}', '}}')

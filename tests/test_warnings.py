@@ -113,3 +113,20 @@ def capturing_native_warnings():
             warnings.simplefilter('always')
             handlers = collections.namedtuple('Handlers', ('log', 'native_warnings'))(log_handler, recorded)
             yield handlers
+
+@pytest.mark.parametrize('should_ignore', [True, False])
+def test_capture_warnings_before_session_start(request, suite, should_ignore):
+    request.addfinalizer(slash.clear_ignored_warnings)
+    warning_message = "warning_message"
+
+    @slash.hooks.register
+    def configure():    # pylint: disable=unused-variable
+        warnings.warn(warning_message)
+    if should_ignore:
+        slash.ignore_warnings(message=warning_message)
+    session_warnings = suite.run().session.warnings
+    if should_ignore:
+        assert len(session_warnings) == 0  # pylint: disable=len-as-condition
+    else:
+        assert len(session_warnings) == 1
+        assert list(session_warnings)[0].message == warning_message

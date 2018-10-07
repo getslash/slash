@@ -2,7 +2,6 @@ language: python
 sudo: false
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
   - "3.7-dev"
@@ -36,4 +35,4 @@ deploy:
       tags: true
       repo: getslash/slash
       python: "3.6"
-      condition: $TRAVIS_PYLINT=false
+      condition: $TRAVIS_PYLINT = 'false'

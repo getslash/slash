@@ -3,6 +3,7 @@ import logbook
 import os
 import pickle
 import time
+import collections
 from six.moves import xmlrpc_client
 from .server import NO_MORE_TESTS, PROTOCOL_ERROR, WAITING_FOR_CLIENTS
 from ..exceptions import INTERRUPTION_EXCEPTIONS
@@ -18,9 +19,10 @@ class Worker(object):
         self.client_id = client_id
         self.session_id = session_id
         self.server_addr = 'http://{}:{}'.format(config.root.parallel.server_addr, config.root.parallel.server_port)
+        self.keepalive_server_addr = 'http://{}:{}'.format(config.root.parallel.server_addr, config.root.parallel.keepalive_port)
 
     def keep_alive(self, stop_event):
-        proxy = xmlrpc_client.ServerProxy(self.server_addr)
+        proxy = xmlrpc_client.ServerProxy(self.keepalive_server_addr)
         while not stop_event.is_set():
             proxy.keep_alive(self.client_id)
             stop_event.wait(1)
@@ -35,7 +37,7 @@ class Worker(object):
 
     def error_added(self, error, result):
         if result.is_global_result():
-            self.client.report_session_error(self.client_id, error.message)
+            self.client.report_session_error("Session error in client id {}: {}".format(self.client_id, error.message))
 
     def write_to_error_file(self, msg):
         try:
@@ -58,34 +60,38 @@ class Worker(object):
             os.setsid()
         register(self.warning_added)
         register(self.error_added)
-        collection = [(test.__slash__.file_path, test.__slash__.function_name, test.__slash__.variation.id) for test in collected_tests]
-
-        if not self.client.validate_collection(self.client_id, collection):
+        collection = [(test.__slash__.file_path,
+                      test.__slash__.function_name,
+                      test.__slash__.variation.dump_variation_dict()) for test in collected_tests]
+        if not self.client.validate_collection(self.client_id, sorted(collection)):
             _logger.error("Collections of worker id {} and master don't match, worker terminates", self.client_id)
             self.client.disconnect(self.client_id)
             return
-
         stop_event = threading.Event()
         watchdog_thread = threading.Thread(target=self.keep_alive, args=(stop_event,))
         watchdog_thread.setDaemon(True)
         watchdog_thread.start()
         should_stop = False
+        signatures_dict = collections.defaultdict(set)
+        for index, test in enumerate(collection):
+            signatures_dict[test].add(index)
         with app.session.get_started_context():
             try:
                 while not should_stop:
-                    test_index = self.client.get_test(self.client_id)
-                    if test_index == WAITING_FOR_CLIENTS:
+                    test_entry = self.client.get_test(self.client_id)
+                    if test_entry == WAITING_FOR_CLIENTS:
                         _logger.debug("Worker_id {} recieved waiting_for_clients, sleeping", self.client_id)
                         time.sleep(0.05)
-                    elif test_index == PROTOCOL_ERROR:
+                    elif test_entry == PROTOCOL_ERROR:
                         _logger.error("Worker_id {} recieved protocol error message, terminating", self.client_id)
                         break
-                    elif test_index == NO_MORE_TESTS:
+                    elif test_entry == NO_MORE_TESTS:
                         _logger.debug("Got NO_MORE_TESTS, Client {} disconnecting", self.client_id)
                         break
                     else:
-                        test = collected_tests[test_index]
-                        context.session.current_parallel_test_index = test_index
+                        index = signatures_dict[tuple(test_entry[0])].pop()
+                        test = collected_tests[index]
+                        context.session.current_parallel_test_index = test_entry[1]
                         run_tests([test])
                         result = context.session.results[test]
                         _logger.debug("Client {} finished test, sending results", self.client_id)
@@ -107,6 +113,7 @@ class Worker(object):
                 watchdog_thread.join()
                 self.client.disconnect(self.client_id)
             finally:
+                context.session.initiate_cleanup()
                 if not stop_event.is_set():
                     stop_event.set()
                     watchdog_thread.join()

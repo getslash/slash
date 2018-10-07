@@ -6,8 +6,9 @@ from slash.plugins import PluginInterface
 from slash import hooks
 import pytest
 import gossip
+import vintage
 
-from .utils import TestCase, make_runnable_tests, CustomException
+from .utils import TestCase as _TestCase, make_runnable_tests, CustomException
 
 
 class SessionEndException(Exception):
@@ -18,7 +19,7 @@ class SessionStartException(Exception):
     pass
 
 
-class TestEndException(Exception):
+class CustomTestEndException(Exception):
     pass
 
 
@@ -143,14 +144,13 @@ def test_hook__test_failure_without_exception(suite, request, checkpoint, suite_
 
 
 @pytest.mark.parametrize(
-    'hook_exception', [
+    'hook_name,exception_type,should_raise', [
         ('slash.session_start', SessionStartException, True),
         ('slash.session_end', SessionEndException, True),
-        ('slash.test_end', TestEndException, True),
+        ('slash.test_end', CustomTestEndException, False),
         ('slash.before_test_cleanups', BeforeTestCleanupException, False)])
 @pytest.mark.parametrize('debug_enabled', [True, False])
-def test_debugger_called_on_hooks(hook_exception, request, forge, config_override, checkpoint, debug_enabled):
-    hook_name, exception_type, should_raise = hook_exception
+def test_debugger_called_on_hooks(request, hook_name, exception_type, should_raise, forge, config_override, checkpoint, debug_enabled):
 
     @gossip.register(hook_name)
     def raise_exc():
@@ -220,7 +220,7 @@ def test_session_end_not_called_when_before_session_start_fails(checkpoint):
 
 #### Older tests below, need modernizing ####
 
-class HookCallingTest(TestCase):
+class HookCallingTest(_TestCase):
 
     def setUp(self):
         super(HookCallingTest, self).setUp()
@@ -272,7 +272,8 @@ def make_custom_plugin(name, test, hook_names=None):
     CustomPlugin.__name__ = name
 
     if hook_names is None:
-        hook_names = [name for name, _ in slash.hooks.get_all_hooks()]
+        with vintage.get_no_deprecations_context():
+            hook_names = [hook_name for hook_name, _ in slash.hooks.get_all_hooks()]
 
     for hook_name in hook_names:
         setattr(CustomPlugin, hook_name, test.forge.create_wildcard_function_stub(name=hook_name))

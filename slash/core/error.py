@@ -3,7 +3,7 @@ import traceback
 
 import arrow
 import logbook
-from vintage import deprecated
+from vintage import deprecated, get_no_deprecations_context
 
 from .._compat import StringIO, iteritems, string_types
 from ..conf import config
@@ -134,11 +134,14 @@ class Error(object):
             f.writeln("Traceback (most recent call last):")
             with f.indented():
                 for frame in self.traceback.frames:
+                    with get_no_deprecations_context():
+                        locals_ = frame.locals
+                        globals_ = frame.globals
                     f.writeln('File "{f.filename}", line {f.lineno}, in {f.func_name}:'.format(f=frame))
                     with f.indented():
                         f.writeln('>', frame.code_line.strip() or '?')
                         with f.indented():
-                            for title, vars in [('globals', frame.globals), ('locals', frame.locals)]:
+                            for title, vars in [('globals', globals_), ('locals', locals_)]:
                                 for index, (var_name, var_repr) in enumerate(iteritems(vars)):
                                     if index == 0:
                                         f.writeln(title)

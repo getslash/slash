@@ -11,6 +11,7 @@ from .pattern_matching import Matcher
 
 import warnings
 
+NO_EXC_INFO = (None, None, None)
 
 def _debugger(debug_function_str, exc_info_transform=None, name=None):  # pragma: no cover
     module_name, function_name = debug_function_str.rsplit(".", 1)
@@ -21,10 +22,14 @@ def _debugger(debug_function_str, exc_info_transform=None, name=None):  # pragma
             raise NotImplementedError() # pragma: no cover
         func = getattr(module, function_name)
         orig_exc_info = exc_info
-        if exc_info_transform is not None:
-            exc_info = exc_info_transform(exc_info)
         _notify_going_into_debugger(orig_exc_info)
-        func(*exc_info)
+        if orig_exc_info == NO_EXC_INFO:
+            func = getattr(module, 'set_trace')
+            func()
+        else:
+            if exc_info_transform is not None:
+                exc_info = exc_info_transform(exc_info)
+            func(*exc_info)
     debugger.__name__ = debug_function_str
     debugger.__external_name__ = name
     return debugger
@@ -57,7 +62,7 @@ def debug_if_needed(exc_info=None):
         exc_info = sys.exc_info()
     if exc_info[0] is None:
         return
-    if isinstance(exc_info[1], context.session.get_skip_exception_types()) and not config.root.debug.debug_skips:
+    if context.session and isinstance(exc_info[1], context.session.get_skip_exception_types()) and not config.root.debug.debug_skips:
         return
     if isinstance(exc_info[1], (SystemExit,) + exceptions.INTERRUPTION_EXCEPTIONS):
         return

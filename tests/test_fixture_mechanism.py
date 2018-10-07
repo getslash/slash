@@ -122,8 +122,8 @@ def test_fixture_parameters(store):
         return b
 
     store.resolve()
-
-    variations = list(_get_all_values(store, 'value'))
+    with slash.Session():
+        variations = list(_get_all_values(store, 'value'))
     assert set(variations) == set(itertools.product([1, 2, 3], [4, 5, 6]))
 
 
@@ -136,8 +136,8 @@ def test_fixture_tuple_parameters(store):
         return a + b
 
     store.resolve()
-
-    variations = list(_get_all_values(store, 'x'))
+    with slash.Session():
+        variations = list(_get_all_values(store, 'x'))
     assert variations == [3, 7]
 
 

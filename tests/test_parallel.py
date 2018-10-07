@@ -81,7 +81,8 @@ def test_server_fails(parallel_suite):
 
     for test in parallel_suite:
         test.expect_deselect()
-    parallel_suite.run(expect_interruption=True)
+    results = parallel_suite.run(expect_interruption=True).session.results
+    assert not results.is_success(allow_skips=True)
 
 
 #test slash features with parallel
@@ -169,7 +170,7 @@ def test_child_session_errors(parallel_suite):
     parallel_suite[0].append_line("slash.context.session.results.global_result.add_error('bla')")
     session_results = parallel_suite.run(num_workers=1, verify=False).session
     assert not session_results.results.is_success()
-    assert session_results.parallel_manager.server.worker_session_error_reported
+    assert session_results.parallel_manager.server.worker_error_reported
 
 def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     parallel_suite[0].expect_failure()
@@ -181,7 +182,7 @@ def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     parallel_suite[0].append_line("a()")
     session_results = parallel_suite.run(num_workers=1, verify=False).session
     assert not session_results.results.is_success()
-    assert session_results.parallel_manager.server.worker_session_error_reported
+    assert session_results.parallel_manager.server.worker_error_reported
 
 def test_traceback_vars(parallel_suite):
     #code to be inserted:
@@ -312,6 +313,7 @@ def test_timeout_no_request_to_server(config_override, runnable_test_dir):
         runnables = Loader().get_runnables(str(runnable_test_dir))
         parallel_manager = ParallelManager([])
         parallel_manager.start_server_in_thread(runnables)
+        parallel_manager.try_connect()
         parallel_manager.server.state = ServerStates.SERVE_TESTS
 
         with slash.assert_raises(ParallelTimeout) as caught:
@@ -328,7 +330,7 @@ def test_children_not_connected_timeout(runnable_test_dir, config_override):
         time.sleep(0.1)
         with slash.assert_raises(ParallelTimeout) as caught:
             parallel_manager.wait_all_workers_to_connect()
-        assert caught.exception.args[0] == 'Not all clients connected'
+        assert 'Not all clients connected' in caught.exception.args[0]
 
 def test_worker_error_logs(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)
@@ -344,3 +346,20 @@ def test_worker_error_logs(parallel_suite, config_override):
     with open(file_path) as error_file:
         line = error_file.readline()
         assert 'interrupted' in line
+
+def test_shuffle(parallel_suite):
+    @slash.hooks.tests_loaded.register   # pylint: disable=no-member
+    def tests_loaded(tests):   # pylint: disable=unused-variable
+        for index, test in enumerate(reversed(tests)):
+            test.__slash__.set_sort_key(index)
+
+    parallel_suite.run()
+
+def test_server_hanging_dont_cause_worker_timeouts(parallel_suite, config_override):
+    config_override("parallel.no_request_timeout", 2)
+
+    @slash.hooks.test_distributed.register   # pylint: disable=no-member
+    def test_distributed(test_logical_id, worker_session_id):   # pylint: disable=unused-variable, unused-argument
+        time.sleep(3)
+
+    parallel_suite.run()

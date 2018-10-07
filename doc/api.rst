@@ -32,6 +32,10 @@ Cleanups
 
 .. autofunction:: slash.add_success_only_cleanup
 
+.. autofunction:: slash.get_current_cleanup_phase
+
+.. autofunction:: slash.is_in_cleanup
+
 Skips
 -----
 

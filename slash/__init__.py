@@ -1,5 +1,5 @@
 from .__version__ import __version__
-from .cleanups import add_cleanup, add_critical_cleanup, add_success_only_cleanup
+from .cleanups import add_cleanup, add_critical_cleanup, add_success_only_cleanup, get_current_cleanup_phase, is_in_cleanup
 from .conf import config
 from .ctx import context
 from .ctx import g, session, test
@@ -37,7 +37,7 @@ from .core.test import abstract_test_class
 from .core.exclusions import exclude
 from .core.fixtures import parametrize, parameters
 from .core.fixtures.parameters import ParametrizationValue as param
-from .core.fixtures.utils import fixture, nofixtures, generator_fixture, yield_fixture, use
+from .core.fixtures.utils import fixture, use_fixtures, nofixtures, generator_fixture, yield_fixture, use
 from .core.requirements import requires
 from .utils import skip_test, skipped, add_error, add_failure, set_test_detail, repeat, register_skip_exception
 from .utils.interactive import start_interactive_shell

@@ -25,8 +25,8 @@ def list_config(args, report_stream=sys.stdout):
 
     filters = _parse_filters(args.paths)
 
+    slash.site.load()
     with slash.Session():
-        slash.site.load()
 
         for name, value in sorted(slash.config.traverse_leaves()):
             if not _is_included(name, filters):

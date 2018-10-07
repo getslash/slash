@@ -158,5 +158,27 @@ def test_slash_list_with_warnings(tmpdir, no_tests):
     assert result != 0
 
 
+def test_slash_list_with_filtering(tmpdir):
+    with tmpdir.join('test_file.py').open('w') as fp:
+        _print = functools.partial(print, file=fp)
+        _print()
+        _print('def test_a():')
+        _print('    pass')
+        _print('')
+        _print('def test_b():')
+        _print('    pass')
+        _print('')
+        _print('def test_c():')
+        _print('    pass')
+
+    report_stream = StringIO()
+    args = [fp.name, '-k', 'not _b', '--only-tests']
+    result = slash_list(args, report_stream=report_stream)
+    assert result == 0
+
+    listed_tests = _strip(report_stream.getvalue()).splitlines()
+    assert listed_tests == ['{}:{}'.format(fp.name, test_name) for test_name in ('test_a', 'test_c')]
+
+
 def _strip(line):
     return re.sub(r'\x1b\[.+?m', '', line).strip()

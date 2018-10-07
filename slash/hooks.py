@@ -30,6 +30,8 @@ _define('after_session_start', doc="Second entry point for session start, useful
 _define('before_session_cleanup', doc="Called right before session cleanup begins")
 _define('after_session_end', doc="Called right after session_end hook")
 
+_define('app_quit', doc="Called right before the app quits")
+
 _define('configure', doc='Configuration hook that happens during commandline parsing, and before plugins are activated. It is a convenient point to override plugin activation settings')  # pylint: disable=line-too-long
 
 _define('test_interrupt', doc="Called when a test is interrupted by a KeyboardInterrupt or other similar means")

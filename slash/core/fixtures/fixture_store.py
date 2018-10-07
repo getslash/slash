@@ -2,6 +2,7 @@ import collections
 import sys
 from contextlib import contextmanager
 
+from slash import ctx
 import logbook
 from orderedset import OrderedSet
 
@@ -55,10 +56,14 @@ class FixtureStore(object):
                 yield f
 
     def call_with_fixtures(self, test_func, namespace, trigger_test_start=False, trigger_test_end=False):
-
         if not nofixtures.is_marked(test_func):
             fixture_names = self.get_required_fixture_names(test_func)
             kwargs = self.get_fixture_dict(fixture_names, namespace)
+            used_fixtures_decorator_names = getattr(test_func, '__extrafixtures__', None)
+            if used_fixtures_decorator_names is not None:
+                used_fixture_names_only = set(used_fixtures_decorator_names) - set(fixture_names)
+                for name in used_fixture_names_only:
+                    self.get_fixture_value(namespace.get_fixture_by_name(name))
         else:
             kwargs = {}
 
@@ -289,7 +294,6 @@ class FixtureStore(object):
         return value
 
     def iter_parametrization_variations(self, fixture_ids=(), funcs=(), methods=()):
-
         if self._unresolved_fixture_ids:
             raise UnresolvedFixtureStore()
 
@@ -314,11 +318,15 @@ class FixtureStore(object):
         if fixture.info.id in self._computing:
             raise CyclicFixtureDependency(
                 'Fixture {!r} is a part of a dependency cycle!'.format(name))
-
         active_fixture = self.get_active_fixture(fixture)
-
         if active_fixture is not None:
-            return active_fixture.value
+            for param_id in fixture.parametrization_ids:
+                if ctx.session.variations.is_param_variation_changed(param_id):
+                    self._deactivate_fixture(active_fixture.fixture)
+                    active_fixture = fixture
+                    break
+            else:
+                return active_fixture.value
 
         self._computing.add(fixture.info.id)
         try:

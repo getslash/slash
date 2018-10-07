@@ -16,13 +16,14 @@ from ..warnings import SessionWarnings
 from .fixtures.fixture_store import FixtureStore
 from .result import SessionResults
 from .scope_manager import ScopeManager
-
+from .variation import Variations
 
 class Session(Activatable):
     """ Represents a slash session
     """
 
     start_time = end_time = host_fqdn = host_name = None
+    _has_internal_errors = False
 
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
@@ -41,6 +42,7 @@ class Session(Activatable):
         self.warnings = SessionWarnings()
         self.logging = log.SessionLogging(self, console_stream=console_stream)
         self.current_parallel_test_index = None
+        self.variations = Variations()
         #: an aggregate result summing all test results and the global result
         self.results = SessionResults(self)
         if reporter is None:
@@ -49,6 +51,12 @@ class Session(Activatable):
         self.cleanups = CleanupManager()
 
         self._skip_exc_types = (exceptions.SkipTest,)
+
+    def notify_internal_error(self):
+        self._has_internal_errors = True
+
+    def has_internal_errors(self):
+        return self._has_internal_errors
 
     def register_skip_exception(self, exc_type):
         self._skip_exc_types += (exc_type,)
@@ -138,10 +146,12 @@ class Session(Activatable):
     def initiate_cleanup(self):
         if not self.scope_manager.has_active_scopes():
             return
-        with handling_exceptions(swallow=True):
-            hooks.before_session_cleanup()  # pylint: disable=no-member
-        with handling_exceptions(swallow=True):
-            self.scope_manager.flush_remaining_scopes()
+        try:
+            with handling_exceptions(swallow=True):
+                hooks.before_session_cleanup()  # pylint: disable=no-member
+        finally:
+            with handling_exceptions(swallow=True):
+                self.scope_manager.flush_remaining_scopes()
 
     def mark_complete(self):
         self._complete = True

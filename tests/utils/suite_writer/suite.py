@@ -136,7 +136,6 @@ class Suite(object):
         args.extend(additional_args)
         if self.is_parallel:
             args.extend(['--parallel', str(num_workers), '-vvvvv', '--parallel-addr', 'localhost'])
-            sort = False
         with self._capture_events(returned), self._custom_sorting(sort):
             with self._custom_slashrc(path):
                 app = slash_run(
@@ -152,9 +151,12 @@ class Suite(object):
         if captured:
             assert len(captured) == 1
             returned.session = captured[0].session
+            assert not returned.session.has_internal_errors(), 'Session has internal errors!'
 
         if verify:
             validate_run(self, returned, expect_interruption=expect_interruption, expect_session_errors=expect_session_errors)
+
+
         return returned
 
     @contextmanager

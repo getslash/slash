@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from .utils.debug import debug_if_needed
+from .utils.debug import debug_if_needed, NO_EXC_INFO
 from .utils.exception_mark import mark_exception, get_exception_mark
 from .utils.traceback_proxy import create_traceback_proxy
 from . import hooks as trigger_hook
@@ -18,7 +18,6 @@ except ImportError:
 import sys
 
 _logger = logbook.Logger(__name__)
-NO_EXC_INFO = (None, None, None)
 
 
 def update_current_result(exc_info):  # pylint: disable=unused-argument
@@ -85,8 +84,9 @@ def handling_exceptions(fake_traceback=True, **kwargs):
         # Only in CPython we're able to fake the original, full traceback
         try:
             fake_tbs = create_traceback_proxy(frame_correction=2)
-        except (KeyError, IndexError):
+        except (KeyError, IndexError) as e:
             _logger.warn("Could not extract full traceback for exceptions handling")
+            _logger.trace("Extraction failure: {!r}", e, exc_info=True)
             fake_tbs = tuple()
     else:
         fake_tbs = tuple()

@@ -7,7 +7,7 @@ from vintage import warn_deprecation
 from .. import hooks
 from ..ctx import context
 from ..exception_handling import handling_exceptions
-from ..exceptions import CannotAddCleanup, IncorrectScope
+from ..exceptions import CannotAddCleanup, IncorrectScope, SlashInternalError
 
 _logger = logbook.Logger(__name__)
 
@@ -27,6 +27,12 @@ class CleanupManager(object):
         self._pending = []
         self._allow_implicit_scopes = True
         self._default_scope = None
+        self._current_scope = None
+
+    def get_current_scope_name(self):
+        if self._current_scope is None:
+            return None
+        return self._current_scope.name
 
     @contextmanager
     def forbid_implicit_scoping_context(self):
@@ -121,7 +127,8 @@ class CleanupManager(object):
 
         _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
         scope = self._scope_stack[-1]
-        assert scope.name == scope_name, 'Attempted to pop scope {!r}, but current scope is {!r}'.format(scope_name, scope.name)
+        if scope.name != scope_name:
+            raise SlashInternalError('Attempted to pop scope {!r}, but current scope is {!r}'.format(scope_name, scope.name))
         try:
             self.call_cleanups(
                 scope=scope,
@@ -152,7 +159,12 @@ class CleanupManager(object):
                 continue
             with handling_exceptions(swallow=True):
                 _logger.trace("Calling cleanup: {0}", cleanup)
-                cleanup()
+                previous_scope = self._current_scope
+                self._current_scope = scope
+                try:
+                    cleanup()
+                finally:
+                    self._current_scope = previous_scope
 
 
 

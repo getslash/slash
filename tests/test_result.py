@@ -9,6 +9,7 @@ from slash.exception_handling import handling_exceptions
 from .utils import TestCase, run_tests_assert_success
 
 
+
 @pytest.mark.parametrize('use_error', [True, False])
 def test_result_add_exception_multiple_times(result, use_error):
     with slash.Session():
@@ -186,10 +187,9 @@ def test_session_cleanups_under_global_result(suite, suite_test):
 
 
 @pytest.mark.parametrize('log_path', [None, 'a/b/c'])
-@pytest.mark.parametrize('config_path', ['log.errors_subpath', 'log.highlights_subpath'])
 @pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
-def test_log_paths(log_path, log_subpath, config_path, config_override, logs_dir):
-    # pylint: disable=protected-access
+def test_log_paths(log_path, log_subpath, config_override, logs_dir):
+    config_path = 'log.highlights_subpath'
     extra_logs = ['/my/extra/log_{}'.format(i) for i in range(2)]
 
     config_override(config_path, log_subpath)
@@ -205,6 +205,16 @@ def test_log_paths(log_path, log_subpath, config_path, config_override, logs_dir
             result.add_extra_log_path(extra_log)
         assert result.get_log_paths() == expected_logs + extra_logs
 
+
+@pytest.mark.parametrize('error_adder', (Result.add_error, Result.add_failure))
+def test_result_not_started_with_errors(error_adder):
+    result = Result()
+    assert not result.is_started()
+    assert result.is_not_run()
+    error_adder(result, "error")
+
+    assert not result.is_started()
+    assert not result.is_not_run()
 
 
 class SessionResultTest(TestCase):

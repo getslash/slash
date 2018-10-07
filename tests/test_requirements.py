@@ -12,6 +12,39 @@ from slash._compat import ExitStack
 _UNMET_REQ_DECORATOR = 'slash.requires(lambda: False)'
 _MET_REQ_DECORATOR = 'slash.requires(lambda: True)'
 
+
+def test_ensure_requirements_called_eagerly(checkpoint1, checkpoint2):
+    def predicate_1():
+        checkpoint1()
+        return False
+    def predicate_2():
+        checkpoint2()
+        return False
+
+    @slash.requires(predicate_1)
+    @slash.requires(predicate_2)
+    def test_something():
+        pass
+
+    with slash.Session() as session:
+        with session.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))
+    [result] = [res for res in session.results.iter_all_results() if not res.is_global_result()]
+    assert result.is_skip()
+    assert checkpoint1.called
+    assert checkpoint2.called
+
+def test_requirements_raises_exception(suite, suite_test):
+    @suite_test.file.append_body
+    def __code__():  # pylint: disable=unused-variable
+        def fail_predicate():  # pylint: disable=unused-variable
+            raise Exception('Failing')
+    suite_test.add_decorator('slash.requires(fail_predicate)')
+    suite_test.expect_error()
+    summary = suite.run()
+    assert not summary.session.results.is_success(allow_skips=True)
+
+
 def test_requirements_mismatch_session_success(suite, suite_test):
     suite_test.add_decorator('slash.requires(False)')
     suite_test.expect_skip()

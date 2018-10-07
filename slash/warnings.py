@@ -13,6 +13,9 @@ from contextlib import contextmanager
 
 _native_logger = logbook.Logger('slash.native_warnings')
 
+def capture_all_warnings():
+    warnings.simplefilter('always')
+    warnings.filterwarnings('ignore', category=ImportWarning)
 
 class LogbookWarning(UserWarning):
     pass
@@ -27,17 +30,20 @@ class SessionWarnings(object):
 
     @contextmanager
     def capture_context(self):
-        warnings.simplefilter('always')
-        warnings.filterwarnings('ignore', category=ImportWarning)
-
+        capture_all_warnings()
         with warning_callback_context(self._capture_native_warning):
             yield
 
-    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
-        warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
+    def warning_should_be_filtered(self, warning):
         for ignored_warning in _ignored_warnings:
             if ignored_warning.matches(warning):
-                return
+                return True
+        return False
+
+    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
+        warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
+        if self.warning_should_be_filtered(warning):
+            return
         self.add(warning)
         if not issubclass(category, LogbookWarning):
             _native_logger.warning('{filename}:{lineno}: {warning!r}', filename=filename, lineno=lineno, warning=warning)
@@ -89,8 +95,8 @@ class RecordedWarning(object):
     def __init__(self, details, message, category=None):
         super(RecordedWarning, self).__init__()
         self.details = details
-        self.details['session_id'] = context.session_id
-        self.details['test_id'] = context.test_id
+        self.details['session_id'] = context.session_id if context.session else None
+        self.details['test_id'] = context.test_id if context.test_id else None
         self.details.setdefault('func_name', None)
         self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
         self.category = category
@@ -141,23 +147,31 @@ class _IgnoredWarning(object):
         self.lineno = lineno
         self.message = message
 
-    def matches(self, warning):
-        if self.category is not None and issubclass(warning.category, self.category):
+    @staticmethod
+    def _pattern_matches(regex_or_str, warning_str):
+        if regex_or_str is None:
+            return False
+        if regex_or_str == warning_str:
             return True
-
-        if self.filename is not None and warning.filename == self.filename:
-            return True
-
-        if self.lineno is not None and warning.lineno == self.lineno:
-            return True
-
-        if self.message is not None:
-            if hasattr(self.message, 'match'):
-                if self.message.match(warning.message):
-                    return True
-            elif self.message == warning.message:
+        elif hasattr(regex_or_str, 'match'):
+            if regex_or_str.match(warning_str):
                 return True
         return False
+
+    def matches(self, warning):
+        if self.category and not issubclass(warning.category, self.category):
+            return False
+
+        if self.filename and not self._pattern_matches(self.filename, warning.filename):
+            return False
+
+        if self.lineno and warning.lineno != self.lineno:
+            return False
+
+        if self.message and not self._pattern_matches(self.message, warning.message):
+            return False
+
+        return True
 
 _ignored_warnings = []
 
@@ -169,6 +183,10 @@ def ignore_warnings(category=None, message=None, filename=None, lineno=None):
     regular expression object compiled with ``re.compile``.
 
         slash.ignore_warnings(category=CustomWarningCategory)
+
+    .. note:: Filter arguments are treated as having an ``and`` logical relationship.
+
+    .. note:: Calling ignore_warnings() with no arguments will ignore **all** warnings
     """
     _ignored_warnings.append(_IgnoredWarning(category=category, filename=filename, lineno=lineno, message=message))
 

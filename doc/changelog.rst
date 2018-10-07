@@ -1,6 +1,24 @@
 Changelog
 =========
 
+* :release:`1.7.0 <7-10-2018>`
+* :feature:`825` Support capturing error logs as actual errors, when ``run.capture.error_logs_as_errors`` is enabled
+* :bug:`864 major` Fix handling of exceptions during ``_run_single_test()`` before test started
+* :feature:`12` Added a signal handling plugin (see documentation for more details)
+* :feature:`836` Resuming sessions now supports ``--failed-first`` and ``--unstarted-first`` to control the resuming priority
+* :feature:`843` Add ``slash.app_quit`` hook, a hook that is called whenever the Slash process finishes. This is useful to allow certain plugins to perform important cleanups on session-wide errors
+* :bug:`846 major` Use AND operator between ``ignore_warnings`` parameters
+* :feature:`648` Add support for use_fixtures decotaror
+* :feature:`738` Collect warnings that were omitted before session started
+* :feature:`824` Support API to determine cleanup phase - ``get_current_cleanup_phase()`` and ``is_in_cleanup()``
+* :feature:`650` Fixtures can now be tagged the same way as tests
+* :feature:`803` Add exception class for internal Slash errors: ``SlashInternalError``
+* :bug:`804 major` Swallow IO Errors from console reporter
+* :bug:`812 major` Fixed debug_if_needed when called before session initialized
+* :bug:`810 major` Fixed handling of notification messages containing curly braces
+* :feature:`693` Remove backwards compatibility for ``log.errors_subpath`` configuration. Use ``log.highlights_subpath`` configuration instead.
+* :feature:`799` Tags can now be set more than once on a test, providing that they are set in the same way (same value or without a value)
+* :feature:`797` Add ability to filter tests of ``slash list`` with ``-k``
 * :release:`1.6.5 <2-9-2018>`
 * :bug:`837` Fix handling exceptions during ``_log_file_handler_context``
 * :release:`1.6.4 <19-7-2018>`
