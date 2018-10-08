@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`876 major`  Support disabling convertion of log error to slash-error by extra's ``capture=False``
 * :release:`1.7.0 <7-10-2018>`
 * :feature:`825` Support capturing error logs as actual errors, when ``run.capture.error_logs_as_errors`` is enabled
 * :bug:`864 major` Fix handling of exceptions during ``_run_single_test()`` before test started
