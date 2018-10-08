@@ -69,7 +69,8 @@ class Result(object):
             try:
                 self.__dict__[key] = unpickle(value)
             except TypeError:
-                _logger.error('Error when deserialize reult, skipping this value. key = {}', key)
+                _logger.error('Error when deserialize reult, skipping this value. key = {}', key,
+                              extra={'capture': False})
         for failure in self._failures:
             self.add_failure(failure, append=False)
         for error in self._errors:
@@ -237,7 +238,7 @@ class Result(object):
             error.forget_exc_info()
             return error
         except Exception:
-            _logger.error("Failed to add error to result", exc_info=True)
+            _logger.error("Failed to add error to result", exc_info=True, extra={'capture': False})
             raise
 
     def add_skip(self, reason, append=True):

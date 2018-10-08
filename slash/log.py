@@ -28,7 +28,8 @@ class ErrorHandler(logbook.handlers.Handler):
         super(ErrorHandler, self).__init__(level=logbook.ERROR, bubble=True)
 
     def emit(self, record):
-        add_error(record.message, exc_info=record.exc_info)
+        if record.extra.get('capture', True):
+            add_error(record.message, exc_info=record.exc_info)
 
 class _NormalizedObject(object):
     def __init__(self, obj):

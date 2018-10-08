@@ -96,7 +96,7 @@ class Server(object):
         test_index = self.executing_tests.get(client_id, None)
         if test_index is not None:
             _logger.error("Worker {} interrupted while executing test {}", client_id,
-                          self.tests[test_index].__slash__.address)
+                          self.tests[test_index].__slash__.address, extra={'capture': False})
             with _get_test_context(self.tests[test_index], logging=False) as (result, _):
                 result.mark_interrupted()
                 self.finished_tests.append(test_index)
@@ -129,7 +129,7 @@ class Server(object):
 
     def validate_collection(self, client_id, sorted_client_collection):
         if not self._sorted_collection == sorted_client_collection:
-            _logger.error("Client_id {} sent wrong collection", client_id)
+            _logger.error("Client_id {} sent wrong collection", client_id, extra={'capture': False})
             return False
         self.num_collections_validated += 1
         _logger.debug("Worker {} validated tests successfully", client_id)
@@ -145,7 +145,8 @@ class Server(object):
 
     def get_test(self, client_id):
         if not self.executing_tests[client_id] is None:
-            _logger.error("Client_id {} requested new test without sending former result", client_id)
+            _logger.error("Client_id {} requested new test without sending former result", client_id,
+                          extra={'capture': False})
             return PROTOCOL_ERROR
         if self.state == ServerStates.STOP_TESTS_SERVING:
             return NO_MORE_TESTS
@@ -179,7 +180,7 @@ class Server(object):
                     self._mark_unrun_tests()
         else:
             _logger.error("finished_test request from client_id {} with index {}, but no test is mapped to this worker",
-                          client_id, test_index)
+                          client_id, test_index, extra={'capture': False})
             return PROTOCOL_ERROR
 
     def stop_serve(self):
@@ -197,11 +198,11 @@ class Server(object):
             warning = unpickle(pickled_warning)
             context.session.warnings.add(warning)
         except TypeError:
-            _logger.error('Error when deserializing warning, not adding it')
+            _logger.error('Error when deserializing warning, not adding it', extra={'capture': False})
 
     def report_session_error(self, message):
         self.worker_error_reported = True
-        _logger.error(message)
+        _logger.error(message, extra={'capture': False})
 
     def should_wait_for_request(self):
         return self.has_connected_clients() or self.has_more_tests()
