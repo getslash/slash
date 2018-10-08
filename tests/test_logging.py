@@ -29,19 +29,21 @@ def test_console_format(suite, suite_test, config_override, tmpdir):
 @pytest.mark.parametrize('should_consider_error', [True, False])
 def test_add_error_for_error_log_level(tmpdir, should_consider_error, config_override, test_handler):
     message = 'Hello'
+    non_capture_message = 'Do not capture as error'
     test_handler.level = logbook.ERROR
     config_override('log.root', str(tmpdir))
     config_override('run.capture.error_logs_as_errors', should_consider_error)
     def test_with_log_error():
         logger = logbook.Logger('some-logger')
         logger.error(message)
+        logger.error(non_capture_message, extra={'capture': False})
     with slash.Session() as session:
         with session.get_started_context():
             slash.runner.run_tests(make_runnable_tests(test_with_log_error))
     [result] = [res for res in session.results.iter_all_results() if not res.is_global_result()]
     expected_error_messages = [message] if should_consider_error else []
     assert [res.message for res in result.get_errors()] == expected_error_messages
-    assert [rec.message for rec in test_handler.records] == [message]
+    assert [rec.message for rec in test_handler.records] == [message, non_capture_message]
 
 
 def test_last_session_symlinks(files_dir, links_dir, session):

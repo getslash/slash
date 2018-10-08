@@ -109,12 +109,12 @@ class ParallelManager(object):
                 with open(os.path.join(self.workers_error_dircetory, file_name)) as worker_file:
                     content = worker_file.readlines()
                     for line in content:
-                        _logger.error("{}: {}", file_name, line)
+                        _logger.error("{}: {}", file_name, line, extra={'capture': False})
         if not found_worker_errors_file:
-            _logger.error("No worker error files were found")
+            _logger.error("No worker error files were found", extra={'capture': False})
 
     def handle_error(self, failure_message):
-        _logger.error(failure_message)
+        _logger.error(failure_message, extra={'capture': False})
         self.kill_workers()
         self.report_worker_error_logs()
         get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).report_session_error(failure_message)
@@ -130,7 +130,7 @@ class ParallelManager(object):
     def check_worker_timed_out(self):
         for worker_id, last_connection_time in iteritems(self.keepalive_server.get_workers_last_connection_time()):
             if time.time() - last_connection_time > config.root.parallel.communication_timeout_secs:
-                _logger.error("Worker {} is down, terminating session", worker_id)
+                _logger.error("Worker {} is down, terminating session", worker_id, extra={'capture': False})
                 self.report_worker_error_logs()
                 if not config.root.tmux.enabled:
                     if self.workers[worker_id].poll() is None:
@@ -142,14 +142,16 @@ class ParallelManager(object):
     def check_no_requests_timeout(self):
         if time.time() - self.keepalive_server.last_request_time > config.root.parallel.no_request_timeout:
             _logger.error("No request sent to server for {} seconds, terminating",
-                          config.root.parallel.no_request_timeout)
+                          config.root.parallel.no_request_timeout, extra={'capture': False})
             if self.server.has_connected_clients():
                 _logger.error("Clients that are still connected to server: {}",
-                              self.server.connected_clients)
+                              self.server.connected_clients, extra={'capture': False})
             if self.server.has_more_tests():
-                _logger.error("Number of unstarted tests: {}", self.server.unstarted_tests.qsize())
+                _logger.error("Number of unstarted tests: {}", self.server.unstarted_tests.qsize(),
+                              extra={'capture': False})
             if self.server.executing_tests:
-                _logger.error("Currently executed tests indexes: {}", self.server.executing_tests.values())
+                _logger.error("Currently executed tests indexes: {}", self.server.executing_tests.values(),
+                              extra={'capture': False})
             self.handle_error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
 
     def start(self):
@@ -167,7 +169,7 @@ class ParallelManager(object):
                 self.check_no_requests_timeout()
                 time.sleep(TIME_BETWEEN_CHECKS)
         except INTERRUPTION_EXCEPTIONS:
-            _logger.error("Server interrupted, stopping workers and terminating")
+            _logger.error("Server interrupted, stopping workers and terminating", extra={'capture': False})
             get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).session_interrupted()
             self.kill_workers()
             raise

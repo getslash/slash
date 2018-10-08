@@ -148,7 +148,7 @@ class Application(object):
                 self.get_reporter().report_error_message(str(exc_value))
 
             elif isinstance(exc_value, Exception):
-                _logger.error('Unexpected error occurred', exc_info=exc_info)
+                _logger.error('Unexpected error occurred', exc_info=exc_info, extra={'capture': False})
                 self.get_reporter().report_error_message('Unexpected error: {}'.format(exc_value))
 
             if isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):

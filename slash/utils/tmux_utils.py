@@ -61,7 +61,7 @@ def run_slash_in_tmux(command):
     else:
         path_to_tmux = which(TMUX_EXECUTABLE_NAME)
         if not path_to_tmux:
-            _logger.error("Tmux executable not found")
+            _logger.error("Tmux executable not found", extra={'capture': False})
             raise TmuxExecutableNotFound("Tmux executable not found")
         command = ' '.join([sys.executable, '-m', 'slash.frontend.main', 'run'] + command)
         tmux_args = [path_to_tmux, 'new-session', '-s', DEFAULT_SESSION_NAME, '-n', MASTER_WINDOW_NAME]
