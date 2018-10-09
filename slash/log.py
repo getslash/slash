@@ -195,7 +195,7 @@ class SessionLogging(object):
             if config.root.log.unified_session_log and self.session_log_handler is not None:
                 stack.enter_context(_make_bubbling_handler(self.session_log_handler))
             if config.root.run.capture.error_logs_as_errors:
-                stack.enter_context(ErrorHandler())
+                stack.enter_context(ErrorHandler().applicationbound())
 
             path = handler.stream.name if isinstance(handler, logbook.FileHandler) else None
             yield handler, path
