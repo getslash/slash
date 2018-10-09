@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`878 major` Fix notification plugin's handling of backslash plugin with no active session
 * :release:`1.7.1 <7-10-2018>`
 * :bug:`876 major`  Support disabling convertion of log error to slash-error by extra's ``capture=False``
 * :release:`1.7.0 <7-10-2018>`
