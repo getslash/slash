@@ -120,3 +120,28 @@ def test_resolve_fixture_parameterization_with_scopes(suite_builder):
             slash.context.result.data['params'] = (session_fixture, module_fixture, fixture_test)
 
     suite_builder.build().run().assert_success(8).with_data([{'params': x} for x in list(itertools.product(range(1, 3), range(3, 5), range(5, 7)))])
+
+
+def test_interdependent_fixtures_called_once(suite_builder):
+    # See https://github.com/getslash/slash/issues/882
+    # pylint: disable=unused-variable, redefined-outer-name,reimported
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+        import uuid
+
+
+        @slash.fixture
+        def fixture_2(fixture_1):
+            return 'improved-{}'.format(fixture_1)
+
+        @slash.fixture
+        @slash.parameters.toggle("toggle")
+        def fixture_1(toggle):
+            return str(uuid.uuid4())
+
+
+        def test_1(fixture_1, fixture_2):
+            assert fixture_1 in fixture_2
+
+    suite_builder.build().run().assert_success(2)
