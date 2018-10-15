@@ -1,7 +1,8 @@
 import pytest
 
 @pytest.mark.parametrize('scope', ['module', 'test'])
-def test_fixture_start_end_test(suite, suite_test, scope):
+@pytest.mark.parametrize('error_adder', [None, 'add_error', 'add_failure'])
+def test_fixture_start_end_test(suite, suite_test, scope, error_adder):
 
     fixture = suite.slashconf.add_fixture(scope=scope)
 
@@ -10,6 +11,14 @@ def test_fixture_start_end_test(suite, suite_test, scope):
     test_event = suite_test.add_event()
 
     suite_test.depend_on_fixture(fixture)
+
+    if error_adder == 'add_error':
+        suite_test.when_run.error()
+    elif error_adder == 'add_failure':
+        suite_test.when_run.fail()
+    else:
+        assert error_adder is None
+
     events = suite.run().events
 
     if scope != 'module':
