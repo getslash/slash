@@ -111,3 +111,28 @@ def test_failed_or_unstarted_with_no_such_tests(suite, failed_first, suite_test,
         config_override('resume.unstarted_first', True)
     [resumed_test] = get_tests_from_previous_session(result.session.id)
     assert resumed_test.function_name == suite_test.name
+
+@pytest.mark.parametrize('failed_only', [True, False])
+def test_failed_only_or_unstarted_first(suite, failed_only, config_override):
+    fail_index = len(suite) // 2
+    skip_index = fail_index - 1
+    suite[skip_index].when_run.skip()
+    suite[fail_index].when_run.fail()
+    for index, test in enumerate(suite):
+        if index > fail_index:
+            test.expect_not_run()
+    result = suite.run(additional_args=['-x'])
+
+    if failed_only:
+        config_override('resume.failed_only', True)
+        expected_resume_tests_num = 1
+        expected_status = 'failed'
+    else:
+        config_override('resume.unstarted_only', True)
+        expected_resume_tests_num = len(suite) - fail_index
+        expected_status = 'planned'
+    resumed = get_tests_from_previous_session(result.session.id)
+
+    assert len(resumed) == expected_resume_tests_num
+    for test in resumed:
+        assert test.status == expected_status
