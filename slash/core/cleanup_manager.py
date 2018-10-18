@@ -81,7 +81,7 @@ class CleanupManager(object):
                 raise IncorrectScope('Incorrect scope specified: {!r}'.format(scope_name))
             scope = self._scopes_by_name[scope_name][-1]
 
-        _logger.trace("Adding cleanup to scope {}: {}", scope, added)
+        _logger.trace("Adding cleanup to scope {}: {!r}", scope, added)
         if scope is None:
             self._pending.append(added)
         else:
@@ -179,6 +179,7 @@ class _Cleanup(object):
         self.critical = critical
         self.success_only = success_only
         self.result = context.result
+        self._repr = self._get_repr()
 
     def __call__(self):
         try:
@@ -187,8 +188,18 @@ class _Cleanup(object):
             self.result.add_exception()
             raise
 
+    def _get_repr(self):
+        qual_name = getattr(self.func, '__qualname__', None) or getattr(self.func, '__name__', str(self.func))
+        func_desc = "{}.{}".format(self.func.__module__, qual_name)
+        repr_prefix = ''
+        if self.success_only:
+            repr_prefix += 'Success Only '
+        if self.critical:
+            repr_prefix += 'Critical '
+        return "<{}Cleanup {} ({},{})>".format(repr_prefix, func_desc, self.args, self.kwargs)
+
     def __repr__(self):
-        return "{} ({},{})".format(self.func, self.args, self.kwargs)
+        return self._repr
 
 
 class _Scope(object):
