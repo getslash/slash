@@ -52,8 +52,11 @@ def test_test_causes_worker_exit(parallel_suite, config_override):
     workers_num = 1
     summary = parallel_suite.run(num_workers=workers_num, verify=False)
     assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num
-    [result] = summary.get_all_results_for_test(parallel_suite[0])
-    assert result.is_interrupted()
+    assert summary.session.results.is_interrupted()
+    test_results = summary.get_all_results_for_test(parallel_suite[0])
+    if test_results:
+        [result] = test_results
+        assert result.is_interrupted()
 
 def test_keepalive_works(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)
