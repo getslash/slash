@@ -190,7 +190,8 @@ class _Cleanup(object):
 
     def _get_repr(self):
         qual_name = getattr(self.func, '__qualname__', None) or getattr(self.func, '__name__', str(self.func))
-        func_desc = "{}.{}".format(self.func.__module__, qual_name)
+        module_name = getattr(self.func, '__module__', '???')
+        func_desc = "{}.{}".format(module_name, qual_name)
         repr_prefix = ''
         if self.success_only:
             repr_prefix += 'Success Only '
