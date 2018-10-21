@@ -72,13 +72,13 @@ class FixtureStore(object):
             for fixture in self.iter_active_fixtures():
                 fixture.call_test_start()
 
-        returned = test_func(**kwargs)
-
-        if trigger_test_end:
-            for fixture in self.iter_active_fixtures():
-                fixture.call_test_end()
-
-        return returned
+        try:
+            return test_func(**kwargs)
+        finally:
+            if trigger_test_end:
+                for fixture in self.iter_active_fixtures():
+                    with handling_exceptions(swallow=True):
+                        fixture.call_test_end()
 
     def get_required_fixture_names(self, test_func):
         """Returns a list of fixture names needed by test_func.

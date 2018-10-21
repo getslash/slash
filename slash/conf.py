@@ -117,6 +117,8 @@ config = Config({
     "resume": {
         "failed_first": False // Doc("Run failed tests of previous session before all others") // Cmdline(on='--failed-first', metavar="FAILED_FIRST"),
         "unstarted_first": False // Doc("Run unstarted tests of previous session before all others") // Cmdline(on='--unstarted-first', metavar="UNSTARTED_FIRST"),
+        "failed_only": False // Doc("Run only failed tests of previous session") // Cmdline(on='--failed-only', metavar="FAILED_ONLY"),
+        "unstarted_only": False // Doc("Run only unstarted tests of previous session") // Cmdline(on='--unstarted-only', metavar="UNSTARTED_ONLY"),
         "state_retention_days": 10 // Doc("Number of days to keep session entries for resuming session")
     },
     "tmux": {

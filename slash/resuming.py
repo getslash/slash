@@ -11,13 +11,13 @@ from slash.plugins import manager
 from ast import literal_eval
 from .utils.path import ensure_directory
 from .conf import config
+from .__version__ import __backslash_version__
 
 _DB_NAME = 'resume_state_v1.db'
 _logger = logbook.Logger(__name__)
 Base = declarative_base()
 _session = sessionmaker()
 _db_initialized = False
-
 
 class ResumeState(Base):
     __tablename__ = 'resume_state'
@@ -34,6 +34,12 @@ class SessionMetadata(Base):
     session_id = Column(String, primary_key=True)
     src_folder = Column(String, nullable=False, index=True)
     created_at = Column(DateTime, nullable=False, index=True)
+
+
+class ResumeTestStatus(object):
+    PLANNED = 'planned'
+    SUCCESS = 'success'
+    FAILED = 'failed'
 
 
 class ResumedTestData(object):
@@ -99,11 +105,11 @@ def save_resume_state(session_result):
         test_to_resume = ResumeState(session_id=session_result.session.id, file_name=metadata.file_path, function_name=metadata.function_name)
         test_to_resume.variation = str(metadata.variation.id) if metadata.variation else None
         if result.is_success_finished():
-            test_to_resume.status = "success"
+            test_to_resume.status = ResumeTestStatus.SUCCESS
         elif not result.is_started() or result.is_skip():
-            test_to_resume.status = "planned"
+            test_to_resume.status = ResumeTestStatus.PLANNED
         else:
-            test_to_resume.status = "failed"
+            test_to_resume.status = ResumeTestStatus.FAILED
         tests_to_resume.append(test_to_resume)
 
     with connecting_to_db() as conn:
@@ -122,37 +128,15 @@ def get_last_resumeable_session_id():
             raise CannotResume("No sessions found for folder {}".format(current_folder))
         return session_id.session_id
 
+def _get_resume_status_from_backslash_status(backslash_status):
+    if backslash_status in ['FAILURE', 'ERROR', 'INTERRUPTED']:
+        return ResumeTestStatus.FAILED
+    elif backslash_status in ['SUCCESS']:
+        return ResumeTestStatus.SUCCESS
+    else:
+        return ResumeTestStatus.PLANNED
 
-def get_tests_from_previous_session(session_id, get_successful_tests=False):
-    unstarted_first, failed_first = config.root.resume.unstarted_first, config.root.resume.failed_first
-    if unstarted_first and failed_first:
-        raise CannotResume("Got both failed_first and planned_first, cannot choose")
-    with connecting_to_db() as conn:
-        # pylint: disable=no-member
-        if conn.query(SessionMetadata).filter(SessionMetadata.session_id == session_id).first():
-            session_tests = conn.query(ResumeState).filter(ResumeState.session_id == session_id).all()
-            if not session_tests:
-                _logger.debug('Found session {} locally, but no tests exist', session_id)
-                return []
-            first_tests, other_tests = [], []
-            for test in session_tests:
-                if not get_successful_tests and test.status == "success":
-                    continue
-                new_entry = ResumedTestData(test.file_name, test.function_name)
-                new_entry.variation = literal_eval(test.variation) if test.variation else None
-                if unstarted_first and test.status == "planned":
-                    first_tests.append(new_entry)
-                elif failed_first and test.status == "failed":
-                    first_tests.append(new_entry)
-                else:
-                    other_tests.append(new_entry)
-            return first_tests + other_tests
-    _logger.debug('No local entry for session {}, searching remote session', session_id)
-    return get_tests_from_remote_session(session_id, get_successful=True)
-
-
-def get_tests_from_remote_session(session_id, get_successful=False):
-    unstarted_first, failed_first = config.root.resume.unstarted_first, config.root.resume.failed_first
+def get_tests_from_remote(session_id, get_successful_tests):
     backslash_plugin = manager.get_active_plugins().get('backslash', None)
     if not backslash_plugin:
         raise CannotResume("Could not find backslash plugin")
@@ -160,10 +144,58 @@ def get_tests_from_remote_session(session_id, get_successful=False):
         raise CannotResume("Backslash plugin doesn't support remote resuming")
     if not backslash_plugin.is_session_exist(session_id):
         raise CannotResume("Could not find resume data for session {}".format(session_id))
-    remote_tests = backslash_plugin.get_tests_to_resume(session_id, get_successful, unstarted_first, failed_first)
-    returned = [ResumedTestData(test.info['file_name'], test.info['name'], test.variation) for test in remote_tests]
-    return returned
+    backslash_version = tuple([int(x) for x in __backslash_version__.split(".")[:2]])
+    kwargs = {'filters_dict': {'show_successful': get_successful_tests}} if backslash_version > (2, 32) else {'get_successful': get_successful_tests}
+    remote_tests = backslash_plugin.get_tests_to_resume(session_id, **kwargs)
+    return [ResumedTestData(test.info['file_name'],
+                            test.info['name'],
+                            variation=test.variation,
+                            status=_get_resume_status_from_backslash_status(test.status))
+            for test in remote_tests]
 
+def get_tests_locally(session_id):
+    resumed_tests = []
+    with connecting_to_db() as conn:
+        # pylint: disable=no-member
+        if conn.query(SessionMetadata).filter(SessionMetadata.session_id == session_id).first():
+            local_tests = conn.query(ResumeState).filter(ResumeState.session_id == session_id).all()
+            resumed_tests = [ResumedTestData(test.file_name,
+                                             test.function_name,
+                                             variation=literal_eval(test.variation) if test.variation else None,
+                                             status=test.status)
+                            for test in local_tests]
+    return resumed_tests
 
+def _filter_tests(tests, get_successful_tests):
+    unstarted_only, failed_only = config.root.resume.unstarted_only, config.root.resume.failed_only
+    if unstarted_only and failed_only:
+        raise CannotResume("Got both unstarted_only and failed_only, cannot resume")
+    filtered_status = [ResumeTestStatus.SUCCESS] if get_successful_tests else []
+    if unstarted_only:
+        filtered_status.append(ResumeTestStatus.PLANNED)
+    elif failed_only:
+        filtered_status.append(ResumeTestStatus.FAILED)
+    else:
+        filtered_status.extend([ResumeTestStatus.FAILED, ResumeTestStatus.PLANNED])
+    return list(filter(lambda test: test.status in filtered_status, tests))
+
+def _sort_tests(tests):
+    unstarted_first, failed_first = config.root.resume.unstarted_first, config.root.resume.failed_first
+    if unstarted_first and failed_first:
+        raise CannotResume("Got both failed_first and planned_first, cannot choose")
+    if failed_first or unstarted_first:
+        wanted_status_first = ResumeTestStatus.PLANNED if unstarted_first else ResumeTestStatus.FAILED
+        first_tests = list(filter(lambda test: test.status in wanted_status_first, tests))
+        other_tests = list(filter(lambda test: test.status not in wanted_status_first, tests))
+        return first_tests + other_tests
+    return tests
+
+def get_tests_from_previous_session(session_id, get_successful_tests=False):
+    resumed_tests = get_tests_locally(session_id)
+    if not resumed_tests:
+        _logger.debug('No local entry for session {}, searching remote session', session_id)
+        resumed_tests = get_tests_from_remote(session_id, get_successful_tests)
+
+    return _sort_tests(_filter_tests(resumed_tests, get_successful_tests))
 class CannotResume(Exception):
     pass

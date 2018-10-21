@@ -20,6 +20,8 @@ class Worker(object):
         self.session_id = session_id
         self.server_addr = 'http://{}:{}'.format(config.root.parallel.server_addr, config.root.parallel.server_port)
         self.keepalive_server_addr = 'http://{}:{}'.format(config.root.parallel.server_addr, config.root.parallel.keepalive_port)
+        self._stop_event = None
+        self._watchdog_thread = None
 
     def keep_alive(self, stop_event):
         proxy = xmlrpc_client.ServerProxy(self.keepalive_server_addr)
@@ -52,8 +54,17 @@ class Worker(object):
         try:
             self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
             self.client.connect(self.client_id, os.getpid())
+            self._stop_event = threading.Event()
+            self._watchdog_thread = threading.Thread(target=self.keep_alive, args=(self._stop_event,))
+            self._watchdog_thread.setDaemon(True)
+            self._watchdog_thread.start()
         except OSError as err:
             self.write_to_error_file("Failed to connect to server, error: {}".format(str(err)))
+
+    def _stop_keepalive_thread(self):
+        if self._stop_event is not None and not self._stop_event.is_set():
+            self._stop_event.set()
+            self._watchdog_thread.join()
 
     def start_execution(self, app, collected_tests):
         if os.getpid() != os.getpgid(0):
@@ -66,12 +77,10 @@ class Worker(object):
         if not self.client.validate_collection(self.client_id, sorted(collection)):
             _logger.error("Collections of worker id {} and master don't match, worker terminates", self.client_id,
                           extra={'capture': False})
+            self._stop_keepalive_thread()
             self.client.disconnect(self.client_id)
             return
-        stop_event = threading.Event()
-        watchdog_thread = threading.Thread(target=self.keep_alive, args=(stop_event,))
-        watchdog_thread.setDaemon(True)
-        watchdog_thread.start()
+
         should_stop = False
         signatures_dict = collections.defaultdict(set)
         for index, test in enumerate(collection):
@@ -112,11 +121,8 @@ class Worker(object):
             else:
                 context.session.mark_complete()
                 context.session.initiate_cleanup()
-                stop_event.set()
-                watchdog_thread.join()
+                self._stop_keepalive_thread()
                 self.client.disconnect(self.client_id)
             finally:
                 context.session.initiate_cleanup()
-                if not stop_event.is_set():
-                    stop_event.set()
-                    watchdog_thread.join()
+                self._stop_keepalive_thread()

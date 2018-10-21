@@ -207,7 +207,7 @@ class Plugin(PluginInterface):
             'non_successful_tests': session.results.get_num_errors() + session.results.get_num_failures(),
         }
         backslash_plugin = slash.plugins.manager.get_active_plugins().get('backslash')
-        if backslash_plugin:
+        if backslash_plugin and backslash_plugin.session:
             config.root.plugin_config.notifications.email.to_list.append(backslash_plugin.session.user_email)
             url = backslash_plugin.webapp_url + 'sessions/{}'.format(session.id)
             kwargs['backslash_link'] = url
