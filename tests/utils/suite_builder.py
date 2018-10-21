@@ -103,3 +103,11 @@ class AssertAllHelper(object):
             assert len(errs) == 1
             assert errs[0] == error
         return self.suite_builder_result
+
+    def exception(self, exception_class):
+        assert isinstance(exception_class, type)
+        for res in self._results:
+            errs = res.get_errors()
+            assert len(errs) == 1
+            assert errs[0].exception_type is exception_class
+        return self.suite_builder_result
