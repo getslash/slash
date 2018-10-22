@@ -4,7 +4,10 @@ detox-test:
 	detox
 
 test: env
-	.env/bin/py.test --cov=slash --cov-report=html tests
+	.env/bin/py.test --cov=slash --cov-report=html tests -m "not parallel"
+
+test-parallel: env
+	.env/bin/py.test --cov=slash --cov-report=html tests -m "parallel"
 
 pylint: env
 	.env/bin/pylint -j 4 --rcfile=.pylintrc slash tests setup.py doc

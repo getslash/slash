@@ -33,17 +33,23 @@ def run_specific_workers_and_tests_num(workers_num, tests_num=10):
     assert summary.session.results.is_success()
     return summary
 
+parallel_mark = pytest.mark.parallel
+
+@parallel_mark
 def test_one_worker():
     run_specific_workers_and_tests_num(workers_num=1)
 
+@parallel_mark
 def test_many_workers():
     run_specific_workers_and_tests_num(workers_num=3, tests_num=50)
 
+@parallel_mark
 def test_zero_workers(parallel_suite):
     summary = parallel_suite.run(num_workers=0) #should act like regular run of slash, not parallel
     assert summary.session.results.is_success()
     assert summary.session.parallel_manager is None
 
+@parallel_mark
 def test_test_causes_worker_exit(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].append_line("import os")
@@ -58,6 +64,7 @@ def test_test_causes_worker_exit(parallel_suite, config_override):
         [result] = test_results
         assert result.is_interrupted()
 
+@parallel_mark
 def test_keepalive_works(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].append_line("import time")
@@ -67,6 +74,7 @@ def test_keepalive_works(parallel_suite, config_override):
     assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num
     assert summary.session.results.is_success()
 
+@parallel_mark
 def test_server_fails(parallel_suite):
 
     @slash.hooks.worker_connected.register  # pylint: disable=no-member, unused-argument
@@ -89,11 +97,13 @@ def test_server_fails(parallel_suite):
 
 
 #test slash features with parallel
+@parallel_mark
 def test_test_success(parallel_suite):
     results = parallel_suite.run().session.results
     assert results.is_success()
     assert results.get_num_successful() == len(parallel_suite)
 
+@parallel_mark
 def test_test_failure(parallel_suite):
     parallel_suite[0].when_run.fail()
     summary = parallel_suite.run()
@@ -102,6 +112,7 @@ def test_test_failure(parallel_suite):
     assert 'AssertionError' in str(failures)
     assert 'assert False' in str(failures)
 
+@parallel_mark
 def test_stop_on_error(parallel_suite, parallel_suite_test):
     parallel_suite_test.when_run.fail()
     summary = parallel_suite.run(additional_args=['-x'], verify=False)
@@ -117,6 +128,7 @@ def test_stop_on_error(parallel_suite, parallel_suite_test):
             assert result.is_not_run()
     assert found_failure
 
+@parallel_mark
 def test_pass_override_conf_flag(parallel_suite):
     summary = parallel_suite.run(additional_args=['-o', 'parallel.server_port=8001'])
     results = summary.session.results
@@ -124,6 +136,7 @@ def test_pass_override_conf_flag(parallel_suite):
     assert results.get_num_successful() == len(parallel_suite)
     assert summary.session.parallel_manager.server.port == 8001
 
+@parallel_mark
 def test_test_error(parallel_suite):
     parallel_suite[0].append_line('slash.add_error()')
     parallel_suite[0].expect_error()
@@ -133,6 +146,7 @@ def test_test_error(parallel_suite):
     assert 'RuntimeError' in str(err)
     assert 'add_error() must be called' in str(err)
 
+@parallel_mark
 def test_test_interruption_causes_communication_timeout(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].when_run.interrupt()
@@ -143,12 +157,14 @@ def test_test_interruption_causes_communication_timeout(parallel_suite, config_o
         if result != interrupted_result:
             assert result.is_success() or result.is_not_run()
 
+@parallel_mark
 def test_test_interruption_causes_no_requests(parallel_suite, config_override):
     config_override("parallel.no_request_timeout", 2)
     parallel_suite[0].when_run.interrupt()
     summary = parallel_suite.run(num_workers=1, verify=False)
     assert summary.get_all_results_for_test(parallel_suite[0]) == []
 
+@parallel_mark
 def test_test_skips(parallel_suite):
     parallel_suite[0].add_decorator('slash.skipped("reason")')
     parallel_suite[0].expect_skip()
@@ -159,6 +175,7 @@ def test_test_skips(parallel_suite):
         if result.is_skip():
             assert 'reason' in result.get_skips()
 
+@parallel_mark
 def test_session_warnings(parallel_suite):
     parallel_suite[0].append_line("import warnings")
     parallel_suite[0].append_line("warnings.warn('message')")
@@ -167,6 +184,7 @@ def test_session_warnings(parallel_suite):
     [w] = session_results.warnings
     assert w.message == 'message'
 
+@parallel_mark
 def test_child_session_errors(parallel_suite):
     parallel_suite[0].expect_failure()
     parallel_suite[0].append_line("import slash")
@@ -175,6 +193,7 @@ def test_child_session_errors(parallel_suite):
     assert not session_results.results.is_success()
     assert session_results.parallel_manager.server.worker_error_reported
 
+@parallel_mark
 def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     parallel_suite[0].expect_failure()
     parallel_suite[0].append_line("import slash")
@@ -187,6 +206,7 @@ def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     assert not session_results.results.is_success()
     assert session_results.parallel_manager.server.worker_error_reported
 
+@parallel_mark
 def test_traceback_vars(parallel_suite):
     #code to be inserted:
         #     def test_traceback_frames():
@@ -216,6 +236,7 @@ def test_traceback_vars(parallel_suite):
             assert 'num' in result.get_failures()[0].traceback.frames[1].locals
     assert found_failure == 1
 
+@parallel_mark
 def test_result_data_not_picklable(parallel_suite):
     parallel_suite[0].append_line("import socket")
     parallel_suite[0].append_line("s = socket.socket()")
@@ -224,6 +245,7 @@ def test_result_data_not_picklable(parallel_suite):
     [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.data == {}
 
+@parallel_mark
 def test_result_data_is_picklable(parallel_suite):
     parallel_suite[0].append_line("slash.context.result.data.setdefault('num', 1)")
     summary = parallel_suite.run()
@@ -231,6 +253,7 @@ def test_result_data_is_picklable(parallel_suite):
     assert 'num' in result.data
     assert result.data['num'] == 1
 
+@parallel_mark
 def test_result_details_not_picklable(parallel_suite):
     parallel_suite[0].append_line("import socket")
     parallel_suite[0].append_line("s = socket.socket()")
@@ -239,6 +262,7 @@ def test_result_details_not_picklable(parallel_suite):
     [result] = summary.get_all_results_for_test(parallel_suite[0])
     assert result.details.all() == {}
 
+@parallel_mark
 def test_result_details_is_picklable(parallel_suite):
     parallel_suite[0].append_line("slash.context.result.details.append('num', 1)")
     summary = parallel_suite.run()
@@ -247,11 +271,13 @@ def test_result_details_is_picklable(parallel_suite):
     assert 'num' in details
     assert details['num'] == [1]
 
+@parallel_mark
 def test_parameters(parallel_suite):
     parallel_suite[0].add_parameter(num_values=1)
     summary = parallel_suite.run()
     assert summary.session.results.is_success()
 
+@parallel_mark
 def test_requirements(parallel_suite):
     parallel_suite[0].add_decorator('slash.requires(False)')
     parallel_suite[0].expect_skip()
@@ -260,6 +286,7 @@ def test_requirements(parallel_suite):
     assert results.get_num_successful() == len(parallel_suite) - 1
     assert results.is_success(allow_skips=True)
 
+@parallel_mark
 def test_is_test_code(parallel_suite):
     parallel_suite[0].when_run.error()
     summary = parallel_suite.run()
@@ -269,12 +296,14 @@ def test_is_test_code(parallel_suite):
     error_json = err.traceback.to_list()
     assert error_json[-1]['is_in_test_code']
 
+@parallel_mark
 def test_parallel_resume(parallel_suite):
     parallel_suite[0].when_run.fail()
     result = parallel_suite.run()
     resumed = get_tests_from_previous_session(result.session.id)
     assert len(resumed) == 1
 
+@parallel_mark
 def test_parallel_symlinks(parallel_suite, logs_dir):   # pylint: disable=unused-argument
     files_dir = logs_dir.join("files")
     links_dir = logs_dir.join("links")
@@ -296,6 +325,7 @@ def test_parallel_symlinks(parallel_suite, logs_dir):   # pylint: disable=unused
             assert last_token in worker_session_ids
             assert os.path.isdir(file_name.readlink())
 
+@parallel_mark
 def test_parallel_interactive_fails(parallel_suite):
     summary = parallel_suite.run(additional_args=['-i'], verify=False)
     results = list(summary.session.results.iter_all_results())
@@ -303,6 +333,7 @@ def test_parallel_interactive_fails(parallel_suite):
     error = results[0].get_errors()[0]
     assert error.exception_type == InteractiveParallelNotAllowed
 
+@parallel_mark
 def test_children_session_ids(parallel_suite):
     summary = parallel_suite.run()
     assert summary.session.results.is_success()
@@ -310,6 +341,7 @@ def test_children_session_ids(parallel_suite):
     expected_session_ids = ["{}_1".format(summary.session.id.split('_')[0])]
     assert session_ids == expected_session_ids
 
+@parallel_mark
 def test_timeout_no_request_to_server(config_override, runnable_test_dir):
     config_override("parallel.no_request_timeout", 1)
     with Session():
@@ -323,6 +355,7 @@ def test_timeout_no_request_to_server(config_override, runnable_test_dir):
             parallel_manager.start()
         assert 'No request sent to server' in caught.exception.args[0]
 
+@parallel_mark
 def test_children_not_connected_timeout(runnable_test_dir, config_override):
     config_override("parallel.worker_connect_timeout", 0)
     config_override("parallel.num_workers", 1)
@@ -335,6 +368,7 @@ def test_children_not_connected_timeout(runnable_test_dir, config_override):
             parallel_manager.wait_all_workers_to_connect()
         assert 'Not all clients connected' in caught.exception.args[0]
 
+@parallel_mark
 def test_worker_error_logs(parallel_suite, config_override):
     config_override("parallel.communication_timeout_secs", 2)
     parallel_suite[0].when_run.interrupt()
@@ -350,6 +384,7 @@ def test_worker_error_logs(parallel_suite, config_override):
         line = error_file.readline()
         assert 'interrupted' in line
 
+@parallel_mark
 def test_shuffle(parallel_suite):
     @slash.hooks.tests_loaded.register   # pylint: disable=no-member
     def tests_loaded(tests):   # pylint: disable=unused-variable
@@ -358,6 +393,7 @@ def test_shuffle(parallel_suite):
 
     parallel_suite.run()
 
+@parallel_mark
 def test_server_hanging_dont_cause_worker_timeouts(config_override):
     config_override("parallel.no_request_timeout", 5)
 

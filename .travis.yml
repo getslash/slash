@@ -7,20 +7,22 @@ python:
   - "3.7-dev"
 
 env:
-  - TRAVIS_PYLINT=false
-
+  - TRAVIS_PYLINT=false PARALLEL_MARKER=false
 matrix:
   include:
     - python: "3.6"
-      env: TRAVIS_PYLINT=true
-
+      env:
+        - TRAVIS_PYLINT=true
+        - PARALLEL_MARKER=true
 # command to run tests, e.g. python setup.py test
-install: 
+install:
   - pip install virtualenv
   - pip install codecov
-script: 
+script:
   - make env
-  - if [[ $TRAVIS_PYLINT != 'true' ]]; then make test; else make pylint; fi
+  - if [[ $PARALLEL_MARKER == 'false' && $TRAVIS_PYLINT == 'false']]; then make test; fi
+  - if [[ $PARALLEL_MARKER == 'true' && $TRAVIS_PYLINT == 'false']]; then make test-parallel; fi
+  - if [[ $TRAVIS_PYLINT == 'true' && $PARALLEL_MARKER == 'false']]; then make pylint; fi
 after_success:
   - codecov
 after_failure:
