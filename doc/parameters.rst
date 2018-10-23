@@ -179,5 +179,5 @@ Exclusions also work on sets of parameters:
        @slash.parametrize('size', SUPPORTED_SIZES)
        @slash.parametrize('color', ['red', 'green', 'blue'])
        @slash.fixture
-       def car(size): # <-- red cars of size 10 and blue cars of size 20 will be skipped
+       def car(size, color): # <-- red cars of size 10 and blue cars of size 20 will be skipped
            ...
