@@ -145,7 +145,7 @@ def get_tests_from_remote(session_id, get_successful_tests):
     if not backslash_plugin.is_session_exist(session_id):
         raise CannotResume("Could not find resume data for session {}".format(session_id))
     backslash_version = tuple([int(x) for x in __backslash_version__.split(".")[:2]])
-    kwargs = {'filters_dict': {'show_successful': get_successful_tests}} if backslash_version > (2, 32) else {'get_successful': get_successful_tests}
+    kwargs = {'filters_dict': {'show_successful': get_successful_tests}} if backslash_version >= (2, 38) else {'get_successful': get_successful_tests}
     remote_tests = backslash_plugin.get_tests_to_resume(session_id, **kwargs)
     return [ResumedTestData(test.info['file_name'],
                             test.info['name'],
