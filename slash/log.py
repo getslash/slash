@@ -274,7 +274,8 @@ class SessionLogging(object):
                 finally:
                     handler.close()
                     self._log_path_to_handler[log_path] = None
-                    hooks.log_file_closed(path=log_path, result=result)  # pylint: disable=no-member
+                    with handling_exceptions(swallow=True):
+                        hooks.log_file_closed(path=log_path, result=result)  # pylint: disable=no-member
                     if config.root.log.cleanup.enabled and self._should_delete_log(result):
                         with handling_exceptions(swallow=True):
                             os.remove(log_path)
