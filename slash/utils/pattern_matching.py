@@ -1,4 +1,4 @@
-from pyparsing import infixNotation, opAssoc, Word, alphanums
+from pyparsing import infixNotation, opAssoc, Word, alphanums, Keyword
 
 
 class Include(object):
@@ -64,7 +64,7 @@ matcher = Word(alphanums + '._,-=:/')
 matcher.setParseAction(Include)
 
 boolExpr = infixNotation(matcher, [
-    ("not", 1, opAssoc.RIGHT, Exclude),
+    (Keyword("not"), 1, opAssoc.RIGHT, Exclude),
     ("and", 2, opAssoc.LEFT, AndMatching.from_tokens),
     ("or", 2, opAssoc.LEFT, OrMatching.from_tokens),
 ])

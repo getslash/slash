@@ -1,13 +1,15 @@
 Changelog
 =========
 
+* :release:`1.7.5 <23-10-2018>`
+* :bug:`897` Fix handling of ``-k`` patterns beginning with ``not``
 * :release:`1.7.4 <23-10-2018>`
 * :bug:`-` Fix backslash-python dependency check
 * :release:`1.7.3 <21-10-2018>`
 * :bug:`-` Correctly call fixture.test_end on test errors (Thanks @pierreluctg!)
 * :feature:`-` Resuming sessions now supports ``--failed-only`` and ``--unstarted-only`` to control which tests to resume
-* :bug:`879 major` Fix handling exceptions during ``entering_debugger`` hook triggered by ``Application.__exit__()``
-* :bug:`878 major` Fix notification plugin's handling of backslash plugin with no active session
+* :bug:`879` Fix handling exceptions during ``entering_debugger`` hook triggered by ``Application.__exit__()``
+* :bug:`878` Fix notification plugin's handling of backslash plugin with no active session
 * :release:`1.7.2 <11-10-2018>`
 * :bug:`882` Fix fixture reuse logic regression causing fixtures to be evaluated more than once in some cases
 * :release:`1.7.1 <7-10-2018>`
