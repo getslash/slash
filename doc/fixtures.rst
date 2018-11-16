@@ -220,7 +220,7 @@ You can also "force" a fixture to be used, even if it is not required by any fun
 The use_fixtures Decorator
 --------------------------
 
-In some cases, you may want to use a certain fixture but don't need its return value. In such cases, rather than using the fixture as an unused argument to your test function you can use the ``use_fixtures`` decorator. This decorator receives a list of fixture names and indicates that the decorated test needs them to run::
+In some cases, you may want to use a certain fixture but don't need its return value. In such cases, rather than using the fixture as an unused argument to your test function you can use the ``use_fixtures`` decorator. This decorator receives a list of fixture names and indicates that the decorated test needs them to run:
 
 .. code-block:: python
 
