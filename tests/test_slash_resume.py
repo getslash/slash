@@ -136,3 +136,13 @@ def test_failed_only_or_unstarted_first(suite, failed_only, config_override):
     assert len(resumed) == expected_resume_tests_num
     for test in resumed:
         assert test.status == expected_status
+
+def test_resuming_interrupted_session(suite):
+    suite[0].when_run.interrupt()
+    for index, test in enumerate(suite):
+        if index > 0:
+            test.expect_deselect()
+    results = suite.run(expect_interruption=True)
+    resumed = get_tests_from_previous_session(results.session.id)
+    assert len(resumed) == len(suite)
+    assert set(test.function_name for test in resumed) == set(test.name for test in suite)

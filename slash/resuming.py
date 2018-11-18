@@ -93,7 +93,7 @@ def clean_old_entries():
         old_sessions_query.delete(synchronize_session=False)
 
 
-def save_resume_state(session_result):
+def save_resume_state(session_result, collected_tests):
     session_metadata = SessionMetadata(
         session_id=session_result.session.id,
         src_folder=os.path.abspath(os.getcwd()),
@@ -110,6 +110,13 @@ def save_resume_state(session_result):
             test_to_resume.status = ResumeTestStatus.PLANNED
         else:
             test_to_resume.status = ResumeTestStatus.FAILED
+        tests_to_resume.append(test_to_resume)
+    tests_with_no_results = {test.__slash__ for test in collected_tests if session_result.safe_get_result(test) is None}
+
+    for test_metadata in tests_with_no_results:
+        test_to_resume = ResumeState(session_id=session_result.session.id, file_name=test_metadata.file_path,\
+                                     function_name=test_metadata.function_name, status=ResumeTestStatus.PLANNED)
+        test_to_resume.variation = str(test_metadata.variation.id) if test_metadata.variation else None
         tests_to_resume.append(test_to_resume)
 
     with connecting_to_db() as conn:
