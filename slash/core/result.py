@@ -433,6 +433,11 @@ class SessionResults(object):
             raise LookupError("Could not find result for {}".format(test))
         return self._results_dict[test.__slash__.id]
 
+    def safe_get_result(self, test):
+        if test.__slash__ is None:
+            return None
+        return self._results_dict.get(test.__slash__.id)
+
     def __getitem__(self, test):
         if isinstance(test, Number):
             try:

@@ -70,7 +70,7 @@ def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=
 
             finally:
                 if not is_child():
-                    save_resume_state(app.session.results)
+                    save_resume_state(app.session.results, collected)
                     clean_old_entries()
             if app.exit_code == 0 and not app.session.results.is_success(allow_skips=True):
                 app.set_exit_code(-1)
