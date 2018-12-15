@@ -12,6 +12,8 @@ def test_slash_list_plugins(report_stream):
     installed = manager.get_installed_plugins()
     for plugin_name in installed:
         assert plugin_name in output
+        activate_flag = "--with-{}".format(plugin_name.replace(' ', '-'))
+        assert activate_flag in output
 
 
 def test_slash_list_plugins_for_internal_plugins(report_stream):
