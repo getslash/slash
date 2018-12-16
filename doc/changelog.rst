@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :release:`1.7.6 <16-12-2018>`
 * :bug:`-` Fix state saving of unstarted tests during interruptions
 * :bug:`-` Fix parallel execution on Windows systems (thanks @pierreluctg!)
 * :bug:`904` Fix list-plugins output for new normalized names
