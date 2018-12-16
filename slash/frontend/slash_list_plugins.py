@@ -33,11 +33,12 @@ def slash_list_plugins(args, report_stream=sys.stdout):
 
     for plugin in sorted(manager.get_installed_plugins(include_internals=False).values(), key=lambda p: p.get_name()):
         name = plugin.get_name()
+        normalized_name = manager.normalize_command_line_name(name)
         _print(_title_style(name), end=' ')
         if name in active:
-            _print(_enabled_style('active (use --without-{} to deactivate'.format(name)))
+            _print(_enabled_style('active (use --without-{} to deactivate'.format(normalized_name)))
         else:
-            _print(_disabled_style('inactive (use --with-{} to activate)'.format(name)))
+            _print(_disabled_style('inactive (use --with-{} to activate)'.format(normalized_name)))
         if plugin.__doc__:
             for line in plugin.__doc__.splitlines():
                 if line.strip():

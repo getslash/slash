@@ -1,6 +1,11 @@
 Changelog
 =========
 
+* :release:`1.7.6 <16-12-2018>`
+* :bug:`-` Fix state saving of unstarted tests during interruptions
+* :bug:`-` Fix parallel execution on Windows systems (thanks @pierreluctg!)
+* :bug:`904` Fix list-plugins output for new normalized names
+* :bug:`895` Wrap log_file_closed hook with ``handling_exceptions``
 * :release:`1.7.5 <23-10-2018>`
 * :bug:`897` Fix handling of ``-k`` patterns beginning with ``not``
 * :release:`1.7.4 <23-10-2018>`
