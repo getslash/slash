@@ -4,6 +4,7 @@ import os
 import pickle
 import time
 import collections
+import platform
 from six.moves import xmlrpc_client
 from .server import NO_MORE_TESTS, PROTOCOL_ERROR, WAITING_FOR_CLIENTS
 from ..exceptions import INTERRUPTION_EXCEPTIONS
@@ -11,6 +12,9 @@ from ..hooks import register
 from ..ctx import context
 from ..runner import run_tests
 from ..conf import config
+
+_HAS_PID_PGID = platform.system() != 'Windows'
+
 _logger = logbook.Logger(__name__)
 
 class Worker(object):
@@ -67,8 +71,13 @@ class Worker(object):
             self._watchdog_thread.join()
 
     def start_execution(self, app, collected_tests):
-        if os.getpid() != os.getpgid(0):
-            os.setsid()
+        if _HAS_PID_PGID:
+            if os.getpid() != os.getpgid(0):
+                os.setsid()
+        else:
+            _logger.debug(
+                "Skipping setsid for process since it is not available"
+            )
         register(self.warning_added)
         register(self.error_added)
         collection = [(test.__slash__.file_path,
