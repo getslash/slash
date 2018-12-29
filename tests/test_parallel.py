@@ -67,6 +67,15 @@ def test_keepalive_works(parallel_suite, config_override):
     assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num
     assert summary.session.results.is_success()
 
+def test_disconnected_worker_not_considered_timed_out(parallel_suite, config_override):
+    config_override("parallel.communication_timeout_secs", 2)
+    parallel_suite[0].append_line("import time")
+    parallel_suite[0].append_line("time.sleep(6)")
+    workers_num = 2
+    summary = parallel_suite.run(num_workers=workers_num)
+    assert len(summary.session.parallel_manager.server.worker_session_ids) == workers_num
+    assert summary.session.results.is_success()
+
 def test_server_fails(parallel_suite):
 
     @slash.hooks.worker_connected.register  # pylint: disable=no-member, unused-argument

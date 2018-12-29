@@ -15,7 +15,6 @@ from ..ctx import context
 from .server import Server, ServerStates, KeepaliveServer
 from ..utils.tmux_utils import create_new_window, create_new_pane
 from .worker_configuration import WorkerConfiguration
-from .._compat import iteritems
 from .. import hooks
 
 _logger = logbook.Logger(__name__)
@@ -128,8 +127,9 @@ class ParallelManager(object):
             time.sleep(TIME_BETWEEN_CHECKS)
 
     def check_worker_timed_out(self):
-        for worker_id, last_connection_time in iteritems(self.keepalive_server.get_workers_last_connection_time()):
-            if time.time() - last_connection_time > config.root.parallel.communication_timeout_secs:
+        workers_last_connection_time = self.keepalive_server.get_workers_last_connection_time()
+        for worker_id in self.server.connected_clients:
+            if time.time() - workers_last_connection_time[worker_id] > config.root.parallel.communication_timeout_secs:
                 _logger.error("Worker {} is down, terminating session", worker_id, extra={'capture': False})
                 self.report_worker_error_logs()
                 if not config.root.tmux.enabled:
