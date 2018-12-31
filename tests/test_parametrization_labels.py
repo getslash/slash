@@ -118,3 +118,23 @@ def test_generator_fixture_param_labels(suite_builder):
         {'value': 'value1'},
         {'value': 'value2'},
     ])
+
+
+def test_fixture_param_labels(suite_builder):
+    # pylint: disable=no-member, protected-access, undefined-variable,unused-variable, reimported, redefined-outer-name
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+
+        @slash.fixture
+        @slash.parametrize('value', [1 // slash.param('first'), 2 // slash.param('second')])
+        def fixture(value):
+            return value * 2
+
+        def test_1(fixture):
+            slash.context.result.data['value'] = fixture
+
+    suite_builder.build().run().assert_success(2).with_data([
+        {'value': 2},
+        {'value': 4},
+    ])
