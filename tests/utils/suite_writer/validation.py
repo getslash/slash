@@ -142,6 +142,6 @@ def _group_results_by_test_id(suite, run_result):
 
 
 def get_test_id_from_test_address(addr):
-    drive, addr = os.path.splitdrive(addr)
+    _, addr = os.path.splitdrive(addr)
     _, addr = addr.split(':', 1)
     return addr.split('_')[1].split('(')[0]
