@@ -477,7 +477,7 @@ def test_fixture_name_override(store, use_dict):
 
     store.resolve()
 
-    assert store.get_fixture_by_name('custom').fixture_func == some_fixture
+    assert store.get_fixture_by_name('custom').fixture_func is some_fixture
     with pytest.raises(UnknownFixtures):
         assert store.get_fixture_by_name('some_fixture')
 
