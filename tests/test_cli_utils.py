@@ -32,7 +32,7 @@ def test_printer_with_forced_colored():
     for string, style in [('A', _style_1), ('B', _style_2), ('C', None)]:
         colored_string = _colorized(string, style)
         printer(colored_string)
-        expected_lines.append(colored_string.colorize() if style else str(colored_string))
+        expected_lines.append(colored_string.colorize() if style else str(colored_string))  # pylint: disable=no-member
     assert report_stream.getvalue().splitlines() == expected_lines
 
 
