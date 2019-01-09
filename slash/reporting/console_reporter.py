@@ -16,7 +16,6 @@ from ..log import VERBOSITIES
 from ..utils.iteration import iteration
 from ..utils.python import wraps
 from .reporter_interface import ReporterInterface
-from ..exception_handling import handling_exceptions
 
 # traceback levels
 NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH_CONTEXT_AND_VARS = range(
@@ -41,8 +40,10 @@ def from_verbosity(level):
 def swallowing_terminal_exceptions(func):
     @functools.wraps(func)
     def inner(*args, **kwargs):
-        with handling_exceptions(swallow_types=(IOError, OSError), swallow=True):
+        try:
             return func(*args, **kwargs)
+        except (IOError, OSError):
+            pass
     return inner
 
 

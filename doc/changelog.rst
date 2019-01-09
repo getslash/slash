@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`-` Fix swallowing of broken-pipe errors from console reporter - will not add errors
 * :release:`1.7.6 <16-12-2018>`
 * :bug:`-` Fix state saving of unstarted tests during interruptions
 * :bug:`-` Fix parallel execution on Windows systems (thanks @pierreluctg!)
