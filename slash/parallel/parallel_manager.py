@@ -129,7 +129,10 @@ class ParallelManager(object):
     def check_worker_timed_out(self):
         workers_last_connection_time = self.keepalive_server.get_workers_last_connection_time()
         for worker_id in self.server.connected_clients:
-            if time.time() - workers_last_connection_time[worker_id] > config.root.parallel.communication_timeout_secs:
+            worker_last_connection_time = workers_last_connection_time.get(worker_id, None)
+            if worker_last_connection_time is None: #worker keepalive thread didn't started yet
+                continue
+            if time.time() - worker_last_connection_time > config.root.parallel.communication_timeout_secs:
                 _logger.error("Worker {} is down, terminating session", worker_id, extra={'capture': False})
                 self.report_worker_error_logs()
                 if not config.root.tmux.enabled:
