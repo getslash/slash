@@ -1,6 +1,7 @@
 import copy
 import logbook
 import time
+import threading
 from enum import Enum
 from six.moves import queue
 from six.moves import xmlrpc_server
@@ -33,9 +34,11 @@ class KeepaliveServer(object):
         self.last_request_time = time.time()
         self.state = ServerStates.NOT_INITIALIZED
         self.port = None
+        self._lock = threading.Lock()
 
     def keep_alive(self, client_id):
-        self.clients_last_communication_time[client_id] = self.last_request_time = time.time()
+        with self._lock:
+            self.clients_last_communication_time[client_id] = self.last_request_time = time.time()
         _logger.debug("Client_id {} sent keep_alive", client_id)
 
     def stop_serve(self):
@@ -55,7 +58,8 @@ class KeepaliveServer(object):
             server.server_close()
 
     def get_workers_last_connection_time(self):
-        return copy.deepcopy(self.clients_last_communication_time)
+        with self._lock:
+            return copy.deepcopy(self.clients_last_communication_time)
 
 
 class Server(object):
