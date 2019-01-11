@@ -14,6 +14,20 @@ matrix:
   include:
     - python: "3.6"
       env: TRAVIS_PYLINT=true
+    - os: windows
+      language: sh
+      python: "3.7"
+      before_install:
+        - choco install python3
+        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        - python -m pip install --upgrade pip wheel
+      script: 
+        - python -m virtualenv .env
+        - .env/Scripts/pip.exe install -e .[testing,doc]
+        - .env/Scripts/py.test.exe --cov=slash --cov-report=html tests
+  allow_failures:
+    os: windows
+
 
 # command to run tests, e.g. python setup.py test
 install: 
