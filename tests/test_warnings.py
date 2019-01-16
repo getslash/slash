@@ -1,4 +1,5 @@
 # pylint: disable=unused-variable,redefined-outer-name
+import os
 import collections
 import warnings
 from contextlib import contextmanager
@@ -44,7 +45,7 @@ def test_warning_added_hook(suite, suite_test):
     assert isinstance(w.filename, str)
     assert w.lineno
     assert w.filename
-    assert w.filename.rsplit('/', 1)[-1] == suite_test.file.get_relative_path()
+    assert w.filename.rsplit(os.path.sep, 1)[-1] == suite_test.file.get_relative_path()
     warning_type = w.details['type']
     assert isinstance(warning_type, str)
     assert warning_type == 'LogbookWarning'
