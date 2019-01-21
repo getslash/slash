@@ -108,7 +108,7 @@ def _report_tests(args, runnables, printer):
 
 
 def _convert_address_to_relpath(address):
-    filename, remainder = address.split(':', 1)
+    filename, remainder = address.rsplit(':', 1)
     if os.path.isabs(filename):
         filename = os.path.relpath(filename)
     return '{}:{}'.format(filename, remainder)

@@ -213,7 +213,7 @@ def test_session_end_not_called_when_before_session_start_fails(checkpoint):
             with s.get_started_context():
                 pass
 
-    [err] = s.results.global_result.get_errors()
+    [err] = s.results.global_result.get_errors()  # pylint: disable=unbalanced-tuple-unpacking
     assert 'CustomException' in str(err)
     assert not checkpoint.called
 

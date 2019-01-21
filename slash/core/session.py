@@ -81,10 +81,10 @@ class Session(Activatable):
             ctx.context.result = self.results.global_result
             self.results.global_result.mark_started()
             self._logging_context = self.logging.get_session_logging_context()
-            self._logging_context.__enter__()
+            self._logging_context.__enter__()  # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
 
             self._warning_capture_context = self.warnings.capture_context()
-            self._warning_capture_context.__enter__()
+            self._warning_capture_context.__enter__()  # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
         self._active = True
 
     def deactivate(self):

@@ -224,6 +224,7 @@ def _get_test_context(test, logging=True):
         prev_result = context.result
         context.result = result
         try:
+            # pylint: disable=superfluous-parens
             with (context.session.logging.get_test_logging_context(result) if logging else ExitStack()):
                 _logger.debug("Started test #{0.__slash__.test_index1}: {0}", test)
                 yield result, prev_result

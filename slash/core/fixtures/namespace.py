@@ -24,7 +24,7 @@ class Namespace(object):
         while self is not None:
             for fixture_id in itervalues(self._fixture_names):
                 yield self._store.get_fixture_by_id(fixture_id)
-            self = self._parent
+            self = self._parent  # pylint: disable=self-cls-assignment
 
     def __repr__(self):
         return 'Fixture NS#{}: {}'.format(self.get_level(), ', '.join(self._iter_fixture_names()) or '**None**')
@@ -33,13 +33,13 @@ class Namespace(object):
         while self is not None:
             for k in self._fixture_names:
                 yield k
-            self = self._parent
+            self = self._parent  # pylint: disable=self-cls-assignment
 
     def get_fixture_by_name(self, name, default=NOTHING):
         while self is not None:
             fixture_id = self._fixture_names.get(name, NOTHING)
             if fixture_id is NOTHING:
-                self = self._parent
+                self = self._parent  # pylint: disable=self-cls-assignment
                 continue
             return self._store.get_fixture_by_id(fixture_id)
 

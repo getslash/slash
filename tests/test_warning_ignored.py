@@ -24,7 +24,7 @@ class CustomWarning(UserWarning):
     (_warn('hello'), _catch(message=re.compile('^hello$')), True),
     (_warn('message', category=CustomWarning), _catch(category=CustomWarning), True),
     (_warn('message'), _catch(filename=__file__), False),
-    (_warn('message'), _catch(filename=re.compile('^{}$'.format(__file__))), False),
+    (_warn('message'), _catch(filename=re.compile('^{}$'.format(re.escape(__file__)))), False),
 ])
 def test_ignore_warnings(emitter, catch, can_test_negative):
     catch()
@@ -45,13 +45,13 @@ _WARN_MESSAGE = 'Hello World'
 @pytest.mark.parametrize('catch,should_ignore', [
     (_catch(message=_WARN_MESSAGE, filename=__file__), True),
     (_catch(message=re.compile('^Hello.*$'), filename=__file__), True),
-    (_catch(message=_WARN_MESSAGE, filename=re.compile('^{}'.format(os.path.dirname(__file__)))), True),
-    (_catch(message=re.compile('^Hello.*$'), filename=re.compile('^{}'.format(os.path.dirname(__file__)))), True),
+    (_catch(message=_WARN_MESSAGE, filename=re.compile('^{}'.format(re.escape(os.path.dirname(__file__))))), True),
+    (_catch(message=re.compile('^Hello.*$'), filename=re.compile('^{}'.format(re.escape(os.path.dirname(__file__))))), True),
     # Negative  (OR relation instead of AND)
     (_catch(message=_WARN_MESSAGE, category=DeprecationWarning), False),
     (_catch(message=re.compile('^Hello.*$'), category=DeprecationWarning), False),
     (_catch(filename=__file__, category=DeprecationWarning), False),
-    (_catch(filename=re.compile('^{}$'.format(__file__)), category=DeprecationWarning), False),
+    (_catch(filename=re.compile('^{}$'.format(re.escape(__file__))), category=DeprecationWarning), False),
 ])
 def test_ignore_warnings_with_multiple_criteria(catch, should_ignore):
     catch()

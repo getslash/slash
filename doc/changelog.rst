@@ -1,6 +1,11 @@
 Changelog
 =========
 
+* :release:`1.7.7 <21-01-2019>`
+* :bug:`907` Fix parallel worker timeout issues
+* :bug:`-` Fix test_start triggering when exceptions are thrown in class-based tests (thanks @pierreluctg)
+* :bug:`-` Several Windows-specific fixes (thanks @pierreluctg)
+* :bug:`-` Fix swallowing of broken-pipe errors from console reporter - will not add errors
 * :release:`1.7.6 <16-12-2018>`
 * :bug:`-` Fix state saving of unstarted tests during interruptions
 * :bug:`-` Fix parallel execution on Windows systems (thanks @pierreluctg!)

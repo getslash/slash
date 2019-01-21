@@ -30,7 +30,7 @@ def test_fixture_start_end_test(suite, suite_test, scope, error_adder):
     assert events[end_event].timestamp > events[test_event].timestamp
 
 
-def test_fixture_end_test_raises_excepiton(suite_builder):
+def test_fixture_end_test_raises_exception(suite_builder):
     @suite_builder.first_file.add_code
     def __code__():
         # pylint: disable=unused-variable
@@ -50,4 +50,81 @@ def test_fixture_end_test_raises_excepiton(suite_builder):
 
     suite_builder.build().run().assert_all(2).exception(ZeroDivisionError).with_data(
         [{"value": 1}, {"value": 2}]
+    )
+
+
+def test_fixture_start_test_raises_exception(suite_builder):
+    @suite_builder.first_file.add_code
+    def __code__():
+        # pylint: disable=unused-variable
+        import slash  # pylint: disable=redefined-outer-name, reimported
+
+        @slash.fixture(scope='module')
+        @slash.parametrize("param", [1, 2])
+        def fixture(this, param):
+            @this.test_start
+            def test_start(*_, **__):
+                1 / 0  # pylint: disable=pointless-statement
+
+            return param
+
+        @slash.fixture(scope='module')
+        def fixture_failing(this):
+            @this.test_start
+            def test_start(*_, **__):
+                raise AssertionError()
+
+            return None
+
+        class SomeTest(slash.Test):
+            @slash.parametrize("param", [10, 20, 30])
+            def test_something(self, param, fixture, fixture_failing):  # pylint: disable=unused-argument
+                slash.context.result.data["value"] = param + fixture
+
+    suite_builder.build().run().assert_all(6).exception(ZeroDivisionError).with_data(
+        [
+            {"value": 11}, {"value": 12},
+            {"value": 21}, {"value": 22},
+            {"value": 31}, {"value": 32}
+        ]
+    )
+
+
+def test_fixture_start_test_raises_exception_w_before(suite_builder):
+    @suite_builder.first_file.add_code
+    def __code__():
+        # pylint: disable=unused-variable
+        import slash  # pylint: disable=redefined-outer-name, reimported
+
+        @slash.fixture(scope='module')
+        @slash.parametrize("param", [1, 2])
+        def fixture(this, param):
+            @this.test_start
+            def test_start(*_, **__):
+                1 / 0  # pylint: disable=pointless-statement
+
+            return param
+
+        @slash.fixture(scope='module')
+        def fixture_failing(this):
+            @this.test_start
+            def test_start(*_, **__):
+                raise AssertionError()
+
+            return None
+
+        class SomeTest(slash.Test):
+            def before(self, fixture, fixture_failing):  # pylint: disable=unused-argument,arguments-differ
+                self.data = fixture
+
+            @slash.parametrize("param", [10, 20, 30])
+            def test_something(self, param):
+                slash.context.result.data["value"] = param + self.data
+
+    suite_builder.build().run().assert_all(6).exception(ZeroDivisionError).with_data(
+        [
+            {"value": 11}, {"value": 12},
+            {"value": 21}, {"value": 22},
+            {"value": 31}, {"value": 32}
+        ]
     )
