@@ -54,7 +54,7 @@ def test_dir(tmpdir, names, indices):
 
 @pytest.fixture
 def names():
-    return ['a/test_a_b.py', 'a/test_b_a.py', 'b/test_a_a.py', 'b/test_a_b.py']
+    return [os.path.normpath(p) for p in ['a/test_a_b.py', 'a/test_b_a.py', 'b/test_a_a.py', 'b/test_a_b.py']]
 
 def _sorted_by_indices(items, indices):
     returned = [None for _ in items]
