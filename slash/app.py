@@ -145,7 +145,7 @@ class Application(object):
         except Exception as e:  # pylint: disable=broad-except
             _logger.error("Failed to debug_if_needed: {!r}", e, exc_info=True, extra={'capture': False})
         if exc_value is not None:
-            self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else -1
+            self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else 1
 
             if should_inhibit_unhandled_exception_traceback(exc_value):
                 self.get_reporter().report_error_message(str(exc_value))

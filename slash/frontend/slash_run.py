@@ -73,7 +73,7 @@ def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=
                     save_resume_state(app.session.results, collected)
                     clean_old_entries()
             if app.exit_code == 0 and not app.session.results.is_success(allow_skips=True):
-                app.set_exit_code(-1)
+                app.set_exit_code(1)
     except Exception:         # pylint: disable=broad-except
         # Error reporting happens in app context
         assert app.exit_code != 0
