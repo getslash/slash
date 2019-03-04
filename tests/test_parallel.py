@@ -1,6 +1,8 @@
 import slash
 import os
 import signal
+import sys
+
 from .utils.suite_writer import Suite
 from slash.resuming import get_tests_from_previous_session
 from slash.exceptions import InteractiveParallelNotAllowed, ParallelTimeout
@@ -11,6 +13,9 @@ from slash.loader import Loader
 import time
 import tempfile
 import pytest
+
+if sys.platform.startswith("win"):
+    pytest.skip("does not run on windows", allow_module_level=True)
 
 @pytest.fixture(scope='module', autouse=True)
 def no_parallel_user_config(request):

@@ -1,5 +1,6 @@
 # pylint: disable=redefined-outer-name
 import os
+import sys
 
 import pytest
 
@@ -129,6 +130,7 @@ def test_event(request):
     return func
 
 
+@pytest.mark.skipif(sys.platform == 'win32', reason="does not run on windows")
 @pytest.mark.parametrize('action', ['skipped', 'error', 'failure', 'success'])
 def test_xunit_parallel_suite(parallel_suite, xunit_filename, action):
     test = parallel_suite[3]

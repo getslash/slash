@@ -1,6 +1,7 @@
 # pylint: disable=unused-argument,redefined-outer-name
 import functools
 import os
+import sys
 
 import logbook
 import brotli
@@ -45,7 +46,7 @@ def test_add_error_for_error_log_level(tmpdir, should_consider_error, config_ove
     assert [res.message for res in result.get_errors()] == expected_error_messages
     assert [rec.message for rec in test_handler.records] == [message, non_capture_message]
 
-
+@pytest.mark.skipif(sys.platform == 'win32', reason="does not run on windows")
 def test_last_session_symlinks(files_dir, links_dir, session):
 
     test_log_file = files_dir.join(
@@ -154,7 +155,7 @@ def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
     config_override('log.{}'.format(symlink_name), 'some/subdir')
     assert suite.run().ok()
 
-
+@pytest.mark.skipif(sys.platform == 'win32', reason="does not run on windows")
 def test_last_test_not_overriden_by_stop_on_error(links_dir, suite):
     failed_test = suite[4]
     failed_test.when_run.fail()
@@ -192,7 +193,7 @@ def test_result_log_links(files_dir, session):
         assert result.get_log_path() is not None
         assert result.get_log_path().startswith(str(files_dir))
 
-
+@pytest.mark.skipif(sys.platform == 'win32', reason="does not run on windows")
 def test_last_failed(suite, links_dir):
     suite[-5].when_run.fail()
     last_failed = suite[-2]
@@ -216,6 +217,7 @@ def test_errors_log_for_test(suite, suite_test, errors_log_path, logs_dir):
         lines = f.read().splitlines()
         assert error_line in lines
 
+@pytest.mark.skipif(sys.platform == 'win32', reason="does not run on windows")
 @pytest.mark.parametrize('should_keep_failed_tests', [True, False])
 def test_logs_deletion(suite, suite_test, errors_log_path, logs_dir, config_override, should_keep_failed_tests):
     config_override('log.cleanup.enabled', True)

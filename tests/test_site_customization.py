@@ -61,8 +61,9 @@ class CustomizationTest(TestCase):
             with open(global_slashrc_path, "w") as f:
                 f.write(self.get_customization_source())
 
+        new_path = self.get_new_path()
         self.addCleanup(os.chdir, os.path.abspath("."))
-        os.chdir(self.get_new_path())
+        os.chdir(new_path)
         with open(".slashrc", "w") as f:
             f.write(self.get_customization_source())
         self.assert_customization_loaded()
