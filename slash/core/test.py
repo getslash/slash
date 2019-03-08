@@ -118,7 +118,7 @@ class Test(RunnableTest):
         method = self.get_test_function()
         with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
             _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace)
-            _call_with_fixtures(self.before, trigger_test_start=True)
+            _call_with_fixtures(self.before)
             try:
                 with handling_exceptions():
                     result = _call_with_fixtures(method, trigger_test_start=True)
