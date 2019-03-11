@@ -166,14 +166,14 @@ class ConsoleReporter(ReporterInterface):
             return
 
         self._terminal.write('{} tests collected{}'.format(
-            len(collected), '...' if stillworking else '   \n'), white=True, bold=True, Black=True)
+            len(collected), '...' if stillworking else '   \n'), white=True, bold=True)
 
     def _is_verbose(self, level):
         return self._level <= level
 
     @from_verbosity(VERBOSITIES.ERROR)
     def report_session_start(self, session):
-        self._terminal.sep('=', 'Session starts', white=True, bold=True, Black=True)
+        self._terminal.sep('=', 'Session starts', white=True, bold=True)
 
     def report_session_end(self, session):
 
