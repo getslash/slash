@@ -60,25 +60,17 @@ def test_fixture_start_test_raises_exception(suite_builder):
         import slash  # pylint: disable=redefined-outer-name, reimported
 
         @slash.fixture(scope='module')
-        def fixture(this):
+        @slash.parametrize("param", [1, 2])
+        def fixture(this, param):
             @this.test_start
             def test_start(*_, **__):
                 1 / 0  # pylint: disable=pointless-statement
-
-            return None
-
-        @slash.fixture(scope='module')
-        @slash.parametrize("param", [1, 2])
-        def fixture_failing(this, param):
-            @this.test_start
-            def test_start(*_, **__):
-                slash.add_error("Not supposed to reach here").mark_fatal()
 
             return param
 
         class SomeTest(slash.Test):
             @slash.parametrize("param", [10, 20, 30])
-            def test_something(self, param, fixture, fixture_failing):  # pylint: disable=unused-argument
+            def test_something(self, param, fixture):  # pylint: disable=unused-argument
                 slash.add_error("Not supposed to reach here").mark_fatal()
 
     suite_builder.build().run().assert_all(6).exception(ZeroDivisionError)
@@ -91,28 +83,20 @@ def test_fixture_start_test_raises_exception_w_before(suite_builder):
         import slash  # pylint: disable=redefined-outer-name, reimported
 
         @slash.fixture(scope='module')
-        def fixture(this):
+        @slash.parametrize("param", [1, 2])
+        def fixture(this, param):
             @this.test_start
             def test_start(*_, **__):
                 1 / 0  # pylint: disable=pointless-statement
 
-            return None
-
-        @slash.fixture(scope='module')
-        @slash.parametrize("param", [1, 2])
-        def fixture_failing(this, param):
-            @this.test_start
-            def test_start(*_, **__):
-                slash.add_error("Not supposed to reach here").mark_fatal()
-
             return param
 
         class SomeTest(slash.Test):
-            def before(self, fixture, fixture_failing):  # pylint: disable=unused-argument,arguments-differ
+            def before(self, fixture):  # pylint: disable=unused-argument,arguments-differ
                 self.data = 1
 
             @slash.parametrize("param", [10, 20, 30])
-            def test_something(self, param, fixture, fixture_failing):
+            def test_something(self, param):  # pylint: disable=unused-argument
                 slash.add_error("Not supposed to reach here").mark_fatal()
 
     suite_builder.build().run().assert_all(6).exception(ZeroDivisionError)
