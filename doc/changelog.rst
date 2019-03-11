@@ -1,7 +1,10 @@
 Changelog
 =========
 
+* :release:`1.7.9 <09-03-2019>`
+* :bug:`-` Revert console coloring change, as it does not behave consistently across different terminals
 * :release:`1.7.8 <04-03-2019>`
+* :bug:`925` Fix background color for session start and test collection messages
 * :bug:`926` Return code for failed sessions was changed to 1 (from -1)
 * :release:`1.7.7 <21-01-2019>`
 * :bug:`907` Fix parallel worker timeout issues
