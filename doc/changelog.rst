@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`930` Restore behavior of exceptions propagating out of the test_start or test_end hooks will fail the test, possibly preventing it from starting properly
 * :bug:`934` Parallel sessions now honor fatal exceptions encountered in worker sessions
 * :bug:`928` Fixed a bug causing requirements to leak across sibling test classes
 * :release:`1.7.9 <09-03-2019>`
