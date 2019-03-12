@@ -1,6 +1,7 @@
 Changelog
 =========
 
+* :bug:`928` Fixed a bug causing requirements to leak across sibling test classes
 * :release:`1.7.9 <09-03-2019>`
 * :bug:`-` Revert console coloring change, as it does not behave consistently across different terminals
 * :release:`1.7.8 <04-03-2019>`
