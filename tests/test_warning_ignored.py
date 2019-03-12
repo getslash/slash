@@ -74,6 +74,22 @@ def test_ignore_warnigns_with_no_parameter():
     assert not session.warnings
 
 
+@pytest.mark.parametrize('should_clear_warnings', [True, False])
+def test_ignored_warnings(should_clear_warnings):
+    message = 'my warning'
+    with slash.Session() as session:
+        with slash.ignored_warnings(message=message):
+            warnings.warn(message=message)
+            assert not session.warnings
+            if should_clear_warnings:
+                slash.clear_ignored_warnings()
+
+        warnings.warn(message=message)
+        assert len(session.warnings) == 1
+        [caught] = list(session.warnings)
+        assert caught.message == message
+
+
 @pytest.fixture(autouse=True)
 def warnings_cleanup(request):
     request.addfinalizer(slash.clear_ignored_warnings)
