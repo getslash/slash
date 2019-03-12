@@ -105,15 +105,3 @@ def call_all_raise_first(_funcs, *args, **kwargs):
             exc_info = sys.exc_info()
     if exc_info is not None:
         reraise(*exc_info)
-
-
-def resolve_underlying_function(thing):
-    """Gets the underlying (real) function for functions, wrapped functions, methods, etc.
-    Returns the same object for things that are not functions
-    """
-    while True:
-        wrapped = getattr(thing, "__func__", None) or getattr(thing, "__wrapped__", None) or getattr(thing, "__wraps__", None)
-        if wrapped is None:
-            break
-        thing = wrapped
-    return thing

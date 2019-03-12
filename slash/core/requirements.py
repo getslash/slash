@@ -1,5 +1,3 @@
-from ..utils.python import resolve_underlying_function
-
 _SLASH_REQUIRES_KEY_NAME = '__slash_requirements__'
 
 
@@ -14,30 +12,18 @@ def requires(req, message=None):
     else:
         assert message is None, 'Cannot specify message when passing Requirement objects to slash.requires'
 
-    def decorator(func_or_class):
-        reqs = _get_requirements_list(func_or_class)
+    def decorator(func):
+        reqs = getattr(func, _SLASH_REQUIRES_KEY_NAME, None)
+        if reqs is None:
+            reqs = []
+            setattr(func, _SLASH_REQUIRES_KEY_NAME, reqs)
         reqs.append(req)
-        return func_or_class
+        return func
     return decorator
-
-def _get_requirements_list(thing, create=True):
-    existing = getattr(thing, _SLASH_REQUIRES_KEY_NAME, None)
-
-    thing = resolve_underlying_function(thing)
-    key = id(thing)
-
-    if existing is None or (key != existing[0] and create):
-        new_reqs = (key, [] if existing is None else existing[1][:])
-        setattr(thing, _SLASH_REQUIRES_KEY_NAME, new_reqs)
-        returned = new_reqs[1]
-    else:
-        returned = existing[1]
-
-    return returned
 
 
 def get_requirements(test):
-    return list(_get_requirements_list(test, create=False))
+    return list(getattr(test, _SLASH_REQUIRES_KEY_NAME, []))
 
 
 class Requirement(object):

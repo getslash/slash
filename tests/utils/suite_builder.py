@@ -87,14 +87,6 @@ class SuiteBuilderSuiteResult(object):
         assert not results
         return self
 
-    def assert_results_breakdown(self, skipped=0, success=0, error=0, failure=0):
-        results = self.slash_app.session.results
-        assert skipped == results.get_num_skipped()
-        assert success == results.get_num_successful()
-        assert error == results.get_num_errors()
-        assert failure == results.get_num_failures()
-
-
 class AssertAllHelper(object):
 
     def __init__(self, suite_builder_result):
