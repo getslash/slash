@@ -91,8 +91,7 @@ def test_server_fails(parallel_suite):
     @slash.hooks.session_interrupt.register  # pylint: disable=no-member
     def check_workers_and_server_down():  # pylint: disable=unused-variable
         for worker in slash.context.session.parallel_manager.workers.values():
-            ret = worker.poll()
-            assert not ret is None
+            assert not worker.is_active()
         assert slash.context.session.parallel_manager.server.interrupted
         assert not slash.context.session.parallel_manager.server.finished_tests
 

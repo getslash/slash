@@ -76,7 +76,7 @@ class Server(object):
         self.unstarted_tests = queue.Queue()
         self.num_collections_validated = 0
         self.start_time = time.time()
-        self.worker_pids = []
+        self.worker_to_pid = {}
         for i in range(len(tests)):
             self.unstarted_tests.put(i)
         self.connected_clients = set()
@@ -125,7 +125,7 @@ class Server(object):
         context.session.logging.create_worker_symlink(self._get_worker_session_id(client_id), client_session_id)
         hooks.worker_connected(session_id=client_session_id)  # pylint: disable=no-member
         self.worker_session_ids.append(client_session_id)
-        self.worker_pids.append(client_pid)
+        self.worker_to_pid[client_id] = client_pid
         self.executing_tests[client_id] = None
         if len(self.connected_clients) >= config.root.parallel.num_workers:
             _logger.notice("All workers connected to server")
