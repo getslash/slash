@@ -2,6 +2,10 @@ Changelog
 =========
 
 * :bug:`930` Restore behavior of exceptions propagating out of the test_start or test_end hooks will fail the test, possibly preventing it from starting properly
+* :bug:`934` Parallel sessions now honor fatal exceptions encountered in worker sessions
+* :bug:`928` Fixed a bug causing requirements to leak across sibling test classes
+* :release:`1.7.9 <09-03-2019>`
+* :bug:`-` Revert console coloring change, as it does not behave consistently across different terminals
 * :release:`1.7.8 <04-03-2019>`
 * :bug:`925` Fix background color for session start and test collection messages
 * :bug:`926` Return code for failed sessions was changed to 1 (from -1)

@@ -178,8 +178,9 @@ class Server(object):
             with _get_test_context(self.tests[test_index], logging=False) as (result, _):
                 result.deserialize(result_dict)
                 context.session.reporter.report_test_end(self.tests[test_index], result)
-                if not result.is_success(allow_skips=True) and config.root.run.stop_on_error:
-                    _logger.debug("Stopping (run.stop_on_error==True)")
+                if result.has_fatal_exception() or (not result.is_success(allow_skips=True) and config.root.run.stop_on_error):
+                    _logger.debug("Server stops serving tests, run.stop_on_error: {}, result.has_fatal_exception: {}",
+                                  config.root.run.stop_on_error, result.has_fatal_exception())
                     self.state = ServerStates.STOP_TESTS_SERVING
                     self._mark_unrun_tests()
         else:
