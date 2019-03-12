@@ -201,6 +201,15 @@ def test_child_errors_in_cleanup_are_session_errors(parallel_suite):
     assert not session_results.results.is_success()
     assert session_results.parallel_manager.server.worker_error_reported
 
+def test_child_fatal_error_terminates_session(parallel_suite):
+    parallel_suite[0].expect_failure()
+    parallel_suite[0].append_line("import slash")
+    parallel_suite[0].append_line("slash.add_error('bla').mark_fatal()")
+    session_results = parallel_suite.run(num_workers=1, verify=False).session
+    first_result = session_results.results[0]
+    assert first_result.is_error() and first_result.has_fatal_errors()
+    assert session_results.results.get_num_not_run() == len(parallel_suite) - 1
+
 def test_traceback_vars(parallel_suite):
     #code to be inserted:
         #     def test_traceback_frames():
