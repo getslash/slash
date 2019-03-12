@@ -73,7 +73,7 @@ class FixtureStore(object):
                 for fixture in self.iter_active_fixtures():
                     fixture.call_test_start()
 
-            return test_func(**kwargs)  # pylint: disable=lost-exception
+            return test_func(**kwargs)
         finally:
             if trigger_test_end:
                 for fixture in self.iter_active_fixtures():
