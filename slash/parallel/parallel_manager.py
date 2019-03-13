@@ -49,14 +49,16 @@ class ParallelManager(object):
 
     def start_server_in_thread(self, collected):
         self.server = Server(collected)
-        self.server_thread = threading.Thread(target=self.server.serve, daemon=True)
+        self.server_thread = threading.Thread(target=self.server.serve, args=())
+        self.server_thread.setDaemon(True)
         self.server_thread.start()
         self.keepalive_server = KeepaliveServer()
-        self.keepalive_server_thread = threading.Thread(target=self.keepalive_server.serve, daemon=True)
+        self.keepalive_server_thread = threading.Thread(target=self.keepalive_server.serve, args=())
+        self.keepalive_server_thread.setDaemon(True)
         self.keepalive_server_thread.start()
 
     def kill_workers(self):
-        for worker in self.workers.values():
+        for worker in list(self.workers.values()):
             worker.kill()
 
     def report_worker_error_logs(self):
@@ -105,7 +107,7 @@ class ParallelManager(object):
                 _logger.error("Clients that are still connected to server: {}",
                               self.server.connected_clients, extra={'capture': False})
             if self.server.has_more_tests():
-                _logger.error("Number of unstarted tests: {}", self.server.unstarted_tests.qsize(),
+                _logger.error("Number of unstarted tests: {}", len(self.server.get_unstarted_tests()),
                               extra={'capture': False})
             if self.server.executing_tests:
                 _logger.error("Currently executed tests indexes: {}", self.server.executing_tests.values(),
@@ -115,8 +117,8 @@ class ParallelManager(object):
     def start(self):
         self.try_connect()
         try:
-            for worker_config in self.workers.values():
-                worker_config.start()
+            for worker in list(self.workers.values()):
+                worker.start()
             self.wait_all_workers_to_connect()
             while self.server.should_wait_for_request():
                 self.check_worker_timed_out()
@@ -128,7 +130,7 @@ class ParallelManager(object):
             self.kill_workers()
             raise
         finally:
-            for worker in self.workers.values():
+            for worker in list(self.workers.values()):
                 worker.wait_to_finish()
 
             get_xmlrpc_proxy(config.root.parallel.server_addr, self.server.port).stop_serve()

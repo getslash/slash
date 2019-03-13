@@ -3,7 +3,6 @@ import logbook
 import time
 import threading
 from enum import Enum
-from six.moves import queue
 from six.moves import xmlrpc_server
 from ..utils.python import unpickle
 from .. import log
@@ -11,6 +10,7 @@ from ..ctx import context
 from ..runner import _get_test_context
 from .. import hooks
 from ..conf import config
+from .tests_distributer import TestsDistributer
 
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
@@ -73,21 +73,16 @@ class Server(object):
         self.worker_session_ids = []
         self.executing_tests = {}
         self.finished_tests = []
-        self.unstarted_tests = queue.Queue()
         self.num_collections_validated = 0
         self.start_time = time.time()
         self.worker_to_pid = {}
-        for i in range(len(tests)):
-            self.unstarted_tests.put(i)
         self.connected_clients = set()
         self.collection = [[test.__slash__.file_path,
                             test.__slash__.function_name,
                             test.__slash__.variation.dump_variation_dict()]
                            for test in self.tests]
         self._sorted_collection = sorted(self.collection)
-
-    def _has_unstarted_tests(self):
-        return not self.unstarted_tests.empty()
+        self._tests_distrubuter = TestsDistributer(len(self._sorted_collection))
 
     def has_connected_clients(self):
         return len(self.connected_clients) > 0
@@ -108,12 +103,16 @@ class Server(object):
         self._mark_unrun_tests()
         self.worker_error_reported = True
 
+    def get_unstarted_tests(self):
+        return self._tests_distrubuter.get_unstarted_tests()
+
     def _mark_unrun_tests(self):
-        while self._has_unstarted_tests():
-            test_index = self.unstarted_tests.get()
+        unstarted_tests_indexes = self._tests_distrubuter.get_unstarted_tests()
+        for test_index in unstarted_tests_indexes:
             with _get_test_context(self.tests[test_index], logging=False):
                 pass
             self.finished_tests.append(test_index)
+        self._tests_distrubuter.clear_unstarted_tests()
 
     def _get_worker_session_id(self, client_id):
         return "worker_{}".format(client_id)
@@ -142,10 +141,11 @@ class Server(object):
             self.state = ServerStates.SERVE_TESTS
         return True
 
-    def disconnect(self, client_id):
+    def disconnect(self, client_id, has_failure=False):
         _logger.notice("Client {} sent disconnect", client_id)
         self.connected_clients.remove(client_id)
-        self.state = ServerStates.STOP_TESTS_SERVING
+        if has_failure:
+            self.state = ServerStates.STOP_TESTS_SERVING
 
     def get_test(self, client_id):
         if not self.executing_tests[client_id] is None:
@@ -156,8 +156,10 @@ class Server(object):
             return NO_MORE_TESTS
         elif self.state in [ServerStates.WAIT_FOR_CLIENTS, ServerStates.WAIT_FOR_COLLECTION_VALIDATION]:
             return WAITING_FOR_CLIENTS
-        elif self.state == ServerStates.SERVE_TESTS and self._has_unstarted_tests():
-            test_index = self.unstarted_tests.get()
+        elif self.state == ServerStates.SERVE_TESTS and self._tests_distrubuter.has_unstarted_tests():
+            test_index = self._tests_distrubuter.get_next_test_for_client(client_id)
+            if test_index is None: #we have omre tests but current worker cannot execute them
+                return NO_MORE_TESTS
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
             hooks.test_distributed(test_logical_id=test.__slash__.id, worker_session_id=self._get_worker_session_id(client_id)) # pylint: disable=no-member

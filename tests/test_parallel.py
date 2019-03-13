@@ -334,9 +334,10 @@ def test_children_session_ids(parallel_suite):
 
 def test_timeout_no_request_to_server(config_override, runnable_test_dir):
     config_override("parallel.no_request_timeout", 1)
-    with Session():
+    with Session() as session:
         runnables = Loader().get_runnables(str(runnable_test_dir))
         parallel_manager = ParallelManager([])
+        session.parallel_manager = parallel_manager
         parallel_manager.start_server_in_thread(runnables)
         parallel_manager.try_connect()
         parallel_manager.server.state = ServerStates.SERVE_TESTS
@@ -348,9 +349,10 @@ def test_timeout_no_request_to_server(config_override, runnable_test_dir):
 def test_children_not_connected_timeout(runnable_test_dir, config_override):
     config_override("parallel.worker_connect_timeout", 0)
     config_override("parallel.num_workers", 1)
-    with Session():
+    with Session() as session:
         runnables = Loader().get_runnables(str(runnable_test_dir))
         parallel_manager = ParallelManager([])
+        session.parallel_manager = parallel_manager
         parallel_manager.start_server_in_thread(runnables)
         time.sleep(0.1)
         with slash.assert_raises(ParallelTimeout) as caught:
@@ -390,3 +392,81 @@ def test_server_hanging_dont_cause_worker_timeouts(config_override):
     suite = Suite(debug_info=False, is_parallel=True)
     suite.populate(num_tests=2)
     suite.run(num_workers=1)
+
+def test_force_worker(parallel_suite):
+    for test in parallel_suite:
+        test.append_line("from slash import config")
+        test.append_line("slash.context.result.data.setdefault('worker_id', config.root.parallel.worker_id)")
+
+    @slash.hooks.tests_loaded.register  # pylint: disable=no-member, unused-argument
+    def tests_loaded(tests):  # pylint: disable=unused-variable, unused-argument
+        if slash.utils.parallel_utils.is_parent_session():
+            from slash import ctx
+            workers = ctx.session.parallel_manager.workers
+            for index in range(len(tests)):
+                worker_id = '1' if index%2 == 0 else '2'
+                workers[worker_id].force_test(index)
+
+    summary = parallel_suite.run(num_workers=2)
+    assert summary.session.results.is_success()
+    for index, test in enumerate(parallel_suite):
+        [result] = summary.get_all_results_for_test(test)
+        assert result.data['worker_id'] if index%2 == 0 else '2'
+
+def test_force_on_one_worker(parallel_suite):
+    @slash.hooks.tests_loaded.register  # pylint: disable=no-member, unused-argument
+    def tests_loaded(tests):  # pylint: disable=unused-variable, unused-argument
+        if slash.utils.parallel_utils.is_parent_session():
+            from slash import ctx
+            worker = list(ctx.session.parallel_manager.workers.values())[0]
+            for index in range(len(tests)):
+                worker.force_test(index)
+
+    summary = parallel_suite.run(num_workers=2)
+    assert summary.session.results.is_success()
+
+@pytest.mark.parametrize('num_workers', [1, 2])
+def test_exclude_on_one_worker(parallel_suite, config_override, num_workers):
+    config_override("parallel.no_request_timeout", 2)
+
+    @slash.hooks.tests_loaded.register  # pylint: disable=no-member, unused-argument
+    def tests_loaded(tests):  # pylint: disable=unused-variable, unused-argument
+        if slash.utils.parallel_utils.is_parent_session():
+            from slash import ctx
+            worker = list(ctx.session.parallel_manager.workers.values())[0]
+            for index in range(len(tests)):
+                worker.exclude_test(index)
+    if num_workers == 1:
+        summary = parallel_suite.run(num_workers=num_workers, verify=False)
+        assert summary.session.results.get_num_started() == 0
+    else:
+        summary = parallel_suite.run(num_workers=num_workers)
+        assert summary.session.results.is_success()
+
+@pytest.mark.parametrize('use_test_index', [True, False])
+def test_exclude_test_on_all_workers_causes_timeout(parallel_suite, config_override, use_test_index):
+    config_override("parallel.no_request_timeout", 2)
+
+    @slash.hooks.tests_loaded.register  # pylint: disable=no-member, unused-argument
+    def tests_loaded(tests):  # pylint: disable=unused-variable, unused-argument
+        if slash.utils.parallel_utils.is_parent_session():
+            from slash import ctx
+            for worker in ctx.session.parallel_manager.workers.values():
+                if use_test_index:
+                    worker.exclude_test(0)
+                else:
+                    worker.exclude_test(tests[0])
+    summary = parallel_suite.run(num_workers=2, verify=False)
+    assert summary.session.results.get_num_started() == len(parallel_suite) - 1
+    assert not summary.get_all_results_for_test(parallel_suite[0])
+
+def test_exclude_and_force_on_same_worker_raises_runtime_err(parallel_suite):
+    @slash.hooks.tests_loaded.register  # pylint: disable=no-member, unused-argument
+    def tests_loaded(tests):  # pylint: disable=unused-variable, unused-argument
+        if slash.utils.parallel_utils.is_parent_session():
+            from slash import ctx
+            worker = list(ctx.session.parallel_manager.workers.values())[0]
+            worker.exclude_test(0)
+            worker.force_test(0)
+    summary = parallel_suite.run(num_workers=2, verify=False)
+    assert "Cannot force test_index 0" in summary.session.results.global_result.get_errors()[0].exception_str
