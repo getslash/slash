@@ -8,6 +8,7 @@ import warnings
 from . import hooks
 from .utils.warning_capture import warning_callback_context
 from .ctx import context
+from .exception_handling import handling_exceptions
 from contextlib import contextmanager
 
 
@@ -188,7 +189,21 @@ def ignore_warnings(category=None, message=None, filename=None, lineno=None):
 
     .. note:: Calling ignore_warnings() with no arguments will ignore **all** warnings
     """
-    _ignored_warnings.append(_IgnoredWarning(category=category, filename=filename, lineno=lineno, message=message))
+    iw = _IgnoredWarning(category=category, filename=filename, lineno=lineno, message=message)
+    _ignored_warnings.append(iw)
+    return iw
+
+
+@contextmanager
+def ignored_warnings(**kwargs):
+    iw = ignore_warnings(**kwargs)
+    with handling_exceptions():
+        yield
+    try:
+        _ignored_warnings.remove(iw)
+    except ValueError:
+        # In case clear_warnings was called inside this context, ValueError will be raised
+        pass
 
 
 def clear_ignored_warnings():
