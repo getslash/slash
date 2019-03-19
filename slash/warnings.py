@@ -174,6 +174,20 @@ class _IgnoredWarning(object):
 
         return True
 
+    def __repr__(self):
+        extras = ""
+        if self.category:
+            extras += "category: {} ".format(self.category)
+        if self.message:
+            extras += "message: {} ".format(self.message)
+        if self.lineno:
+            extras += "lineno: {} ".format(self.lineno)
+        if self.filename:
+            extras += "filename: {} ".format(self.filename)
+        if not extras:
+            extras = "-"
+        return "<IgnoredWarning: {}>".format(extras.strip())
+
 _ignored_warnings = []
 
 
