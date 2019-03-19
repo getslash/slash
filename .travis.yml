@@ -40,6 +40,12 @@ after_success:
 after_failure:
 - .env/bin/pip freeze
 
+branches:
+  except:
+    - trying.tmp
+    - staging.tmp
+
+
 deploy:
   - provider: pypi
     user: vmalloc
