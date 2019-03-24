@@ -64,6 +64,8 @@ class Loader(object):
         if prepend_interactive:
             returned.insert(0, generate_interactive_test())
 
+        for index, test in enumerate(returned):
+            test.__slash__.parallel_index = index
         hooks.tests_loaded(tests=returned) # pylint: disable=no-member
         returned.sort(key=lambda test: (
             test.__slash__.repeat_all_index, test.__slash__.get_sort_key()

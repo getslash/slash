@@ -87,7 +87,7 @@ class Worker(object):
             _logger.error("Collections of worker id {} and master don't match, worker terminates", self.client_id,
                           extra={'capture': False})
             self._stop_keepalive_thread()
-            self.client.disconnect(self.client_id)
+            self.client.disconnect(self.client_id, has_failure=True)
             return
 
         should_stop = False
