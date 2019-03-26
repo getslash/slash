@@ -150,8 +150,9 @@ def _process_requirements_and_exclusions(test):
 
 def _process_exclusions(test):
     if is_excluded(test):
-        context.result.add_skip('Excluded')
-        hooks.test_avoided(reason='Excluded') # pylint: disable=no-member
+        reason = 'Excluded due to parameter combination exclusion rules'
+        context.result.add_skip(reason)
+        hooks.test_avoided(reason=reason) # pylint: disable=no-member
         return False
     return True
 
