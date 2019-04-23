@@ -1,6 +1,6 @@
 Changelog
 =========
-
+* :feature:`-` Add tests and suite execution time to xunit plugin
 * :feature:`-` Add ``slash.ignored_warnings`` context
 * :bug:`930` Restore behavior of exceptions propagating out of the test_start or test_end hooks. Correct behavior is for those to fail the test (thanks @pierreluctg)
 * :bug:`934` Parallel sessions now honor fatal exceptions encountered in worker sessions

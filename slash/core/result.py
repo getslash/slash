@@ -4,9 +4,9 @@ import os
 import pickle
 import sys
 from numbers import Number
-
 import gossip
 import logbook
+from datetime import datetime, timedelta
 from vintage import deprecated
 
 from .. import hooks
@@ -35,6 +35,8 @@ class Result(object):
         self.test_metadata = test_metadata
         #: dictionary to be use by tests and plugins to store result-related information for later analysis
         self.data = {}
+        self._start_time = None
+        self._end_time = None
         self._errors = []
         self._failures = []
         self._skips = []
@@ -155,6 +157,7 @@ class Result(object):
         return not self.is_started() and not self.has_errors_or_failures()
 
     def mark_started(self):
+        self._start_time = datetime.now()
         self._started = True
 
     def is_error(self):
@@ -191,6 +194,7 @@ class Result(object):
         return self._finished
 
     def mark_finished(self):
+        self._end_time = datetime.now()
         self._finished = True
 
     def mark_interrupted(self):
@@ -245,6 +249,15 @@ class Result(object):
         if append:
             self._skips.append(reason)
         context.reporter.report_test_skip_added(context.test, reason)
+
+    def get_duration(self):
+        """Returns the test duration time as timedelta object
+
+        :return: timedelta
+        """
+        if self._end_time is None or self._start_time is None:
+            return timedelta()
+        return self._end_time - self._start_time
 
     def get_errors(self):
         """Returns the list of errors recorded for this result
