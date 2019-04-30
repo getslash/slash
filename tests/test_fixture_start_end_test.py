@@ -68,26 +68,12 @@ def test_fixture_start_test_raises_exception(suite_builder):
 
             return param
 
-        @slash.fixture(scope='module')
-        def fixture_failing(this):
-            @this.test_start
-            def test_start(*_, **__):
-                raise AssertionError()
-
-            return None
-
         class SomeTest(slash.Test):
             @slash.parametrize("param", [10, 20, 30])
-            def test_something(self, param, fixture, fixture_failing):  # pylint: disable=unused-argument
-                slash.context.result.data["value"] = param + fixture
+            def test_something(self, param, fixture):  # pylint: disable=unused-argument
+                slash.add_error("Not supposed to reach here").mark_fatal()
 
-    suite_builder.build().run().assert_all(6).exception(ZeroDivisionError).with_data(
-        [
-            {"value": 11}, {"value": 12},
-            {"value": 21}, {"value": 22},
-            {"value": 31}, {"value": 32}
-        ]
-    )
+    suite_builder.build().run().assert_all(6).exception(ZeroDivisionError)
 
 
 def test_fixture_start_test_raises_exception_w_before(suite_builder):
@@ -105,26 +91,12 @@ def test_fixture_start_test_raises_exception_w_before(suite_builder):
 
             return param
 
-        @slash.fixture(scope='module')
-        def fixture_failing(this):
-            @this.test_start
-            def test_start(*_, **__):
-                raise AssertionError()
-
-            return None
-
         class SomeTest(slash.Test):
-            def before(self, fixture, fixture_failing):  # pylint: disable=unused-argument,arguments-differ
-                self.data = fixture
+            def before(self, fixture):  # pylint: disable=unused-argument,arguments-differ
+                self.data = 1
 
             @slash.parametrize("param", [10, 20, 30])
-            def test_something(self, param):
-                slash.context.result.data["value"] = param + self.data
+            def test_something(self, param):  # pylint: disable=unused-argument
+                slash.add_error("Not supposed to reach here").mark_fatal()
 
-    suite_builder.build().run().assert_all(6).exception(ZeroDivisionError).with_data(
-        [
-            {"value": 11}, {"value": 12},
-            {"value": 21}, {"value": 22},
-            {"value": 31}, {"value": 32}
-        ]
-    )
+    suite_builder.build().run().assert_all(6).exception(ZeroDivisionError)

@@ -72,14 +72,13 @@ class FixtureStore(object):
             if trigger_test_start:
                 for fixture in self.iter_active_fixtures():
                     fixture.call_test_start()
+
+            return test_func(**kwargs)
         finally:
-            try:
-                return test_func(**kwargs)  # pylint: disable=lost-exception
-            finally:
-                if trigger_test_end:
-                    for fixture in self.iter_active_fixtures():
-                        with handling_exceptions(swallow=True):
-                            fixture.call_test_end()
+            if trigger_test_end:
+                for fixture in self.iter_active_fixtures():
+                    with handling_exceptions(swallow=True):
+                        fixture.call_test_end()
 
     def get_required_fixture_names(self, test_func):
         """Returns a list of fixture names needed by test_func.
