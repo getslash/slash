@@ -158,6 +158,7 @@ class ParallelManager(object):
             self.handle_error("No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout))
 
     def start(self):
+        hooks.before_parallel_session_start()  # pylint: disable=no-member
         self.try_connect()
         if not config.root.parallel.server_port:
             self.args.extend(['--parallel-port', str(self.server.port)])
@@ -191,3 +192,4 @@ class ParallelManager(object):
             get_xmlrpc_proxy(config.root.parallel.server_addr, self.keepalive_server.port).stop_serve()
             self.server_thread.join()
             self.keepalive_server_thread.join()
+            hooks.after_parallel_session_end()  # pylint: disable=no-member

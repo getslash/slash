@@ -68,6 +68,8 @@ _define('prepare_notification', doc='Called with a message object prior to it be
         arg_names=("message",))
 
 _define('before_interactive_shell', doc='Called before starting interactive shell', arg_names=("namespace",))
+_define('before_parallel_session_start', doc='Called before all parallel workers are initiated')
+_define('after_parallel_session_end', doc='Called after all parallel workers joined')
 
 _slash_group = gossip.get_group('slash')
 _slash_group.set_strict()
