@@ -149,12 +149,15 @@ def handle_exception(exc_info, context=None):
     It also adds the exception to its correct place in the current result, be it a failure, an error or a skip
 
     """
-    already_handled = is_exception_handled(exc_info[1])
+    exc_value = exc_info[1]
+    already_handled = is_exception_handled(exc_value)
     msg = "Handling exception"
     if context is not None:
         msg += " (Context: {0})"
     if already_handled:
         msg += " (already handled)"
+    if is_exception_fatal(exc_value):
+        msg += " FATAL"
     _logger.debug(msg, context, exc_info=exc_info if not already_handled else None)
 
     if not already_handled:
