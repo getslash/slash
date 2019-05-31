@@ -3,6 +3,7 @@ from .cleanups import add_cleanup, add_critical_cleanup, add_success_only_cleanu
 from .conf import config
 from .ctx import context
 from .ctx import g, session, test
+from .core.scope_manager import get_current_scope
 from .core.session import Session
 from .core.tagging import tag
 # assertions

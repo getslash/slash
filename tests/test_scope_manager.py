@@ -6,7 +6,7 @@ import itertools
 import pytest
 import slash
 from slash._compat import iteritems
-from slash.core.scope_manager import ScopeManager
+from slash.core.scope_manager import ScopeManager, get_current_scope
 from .utils import make_runnable_tests
 from .utils.suite_writer import Suite
 
@@ -54,6 +54,37 @@ def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
 
     scope_manager.flush_remaining_scopes()
     assert not dummy_fixture_store._scopes
+
+
+def test_get_current_scope(suite_builder):
+
+    @suite_builder.first_file.add_code
+    def __code__():
+        # pylint: disable=unused-variable,redefined-outer-name,reimported
+        import slash
+        import gossip
+
+        TOKEN = 'testing-current-scope-token'
+
+        def _validate_current_scope(expected_scope):
+            assert slash.get_current_scope() == expected_scope
+
+        @gossip.register('slash.after_session_start', token=TOKEN)
+        def session_validation():
+            assert slash.get_current_scope() == 'session'
+
+        @gossip.register('slash.configure', token=TOKEN)
+        @gossip.register('slash.app_quit', token=TOKEN)
+        def _no_scope():
+            assert slash.get_current_scope() is None
+
+        def test_something():
+            assert slash.get_current_scope() == 'test'
+
+        gossip.unregister_token(TOKEN)
+
+    suite_builder.build().run().assert_success(1)
+    assert get_current_scope() is None
 
 
 @pytest.fixture
