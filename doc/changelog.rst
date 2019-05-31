@@ -1,6 +1,6 @@
 Changelog
 =========
-* :feature:`950` Added log for handling fatal error
+* :feature:`950` Slash now emits a log record when handling fatal errors
 * :feature:`-` Add tests and suite execution time to xunit plugin
 * :feature:`-` Add ``slash.ignored_warnings`` context
 * :release:`1.7.10 <30-04-2019>`
