@@ -18,6 +18,7 @@ config = Config({
     "log": {
         "colorize": False // Doc("Emit log colors to files"),
         "console_theme": {
+            'dark_background': True,
             'inline-file-end-fail': 'red',
             'inline-file-end-skip': 'yellow',
             'inline-file-end-success': 'green',
@@ -26,8 +27,10 @@ config = Config({
             'error-cause-marker': 'white/bold',
             'fancy-message': 'yellow/bold',
             'frame-local-varname': 'yellow/bold',
+            'num-collected': 'white/bold',
             'session-summary-success': 'green/bold',
             'session-summary-failure': 'red/bold',
+            'session-start': 'white/bold',
             'error-separator-dash': 'red',
             'tb-error-message': 'red/bold',
             'tb-error': 'red/bold',

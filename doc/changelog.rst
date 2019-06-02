@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`925` Support was added for terminals with light backgrounds by changing ``log.console_theme.dark_background`` configuration
 * :feature:`950` Slash now emits a log record when handling fatal errors
 * :feature:`-` Add tests and suite execution time to xunit plugin
 * :feature:`-` Add ``slash.ignored_warnings`` context
