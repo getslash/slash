@@ -2,6 +2,7 @@ import functools
 
 import logbook
 
+from ..ctx import context
 from ..exceptions import SlashInternalError
 from ..utils.python import call_all_raise_first
 
@@ -14,6 +15,12 @@ class ScopeManager(object):
         self._session = session
         self._scopes = []
         self._last_module = self._last_test = None
+
+    @property
+    def current_scope(self):
+        if not self._scopes:
+            return None
+        return self._scopes[-1]
 
     def begin_test(self, test):
         test_module = test.__slash__.module_name
@@ -28,7 +35,7 @@ class ScopeManager(object):
             if self._last_module is not None:
                 _logger.trace('Module scope has changed. Popping previous module scope')
                 self._pop_scope('module')
-            assert self._scopes[-1] != 'module'
+            assert self.current_scope != 'module'
             self._push_scope('module')
         self._last_module = test_module
         self._push_scope('test')
@@ -66,3 +73,9 @@ class ScopeManager(object):
         _logger.trace('Flushing remaining scopes: {}', self._scopes)
         call_all_raise_first([functools.partial(self._pop_scope, s)
                               for s in self._scopes[::-1]])
+
+
+def get_current_scope():
+    if context.session is None or context.session.scope_manager is None:
+        return None
+    return context.session.scope_manager.current_scope
