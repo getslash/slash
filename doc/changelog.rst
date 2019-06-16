@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`452` Drop support for old-style assertions
 * :feature:`952` Added support for getting the currently active scope (``test``, ``module`` or ``session``) through the new ``get_current_scope`` API. ``session.scope_manager.current_scope`` is also available.
 * :feature:`925` Support was added for terminals with light backgrounds by changing ``log.console_theme.dark_background`` configuration
 * :feature:`950` Slash now emits a log record when handling fatal errors
