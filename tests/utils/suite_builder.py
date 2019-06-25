@@ -44,8 +44,8 @@ class SuiteBuilderSuite(object):
         self.path = path
         os.makedirs(path)
 
-    def run(self):
-        app = slash_run([self.path])
+    def run(self, *args):
+        app = slash_run([self.path] + list(args))
         assert not app.session.has_internal_errors(), 'Session has internal errors!'
         return SuiteBuilderSuiteResult(app)
 

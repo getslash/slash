@@ -1,11 +1,24 @@
-import functools
-
 from sentinels import NOTHING
 
 from .._compat import iteritems
 from ..exceptions import TaggingConflict
 
 _TAGS_NAME = '__slash_tags__'
+
+
+class Tagger(object):
+
+    def __init__(self, tag_name, tag_value):
+        self.tag_name = tag_name
+        self.tag_value = tag_value
+
+    def __call__(self, target):
+        assert callable(target)
+        return tag_test(target, self.tag_name, self.tag_value)
+
+    def __rfloordiv__(self, other):
+        from .fixtures.parameters import ParametrizationValue
+        return ParametrizationValue(value=other, tags=[(self.tag_name, self.tag_value)])
 
 
 def tag_test(test, tag_name, tag_value):
@@ -22,7 +35,7 @@ def tag_test(test, tag_name, tag_value):
 def tag(tag_name, tag_value=NOTHING):
     """Decorator for tagging tests
     """
-    return functools.partial(tag_test, tag_name=tag_name, tag_value=tag_value)
+    return Tagger(tag_name=tag_name, tag_value=tag_value)
 
 
 def get_tags(test):

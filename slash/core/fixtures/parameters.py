@@ -8,6 +8,7 @@ from ..._compat import iteritems
 from ...exceptions import ParameterException
 from ...exception_handling import mark_exception_frame_correction
 from ...utils.python import wraps, get_argument_names
+from ..tagging import Tags
 from .fixture_base import FixtureBase
 from .utils import FixtureInfo, get_scope_by_name
 
@@ -147,6 +148,9 @@ class Parametrization(FixtureBase):
     def get_value_by_index(self, index):
         return self.transform(self._compute_value(self.values[index]))
 
+    def get_tags_by_index(self, index):
+        return self.values[index].tags
+
     def _compute_value(self, param):
         if isinstance(param, list):
             return [p.value for p in param]
@@ -174,11 +178,18 @@ class Parametrization(FixtureBase):
 
 class ParametrizationValue(object):
 
-    def __init__(self, label, value=NOTHING):
+    def __init__(self, label=NOTHING, value=NOTHING, tags=None):
         super(ParametrizationValue, self).__init__()
         self._validate_label(label)
         self.label = label
         self.value = value
+        self.tags = Tags()
+        if tags:
+            if not isinstance(tags, list):
+                tags = [tags]
+            for tag in tags:
+                name, value = tag if isinstance(tag, tuple) else (tag, NOTHING)
+                self.tags[name] = value
 
     def _validate_label(self, label):
         if isinstance(label, str) and not re.match(r'^[a-zA-Z_][0-9a-zA-Z_]{0,29}$', label):

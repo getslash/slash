@@ -16,7 +16,7 @@ class FunctionTest(RunnableTest):
         self._func = function
 
     def get_tags(self):
-        test_tags = get_tags(self._func)
+        test_tags = get_tags(self._func) + self._variation.tags
         if nofixtures.is_marked(self.get_test_function()):
             return test_tags
         return test_tags + self._get_fixture_tags()
