@@ -87,6 +87,9 @@ class Server(object):
     def has_connected_clients(self):
         return len(self.connected_clients) > 0
 
+    def get_connected_clients(self):
+        return self.connected_clients.copy()
+
     def has_more_tests(self):
         return len(self.finished_tests) < len(self.tests)
 
