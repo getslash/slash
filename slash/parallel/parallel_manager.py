@@ -89,7 +89,7 @@ class ParallelManager(object):
 
     def check_worker_timed_out(self):
         workers_last_connection_time = self.keepalive_server.get_workers_last_connection_time()
-        for worker_id in self.server.connected_clients:
+        for worker_id in self.server.get_connected_clients():
             worker_last_connection_time = workers_last_connection_time.get(worker_id, None)
             if worker_last_connection_time is None: #worker keepalive thread didn't started yet
                 continue
