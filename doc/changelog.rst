@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`945` Drop support for deprecated arguments of ``add_cleanup``
 * :feature:`452` Drop support for old-style assertions
 * :feature:`952` Added support for getting the currently active scope (``test``, ``module`` or ``session``) through the new ``get_current_scope`` API. ``session.scope_manager.current_scope`` is also available.
 * :feature:`925` Support was added for terminals with light backgrounds by changing ``log.console_theme.dark_background`` configuration

@@ -2,7 +2,6 @@ from contextlib import contextmanager
 
 import logbook
 from sentinels import Sentinel
-from vintage import warn_deprecation
 
 from .. import hooks
 from ..ctx import context
@@ -63,11 +62,8 @@ class CleanupManager(object):
 
         new_kwargs = kwargs.pop('kwargs', {}).copy()
         new_args = list(kwargs.pop('args', ()))
-        if args or kwargs:
-            warn_deprecation('Passing *args/**kwargs to slash.add_cleanup is deprecated. '
-                             'Use args=(...) and/or kwargs={...} instead', frame_correction=+2)
-            new_args.extend(args)
-            new_kwargs.update(kwargs)
+        assert (not args) and (not kwargs), \
+            'Passing *args/**kwargs to slash.add_cleanup is not supported. Use args=(...) and/or kwargs={...} instead'
 
         added = _Cleanup(_func, new_args, new_kwargs, critical=critical, success_only=success_only)
 
