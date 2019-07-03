@@ -13,6 +13,32 @@ from slash.utils import debug
 from .utils import CustomException, TestCase
 
 
+@pytest.mark.parametrize('is_fatal', [True, False])
+@pytest.mark.parametrize('context', [None, 'Something'])
+def test_handling_exceptions_log(context, is_fatal):
+    raised = CustomException()
+    if is_fatal:
+        exception_handling.mark_exception_fatal(raised)
+    with slash.Session():
+        with logbook.TestHandler() as handler:
+            with exception_handling.handling_exceptions(context=context, swallow=True):
+                raise raised
+    assert len(handler.records) == 3
+    assert handler.records[1].message.startswith('Error added')
+    assert handler.records[2].message.startswith('Swallowing')
+    handle_exc_msg = handler.records[0].message
+    assert handle_exc_msg.startswith('Handling exception')
+
+    if context:
+        assert 'Context: {}'.format(context) in handle_exc_msg
+    else:
+        assert 'Context' not in handle_exc_msg
+    if is_fatal:
+        assert 'FATAL' in handle_exc_msg
+    else:
+        assert 'FATAL' not in handle_exc_msg
+
+
 def test_handling_exceptions_swallow_skip_test(suite, suite_test):
 
     @suite_test.append_body

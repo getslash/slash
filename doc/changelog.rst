@@ -1,6 +1,13 @@
 Changelog
 =========
-
+* :release:`1.8.0 <03-07-2019>`
+* :feature:`945` Drop support for deprecated arguments of ``add_cleanup``
+* :feature:`452` Drop support for old-style assertions
+* :feature:`952` Added support for getting the currently active scope (``test``, ``module`` or ``session``) through the new ``get_current_scope`` API. ``session.scope_manager.current_scope`` is also available.
+* :feature:`925` Support was added for terminals with light backgrounds by changing ``log.console_theme.dark_background`` configuration
+* :feature:`950` Slash now emits a log record when handling fatal errors
+* :feature:`-` Add tests and suite execution time to xunit plugin
+* :feature:`-` Add ``slash.ignored_warnings`` context
 * :release:`1.7.10 <30-04-2019>`
 * :bug:`930` Restore behavior of exceptions propagating out of the test_start or test_end hooks. Correct behavior is for those to fail the test (thanks @pierreluctg)
 * :bug:`934` Parallel sessions now honor fatal exceptions encountered in worker sessions

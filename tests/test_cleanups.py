@@ -125,13 +125,6 @@ def test_cleanups(suite, suite_test):
     assert summary.events[cleanup]
 
 
-def test_cleanup_args_kwargs_deprecated():
-    with slash.Session() as s:
-        slash.add_cleanup(lambda: None, "arg1", arg2=1)
-    [w] = s.warnings
-    assert 'deprecated' in str(w).lower()
-
-
 def test_cleanup_ordering(suite, suite_test):
     cleanup1 = suite_test.add_cleanup()
     cleanup2 = suite_test.add_cleanup()

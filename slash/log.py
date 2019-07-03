@@ -67,7 +67,10 @@ class ColorizedHandlerMixin(logbook.more.ColorizingStreamHandlerMixin):
         elif record.level >= logbook.WARNING:
             return 'yellow'
         elif record.level >= logbook.NOTICE:
-            return 'white'
+            if config.root.log.console_theme.dark_background:
+                return 'white'
+            else:
+                return 'black'
         return None # default
 
 class ColorizedFileHandler(ColorizedHandlerMixin, logbook.FileHandler):

@@ -23,7 +23,10 @@ NO_TRACEBACK, SINGLE_FRAME, ALL_FRAMES, ALL_FRAMES_WITH_CONTEXT, ALL_FRAMES_WITH
 
 
 def theme(name):
-    return dict((x, True) for x in config['log']['console_theme'][name].split('/'))
+    returned = dict((x, True) for x in config['log']['console_theme'][name].split('/'))
+    if not config.root.log.console_theme.dark_background:
+        returned['black'] = returned.pop('white', False)
+    return returned
 
 
 def from_verbosity(level):
@@ -166,14 +169,14 @@ class ConsoleReporter(ReporterInterface):
             return
 
         self._terminal.write('{} tests collected{}'.format(
-            len(collected), '...' if stillworking else '   \n'), white=True, bold=True)
+            len(collected), '...' if stillworking else '   \n'), **theme('num-collected'))
 
     def _is_verbose(self, level):
         return self._level <= level
 
     @from_verbosity(VERBOSITIES.ERROR)
     def report_session_start(self, session):
-        self._terminal.sep('=', 'Session starts', white=True, bold=True)
+        self._terminal.sep('=', 'Session starts', **theme('session-start'))
 
     def report_session_end(self, session):
 
