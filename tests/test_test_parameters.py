@@ -184,6 +184,32 @@ def test_multiple_parameters_parametrization(suite_builder):
     ])
 
 
+def test_parameterization_filtering(suite_builder):
+    # pylint: disable=no-member, protected-access, undefined-variable,unused-variable, reimported, redefined-outer-name
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+        @slash.parametrize('x', [
+            500 // slash.param(tags=["regression", "ultra"]),
+            50 // slash.param(tags="regression"),
+            5 // slash.param(tags="sanity"),
+        ])
+        @slash.parametrize('y', [
+            '100' // slash.tag("regression", "long"),
+            '10' // slash.tag("regression", "short"),
+            '1' // slash.tag("sanity"),
+        ])
+        @slash.parametrize('z', [True, False])
+        def test_1(x, y, z):
+            slash.context.result.data['params'] = (x, y, z)
+
+    suite_builder.build().run('-k', 'tag:regression=long and not tag:sanity').assert_success(4).with_data([
+        {'params': (500, '100', True)},
+        {'params': (500, '100', False)},
+        {'params': (50, '100', True)},
+        {'params': (50, '100', False)},
+    ])
+
 
 def _set(param, value):
     data = slash.session.results.current.data

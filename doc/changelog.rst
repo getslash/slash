@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`-` Added support for tagging test parameterization values
 * :release:`1.8.0 <03-07-2019>`
 * :feature:`945` Drop support for deprecated arguments of ``add_cleanup``
 * :feature:`452` Drop support for old-style assertions
