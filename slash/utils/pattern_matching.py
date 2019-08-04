@@ -1,15 +1,22 @@
-from pyparsing import infixNotation, opAssoc, Word, alphanums, Keyword
+from pyparsing import (
+    infixNotation,
+    opAssoc,
+    Word,
+    alphanums,
+    Keyword,
+    ZeroOrMore,
+    Literal,
+)
 
 
 class Include(object):
-
     def __init__(self, t):
         super(Include, self).__init__()
         self.only_tags = False
         self.pattern = t[0]
-        if self.pattern.startswith('tag:'):
+        if len(t) == 2 and t[0] == "tag:":
             self.only_tags = True
-            self.pattern = self.pattern.split(':', 1)[1]
+            self.pattern = t[1]
 
     def matches(self, metadata):
         if isinstance(metadata, str):
@@ -22,7 +29,7 @@ class Include(object):
         return self.pattern in metadata.address
 
     def __repr__(self):
-        return '<{}{}>'.format(self.pattern, ' (only tags)' if self.only_tags else '')
+        return "<{}{}>".format(self.pattern, " (only tags)" if self.only_tags else "")
 
 
 class BinaryMatching(object):
@@ -37,9 +44,9 @@ class BinaryMatching(object):
     def from_tokens(cls, t):
         return cls(t[0][0::2])
 
-
     def matches(self, metadata):
-        return self.aggregator(matcher.matches(metadata) for matcher in self.matchers)  # pylint: disable=not-callable
+        # pylint: disable=not-callable
+        return self.aggregator(matcher.matches(metadata) for matcher in self.matchers)
 
 
 class AndMatching(BinaryMatching):
@@ -51,7 +58,6 @@ class OrMatching(BinaryMatching):
 
 
 class Exclude(object):
-
     def __init__(self, t):
         super(Exclude, self).__init__()
         self.matcher = t[0][1]
@@ -60,21 +66,24 @@ class Exclude(object):
         return not self.matcher.matches(metadata)
 
 
-matcher = Word(alphanums + '._,-=:/')
+word = Word(alphanums + "._,-=/:")
+matcher = Literal("tag:") + ZeroOrMore(" ") + word | word
 matcher.setParseAction(Include)
 
-boolExpr = infixNotation(matcher, [
-    (Keyword("not"), 1, opAssoc.RIGHT, Exclude),
-    ("and", 2, opAssoc.LEFT, AndMatching.from_tokens),
-    ("or", 2, opAssoc.LEFT, OrMatching.from_tokens),
-])
+bool_expr = infixNotation(
+    matcher,
+    [
+        (Keyword("not"), 1, opAssoc.RIGHT, Exclude),
+        ("and", 2, opAssoc.LEFT, AndMatching.from_tokens),
+        ("or", 2, opAssoc.LEFT, OrMatching.from_tokens),
+    ],
+)
 
 
 class Matcher(object):
-
     def __init__(self, pattern):
         super(Matcher, self).__init__()
-        self._matcher = boolExpr.parseString(pattern)[0]
+        self._matcher = bool_expr.parseString(pattern)[0]
 
     def __repr__(self):
         return repr(self._matcher)

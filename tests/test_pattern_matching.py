@@ -81,6 +81,11 @@ def test_matches_tag_exclusively():
     assert not Matcher("tag:bla").matches(FakeMetadata("bla", {"bloop": 2}))
 
 
+def test_matches_tag_whitespaces():
+    assert Matcher("tag:    bla").matches(FakeMetadata("something", {"bla": 2}))
+    assert not Matcher("tag: bla").matches(FakeMetadata("bla", {"bloop": 2}))
+
+
 def test_matches_values():
     assert Matcher("tag:bla=2").matches(FakeMetadata("something", {"bla": 2}))
     assert not Matcher("tag:bla=2").matches(FakeMetadata("something", {"bla": 3}))
