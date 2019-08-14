@@ -103,7 +103,7 @@ Plugins
 .. autoclass:: slash.plugins.PluginInterface
   :members:
 
-.. autoclass:: slash.plugins.PluginManager
+.. autoclass:: slash.plugins.plugin_manager.PluginManager
   :members:
 
 

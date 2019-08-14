@@ -2,7 +2,7 @@
 import pytest
 
 import slash
-from slash._compat import cStringIO
+from io import StringIO
 from slash.frontend.slash_run import slash_run
 
 
@@ -41,6 +41,6 @@ def init_hook(request):
 def _console_run(suite):
     suite.disable_debug_info()
     path = suite.commit()
-    stream = cStringIO()
+    stream = StringIO()
     exit_code = slash_run([path], report_stream=stream, working_directory=path)
     return exit_code, stream.getvalue()

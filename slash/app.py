@@ -2,13 +2,12 @@ import logbook
 import signal
 import sys
 import dessert
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 
 from . import hooks as trigger_hook
 from . import log
 from . import site
 from . import plugins
-from ._compat import ExitStack
 from .conf import config
 from .core.session import Session
 from .reporting.console_reporter import ConsoleReporter

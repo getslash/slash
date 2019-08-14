@@ -1,7 +1,6 @@
 from sentinels import NOTHING
 from numbers import Number
 
-from ..._compat import itervalues
 from ...exceptions import UnknownFixtures
 
 
@@ -22,7 +21,7 @@ class Namespace(object):
 
     def iter_fixtures(self):
         while self is not None:
-            for fixture_id in itervalues(self._fixture_names):
+            for fixture_id in self._fixture_names.values():
                 yield self._store.get_fixture_by_id(fixture_id)
             self = self._parent  # pylint: disable=self-cls-assignment
 

@@ -1,4 +1,4 @@
-from slash._compat import StringIO
+from io import StringIO
 from .element import Element
 from .utils import get_code_lines
 from ..code_formatter import CodeFormatter

@@ -2,18 +2,19 @@ language: python
 dist: xenial
 sudo: false
 python:
-  - "2.7"
-  - "3.5"
   - "3.6"
   - "3.7"
 
 env:
   - TRAVIS_PYLINT=false
+  - TRAVIS_DOCS=false
 
 matrix:
   include:
     - python: "3.6"
-      env: TRAVIS_PYLINT=true
+      env:
+        - TRAVIS_DOCS=true
+        - TRAVIS_PYTLINT=true
     - os: windows
       language: sh
       python: "3.7"
@@ -35,6 +36,7 @@ install:
 script: 
   - make env
   - if [[ $TRAVIS_PYLINT != 'true' ]]; then make test; else make pylint; fi
+  - if [[ $TRAVIS_DOCS == 'true' ]]; then make doc; fi
 after_success:
   - codecov
 after_failure:

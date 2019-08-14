@@ -4,8 +4,6 @@ import re
 
 import logbook
 
-from slash._compat import iteritems, itervalues, xrange
-
 from .generator_fixture import GeneratorFixture
 
 _logger = logbook.Logger(__name__)
@@ -29,7 +27,7 @@ def validate_run(suite, run_result, expect_interruption, expect_session_errors):
     else:
         assert not errors, 'Sessions errors were not expected (Got {})'.format(errors)
 
-    for test, results in iteritems(_group_results_by_test_id(suite, run_result)):
+    for test, results in _group_results_by_test_id(suite, run_result).items():
         _validate_single_test(test, results)
 
 
@@ -41,7 +39,7 @@ def _validate_single_test(test, results):
 
         is_excluded = any((param_names[param_id], value) in test.excluded_param_values for param_id, value in param_values.items())
 
-        for repetition in xrange(test.get_num_expected_repetitions()):  # pylint: disable=unused-variable
+        for repetition in range(test.get_num_expected_repetitions()):  # pylint: disable=unused-variable
 
             for index, result in enumerate(results):
 
@@ -81,7 +79,9 @@ def _find_all_parameters(func):
             else:
                 stack.append(subfixture)
         params.extend(f.get_parameters())
-    return list(itervalues({p.id: p for p in params}))
+    # This function returns a list of parameters (type: Parameter) with unique ID
+    # Therefore, returning list(params) is not engouth
+    return list({p.id: p for p in params}.values())
 
 
 def _result_matches(result, param_values):
@@ -132,7 +132,7 @@ def _group_results_by_test_id(suite, run_result):
         groups.setdefault(tests_by_id[test_id], []).append(result)
         unseen.pop(test_id, None)
 
-    for test_id, test in list(iteritems(unseen)):
+    for test_id, test in list(unseen.items()):
         if not test.is_selected():
             unseen.pop(test_id, None)
 

@@ -1,7 +1,5 @@
 import itertools
 
-from slash._compat import itervalues
-
 
 class Cartesian(object):
 
@@ -26,7 +24,7 @@ class Cartesian(object):
             return 0
 
         returned = 1
-        for x in itervalues(self.sets):
+        for x in self.sets.values():
             returned *= len(x)
         return returned
 

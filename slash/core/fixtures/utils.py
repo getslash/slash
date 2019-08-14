@@ -6,7 +6,6 @@ from sentinels import NOTHING
 import six
 
 from ...ctx import context
-from ..._compat import izip, iteritems
 from ...utils.python import get_arguments_dict, wraps
 from ...utils.function_marker import function_marker
 
@@ -86,9 +85,9 @@ def get_scope_name_by_scope(scope_id):
     return _SCOPES_BY_ID[scope_id]
 
 _SCOPES = dict(
-    izip(('test', 'module', 'session'), itertools.count()))
+    zip(('test', 'module', 'session'), itertools.count()))
 
-_SCOPES_BY_ID = dict((id, name) for (name, id) in iteritems(_SCOPES))
+_SCOPES_BY_ID = dict((id, name) for (name, id) in _SCOPES.items())
 
 
 def generator_fixture(func=None, **kw):

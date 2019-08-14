@@ -5,7 +5,7 @@ import sys
 from tempfile import mktemp
 import slash
 import slash.site
-from slash._compat import cStringIO
+from io import StringIO
 from slash.frontend import slash_run
 import requests
 import pkg_resources
@@ -17,7 +17,7 @@ class SlashRunSiteCustomizationTest(TestCase):
     def setUp(self):
         super(SlashRunSiteCustomizationTest, self).setUp()
         self.forge.replace(slash.site, "load")
-        self.forge.replace_with(sys, "stderr", cStringIO())
+        self.forge.replace_with(sys, "stderr", StringIO())
 
     def test_slash_run_calls_site_load(self):
         slash.site.load(working_directory=None)

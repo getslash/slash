@@ -1,6 +1,6 @@
 # pylint: disable=redefined-outer-name
 import pytest
-from slash._compat import StringIO
+from io import StringIO
 from slash.frontend.slash_list_plugins import slash_list_plugins
 from slash.plugins import manager, PluginInterface
 

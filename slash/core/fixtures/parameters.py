@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from sentinels import NOTHING
 from slash import ctx
 
-from ..._compat import iteritems
 from ...exceptions import ParameterException
 from ...exception_handling import mark_exception_frame_correction
 from ...utils.python import wraps, get_argument_names
@@ -49,7 +48,7 @@ def parametrize(parameter_name, values):
 def iterate(**kwargs):
 
     def decorator(func):
-        for name, options in iteritems(kwargs):
+        for name, options in kwargs.items():
             func = parametrize(name, options)(func)
         return func
     return decorator

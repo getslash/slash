@@ -1,7 +1,7 @@
 import logbook
 import pytest
 
-from slash._compat import StringIO
+from io import StringIO
 from slash.reporting.console_reporter import ConsoleReporter
 
 

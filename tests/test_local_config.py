@@ -2,18 +2,17 @@
 from uuid import uuid1
 
 import pytest
-from slash._compat import iteritems, OrderedDict
 from slash.core.local_config import LocalConfig
 
 
 def test_local_conf(local_conf, expected_dict):
     conf = local_conf.get_dict()
-    for key, value in iteritems(expected_dict):
+    for key, value in expected_dict.items():
         assert [value] == conf[key]
 
 
 def test_local_conf_loading_multiple_times(local_conf_dir, expected_dict):
-    items = list(iteritems(expected_dict))
+    items = list(expected_dict.items())
     local_conf = LocalConfig()
 
     local_conf.push_path(str(local_conf_dir.join('..')))
@@ -41,7 +40,7 @@ def local_conf(local_conf_dir):
 @pytest.fixture
 def local_conf_dir(tmpdir, expected_dict):
     returned = tmpdir
-    for i, (key, value) in enumerate(iteritems(expected_dict)):
+    for i, (key, value) in enumerate(expected_dict.items()):
         returned = returned.join('subdir{}'.format(i))
         returned.mkdir()
 
@@ -52,4 +51,4 @@ def local_conf_dir(tmpdir, expected_dict):
 
 @pytest.fixture
 def expected_dict():
-    return OrderedDict(('key_{}'.format(i), 'value_{}_{}'.format(i, uuid1())) for i in range(10))
+    return dict(('key_{}'.format(i), 'value_{}_{}'.format(i, uuid1())) for i in range(10))

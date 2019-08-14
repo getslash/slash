@@ -2,10 +2,9 @@ from numbers import Number
 import string
 import json
 import logbook
-from .._compat import string_types
 from .tagging import Tags
 
-_PRINTABLE_TYPES = (Number,) + string_types
+_PRINTABLE_TYPES = (Number, str)
 _PRINTABLE_CHARS = set(string.ascii_letters) | set(string.digits) | set("-_")
 
 _logger = logbook.Logger(__name__)

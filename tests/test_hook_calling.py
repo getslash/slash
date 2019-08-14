@@ -1,9 +1,8 @@
 # pylint: disable=unused-argument, unused-variable
-from slash._compat import ExitStack
+from contextlib import ExitStack
 import slash
-from slash import plugins
+from slash import hooks, plugins
 from slash.plugins import PluginInterface
-from slash import hooks
 import pytest
 import gossip
 import vintage

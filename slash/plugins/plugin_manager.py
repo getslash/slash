@@ -6,9 +6,9 @@ import re
 import sys
 from .interface import PluginInterface
 from .registration_info import RegistrationInfo
-from .._compat import itervalues, reraise
 from ..utils.marks import try_get_mark
 from ..utils import parallel_utils
+from ..utils.python import reraise
 from ..conf import config
 from contextlib import contextmanager
 from emport import import_file
@@ -202,7 +202,7 @@ class PluginManager(object):
         """
         Uninstalls all installed plugins
         """
-        for plugin_info in list(itervalues(self._installed)):
+        for plugin_info in list(self._installed.values()):
             self.uninstall(plugin_info.plugin_instance)
         assert not self._installed
 

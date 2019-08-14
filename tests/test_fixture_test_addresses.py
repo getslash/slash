@@ -3,7 +3,7 @@ import itertools
 
 import pytest
 import slash
-from slash._compat import ExitStack
+from contextlib import ExitStack
 
 from .utils import run_tests_assert_success, make_runnable_tests
 from .utils.code_formatter import CodeFormatter

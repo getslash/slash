@@ -7,7 +7,6 @@ from contextlib import contextmanager
 import colorama
 
 from .. import conf, plugins
-from .._compat import itervalues
 
 
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
@@ -27,7 +26,7 @@ def add_pending_plugins_from_commandline(argv):
     return returned_argv
 
 def configure_arg_parser_by_plugins(parser):
-    for plugin in itervalues(plugins.manager.get_installed_plugins()):
+    for plugin in plugins.manager.get_installed_plugins().values():
         group = parser.add_argument_group('Options for {}{}'.format(
             '' if plugins.manager.is_internal_plugin(plugin) else '--with-',
             plugins.manager.normalize_command_line_name(plugin.get_name())))
@@ -56,7 +55,7 @@ def configure_arg_parser_by_config(parser, config=None):
         cmdline.configure_parser(subparser, path, node)
 
 def configure_plugins_from_args(args):
-    for plugin in itervalues(plugins.manager.get_active_plugins()):
+    for plugin in plugins.manager.get_active_plugins().values():
         plugin.configure_from_parsed_args(args)
 
 def _iter_cmdline_config(config):

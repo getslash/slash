@@ -1,6 +1,6 @@
 from sentinels import NOTHING
 
-from .._compat import get_underlying_classmethod_function
+from ..utils.python import get_underlying_classmethod_function
 
 
 def function_marker(name):

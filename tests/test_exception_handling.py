@@ -6,9 +6,10 @@ import traceback
 import slash
 import logbook
 from slash import exception_handling
-from slash._compat import ExitStack, PYPY
+from contextlib import ExitStack
 from slash.exceptions import SkipTest, ExpectedExceptionNotCaught
 from slash.utils import debug
+from slash.utils.python import PYPY
 
 from .utils import CustomException, TestCase
 
@@ -260,7 +261,7 @@ def test_handling_exceptions_inside_assert_raises_with_session(with_session):
 
         if with_session:
             session = ctx.enter_context(slash.Session())
-            ctx.enter_context(session.get_started_context())
+            ctx.enter_context(session.get_started_context()) # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
         else:
             session = None
 
@@ -302,7 +303,7 @@ def test_handling_exceptions_inside_allowing_exceptions_with_session(with_sessio
 
         if with_session:
             session = ctx.enter_context(slash.Session())
-            ctx.enter_context(session.get_started_context())
+            ctx.enter_context(session.get_started_context()) # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
         else:
             session = None
 

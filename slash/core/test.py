@@ -2,7 +2,6 @@ import functools
 import itertools
 from types import GeneratorType
 
-from .._compat import iteritems, izip
 from ..exception_handling import handling_exceptions
 from ..exceptions import SkipTest, InvalidTest
 from .fixtures.parameters import bound_parametrizations_context
@@ -42,8 +41,8 @@ class TestTestFactory(RunnableTestFactory):
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
         return fixture_store.iter_parametrization_variations(methods=itertools.chain(
-            izip(itertools.repeat('before'), self._get_all_before_methods()),
-            izip(itertools.repeat('after'), self._get_all_after_methods()),
+            zip(itertools.repeat('before'), self._get_all_before_methods()),
+            zip(itertools.repeat('after'), self._get_all_after_methods()),
             [getattr(self.testclass, test_method_name)],
         ))
 
@@ -103,7 +102,7 @@ class Test(RunnableTest):
     def _get_call_string(self, kwargs):
         if not kwargs:
             return ""
-        return "({})".format(", ".join("{}={!r}".format(k, v) for k, v in iteritems(kwargs)))
+        return "({})".format(", ".join("{}={!r}".format(k, v) for k, v in kwargs.items()))
 
     def get_requirements(self):
         test_requirements = get_requirements(type(self)) + get_requirements(self.get_test_function())
@@ -141,7 +140,7 @@ class Test(RunnableTest):
         pass
 
     def _format_kwargs(self, kwargs):
-        return ", ".join("{}={!r}".format(x, y) for x, y in iteritems(kwargs))
+        return ", ".join("{}={!r}".format(x, y) for x, y in kwargs.items())
 
 def abstract_test_class(cls):
     """

@@ -9,7 +9,6 @@ import vintage
 from py.io import TerminalWriter
 from textwrap import wrap
 
-from .._compat import iteritems, izip, OrderedDict
 from ..conf import config
 from ..exceptions import CLI_ABORT_EXCEPTIONS
 from ..log import VERBOSITIES
@@ -238,10 +237,10 @@ class ConsoleReporter(ReporterInterface):
         return returned
 
     def _report_result_warning_summary(self, session):
-        warnings_by_key = OrderedDict()
+        warnings_by_key = {}
         for warning in session.warnings:
             warnings_by_key.setdefault(warning.key, []).append(warning)
-        for i, (_, warnings) in iteration(iteritems(warnings_by_key)):
+        for i, warnings in iteration(warnings_by_key.values()):
             if i.first:
                 self._terminal.sep(
                     '=', 'Warnings ({} total)'.format(len(session.warnings)), yellow=True)
@@ -257,8 +256,8 @@ class ConsoleReporter(ReporterInterface):
 
     def _report_result_errors_failures(self, test_result):
         all_errs = list(
-            itertools.chain(izip(itertools.repeat("E"), test_result.get_errors()),
-                            izip(itertools.repeat("F"), test_result.get_failures())))
+            itertools.chain(zip(itertools.repeat("E"), test_result.get_errors()),
+                            zip(itertools.repeat("F"), test_result.get_failures())))
         for index, (err_type, err) in enumerate(all_errs):
             if err.exception_type is None and not config.root.log.show_manual_errors_tb:
                 self._terminal.write(err.message, **theme('tb-error'))
@@ -305,7 +304,7 @@ class ConsoleReporter(ReporterInterface):
     def _report_additional_test_details(self, result):
         if result.is_success():
             return
-        detail_items = iteritems(result.details.all())
+        detail_items = result.details.all().items()
 
         log_path = result.get_log_path()
         if log_path is not None:
@@ -336,7 +335,7 @@ class ConsoleReporter(ReporterInterface):
             globals = frame.globals
         if not locals and not globals:
             return
-        for index, (name, value) in enumerate(itertools.chain(iteritems(locals), iteritems(globals))):
+        for index, (name, value) in enumerate(itertools.chain(locals.items(), globals.items())):
             if index > 0:
                 self._terminal.write(', ')
             self._terminal.write(

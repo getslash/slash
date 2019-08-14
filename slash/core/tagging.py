@@ -1,6 +1,5 @@
 from sentinels import NOTHING
 
-from .._compat import iteritems
 from ..exceptions import TaggingConflict
 
 _TAGS_NAME = '__slash_tags__'
@@ -92,7 +91,7 @@ class Tags(object):
             value = self._tags.get(key, NOTHING)
             return value is not NOTHING and str(value) == predicate
 
-        for key, value in iteritems(self._tags):
+        for key, value in self._tags.items():
             if pattern in key:
                 return True
         return False

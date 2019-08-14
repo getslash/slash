@@ -2,13 +2,12 @@ import datetime
 import numbers
 import os
 import sys
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 
 import logbook  # pylint: disable=F0401
 import logbook.more
 
 from . import context
-from ._compat import ExitStack
 from .conf import config
 from .utils import add_error
 from .utils.path import ensure_containing_directory

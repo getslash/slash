@@ -1,9 +1,6 @@
-import sys
-
 import logbook
 
 from . import exception_handling
-from ._compat import PY2
 from .exceptions import ExpectedExceptionNotCaught
 
 _logger = logbook.Logger(__name__)
@@ -38,8 +35,6 @@ class _CaughtContext(object):
             e = exc_info[1]
             if isinstance(e, self._expected_classes):
                 self._caught.exception = e
-                if PY2:
-                    sys.exc_clear()  # pylint: disable=no-member
                 return True
             return None
         msg = self._msg

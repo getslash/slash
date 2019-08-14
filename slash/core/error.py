@@ -5,7 +5,7 @@ import arrow
 import logbook
 from vintage import deprecated, get_no_deprecations_context
 
-from .._compat import StringIO, iteritems, string_types
+from io import StringIO
 from ..conf import config
 from ..exception_handling import is_exception_fatal, get_exception_frame_correction
 from ..exceptions import FAILURE_EXCEPTION_TYPES
@@ -26,7 +26,7 @@ class Error(object):
         self._has_custom_message = (msg is not None)
         if msg is None and exc_info is not None:
             msg = traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()
-        if not isinstance(msg, string_types):
+        if not isinstance(msg, str):
             self.arg = msg
             msg = repr(msg)
         self.message = msg
@@ -142,7 +142,7 @@ class Error(object):
                         f.writeln('>', frame.code_line.strip() or '?')
                         with f.indented():
                             for title, vars in [('globals', globals_), ('locals', locals_)]:
-                                for index, (var_name, var_repr) in enumerate(iteritems(vars)):
+                                for index, (var_name, var_repr) in enumerate(vars.items()):
                                     if index == 0:
                                         f.writeln(title)
                                         f.indent()

@@ -4,7 +4,6 @@ import os
 import gossip
 import pytest
 import slash
-from slash._compat import PY2
 from slash import plugins
 from slash.plugins import IncompatiblePlugin, PluginInterface
 
@@ -130,10 +129,7 @@ def test_custom_hook_registration(request, is_internal):
     registrations = gossip.get_hook(hook_name).get_registrations()
     assert len(registrations) == 1
     [r] = registrations
-    if PY2:
-        assert r.func.__func__ is MyPlugin.unknown.__func__  # pylint: disable=no-member
-    else:
-        assert r.func.__func__ is MyPlugin.unknown
+    assert r.func.__func__ is MyPlugin.unknown
 
     # make sure we deactivate properly as well
     plugins.manager.deactivate(p)
@@ -153,7 +149,7 @@ def test_multiple_registers_on(request):
         def unknown(self):
             pass
 
-    expected_func = MyPlugin.unknown.__func__ if PY2 else MyPlugin.unknown
+    expected_func = MyPlugin.unknown
     p = MyPlugin()
     plugins.manager.install(p, activate=True)
     @request.addfinalizer

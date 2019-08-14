@@ -29,11 +29,11 @@ First, the paths in ``plugins.search_paths`` are searched for python files. For 
 Plugin Installation
 -------------------
 
-To install a plugin, use the :func:`slash.plugins.manager.install <slash.plugins.PluginManager.install>` function, and pass it the plugin class that is being installed. Note that installed plugins are not active by default, and need to be explicitly activated (see below).
+To install a plugin, use the :func:`slash.plugins.manager.install <slash.plugins.plugin_manager.PluginManager.install>` function, and pass it the plugin class that is being installed. Note that installed plugins are not active by default, and need to be explicitly activated (see below).
 
 Only plugins that are :class:`.PluginInterface` derivative instances are accepted.
 
-To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <slash.plugins.PluginManager.uninstall>`. 
+To uninstall plugins, you can use the :func:`slash.plugins.manager.uninstall <slash.plugins.plugin_manager.PluginManager.uninstall>`. 
 
 .. note:: uninstalling plugins also deactivates them.
 
@@ -59,7 +59,7 @@ You can install a plugin as an internal plugin by passing ``internal=True`` to t
 Plugin Activation
 -----------------
 
-Plugins are activated via :func:`slash.plugins.manager.activate <slash.plugins.PluginManager.activate>` and deactivated via :func:`slash.plugins.manager.deactivate <slash.plugins.PluginManager.deactivate>`.
+Plugins are activated via :func:`slash.plugins.manager.activate <slash.plugins.plugin_manager.PluginManager.activate>` and deactivated via :func:`slash.plugins.manager.deactivate <slash.plugins.plugin_manager.PluginManager.deactivate>`.
 
 During the activation all hook methods get registered to their respective hooks, so any plugin containing an unknown hook will trigger an exception.
 
@@ -238,7 +238,7 @@ Plugin Manager
 --------------
 
 As mentioned above, the Plugin Manager provides API to activate (or deacativate) and install (or uninstall) plugins.
-Additionally, it provides access to instances of registered plugins by their name via :func:`slash.plugins.manager.get_plugin <slash.plugins.PluginManager.get_plugin>`.
+Additionally, it provides access to instances of registered plugins by their name via :func:`slash.plugins.manager.get_plugin <slash.plugins.plugin_manager.PluginManager.get_plugin>`.
 This could be used to access plugin attributes whose modification (e.g. by fixtures) can alter the plugin's behavior.
 
 ..  LocalWords:  plugins Plugin plugin inheritence
