@@ -4,7 +4,7 @@ import os
 import re
 
 from slash.frontend.slash_list import slash_list
-from slash._compat import StringIO
+from io import StringIO
 from .utils.suite_writer import Suite
 
 import pytest

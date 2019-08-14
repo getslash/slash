@@ -1,5 +1,5 @@
 from slash.frontend.list_config import list_config
-from slash._compat import StringIO
+from io import StringIO
 
 
 def test_slash_list_config():

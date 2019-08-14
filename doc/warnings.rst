@@ -25,7 +25,7 @@ For example, you may want to include code in your project's ``.slashrc`` as foll
                     slash.ignore_warnings(category=DeprecationWarning, filename='/some/bad/file.py')
 
 
-.. note:: Filter arguments to ignore_warnings are treated as though they are ``and``ed together. This means that a filter for a specific filename and a specific category would only ignore warnings coming from the specified file *and* having the specified category.
+.. note:: Filter arguments to ignore_warnings are treated as though they are ``and`` ed together. This means that a filter for a specific filename and a specific category would only ignore warnings coming from the specified file *and* having the specified category.
 
 For ignoring warnings in specific code-block, one can use the `slash.ignored_warnings` context:
 .. code-block:: python

@@ -96,7 +96,7 @@ Information on plugins in Slash can be found in :ref:`plugins`, but for now it i
 		collector_plugin = LogCollectionPlugin()
 		plugins.manager.install(collector_plugin)
 		    
-The above class inherits from :class:`slash.plugins.PluginInterface` - this is the base class for implementing plugins. We then call :func:`slash.plugins.PluginManager.install` to *install* our plugin. Note that at this point the plugin is not activated.
+The above class inherits from :class:`slash.plugins.PluginInterface` - this is the base class for implementing plugins. We then call :func:`slash.plugins.plugin_manager.PluginManager.install` to *install* our plugin. Note that at this point the plugin is not activated.
 
 Once the plugin is installed, you can pass ``--with-logcollector`` to actually activate the plugin. More on that soon.
 
@@ -107,7 +107,7 @@ The second method, ``session_end``, is the heart of how the plugin works. When a
 Activating by Default
 ~~~~~~~~~~~~~~~~~~~~~
 
-In some cases you want to activate the plugin by default, which is easily done with the :func:`slash.plugins.PluginManager.activate`:
+In some cases you want to activate the plugin by default, which is easily done with the :func:`slash.plugins.plugin_manager.PluginManager.activate`:
 
 .. code-block:: python
 

@@ -6,12 +6,9 @@ import slash.core.requirements
 from .utils import make_runnable_tests
 from .utils.suite_writer.suite import Suite
 from .utils.code_formatter import CodeFormatter
-from slash._compat import ExitStack, PY2
+from contextlib import ExitStack
 
-if PY2:
-    from slash.utils.python import wraps
-else:
-    from functools import wraps
+from functools import wraps
 
 _UNMET_REQ_DECORATOR = "slash.requires(lambda: False)"
 _MET_REQ_DECORATOR = "slash.requires(lambda: True)"

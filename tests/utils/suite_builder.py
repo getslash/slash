@@ -1,7 +1,7 @@
 import os
+from itertools import zip_longest
 from uuid import uuid4
 
-from slash._compat import izip_longest
 from slash.frontend.slash_run import slash_run
 
 from .suite_writer.utils import get_code_lines
@@ -106,7 +106,7 @@ class AssertAllHelper(object):
         return self.suite_builder_result
 
     def errors(self, errors_list):
-        for res, error in izip_longest(self._results, errors_list):
+        for res, error in zip_longest(self._results, errors_list):
             errs = res.get_errors()
             assert len(errs) == 1
             assert errs[0] == error

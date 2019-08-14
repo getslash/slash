@@ -47,11 +47,8 @@ def _send_email(smtp_server, subject, body, from_email, to_list, cc_list):
     msg['From'] = from_email
     msg['To'] = ', '.join(to_list)
     msg['Cc'] = ', '.join(cc_list)
-    smtp = smtplib.SMTP(smtp_server, timeout=30)
-    try:
+    with smtplib.SMTP(smtp_server, timeout=30) as smtp:
         smtp.sendmail(from_email, to_list + cc_list, msg.as_string())
-    finally:
-        smtp.quit()
 
 
 class Message(object):

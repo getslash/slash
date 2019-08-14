@@ -3,7 +3,7 @@ import logbook
 
 import pytest
 import slash
-from slash._compat import StringIO
+from io import StringIO
 
 
 @pytest.mark.parametrize('use_truncation', [True, False])

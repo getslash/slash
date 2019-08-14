@@ -1,7 +1,7 @@
 import pytest
 import operator
 
-from slash._compat import reduce
+from functools import reduce
 
 
 def test_fixtures(suite, suite_test, defined_fixture):

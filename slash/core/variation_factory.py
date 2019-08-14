@@ -4,7 +4,6 @@ import itertools
 from orderedset import OrderedSet
 
 from .variation import Variation
-from .._compat import OrderedDict, izip, xrange
 from ..exceptions import FixtureException
 from ..utils.python import get_arguments
 from .fixtures.parameters import iter_parametrization_fixtures
@@ -24,8 +23,8 @@ class VariationFactory(object):
         self._autouse_fixtures = list(fixture_store.iter_autouse_fixtures_in_namespace())
         self._needed_fixtures = list(self._autouse_fixtures)
 
-        self._arg_name_bindings = OrderedDict()
-        self._param_name_bindings = OrderedDict()
+        self._arg_name_bindings = {}
+        self._param_name_bindings = {}
         self._known_value_strings = collections.defaultdict(dict)
 
     def add_needed_fixture_id(self, fixture_id):
@@ -104,12 +103,12 @@ class VariationFactory(object):
         if not needed_ids:
             yield Variation(self._store, {}, {})
             return
-        for value_indices in itertools.product(*(xrange(len(p.values)) for p in parametrizations)):
+        for value_indices in itertools.product(*(range(len(p.values)) for p in parametrizations)):
             yield self._build_variation(parametrizations, value_indices)
 
     def _build_variation(self, parametrizations, value_indices):
         value_index_by_id = {}
-        for param, param_index in izip(parametrizations, value_indices):
+        for param, param_index in zip(parametrizations, value_indices):
             value_index_by_id[param.info.id] = param_index
 
         return Variation(self._store, value_index_by_id, self._param_name_bindings)

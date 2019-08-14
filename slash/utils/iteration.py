@@ -1,6 +1,5 @@
 import itertools
 
-from .._compat import itervalues
 
 _NOTHING = object()
 _END = object()
@@ -84,5 +83,5 @@ def iter_cartesian_dicts(d):
     """Given a dictionary of the form {name: values}, yields dictionaries corresponding to the cartesian
     product of the values, assigned to their respective names"""
     keys = list(d)  # save keys order to prevent dictionary order changes
-    for combination in itertools.product(*itervalues(d)):
+    for combination in itertools.product(*d.values()):
         yield dict(zip(keys, combination))

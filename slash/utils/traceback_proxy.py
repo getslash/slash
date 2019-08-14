@@ -13,7 +13,7 @@ import types
 import ctypes
 import inspect
 
-from .._compat import PY2, PYPY
+from ..utils.python import PYPY
 
 __all__ = ["create_traceback_proxy"]
 
@@ -28,13 +28,7 @@ else:
         Exports exactly the same interface, making these types interchangable
         """
 
-        if PY2:
-            if hasattr(ctypes.pythonapi, 'Py_InitModule4_64'):
-                _Py_ssize_t = ctypes.c_int64
-            else:
-                _Py_ssize_t = ctypes.c_int
-        else:
-            _Py_ssize_t = ctypes.c_ssize_t
+        _Py_ssize_t = ctypes.c_ssize_t
 
         class _PyObject(ctypes.Structure):
             pass

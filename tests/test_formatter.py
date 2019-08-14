@@ -1,4 +1,4 @@
-from slash._compat import cStringIO
+from io import StringIO
 from slash.utils.formatter import Formatter
 from slash.utils.color_string import ColorString
 from .utils import TestCase
@@ -8,7 +8,7 @@ class FormatterTest(TestCase):
 
     def setUp(self):
         super(FormatterTest, self).setUp()
-        self.buff = cStringIO()
+        self.buff = StringIO()
         self.f = Formatter(self.buff)
 
     def assertOutput(self, v):

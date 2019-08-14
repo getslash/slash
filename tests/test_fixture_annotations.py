@@ -1,7 +1,7 @@
 import pytest
-from .utils import skip_on_py2, skip_on_pypy
+from .utils import skip_on_pypy
 
-@skip_on_py2
+
 @skip_on_pypy
 @pytest.mark.parametrize('alias_with_attribute', [True, False])
 def test_fixture_annotations(suite, suite_test, get_fixture_location, alias_with_attribute):
@@ -11,7 +11,7 @@ def test_fixture_annotations(suite, suite_test, get_fixture_location, alias_with
 
     suite.run()
 
-@skip_on_py2
+
 @skip_on_pypy
 @pytest.mark.parametrize('alias_with_attribute', [True, False])
 def test_nested_fixture_annotations(suite, suite_test, get_fixture_location, alias_with_attribute):

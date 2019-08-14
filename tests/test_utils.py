@@ -4,7 +4,7 @@ import time
 import logbook
 from slash.utils.interactive import notify_if_slow_context
 from slash.reporting.console_reporter import ConsoleReporter
-from slash._compat import StringIO
+from io import StringIO
 
 
 @pytest.mark.parametrize('show_duration', [True, False])

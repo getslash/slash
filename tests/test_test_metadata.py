@@ -4,7 +4,6 @@ from .utils import run_tests_assert_success
 import itertools
 import os
 import slash
-from slash._compat import izip_longest
 import pytest
 
 from .utils.suite_writer import Suite
@@ -60,7 +59,7 @@ def test_function_name_with_special_parameters(test_type):
     # we can't verify result because we would not be able to parse the function properly
     # TODO: this will change once we properly support variations metadata  # pylint: disable=fixme
     summary = suite.run(verify=False, sort=False)
-    for result, value in izip_longest(summary.session.results, values):
+    for result, value in itertools.zip_longest(summary.session.results, values):
         function_name = result.test_metadata.function_name
         assert value not in function_name
         assert '.' not in result.test_metadata.function_name

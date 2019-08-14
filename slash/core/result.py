@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from vintage import deprecated
 
 from .. import hooks
-from .._compat import OrderedDict, itervalues
 from ..ctx import context
 from ..exception_handling import capture_sentry_exception, handling_exceptions
 from .. import exceptions
@@ -325,8 +324,8 @@ class SessionResults(object):
         super(SessionResults, self).__init__()
         self.session = session
         self.global_result = GlobalResult(self)
-        self._results_dict = OrderedDict()
-        self._iterator = functools.partial(itervalues, self._results_dict)
+        self._results_dict = {}
+        self._iterator = functools.partial(iter, self._results_dict.values())
 
     def __len__(self):
         return len(self._results_dict)
@@ -454,7 +453,7 @@ class SessionResults(object):
     def __getitem__(self, test):
         if isinstance(test, Number):
             try:
-                return next(itertools.islice(itervalues(self._results_dict), test, test + 1))
+                return next(itertools.islice(self._results_dict.values(), test, test + 1))
             except StopIteration:
                 raise IndexError()
         return self.get_result(test)

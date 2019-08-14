@@ -3,7 +3,7 @@ import vintage
 
 from confetti.config import Config, ConfigProxy
 from slash import plugins
-from slash._compat import cStringIO
+from io import StringIO
 from slash.plugins import PluginInterface
 from slash.utils import cli_utils, conf_utils
 
@@ -14,9 +14,9 @@ class OutputCaptureTest(TestCase):
 
     def setUp(self):
         super(OutputCaptureTest, self).setUp()
-        self.stderr = cStringIO()
+        self.stderr = StringIO()
         self.forge.replace_with(sys, "stderr", self.stderr)
-        self.stdout = cStringIO()
+        self.stdout = StringIO()
         self.forge.replace_with(sys, "stdout", self.stdout)
 
 

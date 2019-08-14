@@ -12,7 +12,6 @@ from sentinels import NOTHING
 
 
 from .conf import config
-from ._compat import string_types
 from .ctx import context
 from .core.local_config import LocalConfig
 from .core.markers import repeat_marker
@@ -112,7 +111,7 @@ class Loader(object):
 
         elif isinstance(thing, (list, GeneratorType, itertools.chain)):
             iterator = itertools.chain.from_iterable(self._generate_test_sources(x) for x in thing)
-        elif isinstance(thing, string_types):
+        elif isinstance(thing, str):
             iterator = self._iter_test_address(thing)
         elif isinstance(thing, RunnableTest):
             iterator = [thing]

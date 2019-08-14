@@ -5,7 +5,7 @@ import random
 
 import pytest
 import slash
-from slash._compat import StringIO
+from io import StringIO
 from slash.utils.iteration import iter_cartesian_dicts
 from .utils.code_formatter import CodeFormatter
 

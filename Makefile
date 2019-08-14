@@ -1,23 +1,20 @@
 default: test
 
-detox-test:
-	detox
-
 test: env
-	.env/bin/py.test --cov=slash --cov-report=html tests
+	.env/bin/pytest --cov=slash --cov-report=html tests
 
 pylint: env
 	.env/bin/pylint -j 4 --rcfile=.pylintrc slash tests setup.py doc
 
 env: .env/.up-to-date
 
-.env/.up-to-date: setup.py Makefile
+.env/.up-to-date: setup.py Makefile setup.cfg
 	python -m virtualenv .env
 	.env/bin/pip install -e .[testing,doc]
 	touch .env/.up-to-date
 
 doc: env
-	.env/bin/sphinx-build -a -E doc build/sphinx/html
+	.env/bin/sphinx-build -a -W -E doc build/sphinx/html
 
 .PHONY: doc
 
