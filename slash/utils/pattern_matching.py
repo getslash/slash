@@ -14,15 +14,17 @@ class Include(object):
         super(Include, self).__init__()
         self.only_tags = False
         self.pattern = t[0]
+        self.exact = False
         if len(t) == 2 and t[0] == "tag:":
             self.only_tags = True
+            self.exact = True
             self.pattern = t[1]
 
     def matches(self, metadata):
         if isinstance(metadata, str):
             return self.pattern in metadata
 
-        if metadata.tags.matches_pattern(self.pattern):
+        if metadata.tags.matches_pattern(self.pattern, exact=self.exact):
             return True
         if self.only_tags:
             return False
