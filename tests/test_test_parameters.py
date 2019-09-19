@@ -188,14 +188,16 @@ def test_parameterization_filtering(suite_builder):
     @suite_builder.first_file.add_code
     def __code__():
         import slash
+        tag_short_regresion = slash.tag("regression", "short")
+
         @slash.parametrize('x', [
             500 // slash.param(tags=["regression", "ultra"]),
-            50 // slash.param(tags="regression"),
+            slash.param(tags="regression", value=50),
             5 // slash.param(tags="sanity"),
         ])
         @slash.parametrize('y', [
             '100' // slash.tag("regression", "long"),
-            '10' // slash.tag("regression", "short"),
+            tag_short_regresion['10'],
             '1' // slash.tag("sanity"),
         ])
         @slash.parametrize('z', [True, False])

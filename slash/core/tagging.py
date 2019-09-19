@@ -15,9 +15,11 @@ class Tagger(object):
         return tag_test(target, self.tag_name, self.tag_value)
 
     def __rfloordiv__(self, other):
-        from .fixtures.parameters import ParametrizationValue
+        return self[other]
 
-        return ParametrizationValue(value=other, tags=[(self.tag_name, self.tag_value)])
+    def __getitem__(self, value):
+        from .fixtures.parameters import ParametrizationValue
+        return ParametrizationValue(value=value, tags=[(self.tag_name, self.tag_value)])
 
 
 def tag_test(test, tag_name, tag_value):
