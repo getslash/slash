@@ -5,52 +5,43 @@ import pytest
 import shutil
 from slash.plugins import manager
 
-from slash.plugins.builtin.loglinkconverter import Plugin
+from slash.plugins.builtin.loglinker import Plugin
 
 BUILD_URLS = ('https://jenkins/job/some-job/123/',
               'https://different-jenkins/another-test/9999/')
 ENV_VAR_NAMES = ('MY_BUILD_URL_VARIABLE', 'ANOTHER_VARIABLE')
 LOG_PATH_TEMPLATES = ('%(build_url)s/%(log_path)s',
                       'https://my-log-storage-server/%(log_path)s')
-LOG_DIRS = ('logs_loglinkconverter_plugin_test', os.path.join('some', 'other', 'directory'))
+LOG_DIRS = ('logs_loglinker_plugin_test', os.path.join('some', 'other', 'directory'))
 
 
 def test_build_url_not_defined(suite):
     manager.install(Plugin(), is_internal=False)
-    manager.activate('loglinkconverter')
+    manager.activate('loglinker')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
     result = summary.get_all_results_for_test(test)[0]
-    actual_log_path = result.get_log_path()
-    expected_log_path = '/'.join(
-        (
-            os.path.dirname(summary.session.logging.session_log_path),
-            result.test_id,
-            'debug.log'
-        )
-    )
-    assert actual_log_path == expected_log_path
+    log_link = result.details.all().get('log_link')
+    assert log_link is None
 
 
 def test_build_url_defined(suite, build_url):
     manager.install(Plugin(), is_internal=False)
-    manager.activate('loglinkconverter')
+    manager.activate('loglinker')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
     result = summary.get_all_results_for_test(test)[0]
-    actual_log_path = result.get_log_path()
-    expected_log_path = '/'.join(
+    log_link = result.details.all().get('log_link')
+    expected_log_link = '/'.join(
         (
             build_url.rstrip('/'),
             'artifact',
-            *os.path.dirname(summary.session.logging.session_log_path).split(os.sep),
-            result.test_id,
-            'debug.log'
+            *result.get_log_path().split(os.sep)
         )
     )
-    assert actual_log_path == expected_log_path
+    assert log_link == expected_log_link
 
 
 def test_nondefault_build_url_environment_variable(
@@ -58,53 +49,45 @@ def test_nondefault_build_url_environment_variable(
     env_var_name, env_var_value = build_url_env_var
     manager.install(Plugin(), is_internal=False)
     config_override(
-        'plugin_config.loglinkconverter.build_url_environment_variable',
+        'plugin_config.loglinker.build_url_environment_variable',
         env_var_name
     )
-    manager.activate('loglinkconverter')
+    manager.activate('loglinker')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
     result = summary.get_all_results_for_test(test)[0]
-    actual_log_path = result.get_log_path()
-    expected_log_path = '/'.join(
+    log_link = result.details.all().get('log_link')
+    expected_log_link = '/'.join(
         (
             env_var_value.rstrip('/'),
             'artifact',
-            *os.path.dirname(summary.session.logging.session_log_path).split(os.sep),
-            result.test_id,
-            'debug.log'
+            *result.get_log_path().split(os.sep)
         )
     )
-    assert actual_log_path == expected_log_path
+    assert log_link == expected_log_link
 
 
 @pytest.mark.parametrize('template', LOG_PATH_TEMPLATES)
 def test_nondefault_link_template(
         suite, config_override, build_url, template):
     manager.install(Plugin(), is_internal=False)
-    config_override('plugin_config.loglinkconverter.link_template', template)
-    manager.activate('loglinkconverter')
+    config_override('plugin_config.loglinker.link_template', template)
+    manager.activate('loglinker')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
     result = summary.get_all_results_for_test(test)[0]
-    actual_log_path = result.get_log_path()
-    local_log_path = '/'.join(
-        (
-            *os.path.dirname(summary.session.logging.session_log_path).split(os.sep),
-            result.test_id,
-            'debug.log'
-        )
-    )
-    expected_log_path = template % {'build_url': build_url,
+    log_link = result.details.all().get('log_link')
+    local_log_path = '/'.join(result.get_log_path().split(os.sep))
+    expected_log_link = template % {'build_url': build_url.rstrip('/'),
                                     'log_path': local_log_path}
-    assert actual_log_path == expected_log_path
+    assert log_link == expected_log_link
 
 
 class PluginWithOverriddenBuildURLGetter(Plugin):
 
-    build_url = 'https://overridden/build/url/'
+    build_url = 'https://overridden/build/url'
 
     def _get_build_url(self):
         return self.build_url
@@ -113,22 +96,15 @@ class PluginWithOverriddenBuildURLGetter(Plugin):
 def test_overridden_build_url_getter(suite):
     plugin = PluginWithOverriddenBuildURLGetter()
     manager.install(plugin, is_internal=False)
-    manager.activate('loglinkconverter')
+    manager.activate('loglinker')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
     result = summary.get_all_results_for_test(test)[0]
-    actual_log_path = result.get_log_path()
-    local_log_path = '/'.join(
-        (
-            *os.path.dirname(summary.session.logging.session_log_path).split(os.sep),
-            result.test_id,
-            'debug.log'
-        )
-    )
-    expected_log_path = (plugin.build_url +
-                         'artifact/%s' % local_log_path)
-    assert actual_log_path == expected_log_path
+    log_link = result.details.all().get('log_link')
+    local_log_path = '/'.join(result.get_log_path().split(os.sep))
+    expected_log_link = '%s/artifact/%s' % (plugin.build_url, local_log_path)
+    assert log_link == expected_log_link
 
 
 @pytest.fixture(params=BUILD_URLS)
