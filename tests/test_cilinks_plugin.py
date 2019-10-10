@@ -44,6 +44,23 @@ def test_build_url_defined(suite, build_url):
     assert log_link == expected_log_link
 
 
+def test_adds_link_for_passing_test(suite, build_url):
+    manager.install(Plugin(), is_internal=False)
+    manager.activate('cilinks')
+    summary = suite.run()
+    for test in suite:
+        result = summary.get_all_results_for_test(test)[0]
+        log_link = result.details.all().get('log_link')
+        expected_log_link = '/'.join(
+            (
+                build_url.rstrip('/'),
+                'artifact',
+                *result.get_log_path().split(os.sep)
+            )
+        )
+        assert log_link == expected_log_link
+
+
 def test_nondefault_build_url_environment_variable(
         suite, config_override, build_url_env_var):
     env_var_name, env_var_value = build_url_env_var
