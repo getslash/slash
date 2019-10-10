@@ -154,3 +154,13 @@ def log_dir(request, config_override):
     request.addfinalizer(fin)
 
     config_override('log.root', request.param)
+
+
+@pytest.fixture(scope='module', autouse=True)
+def activate_plugin(request):
+    manager.activate('cilinks')
+
+    def deactivate_plugin():
+        manager.deactivate('cilinks')
+
+    request.addfinalizer(deactivate_plugin)
