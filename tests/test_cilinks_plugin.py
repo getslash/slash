@@ -174,10 +174,9 @@ def log_dir(request, config_override):
 
 
 @pytest.fixture(scope='module', autouse=True)
-def activate_plugin(request):
-    manager.activate('cilinks')
+def deactivate_plugin(request):
 
-    def deactivate_plugin():
+    def fin():
         manager.deactivate('cilinks')
 
-    request.addfinalizer(deactivate_plugin)
+    request.addfinalizer(fin)
