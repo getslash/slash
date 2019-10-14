@@ -128,10 +128,9 @@ def test_overridden_build_url_getter(suite):
 def build_url(request):
     os.environ['BUILD_URL'] = request.param
 
+    @request.addfinalizer
     def fin():
         os.environ.pop('BUILD_URL')
-
-    request.addfinalizer(fin)
 
     return request.param
 
@@ -141,10 +140,9 @@ def build_url_env_var(request):
     url, env_var_name = request.param
     os.environ[env_var_name] = url
 
+    @request.addfinalizer
     def fin():
         os.environ.pop(env_var_name)
-
-    request.addfinalizer(fin)
 
     return env_var_name, url
 
@@ -159,6 +157,7 @@ def log_dir(request, config_override):
     '''
     os.makedirs(request.param)
 
+    @request.addfinalizer
     def fin():
         shutil.rmtree(os.path.abspath(request.param))
         # shutil.rmtree does not remove the base directory when
@@ -168,15 +167,13 @@ def log_dir(request, config_override):
         if os.path.exists(base_dir):
             shutil.rmtree(base_dir)
 
-    request.addfinalizer(fin)
-
     config_override('log.root', request.param)
 
 
 @pytest.fixture(scope='module', autouse=True)
 def deactivate_plugin(request):
 
+    @request.addfinalizer
     def fin():
         manager.deactivate('cilinks')
 
-    request.addfinalizer(fin)
