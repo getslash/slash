@@ -17,16 +17,16 @@ class Plugin(PluginInterface):
     The plugin defaults to retrieving the build URL from the ``BUILD_URL``
     environment variable populated by the Jenkins CI system, but this can
     be customised by specifying a different environment variable in
-    ``slash.config.root.plugin_config.cilinks.build_url_environment_variable``.
+    ``slash.config.root.plugin_config.ci_links.build_url_environment_variable``.
     It can also be customised by overriding the :py:meth:`._get_build_url`
     method in a subclass. The default format string used to generate the
     link is ``%(build_url)s/artifact/%(log_path)s``, but this can be
     customised by specifying a different template in
-    ``slash.config.root.plugin_config.cilinks.link_template``.
+    ``slash.config.root.plugin_config.ci_links.link_template``.
     '''
 
     def get_name(self):
-        return 'cilinks'
+        return 'ci links'
 
     def get_default_config(self):
         return {

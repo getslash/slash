@@ -5,19 +5,19 @@ import pytest
 import shutil
 from slash.plugins import manager
 
-from slash.plugins.builtin.cilinks import Plugin
+from slash.plugins.builtin.ci_links import Plugin
 
 BUILD_URLS = ('https://jenkins/job/some-job/123/',
               'https://different-jenkins/another-test/9999/')
 ENV_VAR_NAMES = ('MY_BUILD_URL_VARIABLE', 'ANOTHER_VARIABLE')
 LOG_PATH_TEMPLATES = ('%(build_url)s/%(log_path)s',
                       'https://my-log-storage-server/%(log_path)s')
-LOG_DIRS = ('logs_cilinks_plugin_test', os.path.join('some', 'other', 'directory'))
+LOG_DIRS = ('logs_ci_links_plugin_test', os.path.join('some', 'other', 'directory'))
 
 
 def test_build_url_not_defined(suite):
     manager.install(Plugin(), is_internal=False)
-    manager.activate('cilinks')
+    manager.activate('ci links')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
@@ -28,7 +28,7 @@ def test_build_url_not_defined(suite):
 
 def test_build_url_defined(suite, build_url):
     manager.install(Plugin(), is_internal=False)
-    manager.activate('cilinks')
+    manager.activate('ci links')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
@@ -46,7 +46,7 @@ def test_build_url_defined(suite, build_url):
 
 def test_adds_link_for_passing_test(suite, build_url):
     manager.install(Plugin(), is_internal=False)
-    manager.activate('cilinks')
+    manager.activate('ci links')
     summary = suite.run()
     for test in suite:
         result = summary.get_all_results_for_test(test)[0]
@@ -66,10 +66,10 @@ def test_nondefault_build_url_environment_variable(
     env_var_name, env_var_value = build_url_env_var
     manager.install(Plugin(), is_internal=False)
     config_override(
-        'plugin_config.cilinks.build_url_environment_variable',
+        'plugin_config.ci_links.build_url_environment_variable',
         env_var_name
     )
-    manager.activate('cilinks')
+    manager.activate('ci links')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
@@ -89,8 +89,8 @@ def test_nondefault_build_url_environment_variable(
 def test_nondefault_link_template(
         suite, config_override, build_url, template):
     manager.install(Plugin(), is_internal=False)
-    config_override('plugin_config.cilinks.link_template', template)
-    manager.activate('cilinks')
+    config_override('plugin_config.ci_links.link_template', template)
+    manager.activate('ci links')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
@@ -113,7 +113,7 @@ class PluginWithOverriddenBuildURLGetter(Plugin):
 def test_overridden_build_url_getter(suite):
     plugin = PluginWithOverriddenBuildURLGetter()
     manager.install(plugin, is_internal=False)
-    manager.activate('cilinks')
+    manager.activate('ci links')
     test = suite.add_test()
     test.when_run.fail()
     summary = suite.run()
@@ -175,5 +175,5 @@ def deactivate_plugin(request):
 
     @request.addfinalizer
     def fin():
-        manager.deactivate('cilinks')
+        manager.deactivate('ci links')
 
