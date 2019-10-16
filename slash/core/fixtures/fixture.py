@@ -1,7 +1,7 @@
 import itertools
 from collections import OrderedDict
 
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 

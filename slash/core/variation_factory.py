@@ -1,7 +1,7 @@
 import collections
 import itertools
 
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from .variation import Variation
 from ..exceptions import FixtureException
