@@ -4,7 +4,7 @@ from contextlib import contextmanager
 
 from slash import ctx
 import logbook
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions

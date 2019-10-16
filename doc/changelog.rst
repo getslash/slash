@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`979` Change Ordered set implementation from orderedset to ordered-set, as the former is not maintained anymore
 * :feature:`598` Drop support for python version < 3.6
 * :feature:`-` Added support for tagging test parameterization values
 * :release:`1.8.0 <03-07-2019>`
