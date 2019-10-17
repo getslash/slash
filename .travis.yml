@@ -4,7 +4,7 @@ sudo: false
 python:
   - "3.6"
   - "3.7"
-  - "3.8-dev"
+  - "3.8"
 
 env:
   - TRAVIS_PYLINT=false
@@ -23,7 +23,7 @@ matrix:
         - choco install python3
         - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
         - python -m pip install --upgrade pip wheel
-      script: 
+      script:
         - python -m virtualenv .env
         - .env/Scripts/pip.exe install -e .[testing,doc]
         - .env/Scripts/py.test.exe --cov=slash --cov-report=html tests
@@ -31,10 +31,10 @@ matrix:
     - os: windows
 
 # command to run tests, e.g. python setup.py test
-install: 
+install:
   - pip install virtualenv
   - pip install codecov
-script: 
+script:
   - make env
   - if [[ $TRAVIS_PYLINT != 'true' ]]; then make test; else make pylint; fi
   - if [[ $TRAVIS_DOCS == 'true' ]]; then make doc; fi
