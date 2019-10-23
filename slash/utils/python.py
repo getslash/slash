@@ -14,7 +14,7 @@ PYPY = hasattr(sys, 'pypy_version_info')
 
 def check_duplicate_functions(path):
     code = None
-    with open(path) as f:
+    with open(path, 'rb') as f:
         code = f.read()
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
