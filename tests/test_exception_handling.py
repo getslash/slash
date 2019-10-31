@@ -152,18 +152,6 @@ def test_handling_exceptions():
     assert handled3.exception is value
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 0), reason='Cannot run on 3.x')
-def test_reraise_after_exc_info_reset():
-    @gossip.register('slash.exception_caught_before_debugger')
-    def exception_hook():       # pylint: disable=unused-variable
-        sys.exc_clear()  # pylint: disable=no-member
-
-    with slash.Session(), pytest.raises(CustomException):
-        with exception_handling.handling_exceptions():
-            raise CustomException()
-
-
-
 class DebuggingTest(TestCase):
 
     def setUp(self):
