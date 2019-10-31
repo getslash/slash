@@ -1,9 +1,11 @@
 [MESSAGES CONTROL]
-disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,ungrouped-imports,wrong-import-order,wrong-import-position,unnecessary-pass
+disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,ungrouped-imports,wrong-import-order,wrong-import-position,unnecessary-pass,import-outside-toplevel
 
 [REPORTS]
 reports=no
-ignored-classes=ColorizedString
+# Ignoring 'StackedObject' due to bug in astroid/pylint: https://github.com/PyCQA/pylint/issues/3116
+# Activatable seems like the same bug
+ignored-classes=ColorizedString,StackedObject,Activatable
 
 [FORMAT]
 max-line-length=150
