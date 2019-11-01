@@ -102,7 +102,7 @@ def save_resume_state(session_result, collected_tests):
     tests_to_resume = []
     for result in session_result.iter_test_results():
         metadata = result.test_metadata
-        test_to_resume = ResumeState(session_id=session_result.session.id, file_name=metadata.file_path, function_name=metadata.function_name)
+        test_to_resume = ResumeState(session_id=session_result.session.id, file_name=metadata.file_path, function_name=metadata.address_in_file)
         test_to_resume.variation = str(metadata.variation.id) if metadata.variation else None
         if result.is_success_finished():
             test_to_resume.status = ResumeTestStatus.SUCCESS
@@ -115,7 +115,7 @@ def save_resume_state(session_result, collected_tests):
 
     for test_metadata in tests_with_no_results:
         test_to_resume = ResumeState(session_id=session_result.session.id, file_name=test_metadata.file_path,\
-                                     function_name=test_metadata.function_name, status=ResumeTestStatus.PLANNED)
+                                     function_name=test_metadata.address_in_file, status=ResumeTestStatus.PLANNED)
         test_to_resume.variation = str(test_metadata.variation.id) if test_metadata.variation else None
         tests_to_resume.append(test_to_resume)
 
