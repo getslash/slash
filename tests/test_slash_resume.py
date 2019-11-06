@@ -42,7 +42,7 @@ def test_resume_with_parametrization(suite, suite_test):
 
     assert len(summary.get_all_results_for_test(suite_test)) == num_values1 * num_values2
     assert len(resumed) == 1
-    assert resumed[0].function_name == address_in_file(suite[fail_index])
+    assert resumed[0].address_in_file == address_in_file(suite[fail_index])
 
 def test_different_folder_no_resume_session_id(suite, tmpdir):  # pylint: disable=unused-argument
     fail_index = len(suite) // 2
@@ -90,7 +90,7 @@ def test_failed_first_or_unstarted_first(suite, failed_first, config_override):
     assert len(order_after_changing_config) + result.session.results.get_num_started() - 2 == len(suite)
 
     first_test_in_resumed_suite = fail_index if failed_first else skip_index
-    assert order_after_changing_config[0].function_name == address_in_file(suite[first_test_in_resumed_suite])
+    assert order_after_changing_config[0].address_in_file == address_in_file(suite[first_test_in_resumed_suite])
 
     if failed_first:
         assert regular_order[1] == order_after_changing_config[0]
@@ -113,7 +113,7 @@ def test_failed_or_unstarted_with_no_such_tests(suite, failed_first, suite_test,
     else:
         config_override('resume.unstarted_first', True)
     [resumed_test] = get_tests_from_previous_session(result.session.id)
-    assert resumed_test.function_name == address_in_file(suite_test)
+    assert resumed_test.address_in_file == address_in_file(suite_test)
 
 @pytest.mark.parametrize('failed_only', [True, False])
 def test_failed_only_or_unstarted_first(suite, failed_only, config_override):
@@ -148,4 +148,4 @@ def test_resuming_interrupted_session(suite):
     results = suite.run(expect_interruption=True)
     resumed = get_tests_from_previous_session(results.session.id)
     assert len(resumed) == len(suite)
-    assert set(test.function_name for test in resumed) == set(address_in_file(test) for test in suite)
+    assert set(test.address_in_file for test in resumed) == set(address_in_file(test) for test in suite)

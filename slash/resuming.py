@@ -13,7 +13,7 @@ from .utils.path import ensure_directory
 from .conf import config
 from .__version__ import __backslash_version__
 
-_DB_NAME = 'resume_state_v1.db'
+_DB_NAME = 'resume_state_v2.db'
 _logger = logbook.Logger(__name__)
 Base = declarative_base()
 _session = sessionmaker()
@@ -24,7 +24,7 @@ class ResumeState(Base):
     id = Column(Integer, primary_key=True)
     session_id = Column(String, nullable=False, index=True)
     file_name = Column(String, nullable=False, index=True)
-    function_name = Column(String, nullable=False, index=True)
+    address_in_file = Column(String, nullable=False, index=True)
     variation = Column(String, index=True)
     status = Column(String, nullable=False, index=True)
 
@@ -44,17 +44,17 @@ class ResumeTestStatus(object):
 
 class ResumedTestData(object):
 
-    def __init__(self, file_name, function_name, variation=None, status=None):
+    def __init__(self, file_name, address_in_file, variation=None, status=None):
         self.file_name = file_name
-        self.function_name = function_name
+        self.address_in_file = address_in_file
         self.variation = variation
         self.status = status
 
     def __repr__(self):
-        return '<ResumedTestData({!r}, {!r}, {!r}, {!r})>'.format(self.file_name, self.function_name, self.variation, self.status)
+        return '<ResumedTestData({!r}, {!r}, {!r}, {!r})>'.format(self.file_name, self.address_in_file, self.variation, self.status)
 
     def __eq__(self, other):
-        return self.file_name == other.file_name and self.function_name == other.function_name and \
+        return self.file_name == other.file_name and self.address_in_file == other.address_in_file and \
                self.variation == other.variation and self.status == other.status
 
 def _init_db():
@@ -102,7 +102,7 @@ def save_resume_state(session_result, collected_tests):
     tests_to_resume = []
     for result in session_result.iter_test_results():
         metadata = result.test_metadata
-        test_to_resume = ResumeState(session_id=session_result.session.id, file_name=metadata.file_path, function_name=metadata.address_in_file)
+        test_to_resume = ResumeState(session_id=session_result.session.id, file_name=metadata.file_path, address_in_file=metadata.address_in_file)
         test_to_resume.variation = str(metadata.variation.id) if metadata.variation else None
         if result.is_success_finished():
             test_to_resume.status = ResumeTestStatus.SUCCESS
@@ -115,7 +115,7 @@ def save_resume_state(session_result, collected_tests):
 
     for test_metadata in tests_with_no_results:
         test_to_resume = ResumeState(session_id=session_result.session.id, file_name=test_metadata.file_path,\
-                                     function_name=test_metadata.address_in_file, status=ResumeTestStatus.PLANNED)
+                                     address_in_file=test_metadata.address_in_file, status=ResumeTestStatus.PLANNED)
         test_to_resume.variation = str(test_metadata.variation.id) if test_metadata.variation else None
         tests_to_resume.append(test_to_resume)
 
@@ -167,7 +167,7 @@ def get_tests_locally(session_id):
         if conn.query(SessionMetadata).filter(SessionMetadata.session_id == session_id).first():
             local_tests = conn.query(ResumeState).filter(ResumeState.session_id == session_id).all()
             resumed_tests = [ResumedTestData(test.file_name,
-                                             test.function_name,
+                                             test.address_in_file,
                                              variation=literal_eval(test.variation) if test.variation else None,
                                              status=test.status)
                             for test in local_tests]
