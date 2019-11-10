@@ -77,6 +77,12 @@ class VariationFactory(object):
         for fixture in self._autouse_fixtures:
             self._populate_param_name_bindings(fixture.info.name, fixture, prefix='::')
 
+        for fixture_name in getattr(func, '__extrafixtures__', []):
+            fixture = self._store.get_fixture_by_name(fixture_name)
+            self._populate_param_name_bindings(fixture_name, fixture)
+            self._needed_fixtures.append(fixture)
+
+
     def _populate_param_name_bindings(self, arg_name, fixture_or_param, prefix=''):
         visited = {fixture_or_param.info.id}
         stack = [(prefix + arg_name, fixture_or_param)]

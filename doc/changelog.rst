@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`985` Fix a bug where Slash did not expand parameterizations used through use_fixture properly
 * :feature:`982` Read files as binary to avoid decoding errors
 * :feature:`979` Change Ordered set implementation from orderedset to ordered-set, as the former is not maintained anymore
 * :feature:`598` Drop support for python version < 3.6
