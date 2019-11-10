@@ -125,7 +125,7 @@ class Loader(object):
 
     def _iter_test_resume(self, resume_state):
         for test in self._iter_path(resume_state.file_name):
-            if resume_state.function_name == test.__slash__.address_in_file:
+            if resume_state.address_in_file == test.__slash__.address_in_file:
                 if resume_state.variation:
                     if not resume_state.variation == test.get_variation().id:
                         continue
