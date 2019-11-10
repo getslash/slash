@@ -20,19 +20,35 @@ class LocalConfig(object):
     def get_dict(self):
         return self._configs[-1]
 
+    def _iter_slashconf_paths(self, dir_path):
+        slashconf_path = os.path.join(dir_path, 'slashconf.py')
+        slashconf_dir = os.path.join(dir_path, 'slashconf')
+
+        if os.path.isfile(slashconf_path):
+            assert not os.path.isdir(slashconf_dir), \
+                f"Cannot use both file and directory for configuration in the same path ({dir_path!r})"
+            yield slashconf_path
+
+        elif os.path.isdir(slashconf_dir):
+            for root, _, files in os.walk(slashconf_dir):
+                for file_name in files:
+                    if file_name.endswith(".py"):
+                        yield os.path.join(root, file_name)
+
     def _build_config(self, path):
         confstack = []
         for dir_path in self._traverse_upwards(path):
             slashconf_vars = self._slashconf_vars_cache.get(dir_path)
             if slashconf_vars is None:
-                slashconf_path = os.path.join(dir_path, 'slashconf.py')
-                if os.path.isfile(slashconf_path):
+                slashconf_vars = {}
+                for slashconf_path in self._iter_slashconf_paths(dir_path):
                     self.duplicate_funcs |= check_duplicate_functions(slashconf_path)
                     with dessert.rewrite_assertions_context():
-                        slashconf_vars = self._slashconf_vars_cache[dir_path] = vars(import_file(slashconf_path))
+                        slashconf_vars.update(vars(import_file(slashconf_path)))
 
-            if slashconf_vars is not None:
+            if slashconf_vars:
                 confstack.append(slashconf_vars)
+                self._slashconf_vars_cache[dir_path] = slashconf_vars
 
         returned = {}
         # start loading from the parent so that vars are properly overriden
