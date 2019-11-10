@@ -115,3 +115,25 @@ def test_fixture_which_name_startswith_test(suite):
     for output in [summary.get_console_output(),
                    str(summary.session.results.global_result.get_errors()[0])]:
         assert 'Invalid fixture name' in output
+
+
+def test_fixture_with_parameters(suite_builder):
+    @suite_builder.first_file.add_code
+    def __code__():  # pylint: disable=unused-variable
+        import slash
+
+        @slash.fixture
+        @slash.parameters.iterate(my_param=['a',])
+        def fixture_1(my_param):  # pylint: disable=unused-variable
+            yield my_param
+
+        @slash.parameters.iterate(my_param=['b'])
+        @slash.fixture
+        def fixture_2(my_param):  # pylint: disable=unused-variable
+            yield my_param
+
+        def test_a(fixture_1, fixture_2):  # pylint: disable=unused-variable
+            assert fixture_1 == 'a'
+            assert fixture_2 == 'b'
+
+    suite_builder.build().run().assert_results_breakdown(success=1)
