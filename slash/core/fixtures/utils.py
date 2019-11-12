@@ -6,7 +6,7 @@ from sentinels import NOTHING
 import six
 
 from ...ctx import context
-from ...utils.python import get_arguments_dict, wraps
+from ...utils.python import get_arguments_dict, wraps, get_underlying_func
 from ...utils.function_marker import function_marker
 
 _id_gen = itertools.count(1000)
@@ -21,7 +21,7 @@ def fixture(func=None, name=None, scope=None, autouse=False):
     if func is None:
         return functools.partial(fixture, name=name, scope=scope, autouse=autouse)
 
-    if inspect.isgeneratorfunction(func):
+    if inspect.isgeneratorfunction(get_underlying_func(func)):
         return yield_fixture(func=func, name=name, scope=scope, autouse=autouse)
     return _ensure_fixture_info(func=func, name=name, scope=scope, autouse=autouse)
 
