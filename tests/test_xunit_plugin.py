@@ -77,7 +77,7 @@ def _get_testcase_xml(suite_test, filename):
     return match[0]
 
 
-@pytest.fixture(params=['set', 'append', 'complex'])
+@pytest.fixture(params=['set', 'append', 'complex', 'float', 'int'])
 def details(request, result):
 
     if request.param == 'set':
@@ -92,6 +92,14 @@ def details(request, result):
         result.details.append('detail1', 'value1')
         result.details.append(
             'detail1', {'complex': ['value2', 'value3']})
+
+    if request.param == 'float':
+        result.details.append('detail1', 12.3456)
+        result.details.append('detail1', {'complex': [9.7531]})
+
+    if request.param == 'int':
+        result.details.append('detail1', 1)
+        result.details.append('detail1', {'complex': [2]})
 
     return result.details.all()
 
