@@ -2,12 +2,12 @@ Slash
 =====
 
 
-|                       |                                                                                    |
-|-----------------------|------------------------------------------------------------------------------------|
-| Build Status          | ![Build Status](https://secure.travis-ci.org/getslash/slash.png?branch=master,dev) |
-| Supported Versions    | ![Supported Versions](https://img.shields.io/pypi/pyversions/slash.svg)            |
-| Latest Version        | ![Latest Version](https://img.shields.io/pypi/v/slash.svg)                         |
-| Test Coverage         | ![Coverage Status](https://img.shields.io/coveralls/getslash/slash/develop.svg)    |
+|                       |                                                                                         |
+|-----------------------|-----------------------------------------------------------------------------------------|
+| Build Status          | ![Build Status](https://secure.travis-ci.org/getslash/slash.png?branch=master,dev)      |
+| Supported Versions    | ![Supported Versions](https://img.shields.io/pypi/pyversions/slash.svg)                 |
+| Latest Version        | ![Latest Version](https://img.shields.io/pypi/v/slash.svg)                              |
+| Test Coverage         | ![Coverage Status](https://codecov.io/gh/getslash/slash/branch/develop/graph/badge.svg) |
 
 
 
