@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`998` Choose IPython colors scheme for interactive test
 * :bug:`991` Fix detection of yield-fixture when combined with parametrization
 * :feature:`241` Support 'slashconf' directory
 * :bug:`985` Fix a bug where Slash did not expand parameterizations used through use_fixture properly

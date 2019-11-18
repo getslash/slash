@@ -102,6 +102,7 @@ config = Config({
     },
     "interactive": {
         "expose_g_globals": True // Doc("When False, slash.g won't be added to interactive test namespaces"),
+        "colors": None // Doc("IPython color scheme"),
     },
 
     "parallel": {

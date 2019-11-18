@@ -24,7 +24,11 @@ def _interact(ns):
             context.result.add_error('Terminated')
             shell.exit_now = True
 
-    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception))
+    colors = config.root.interactive.colors
+    if colors is None:
+        colors = "Linux" if config.root.log.console_theme.dark_background else "LightBG"
+    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception),
+          colors=colors)
 
 
 def _is_exception_in_ipython_eval(exc_tb):
