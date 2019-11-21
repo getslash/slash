@@ -1,4 +1,7 @@
+import functools
 from ...exception_handling import handling_exceptions
+from ...ctx import context as slash_context
+
 
 class ActiveFixture(object):
 
@@ -33,10 +36,19 @@ class ActiveFixture(object):
             for callback in self._test_end_callbacks:
                 callback()
 
-    def add_cleanup(self, cleanup):
-        self._cleanups.append(cleanup)
+    def add_cleanup(self, cleanup=None, success_only_cleanup=False):
+        if cleanup is None:
+            return functools.partial(self.add_cleanup, success_only_cleanup=success_only_cleanup)
+
+        self._cleanups.append((cleanup, success_only_cleanup))
 
     def do_cleanups(self):
+        if not slash_context.result:
+            # for when we're unit-testing, and there's not 'result'
+            success = True
+        else:
+            success = slash_context.result.is_success()
         while self._cleanups:
-            cleanup = self._cleanups.pop()
-            cleanup()
+            cleanup, success_only_cleanup = self._cleanups.pop()
+            if not success_only_cleanup or success:
+                cleanup()

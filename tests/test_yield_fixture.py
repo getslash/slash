@@ -1,6 +1,6 @@
 # pylint: disable=unused-argument, unused-variable
 from uuid import uuid4
-
+from contextlib import contextmanager
 import slash
 
 from .conftest import Checkpoint
@@ -16,6 +16,7 @@ def test_yield_fixture(yield_fixture_decorator):
     inner_fixture_value = uuid4()
 
     with slash.Session() as s:
+
 
         @s.fixture_store.add_fixture
         @slash.fixture
@@ -82,3 +83,47 @@ def test_yield_fixture_with_scope_argument(yield_fixture_decorator):
 
         with s.get_started_context():
             slash.runner.run_tests(make_runnable_tests(test_something))
+
+
+def test_yield_fixture_behavior():
+    start_checkpoints, end_checkpoints = [[Checkpoint() for _ in range(2)] for i in range(2)]
+
+    @contextmanager
+    def errors_at_exit():
+        try:
+            yield
+        finally:
+            assert False, "success-only cleanup occurred after test-failure"
+
+    with slash.Session() as s:
+
+
+        @s.fixture_store.add_fixture
+        @slash.yield_fixture
+        def normal_fixture():
+            start_checkpoints[0]()
+            yield 0
+            end_checkpoints[0]()
+
+        @s.fixture_store.add_fixture
+        @slash.yield_fixture(success_only_cleanup=True)
+        def success_only_fixture():
+            start_checkpoints[1]()
+            with errors_at_exit():
+                yield 1
+            assert False, "success-only cleanup occurred after test-failure"
+            end_checkpoints[1]()
+
+        def test_something(normal_fixture, success_only_fixture):
+            assert normal_fixture == 0
+            assert success_only_fixture == 1
+            1 / 0
+
+        s.fixture_store.resolve()
+
+        with s.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))
+        assert s.results.get_num_errors() == 1
+        assert all(c.called for c in start_checkpoints)
+        assert end_checkpoints[0].called
+        assert not end_checkpoints[1].called

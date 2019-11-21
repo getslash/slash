@@ -128,13 +128,15 @@ def yield_fixture(func=None, **kw):
     if func is None:
         return functools.partial(yield_fixture, **kw)
 
+    success_only_cleanup = kw.pop('success_only_cleanup', False)
+
     func = _ensure_fixture_info(func=func, **kw)
 
     @wraps(func)
     def new_func(**kwargs):
         f = func(**kwargs)
         value = next(f)
-        @context.fixture.add_cleanup
+        @context.fixture.add_cleanup(success_only_cleanup=success_only_cleanup)
         def cleanup(): # pylint: disable=unused-variable
             try:
                 next(f)
