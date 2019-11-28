@@ -148,6 +148,9 @@ else:
                 tb = sys.exc_info()[2]
             return tb
 
+        @property
+        def __class__(self):
+            return types.TracebackType
 
     def create_traceback_proxy(tb=None, frame_correction=0):
         """
