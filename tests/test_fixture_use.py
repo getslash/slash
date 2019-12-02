@@ -32,6 +32,24 @@ def test_extending(suite, suite_test):
     for event in [event1, event2]:
         assert event in events_happened
 
+def test_parameterize_used_fixutre(suite_builder):
+    @suite_builder.first_file.add_code
+    def __code__():  # pylint: disable=unused-variable
+        import slash
+
+        @slash.fixture
+        @slash.parameters.iterate(my_param=['a', 'b'])
+        def fixture_1(my_param):  # pylint: disable=unused-variable
+            return my_param
+
+
+        @slash.use_fixtures(["fixture_1"])
+        def test_a():  # pylint: disable=unused-variable
+            pass
+
+    suite_builder.build().run().assert_results_breakdown(success=2)
+
+
 def test_fixture_cleanup(suite_builder):
     @suite_builder.first_file.add_code
     def __code__():  # pylint: disable=unused-variable

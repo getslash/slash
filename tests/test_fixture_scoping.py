@@ -6,7 +6,7 @@ from uuid import uuid1
 
 import pytest
 import slash
-from slash._compat import iteritems, StringIO
+from io import StringIO
 from slash.core.fixtures.fixture_store import FixtureStore
 from slash.core.fixtures.utils import get_scope_by_name, get_scope_name_by_scope
 
@@ -128,7 +128,7 @@ class FixtureTree(object):
         yield
         self._fixture_store.pop_scope(scope)
         scope_id = get_scope_by_name(scope)
-        for fixture_name, fixture in iteritems(self._fixtures):
+        for fixture_name, fixture in self._fixtures.items():
             if fixture.__slash_fixture__.scope <= scope_id:
                 if fixture_name in self._values:
                     assert fixture_name in self._cleanups_made

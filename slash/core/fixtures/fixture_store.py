@@ -4,13 +4,12 @@ from contextlib import contextmanager
 
 from slash import ctx
 import logbook
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
-from ..._compat import OrderedDict, iteritems, itervalues, reraise
 from ...ctx import context as slash_context
 from ...exception_handling import handling_exceptions
 from ...exceptions import CyclicFixtureDependency, UnresolvedFixtureStore, UnknownFixtures, InvalidFixtureName
-from ...utils.python import get_arguments
+from ...utils.python import get_arguments, reraise
 from ..variation_factory import VariationFactory
 from ..test import is_valid_test_name
 from .active_fixture import ActiveFixture
@@ -30,7 +29,7 @@ class FixtureStore(object):
         self._unresolved_fixture_ids = set()
         self._fixtures_by_id = {}
         self._fixtures_by_fixture_info = {}
-        self._active_fixtures_by_scope = collections.defaultdict(OrderedDict)
+        self._active_fixtures_by_scope = collections.defaultdict(dict)
         self._active_fixture_dependencies = {} # maps fixture id to the frozenset of (param_id, variation index)
         self._computing = set()
         self._all_needed_parametrization_ids_by_fixture_id = {}
@@ -100,7 +99,7 @@ class FixtureStore(object):
     def get_required_fixture_objects(self, test_func, namespace):
         names = self.get_required_fixture_names(test_func)
         assert isinstance(names, list)
-        return set(itervalues(self.get_fixture_dict(names, namespace=namespace, get_values=False)))
+        return set(self.get_fixture_dict(names, namespace=namespace, get_values=False).values())
 
     def resolve_name(self, parameter_name, start_point, namespace=None):
 
@@ -125,7 +124,7 @@ class FixtureStore(object):
         return start_point
 
     def __iter__(self):
-        return itervalues(self._fixtures_by_id)
+        return iter(self._fixtures_by_id.values())
 
     def push_namespace(self):
         self._namespaces.append(Namespace(self, parent=self._namespaces[-1]))
@@ -179,7 +178,7 @@ class FixtureStore(object):
                 assert isinstance(fixture.parametrization_ids, OrderedSet)
                 returned.update(fixture.parametrization_ids)
             if fixture.keyword_arguments:
-                for needed in itervalues(fixture.keyword_arguments):
+                for needed in fixture.keyword_arguments.values():
                     if needed.is_parameter():
                         continue
                     needed_id = needed.info.id
@@ -202,7 +201,7 @@ class FixtureStore(object):
         if slash_context.result is not None and slash_context.result.is_interrupted():
             return
         scope = get_scope_by_name(scope)
-        for s, active_fixtures in iteritems(self._active_fixtures_by_scope):
+        for s, active_fixtures in self._active_fixtures_by_scope.items():
             if s <= scope:
                 for active_fixture in reversed(list(active_fixtures.values())):
                     with handling_exceptions(swallow=True):
@@ -214,7 +213,7 @@ class FixtureStore(object):
             self._fixtures_by_id[parametrization.info.id] = parametrization
 
     def add_fixtures_from_dict(self, d):
-        for thing in itervalues(d):
+        for thing in d.values():
             fixture_info = getattr(thing, '__slash_fixture__', None)
             if fixture_info is None:
                 continue
@@ -367,7 +366,7 @@ class FixtureStore(object):
         if fixture.keyword_arguments is None:
             raise UnresolvedFixtureStore('Fixture {} is unresolved!'.format(fixture.info.name))
 
-        for required_name, needed_fixture in iteritems(fixture.keyword_arguments):
+        for required_name, needed_fixture in fixture.keyword_arguments.items():
             if needed_fixture.is_parameter():
                 continue
             kwargs[required_name] = self._compute_fixture_value(

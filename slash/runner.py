@@ -1,10 +1,9 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 
 import logbook
 
 from . import hooks
 from . import log
-from ._compat import ExitStack
 from .conf import config
 from .ctx import context
 from .exception_handling import handling_exceptions

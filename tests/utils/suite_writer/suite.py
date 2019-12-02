@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 import gossip
 
-from slash._compat import StringIO
+from io import StringIO
 from slash.frontend.slash_run import slash_run
 
 from ..code_formatter import CodeFormatter

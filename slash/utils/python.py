@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from types import TracebackType
 import functools
 import warnings
 import inspect
@@ -8,11 +9,12 @@ import pickle
 
 from sentinels import NOTHING
 
-from .._compat import reraise, PY2, PYPY
+
+PYPY = hasattr(sys, 'pypy_version_info')
 
 def check_duplicate_functions(path):
     code = None
-    with open(path) as f:
+    with open(path, 'rb') as f:
         code = f.read()
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
@@ -42,10 +44,7 @@ def wraps(func, preserve=()):
 def unpickle(thing):
     if not thing:
         return thing
-    if PY2:
-        return pickle.loads(thing)
-    else:
-        return pickle.loads(thing.data)
+    return pickle.loads(thing.data)
 
 def get_underlying_func(func):
     while True:
@@ -67,7 +66,7 @@ def get_arguments_dict(func):
 
 
 def get_arguments(func):
-    if PY2 or PYPY:
+    if PYPY:
         func = get_underlying_func(func)
         spec = inspect.getargspec(func)  # pylint: disable=deprecated-method
         returned = [FunctionArgument(name=name) for name in spec.args]
@@ -117,3 +116,17 @@ def resolve_underlying_function(thing):
             break
         thing = wrapped
     return thing
+
+
+def reraise(tp, value, tb=None):
+    # A hacky way to check, whether we have a TracebackProxy here. Can't check directly, as
+    # it would lead to circular import.
+    if value.__traceback__ is not tb:
+        if not isinstance(tb, TracebackType):
+            tb = tb._tb # pylint: disable=protected-access
+        raise value.with_traceback(tb)
+    raise value
+
+
+def get_underlying_classmethod_function(func):
+    return func.__func__

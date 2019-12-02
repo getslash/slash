@@ -1,10 +1,9 @@
 import collections
 import itertools
 
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from .variation import Variation
-from .._compat import OrderedDict, izip, xrange
 from ..exceptions import FixtureException
 from ..utils.python import get_arguments
 from .fixtures.parameters import iter_parametrization_fixtures
@@ -24,8 +23,8 @@ class VariationFactory(object):
         self._autouse_fixtures = list(fixture_store.iter_autouse_fixtures_in_namespace())
         self._needed_fixtures = list(self._autouse_fixtures)
 
-        self._arg_name_bindings = OrderedDict()
-        self._param_name_bindings = OrderedDict()
+        self._arg_name_bindings = {}
+        self._param_name_bindings = {}
         self._known_value_strings = collections.defaultdict(dict)
 
     def add_needed_fixture_id(self, fixture_id):
@@ -78,6 +77,12 @@ class VariationFactory(object):
         for fixture in self._autouse_fixtures:
             self._populate_param_name_bindings(fixture.info.name, fixture, prefix='::')
 
+        for fixture_name in getattr(func, '__extrafixtures__', []):
+            fixture = self._store.get_fixture_by_name(fixture_name)
+            self._populate_param_name_bindings(fixture_name, fixture)
+            self._needed_fixtures.append(fixture)
+
+
     def _populate_param_name_bindings(self, arg_name, fixture_or_param, prefix=''):
         visited = {fixture_or_param.info.id}
         stack = [(prefix + arg_name, fixture_or_param)]
@@ -104,12 +109,12 @@ class VariationFactory(object):
         if not needed_ids:
             yield Variation(self._store, {}, {})
             return
-        for value_indices in itertools.product(*(xrange(len(p.values)) for p in parametrizations)):
+        for value_indices in itertools.product(*(range(len(p.values)) for p in parametrizations)):
             yield self._build_variation(parametrizations, value_indices)
 
     def _build_variation(self, parametrizations, value_indices):
         value_index_by_id = {}
-        for param, param_index in izip(parametrizations, value_indices):
+        for param, param_index in zip(parametrizations, value_indices):
             value_index_by_id[param.info.id] = param_index
 
         return Variation(self._store, value_index_by_id, self._param_name_bindings)

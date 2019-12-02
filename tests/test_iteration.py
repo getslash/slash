@@ -3,7 +3,6 @@ import itertools
 
 import pytest
 from slash.utils.iteration import iteration, PeekableIterator, iter_cartesian_dicts
-from slash._compat import iteritems
 
 
 def test_iteration(objects):
@@ -65,7 +64,7 @@ def test_cartesian_dict():
         'c': [6, 7],
     }
 
-    assert set(frozenset(iteritems(x)) for x in iter_cartesian_dicts(params)) == \
+    assert set(frozenset(x.items()) for x in iter_cartesian_dicts(params)) == \
         set(frozenset([('a', a_value), ('b', b_value), ('c', c_value)])
             for a_value, b_value, c_value in itertools.product(params['a'], params['b'], params['c']))
 

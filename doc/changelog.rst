@@ -1,5 +1,16 @@
 Changelog
 =========
+* :release:`1.9.0 <02-12-2019>`
+* :feature:`998` Choose IPython colors scheme for interactive test
+* :bug:`991 major` Fix detection of yield-fixture when combined with parametrization
+* :feature:`241` Support 'slashconf' directory
+* :bug:`985 major` Fix a bug where Slash did not expand parameterizations used through use_fixture properly
+* :feature:`982` Read files as binary to avoid decoding errors
+* :feature:`979` Change Ordered set implementation from orderedset to ordered-set, as the former is not maintained anymore
+* :feature:`598` Drop support for python version < 3.6
+* :feature:`-` Added support for tagging test parameterization values
+* :feature:`-` Added a plugin which provides links to test logs which have been archived by a CI system
+* :bug:`- major` Corrected behaviour of float and int test details in xunit output
 * :release:`1.8.0 <03-07-2019>`
 * :feature:`945` Drop support for deprecated arguments of ``add_cleanup``
 * :feature:`452` Drop support for old-style assertions
@@ -69,7 +80,7 @@ Changelog
 * :feature:`771` Keyword arguments to ``registers_on`` now get forwarded to Gossip's ``register`` API
 * :feature:`769` Added a new configuration flag, ``log.show_raw_param_values``, defaulting to ``False``. If set to True, log lines for beginnings of tests will contain actual parametrization values instead of format-safe strings.
 * :feature:`528` ``slash.exclude`` can now exclude combinations of parameter values
-* :bug:`783` Session errors in children are now handled and reported when running with parallel
+* :bug:`783 major` Session errors in children are now handled and reported when running with parallel
 * :feature:`785` Plugins can now be marked to indicate whether or not they support parallel
   execution, using ``slash.plugins.parallel_mode``. To avoid errors, Slash assumes that unmarked
   plugins do not support parallel execution.

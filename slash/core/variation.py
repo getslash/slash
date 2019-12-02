@@ -2,9 +2,9 @@ from numbers import Number
 import string
 import json
 import logbook
-from .._compat import string_types
+from .tagging import Tags
 
-_PRINTABLE_TYPES = (Number,) + string_types
+_PRINTABLE_TYPES = (Number, str)
 _PRINTABLE_CHARS = set(string.ascii_letters) | set(string.digits) | set("-_")
 
 _logger = logbook.Logger(__name__)
@@ -36,10 +36,12 @@ class Variation(object):
         self.id = {}
         self.values = {}
         self.labels = {}
+        self.tags = Tags()
         for param_name, param in param_name_bindings.items():
             value_index = self.id[param_name] = param_value_indices[param.info.id]
             self.values[param_name] = param.get_value_by_index(value_index)
             self.labels[param_name] = param.values[value_index].label
+            self.tags.update(param.get_tags_by_index(value_index))
         self.safe_repr = self._get_safe_repr()
 
     def _get_safe_repr(self):

@@ -1,4 +1,4 @@
-from slash._compat import izip_longest
+from itertools import zip_longest
 from uuid import uuid4
 
 from .element import Element
@@ -20,7 +20,7 @@ class Parameter(Element):
 
     def _format_values(self):
         returned = '['
-        for label, value in izip_longest(self.labels, self.values):
+        for label, value in zip_longest(self.labels, self.values):
             assert value is not None
             if label is None:
                 returned += repr(value)

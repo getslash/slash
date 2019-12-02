@@ -1,10 +1,9 @@
 import copy
-import sys
 
 import pytest
 import slash
-from slash._compat import PY2
 
+from slash.utils.python import PYPY
 from .utils import run_tests_assert_success, run_tests_in_session
 from .utils.suite_writer import Suite
 
@@ -159,7 +158,7 @@ def test_parametrizing_function_without_arg(checkpoint):
 
     for result in results:
         [err] = result.get_errors()
-        if PY2 or hasattr(sys, 'pypy_version_info'):
+        if PYPY:
             assert "test_example() takes no arguments" in str(err)
         else:
             assert "unexpected keyword argument 'param'" in str(err)
@@ -183,6 +182,32 @@ def test_multiple_parameters_parametrization(suite_builder):
         {'params': (3, 4)},
     ])
 
+
+def test_parameterization_filtering(suite_builder):
+    # pylint: disable=no-member, protected-access, undefined-variable,unused-variable, reimported, redefined-outer-name
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash
+        @slash.parametrize('x', [
+            500 // slash.param(tags=["regression", "ultra"]),
+            50 // slash.param(tags="regression"),
+            5 // slash.param(tags="sanity"),
+        ])
+        @slash.parametrize('y', [
+            '100' // slash.tag("regression", "long"),
+            '10' // slash.tag("regression", "short"),
+            '1' // slash.tag("sanity"),
+        ])
+        @slash.parametrize('z', [True, False])
+        def test_1(x, y, z):
+            slash.context.result.data['params'] = (x, y, z)
+
+    suite_builder.build().run('-k', 'tag:regression=long and not tag:sanity').assert_success(4).with_data([
+        {'params': (500, '100', True)},
+        {'params': (500, '100', False)},
+        {'params': (50, '100', True)},
+        {'params': (50, '100', False)},
+    ])
 
 
 def _set(param, value):

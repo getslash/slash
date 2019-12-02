@@ -5,7 +5,6 @@ import itertools
 
 import pytest
 import slash
-from slash._compat import iteritems
 from slash.core.scope_manager import ScopeManager, get_current_scope
 from .utils import make_runnable_tests
 from .utils.suite_writer import Suite
@@ -126,7 +125,7 @@ def _increment_scope(prev_scopes, **increments):
         returned = {}
     else:
         returned = prev_scopes.copy()
-    for key, value in iteritems(increments):
+    for key, value in increments.items():
         if value == 0:
             continue
         if key not in returned:

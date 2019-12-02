@@ -272,7 +272,7 @@ Fortunately, Slash allows you to *alias* fixtures, using the :func:`slash.use` s
 .. versionadded: 1.0
 
 
-.. note:: Fixture aliases require Python 3.x, as they rely on `function argument annotation <https://www.python.org/dev/peps/pep-3107/>`_
+.. note:: Fixture aliases rely on `function argument annotation <https://www.python.org/dev/peps/pep-3107/>`_
 
 
 Misc. Utilities

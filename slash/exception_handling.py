@@ -4,7 +4,7 @@ from .utils.exception_mark import mark_exception, get_exception_mark
 from .utils.traceback_proxy import create_traceback_proxy
 from . import hooks as trigger_hook
 from . import exceptions
-from ._compat import PY2, PYPY
+from .utils.python import PYPY
 from .ctx import context as slash_context
 from .conf import config
 
@@ -133,8 +133,6 @@ class _HandlingException(object):
         if isinstance(exc_value, skip_types) or isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
-            if PY2:
-                sys.exc_clear()  # pylint: disable=no-member
             _logger.trace('Swallowing {!r}', exc_value)
             return True
         return None

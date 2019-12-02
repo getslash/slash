@@ -1,5 +1,5 @@
 from types import FunctionType
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 import itertools
 import platform
 import shutil
@@ -13,13 +13,12 @@ import pytest
 
 import gossip
 import slash
-from slash._compat import PY2, PYPY
 from slash.conf import config
-from slash._compat import ExitStack
 from slash.core.runnable_test import RunnableTest
 from slash.core.test import TestTestFactory
 from slash.core.function_test import FunctionTestFactory
 from slash.plugins import PluginInterface
+from slash.utils.python import PYPY
 
 import unittest
 
@@ -150,11 +149,6 @@ def raises_maybe(exc, cond):
     return noop()
 
 _noop = lambda f: f
-
-if PY2:
-    skip_on_py2 = pytest.mark.skip
-else:
-    skip_on_py2 = _noop
 
 if PYPY:
     skip_on_pypy = pytest.mark.skip

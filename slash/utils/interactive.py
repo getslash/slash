@@ -24,7 +24,11 @@ def _interact(ns):
             context.result.add_error('Terminated')
             shell.exit_now = True
 
-    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception))
+    colors = config.root.interactive.colors
+    if colors is None:
+        colors = "Linux" if config.root.log.console_theme.dark_background else "LightBG"
+    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception),
+          colors=colors)
 
 
 def _is_exception_in_ipython_eval(exc_tb):
@@ -63,11 +67,14 @@ def _humanize_time_delta(seconds):
 @contextmanager
 def notify_if_slow_context(message, slow_seconds=1, end_message=None, show_duration=True):
     evt = threading.Event()
-    evt.should_report_end_msg = False
+    should_report_end_msg = False
+
     def notifier():
+        nonlocal should_report_end_msg
         if not evt.wait(timeout=slow_seconds) and context.session is not None:
             context.session.reporter.report_message(message)
-            evt.should_report_end_msg = True
+            should_report_end_msg = True
+
     thread = threading.Thread(target=notifier)
     start_time = time.time()
     thread.start()
@@ -77,7 +84,7 @@ def notify_if_slow_context(message, slow_seconds=1, end_message=None, show_durat
     finally:
         evt.set()
         thread.join()
-        if evt.should_report_end_msg and end_message is not None:
+        if should_report_end_msg and end_message is not None:
             if show_duration:
                 end_message += ' (took {})'.format(_humanize_time_delta(time.time() - start_time))
             context.session.reporter.report_message(end_message)

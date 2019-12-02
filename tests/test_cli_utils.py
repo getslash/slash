@@ -1,6 +1,6 @@
 import colorama
 import pytest
-from slash._compat import StringIO
+from io import StringIO
 from slash.utils.cli_utils import Printer, make_styler, UNDERLINED
 
 _style_1 = colorama.Fore.MAGENTA + colorama.Style.BRIGHT + UNDERLINED  # pylint: disable=no-member

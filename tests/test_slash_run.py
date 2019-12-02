@@ -7,7 +7,7 @@ import sys
 import pytest
 import slash
 from slash import config, site
-from slash._compat import StringIO
+from io import StringIO
 from slash.frontend import slash_run
 from slash.frontend.main import main_entry_point
 

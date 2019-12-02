@@ -53,6 +53,8 @@ class Plugin(PluginInterface):
         r = E(tag, {'name': name})
         if isinstance(value, (dict, tuple, list)):
             r = self._build_xml(r, value)
+        elif isinstance(value, (float, int)):
+            r.attrib['value'] = str(value)
         else:
             r.attrib['value'] = value
         return r

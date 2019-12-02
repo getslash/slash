@@ -1,11 +1,11 @@
 import itertools
 from collections import OrderedDict
 
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from ...exceptions import UnknownFixtures, InvalidFixtureScope, CyclicFixtureDependency
 
-from ..._compat import ExitStack
+from contextlib import ExitStack
 from ...ctx import context
 from .namespace import Namespace
 from .parameters import iter_parametrization_fixtures

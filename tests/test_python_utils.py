@@ -1,11 +1,7 @@
 # pylint: disable=redefined-outer-name
 import pytest
-from slash._compat import PY2
 
-if PY2:
-    from slash.utils.python import wraps
-else:
-    from functools import wraps
+from functools import wraps
 
 from slash.utils.python import call_all_raise_first, resolve_underlying_function
 

@@ -7,7 +7,7 @@ Mechanism behind slash.ext imports. Adopted from flask.ext, copyright 2011 by Ar
 """
 import sys
 import os
-from ._compat import reraise
+from .utils.python import reraise
 
 
 class ExtensionImporter(object):
