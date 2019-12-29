@@ -1,5 +1,4 @@
 import sys
-import gossip
 import pytest
 import inspect
 import traceback
