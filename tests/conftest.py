@@ -42,6 +42,11 @@ def no_user_config(request):
     def cleanup():  # pylint: disable=unused-variable
         os.rmdir(tmpdir)
 
+@pytest.fixture(autouse=True)
+def logbook_console_handler(request):
+    handler = logbook.StderrHandler(level=logbook.TRACE)
+    handler.push_application()
+    request.addfinalizer(handler.pop_application)
 
 @pytest.fixture
 def no_plugins(request):
