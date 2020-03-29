@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`1007 major` Safe set markers on exceptions
 * :feature:`-` Require newer emport and dessert versions (use importlib instead of imp)
 * :release:`1.9.0 <02-12-2019>`
 * :feature:`998` Choose IPython colors scheme for interactive test

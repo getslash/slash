@@ -10,10 +10,12 @@ from ..conf import config
 from ..exception_handling import is_exception_fatal, get_exception_frame_correction
 from ..exceptions import FAILURE_EXCEPTION_TYPES
 from ..utils.formatter import Formatter
+from ..utils.python import safe_set_attribute
 from ..utils.traceback_utils import distill_call_stack, distill_traceback, distill_object_attributes
 
 
 _logger = logbook.Logger(__name__)
+_CAPTURED_ERROR_MARKER = "__slash_captured_error__"
 
 class Error(object):
 
@@ -92,10 +94,11 @@ class Error(object):
         _, exc_value, _ = exc_info
         if exc_value is None:
             return None
-        cached = getattr(exc_value, "__slash_captured_error__", None)
+        cached = getattr(exc_value, _CAPTURED_ERROR_MARKER, None)
         if cached is not None:
             return cached
-        returned = exc_value.__slash_captured_error__ = cls(exc_info=exc_info)
+        returned = cls(exc_info=exc_info)
+        safe_set_attribute(exc_value, _CAPTURED_ERROR_MARKER, returned)
         return returned
 
     @property
