@@ -48,6 +48,24 @@ except ZeroDivisionError:
     assert err.traceback.frames
 
 
+def test_add_error_that_forbids_setattr(suite, suite_test):
+
+    @suite_test.append_body
+    def __code__(): # pylint: disable=unused-variable
+        class MyException(Exception):
+            def __setattr__(self, *args):
+                raise Exception("Set-attr")
+
+        raise MyException("Special Message")
+
+    suite_test.expect_error()
+    summary = suite.run()
+    [result] = summary.get_all_results_for_test(suite_test)
+    [err] = result.get_errors()
+    assert "Special Message" in err.message  # err.message contains the full repr
+    assert err.exception_type.__name__ == "MyException"
+
+
 def test_add_fatal_error(suite, suite_test):
 
     @suite_test.append_body
