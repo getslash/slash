@@ -50,6 +50,37 @@ def test_parameterize_used_fixutre(suite_builder):
     suite_builder.build().run().assert_results_breakdown(success=2)
 
 
+def test_fixtures_uses_fixture(suite_builder):
+    @suite_builder.first_file.add_code
+    def __code__():  # pylint: disable=unused-variable
+        import slash
+
+        @slash.fixture
+        def fixture_1():
+            slash.context.result.data['params'] = ["fixture_1"]
+
+        @slash.fixture
+        @slash.use_fixtures(["fixture_3"])
+        def fixture_2():
+            slash.context.result.data['params'].append("fixture_2")
+
+        @slash.fixture
+        def fixture_3():
+            slash.context.result.data['params'].append("fixture_3")
+
+        @slash.use_fixtures(["fixture_1", "fixture_2"])
+        @slash.fixture
+        def fixture_4():
+            slash.context.result.data['params'].append("fixture_4")
+
+        @slash.use_fixtures(["fixture_4"])
+        def test_a(fixture1: slash.use.fixture_1, fixture_2):  # pylint: disable=unused-variable
+            pass
+
+    suite_builder.build().run().assert_success(1).with_data([{'params': ["fixture_1", "fixture_2", "fixture_3",
+                                                                         "fixture_4"]}])
+
+
 def test_fixture_cleanup(suite_builder):
     @suite_builder.first_file.add_code
     def __code__():  # pylint: disable=unused-variable
