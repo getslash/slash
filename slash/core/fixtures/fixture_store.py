@@ -62,8 +62,8 @@ class FixtureStore(object):
             used_fixtures_decorator_names = getattr(test_func, '__extrafixtures__', None)
             if used_fixtures_decorator_names is not None:
                 used_fixture_names_only = set(used_fixtures_decorator_names) - set(fixture_names)
-                for name in used_fixture_names_only:
-                    self.get_fixture_value(namespace.get_fixture_by_name(name))
+                for name, fixture in self._get_fixtures_set(used_fixture_names_only, namespace=namespace):
+                    self.get_fixture_value(fixture, name=name)
         else:
             kwargs = {}
 
@@ -255,25 +255,34 @@ class FixtureStore(object):
 
     def get_fixture_dict(self, fixture_names, namespace=None, get_values=True, skip_names=frozenset()):
         returned = {}
-
         if namespace is None:
             namespace = self.get_current_namespace()
+        fixtures_set = self._get_fixtures_set(fixture_names, skip_names=skip_names, namespace=namespace)
+        for required_name, fixture in fixtures_set:
+            if get_values:
+                fixture = self.get_fixture_value(fixture, name=required_name)
+            if required_name in fixture_names or [element for element in fixture_names if required_name in element]:
+                returned[required_name] = fixture
+        return returned
 
+    def _get_fixtures_set(self, fixture_names, namespace=None, skip_names=frozenset(), fixtures_set=None):
+        if fixtures_set is None:
+            fixtures_set = OrderedSet()
         for element in fixture_names:
             if isinstance(element, tuple):
                 required_name, real_name = element
             else:
                 required_name = real_name = element
-
             if required_name in skip_names:
                 continue
             if element == 'this':
                 continue
             fixture = namespace.get_fixture_by_name(real_name)
-            if get_values:
-                fixture = self.get_fixture_value(fixture, name=required_name)
-            returned[required_name] = fixture
-        return returned
+            fixtures_set.add((required_name, fixture))
+            if hasattr(fixture.fixture_func, "__extrafixtures__"):
+                self._get_fixtures_set(fixture.fixture_func.__extrafixtures__, skip_names=skip_names,
+                                       namespace=namespace, fixtures_set=fixtures_set)
+        return fixtures_set
 
     def get_fixture_value(self, fixture, name=None):
         if name is None:

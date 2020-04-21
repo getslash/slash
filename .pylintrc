@@ -5,7 +5,7 @@ disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare
 reports=no
 # Ignoring 'StackedObject' due to bug in astroid/pylint: https://github.com/PyCQA/pylint/issues/3116
 # Activatable seems like the same bug
-ignored-classes=ColorizedString,StackedObject,Activatable
+ignored-classes=ColorizedString,StackedObject,Activatable,AbstractContextManager
 
 [FORMAT]
 max-line-length=150

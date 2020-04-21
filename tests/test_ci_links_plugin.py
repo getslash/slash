@@ -129,7 +129,7 @@ def build_url(request):
     os.environ['BUILD_URL'] = request.param
 
     @request.addfinalizer
-    def fin():
+    def fin():  # pylint: disable=unused-variable
         os.environ.pop('BUILD_URL')
 
     return request.param
@@ -141,7 +141,7 @@ def build_url_env_var(request):
     os.environ[env_var_name] = url
 
     @request.addfinalizer
-    def fin():
+    def fin():  # pylint: disable=unused-variable
         os.environ.pop(env_var_name)
 
     return env_var_name, url
@@ -158,7 +158,7 @@ def log_dir(request, config_override):
     os.makedirs(request.param)
 
     @request.addfinalizer
-    def fin():
+    def fin():  # pylint: disable=unused-variable
         shutil.rmtree(os.path.abspath(request.param))
         # shutil.rmtree does not remove the base directory when
         # removing multiple nested directories, so the base
@@ -174,6 +174,5 @@ def log_dir(request, config_override):
 def deactivate_plugin(request):
 
     @request.addfinalizer
-    def fin():
+    def fin():  # pylint: disable=unused-variable
         manager.deactivate('ci links')
-

@@ -1,5 +1,9 @@
 Changelog
 =========
+* :release:`1.10.0 <21-04-2020>`
+* :bug:`1013 major` Allow slash.use_fixtures application on other fixtures
+* :bug:`1007 major` Safe set markers on exceptions
+* :feature:`-` Require newer emport and dessert versions (use importlib instead of imp)
 * :release:`1.9.0 <02-12-2019>`
 * :feature:`998` Choose IPython colors scheme for interactive test
 * :bug:`991 major` Fix detection of yield-fixture when combined with parametrization

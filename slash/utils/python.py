@@ -6,11 +6,14 @@ import inspect
 import sys
 import ast
 import pickle
+import logbook
 
 from sentinels import NOTHING
 
 
 PYPY = hasattr(sys, 'pypy_version_info')
+_logger = logbook.Logger(__name__)
+
 
 def check_duplicate_functions(path):
     code = None
@@ -130,3 +133,13 @@ def reraise(tp, value, tb=None):
 
 def get_underlying_classmethod_function(func):
     return func.__func__
+
+
+def safe_set_attribute(obj, name, value):
+    try:
+        setattr(obj, name, value)
+    except Exception:  # pylint: disable=broad-except
+        try:
+            obj.__dict__[name] = value
+        except Exception:  # pylint: disable=broad-except
+            _logger.debug("Failed to set attribute {!r} on {!r}", name, obj)
