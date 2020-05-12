@@ -204,7 +204,8 @@ class ConsoleReporter(ReporterInterface):
         not_run = session.results.get_num_not_run()
         if not_run:
             msg += ' {} not run.'.format(not_run)
-        if session.has_children() and session.parallel_manager.server.worker_error_reported:
+        if (session.has_children() and session.parallel_manager.server
+                and session.parallel_manager.server.worker_error_reported):
             msg += " Found session errors in children."
 
         msg += ' Total duration: {}'.format(
