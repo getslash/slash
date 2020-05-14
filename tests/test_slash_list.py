@@ -80,6 +80,29 @@ def test_slash_list_tests_relative_or_not(suite, relative):
         assert os.path.isabs(filename) == (not relative)
 
 
+@pytest.mark.parametrize('show_duplicates,expected_tests_num', [(True, 2), (False, 1)])
+def test_slash_list_suite_duplicate_tests(tmpdir, show_duplicates, expected_tests_num):
+    with tmpdir.join('test_file.py').open('w') as f:
+        _print = functools.partial(print, file=f)
+        _print('def test_function():')
+        _print('    pass')
+
+    with tmpdir.join('suitefile').open('w') as suite_file:
+        _print = functools.partial(print, file=suite_file)
+        _print('{}:test_function{}'.format(f.name, ''))
+        _print('{}:test_function{}'.format(f.name, ''))
+
+    args = ['-f', suite_file.name, '--only-tests']
+    if show_duplicates:
+        args.append('--show-duplicates')
+    report_stream = StringIO()
+    result = slash_list(args, report_stream=report_stream)
+    assert result == 0
+    returned_tests = report_stream.getvalue().splitlines()
+    assert len(returned_tests) == expected_tests_num
+    assert set(returned_tests) == {'{}:test_function'.format(f.name)}
+
+
 @pytest.mark.parametrize('invalid', [None, 'test', 'method'])
 @pytest.mark.parametrize('allow_empty', [True, False])
 def test_slash_list_suite_file_incorrect_names(tmpdir, invalid, allow_empty):
