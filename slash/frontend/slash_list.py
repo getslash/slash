@@ -39,6 +39,7 @@ def _get_parser():
     parser.add_argument('--no-output', dest='show_output', action='store_false', default=True)
     parser.add_argument('--force-color', dest='force_color', action='store_true', default=False)
     parser.add_argument('--no-color', dest='enable_color', action='store_false', default=True)
+    parser.add_argument('--show-duplicates', dest='show_duplicates', action='store_true', default=False)
 
     parser.add_argument('paths', nargs='*', default=[], metavar='PATH')
     return parser
@@ -101,7 +102,7 @@ def _report_tests(args, runnables, printer):
             address = address.split('(')[0]
         if args.relative_paths:
             address = _convert_address_to_relpath(address)
-        if address in visited:
+        if address in visited and not args.show_duplicates:
             continue
         visited.add(address)
         printer("{}{}".format(_title_style(address), extra))
