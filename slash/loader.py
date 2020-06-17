@@ -154,6 +154,8 @@ class Loader(object):
                 if not self._address_in_file_matches(address_in_file, test):
                     continue
             matched = True
+            if self._is_excluded(test):
+                continue
             yield test
         if not matched:
             raise CannotLoadTests('Cannot find test(s) for {!r}'.format(address))
@@ -203,8 +205,6 @@ class Loader(object):
                     self._duplicate_funcs |= check_duplicate_functions(file_path)
                     with self._adding_local_fixtures(file_path, module):
                         for runnable in self._iter_runnable_tests_in_module(file_path, module):
-                            if self._is_excluded(runnable):
-                                continue
                             yield runnable
 
     @contextmanager

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from slash import Session
+from slash import Session, config
 from slash.exceptions import CannotLoadTests
 from slash.loader import Loader
 
@@ -165,3 +165,18 @@ def test_import_errors_with_session():
 
 
     return suite
+
+
+def test_fixture_and_test_overrides(tmpdir, config_override):
+    tests_dir = tmpdir.join('tests')
+    full_path = tests_dir.join('.dir').join('test_something.py')
+    test_prefix = 'test_something'
+    with full_path.open('w', ensure=True) as f:
+        f.write('import slash\n')
+        f.write('@slash.tag("tag-1")\ndef test_something1():\n    pass\n'.format(test_prefix))
+        f.write('def test_something2():\n    pass\n'.format(test_prefix))
+    config_override("run.filter_strings", ["tag:tag-1"])
+    with Session():
+        runnables = Loader().get_runnables(["{}:{}{}".format(full_path, test_prefix, index) for index in range(1, 3)])
+        assert len(runnables) == 1
+        assert runnables[0].__slash__.address_in_file == "test_something1"
