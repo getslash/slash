@@ -96,3 +96,26 @@ def test_invalid_exclude_patterns(names, values):
 ])
 def test_valid_exclude_patterns(names, values):
     slash.exclude(names, values)
+
+
+def test_exclude_on_fixture():
+
+    with slash.Session() as s:
+
+        @s.fixture_store.add_fixture
+        @slash.parametrize('param', [1, 2])
+        @slash.exclude("param", [1])
+        @slash.fixture
+        def fixture1(param):
+            return param
+
+        def test_something(fixture1):
+            slash.context.result.data['values'] = fixture1
+
+        results = resolve_and_run(test_something)
+
+    assert len(results) == 2
+    skipped, executed = results
+    assert skipped.get_skips()
+    assert not executed.get_skips()
+    assert executed.data["values"] == 2

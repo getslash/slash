@@ -24,27 +24,30 @@ def exclude(names, values):
 
 def is_excluded(test):
     test_func = test.get_test_function()
-    exclusions = markers.exclude_marker.get_value(test_func, default=None)
-    if not exclusions:
-        return False
-    exclusions = dict(exclusions)
-    for parameter_names, value_sets in exclusions.items():
-        params = []
-        values = []
-        for parameter_name in parameter_names:
-            param = context.session.fixture_store.resolve_name(parameter_name, start_point=test_func, namespace=test.get_fixture_namespace())
-            if not isinstance(param, Parametrization):
-                raise UnknownFixtures('{!r} is not a parameter, and therefore cannot be the base for value exclusions'.format(parameter_name))
-            params.append(param)
+    fixture_funcs = {fixture.fixture_func for fixture in test.get_required_fixture_objects()}
+    fixture_exclusions = {fixture_func: markers.exclude_marker.get_value(fixture_func, default=None)
+                          for fixture_func in fixture_funcs}
+    test_exclusions = {test_func: markers.exclude_marker.get_value(test_func, default=None)}
+    for entity_func, exclusions in dict(list(fixture_exclusions.items()) + list(test_exclusions.items())).items():
+        if not exclusions:
+            continue
+        exclusions = dict(exclusions)
+        for parameter_names, value_sets in exclusions.items():
+            params = []
+            values = []
+            for parameter_name in parameter_names:
+                param = context.session.fixture_store.resolve_name(parameter_name, start_point=entity_func,
+                                                                   namespace=test.get_fixture_namespace())
+                if not isinstance(param, Parametrization):
+                    raise UnknownFixtures('{!r} is not a parameter, and therefore cannot be the base for value exclusions'.format(parameter_name))
+                params.append(param)
+                try:
+                    param_index = test.__slash__.variation.param_value_indices[param.info.id] #pylint: disable=no-member
+                except LookupError:
+                    raise UnknownFixtures('{!r} cannot be excluded for {!r}'.format(parameter_name, test))
+                value = param.get_value_by_index(param_index)
+                values.append(value)
 
-
-            try:
-                param_index = test.__slash__.variation.param_value_indices[param.info.id] #pylint: disable=no-member
-            except LookupError:
-                raise UnknownFixtures('{!r} cannot be excluded for {!r}'.format(parameter_name, test))
-            value = param.get_value_by_index(param_index)
-            values.append(value)
-
-        if tuple(values) in value_sets:
-            return True
+            if tuple(values) in value_sets:
+                return True
     return False
