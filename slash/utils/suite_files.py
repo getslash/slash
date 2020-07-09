@@ -9,6 +9,7 @@ SuiteEntry = namedtuple('SuiteEntry', 'path, matcher, repeat')
 def iter_suite_file_paths(suite_files):
     for filename in suite_files:
 
+        dirname = os.path.abspath(os.path.dirname(filename))
         with open(filename) as suite_file:
             for path in suite_file:
                 path = path.strip()
@@ -17,6 +18,9 @@ def iter_suite_file_paths(suite_files):
 
                 suite_entry = _parse_path_filter_and_repeat(path)
                 path = suite_entry.path
+
+                if not os.path.isabs(path):
+                    path = os.path.relpath(os.path.join(dirname, path))
 
                 if not path.endswith('.py') and '.py:' not in path and not os.path.isdir(path):
                     for p, other_filter in iter_suite_file_paths([path]):
