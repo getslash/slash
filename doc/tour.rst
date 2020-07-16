@@ -53,7 +53,7 @@ Tests don't do much without making sure things are like they expect. Slash borro
 
 Slash also analyzes assertions using assertion rewriting borrowed from the `pytest project <http://pytest.org>`_, so you can get more details as for what exactly failed.
 
-.. seealso:: errors
+.. seealso:: :ref:`errors`
 
 Test Parameters
 ---------------
