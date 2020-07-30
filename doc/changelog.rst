@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`_` Fix to filter class based test based on the tagging in parameter
 * :bug:`899 major` Fix slash.exclude decorator for fixtures
 * :release:`1.10.0 <21-04-2020>`
 * :bug:`1013 major` Allow slash.use_fixtures application on other fixtures
