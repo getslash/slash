@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`-` Fix iter_suite_file_paths to get test path of the tests as relative if relative path is provided in suite file
 * :bug:`899 major` Fix slash.exclude decorator for fixtures
 * :release:`1.10.0 <21-04-2020>`
 * :bug:`1013 major` Allow slash.use_fixtures application on other fixtures
