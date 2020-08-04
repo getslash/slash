@@ -20,7 +20,7 @@ def iter_suite_file_paths(suite_files):
                 path = suite_entry.path
 
                 if not os.path.isabs(path):
-                    path = os.path.abspath(os.path.join(dirname, path))
+                    path = os.path.relpath(os.path.join(dirname, path))
 
                 if not path.endswith('.py') and '.py:' not in path and not os.path.isdir(path):
                     for p, other_filter in iter_suite_file_paths([path]):
