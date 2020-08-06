@@ -24,7 +24,7 @@ def test_iter_suite_paths_files_relpath(filename, paths):
             f.write(relpath)
             f.write('\n')
 
-    assert [p for p, _ in suite_files.iter_suite_file_paths([filename])] == [os.path.abspath(p) for p in paths]
+    assert [os.path.abspath(p) for p, _ in suite_files.iter_suite_file_paths([filename])] == [os.path.abspath(p) for p in paths]
 
 
 def test_suite_files(suite, suite_test, suite_file):  # pylint: disable=unused-argument
