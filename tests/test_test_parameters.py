@@ -211,10 +211,11 @@ def test_parameterization_filtering(suite_builder):
 
 
 def test_parameterization_filtering_test_class_tests(suite_builder):
-    # pylint: disable=no-member, protected-access, undefined-variable,unused-variable, reimported, redefined-outer-name
+    # pylint: disable=no-member, undefined-variable, unused-variable
     @suite_builder.first_file.add_code
     def __code__():
-        import slash
+        import slash  # pylint: disable=redefined-outer-name, reimported
+
         class TaggedParams(slash.Test):
             @slash.parametrize('x', [
                 500 // slash.param(tags=["regression", "ultra"]),
@@ -230,12 +231,12 @@ def test_parameterization_filtering_test_class_tests(suite_builder):
             def test_1(self, x, y, z):
                 slash.context.result.data['params'] = (x, y, z)
 
-    suite_builder.build().run('-k', 'tag:regression=long and not tag:sanity').assert_success(4).with_data([
-        {'params': (500, '100', True)},
-        {'params': (500, '100', False)},
-        {'params': (50, '100', True)},
-        {'params': (50, '100', False)},
-    ])
+    suite_builder.build().run(
+        '-k', 'tag:regression=long and not tag:sanity'
+    ).assert_success(4).with_data(
+        [{'params': (500, '100', True)}, {'params': (500, '100', False)},
+         {'params': (50, '100', True)}, {'params': (50, '100', False)}]
+    )
 
 
 def _set(param, value):
