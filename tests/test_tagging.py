@@ -150,6 +150,25 @@ def test_fixture_and_test_overrides(suite_builder):
 
     suite_builder.build().run().assert_session_error("Conflicting tag")
 
+
+def test_tagging_parameter(suite_builder):
+    # pylint: disable=unused-variable
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash  # pylint: disable=redefined-outer-name, reimported
+
+        class TaggedParams(slash.Test):
+            @slash.tag("unit_test")
+            @slash.parametrize("tag_name",
+                               ["tag_1" // slash.param(tags="tag_1"),
+                                "tag_2" // slash.tag("tag_2")])
+            def test_1(self, tag_name):
+                assert set(slash.context.test.get_tags()) == \
+                       {"unit_test", tag_name}
+
+    suite_builder.build().run().assert_success(2)
+
+
 # more tags in test_pattern_matching.py
 
 _tagging_strategies = []
