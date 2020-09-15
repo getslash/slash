@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`1032` Allow specifying directories when reading tests from files
 * :bug:`_` Fix to filter class based test based on the tagging in parameter
 * :release:`1.11.0 <06-08-2020>`
 * :bug:`- major` Fix iter_suite_file_paths to get test path of the tests as relative if relative path is provided in suite file

@@ -14,6 +14,7 @@ def test_iter_suite_paths_files_abspaths(filename, paths):
         f.write('\n'.join(paths))
 
     assert [p for p, _ in suite_files.iter_suite_file_paths([filename])] == paths
+    assert [p for p, _ in suite_files.iter_suite_file_paths([os.path.dirname(filename)])] == paths
 
 
 def test_iter_suite_paths_files_relpath(filename, paths):
@@ -25,7 +26,22 @@ def test_iter_suite_paths_files_relpath(filename, paths):
             f.write('\n')
 
     assert [os.path.abspath(p) for p, _ in suite_files.iter_suite_file_paths([filename])] == [os.path.abspath(p) for p in paths]
+    assert [os.path.abspath(p) for p, _ in suite_files.iter_suite_file_paths([os.path.dirname(filename)])] == [
+        os.path.abspath(p) for p in paths]
 
+
+def test_iter_suite_path_recursive_dirs(paths, tmpdir, filename):
+    with open(filename, 'w') as f:
+        f.write('\n'.join(paths[::2]))
+
+    subdir_path = os.path.join(tmpdir, "subdir")
+    os.mkdir(subdir_path)
+    filename2 = os.path.join(subdir_path, 'file2.txt')
+    with open(filename2, 'w') as f:
+        f.write('\n'.join(paths[1::2]))
+
+    assert [p for p, _ in suite_files.iter_suite_file_paths([tmpdir])].sort() == paths.sort()
+    assert [p for p, _ in suite_files.iter_suite_file_paths([subdir_path])].sort() == paths[1::2].sort()
 
 def test_suite_files(suite, suite_test, suite_file):  # pylint: disable=unused-argument
     suite.run(args=[])
