@@ -1,5 +1,6 @@
 import os
 from collections import namedtuple
+from pathlib import Path
 
 from . import pattern_matching
 
@@ -7,8 +8,7 @@ SuiteEntry = namedtuple('SuiteEntry', 'path, matcher, repeat')
 
 
 def iter_suite_file_paths(suite_files):
-    for filename in suite_files:
-
+    for filename in _extract_suite_files(suite_files):
         dirname = os.path.abspath(os.path.dirname(filename))
         with open(filename) as suite_file:
             for path in suite_file:
@@ -29,6 +29,14 @@ def iter_suite_file_paths(suite_files):
 
                 for _ in range(suite_entry.repeat):
                     yield path, suite_entry.matcher
+
+
+def _extract_suite_files(suite_files):
+    for entity in suite_files:
+        if Path(entity).is_dir():
+            yield from _extract_suite_files(Path(entity).rglob("*"))
+        else:
+            yield entity
 
 
 def _and_matchers(a, b):
