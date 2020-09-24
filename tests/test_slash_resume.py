@@ -1,5 +1,6 @@
 # pylint: disable=redefined-outer-name
 import pytest
+import slash
 from slash.resuming import (CannotResume, get_last_resumeable_session_id, get_tests_from_previous_session)
 
 
@@ -29,6 +30,22 @@ def test_resume(suite):
     resumed = get_tests_from_previous_session(result.session.id)
 
     assert len(resumed) + result.session.results.get_num_started() - 1 == len(suite)
+
+
+def test_resume_with_filter(suite, config_override):
+    fail_index = len(suite) // 2
+    suite[fail_index].when_run.fail()
+    for test in suite[fail_index + 1:]:
+        test.expect_not_run()
+    result = suite.run(additional_args=['-x'])
+    resumed = get_tests_from_previous_session(result.session.id)
+
+    filtered_out_test_name = resumed[0].address_in_file
+    with slash.Session():
+        config_override('run.filter_strings', [f'not {filtered_out_test_name}'])
+        tests = slash.loader.Loader().get_runnables(resumed)
+    assert filtered_out_test_name not in [test.__slash__.address_in_file for test in tests]
+
 
 def test_resume_with_parametrization(suite, suite_test):
     num_values1 = 3

@@ -74,7 +74,9 @@ class Test(RunnableTest):
         return getattr(self, self._test_method_name)
 
     def get_tags(self):
-        test_tags = get_tags(type(self)) + get_tags(getattr(type(self), self._test_method_name))
+        test_tags = (get_tags(type(self))
+                     + get_tags(getattr(type(self), self._test_method_name))
+                     + self.get_variation().tags)
         if nofixtures.is_marked(self.get_test_function()):
             return test_tags
         return test_tags + self._get_fixture_tags()
