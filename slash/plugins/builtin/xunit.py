@@ -94,7 +94,7 @@ class Plugin(PluginInterface):
         })
         self._add_errors(e, context.session.results.global_result)
         run_test_results = filter(
-            lambda result: not result.is_not_run(),
+            lambda result: result.is_started(),
             context.session.results.iter_test_results()
         )
 
