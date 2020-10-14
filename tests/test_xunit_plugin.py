@@ -10,7 +10,7 @@ from xml.etree import ElementTree
 def test_xunit_plugin(results, xunit_filename): # pylint: disable=unused-argument
     assert os.path.exists(xunit_filename), 'xunit file not created'
 
-    validate_xml(xunit_filename)
+    validate_xml(xunit_filename, results=results)
 
 
 def test_session_errors(suite, xunit_filename):
@@ -109,6 +109,7 @@ def results(suite, suite_test, test_event, xunit_filename): # pylint: disable=un
     test_event(suite_test)
     summary = suite.run()
     assert 'Traceback' not in summary.get_console_output()
+    return summary
 
 @pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason',
                         'error', 'failure', 'add_error', 'add_failure'])
@@ -163,7 +164,7 @@ def test_xunit_parallel_suite(parallel_suite, xunit_filename, action):
         assert element.tag == action
 
 
-def validate_xml(xml_filename, suite=None):
+def validate_xml(xml_filename, suite=None, results=None):
     with open(xml_filename) as f:
         etree = ElementTree.parse(f)
 
@@ -174,6 +175,13 @@ def validate_xml(xml_filename, suite=None):
 
     if suite is not None:
         assert len(root) == len(suite)
+
+    if results is not None:
+        run_tests_results = list(
+            filter(lambda result: result.is_started(),
+                   results.session.results.iter_test_results())
+        )
+        assert len(list(root)) == len(run_tests_results)
 
     test_case_tag_count = {'error': 0, 'failure': 0, 'skipped': 0}
 
