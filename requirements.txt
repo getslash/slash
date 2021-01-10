@@ -16,5 +16,5 @@ pyparsing
 vintage>=0.4.0
 brotli
 IPython==1.2.1; implementation_name=='pypy'
-IPython<7.17.0; implementation_name!='pypy' and python_version=='3.6'
+IPython<7.17.0; implementation_name!='pypy' and python_version<='3.6'
 IPython; implementation_name!='pypy' and python_version>'3.6'
