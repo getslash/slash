@@ -325,7 +325,7 @@ def yield_fixture_decorator(request):
     return slash.fixture
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def disable_vintage_deprecations():
     with get_no_deprecations_context():
         yield

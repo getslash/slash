@@ -41,7 +41,7 @@ def report_type(request):
     return request.param
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def patched_coverage(forge):
     forge.replace_with(coverage.Coverage, 'start', lambda self: None)
     forge.replay()
