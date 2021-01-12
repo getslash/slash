@@ -76,7 +76,7 @@ def test_plugin_with_no_session_start_gets_called_session_end(checkpoint):
     assert checkpoint.called
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def gossip_raise_immediately():
     g = gossip.get_group('slash')
     prev = g.get_exception_policy()
