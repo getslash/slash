@@ -26,7 +26,7 @@ def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=
         app.arg_parser.set_positional_metavar('TEST')
     if working_directory is not None:
         app.set_working_directory(working_directory)
-    app.set_argv(args)
+    app.set_argv(args.argv)
     app.set_report_stream(report_stream)
     app.enable_interactive()
     collected = []

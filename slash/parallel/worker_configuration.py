@@ -25,8 +25,8 @@ def is_process_running(pid):
 class WorkerConfiguration(object):
     def __init__(self, args, worker_id):
         self._worker_id = worker_id
-        self.argv = [sys.executable, '-m', 'slash.frontend.main', 'run', '--parallel-parent-session-id', ctx.session.id] + \
-                     args + ["--parallel-worker-id", str(worker_id)]
+        self.argv = [sys.executable, '-m', 'slash.frontend.main', args.cmd, '--parallel-parent-session-id', ctx.session.id] + \
+                     args.argv + ["--parallel-worker-id", str(worker_id)]
         self._excluded_tests = set()
         self._forced_tests = set()
         self._pid = None
