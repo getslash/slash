@@ -20,7 +20,7 @@ def _parse_args(args):
 
 def list_config(args, report_stream=sys.stdout):
 
-    args = _parse_args(args)
+    args = _parse_args(args.argv)
     _print = Printer(report_stream, force_color=args.force_color, enable_color=args.enable_color)
 
     filters = _parse_filters(args.paths)
