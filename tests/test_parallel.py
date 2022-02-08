@@ -1,3 +1,4 @@
+import munch
 import slash
 import os
 import signal
@@ -353,7 +354,7 @@ def test_children_not_connected_timeout(runnable_test_dir, config_override):
     config_override("parallel.num_workers", 1)
     with Session() as session:
         runnables = Loader().get_runnables(str(runnable_test_dir))
-        parallel_manager = ParallelManager([])
+        parallel_manager = ParallelManager(munch.Munch(argv=[], cmd="run"))
         session.parallel_manager = parallel_manager
         parallel_manager.start_server_in_thread(runnables)
         time.sleep(0.1)

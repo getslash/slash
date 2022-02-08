@@ -1,4 +1,5 @@
 from __future__ import print_function
+import munch
 import functools
 import os
 import re
@@ -8,6 +9,10 @@ from io import StringIO
 from .utils.suite_writer import Suite
 
 import pytest
+
+
+def _slash_list(argv, *args, **kwargs):
+    return slash_list(munch.Munch(argv=argv), *args, **kwargs)
 
 
 @pytest.mark.parametrize('flag', ["--only-fixtures", "--only-tests", None])
@@ -20,7 +25,7 @@ def test_slash_list(suite, flag):
     args = [path]
     if flag is not None:
         args.append(flag)
-    slash_list(args, report_stream)
+    _slash_list(args, report_stream)
     assert report_stream.getvalue()
 
 
@@ -33,7 +38,7 @@ def test_slash_list_without_any_tests(allow_empty):
     args = [path]
     if allow_empty:
         args.append('--allow-empty')
-    rc = slash_list(args, report_stream)
+    rc = _slash_list(args, report_stream)
     expected_rc = 0 if allow_empty else 1
     assert rc == expected_rc
 
@@ -43,7 +48,7 @@ def test_slash_list_tests_without_tags(suite):
     path = suite.commit()
     report_stream = StringIO()
     args = [path, '--show-tags', '--no-output']
-    slash_list(args, report_stream)
+    _slash_list(args, report_stream)
     output = report_stream.getvalue()
     assert not output
 
@@ -57,7 +62,7 @@ def test_slash_list_tests_with_or_without_tags(suite, should_show_tags, suite_te
     args = [path, '--only-tests']
     if should_show_tags:
         args.append('--show-tags')
-    slash_list(args, report_stream)
+    _slash_list(args, report_stream)
     output = report_stream.getvalue()
     assert ('Tags' in output) == (should_show_tags)
 
@@ -70,7 +75,7 @@ def test_slash_list_tests_relative_or_not(suite, relative):
     args = [path]
     if relative:
         args.append('--relative-paths')
-    slash_list(args, report_stream)
+    _slash_list(args, report_stream)
     output_lines = {
         _strip(line)
         for line in report_stream.getvalue().splitlines()
@@ -96,7 +101,7 @@ def test_slash_list_suite_duplicate_tests(tmpdir, show_duplicates, expected_test
     if show_duplicates:
         args.append('--show-duplicates')
     report_stream = StringIO()
-    result = slash_list(args, report_stream=report_stream)
+    result = _slash_list(args, report_stream=report_stream)
     assert result == 0
     returned_tests = report_stream.getvalue().splitlines()
     assert len(returned_tests) == expected_tests_num
@@ -137,7 +142,7 @@ def test_slash_list_suite_file_incorrect_names(tmpdir, invalid, allow_empty):
     args = ['-f', suite_file.name]
     if allow_empty:
         args.append('--allow-empty') # make sure allow-empty does not affect invalid name lookup
-    result = slash_list(args, error_stream=error_stream)
+    result = _slash_list(args, error_stream=error_stream)
 
     if invalid is None:
         assert result == 0
@@ -174,7 +179,7 @@ def test_slash_list_with_warnings(tmpdir, no_tests):
     args = [fp.name, '--warnings-as-errors']
     if no_tests:
         args.append('--allow-empty')
-    result = slash_list(args, error_stream=error_stream)
+    result = _slash_list(args, error_stream=error_stream)
 
     errors = error_stream.getvalue()
     assert 'Could not load tests' not in errors
@@ -196,7 +201,7 @@ def test_slash_list_with_filtering(tmpdir):
 
     report_stream = StringIO()
     args = [fp.name, '-k', 'not _b', '--only-tests']
-    result = slash_list(args, report_stream=report_stream)
+    result = _slash_list(args, report_stream=report_stream)
     assert result == 0
 
     listed_tests = _strip(report_stream.getvalue()).splitlines()

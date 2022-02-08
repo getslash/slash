@@ -1,3 +1,4 @@
+import munch
 import os
 from itertools import zip_longest
 from uuid import uuid4
@@ -45,7 +46,7 @@ class SuiteBuilderSuite(object):
         os.makedirs(path)
 
     def run(self, *args):
-        app = slash_run([self.path] + list(args))
+        app = slash_run(munch.Munch(argv=[self.path] + list(args), cmd="run"))
         assert not app.session.has_internal_errors(), 'Session has internal errors!'
         return SuiteBuilderSuiteResult(app)
 
