@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name
+import munch
 import pytest
 from io import StringIO
 from slash.frontend.slash_list_plugins import slash_list_plugins
@@ -6,7 +7,7 @@ from slash.plugins import manager, PluginInterface
 
 
 def test_slash_list_plugins(report_stream):
-    slash_list_plugins([], report_stream=report_stream)
+    slash_list_plugins(munch.Munch(argv=[]), report_stream=report_stream)
     output = report_stream.getvalue()
     assert output
     installed = manager.get_installed_plugins()
@@ -19,7 +20,7 @@ def test_slash_list_plugins(report_stream):
 def test_slash_list_plugins_for_internal_plugins(report_stream):
     internal_plugin = InternalPlugin()
     manager.install(internal_plugin, is_internal=True)
-    slash_list_plugins([], report_stream=report_stream)
+    slash_list_plugins(munch.Munch(argv=[]), report_stream=report_stream)
     output = report_stream.getvalue()
     assert output
 

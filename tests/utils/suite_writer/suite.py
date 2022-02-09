@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+import munch
 import itertools
 import os
 import sys
@@ -139,7 +142,7 @@ class Suite(object):
         with self._capture_events(returned), self._custom_sorting(sort):
             with self._custom_slashrc(path):
                 app = slash_run(
-                    args, report_stream=report_stream,
+                    munch.Munch(argv=args, cmd="run"), report_stream=report_stream,
                     app_callback=captured.append,
                 )
                 returned.exit_code = app.exit_code

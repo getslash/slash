@@ -1,4 +1,5 @@
 # pylint: disable=redefined-outer-name
+import munch
 import pytest
 
 import slash
@@ -42,5 +43,5 @@ def _console_run(suite):
     suite.disable_debug_info()
     path = suite.commit()
     stream = StringIO()
-    exit_code = slash_run([path], report_stream=stream, working_directory=path)
+    exit_code = slash_run(munch.Munch(argv=[path]), report_stream=stream, working_directory=path)
     return exit_code, stream.getvalue()

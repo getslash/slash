@@ -23,7 +23,7 @@ def _get_parser():
 
 def slash_list_plugins(args, report_stream=sys.stdout):
     parser = _get_parser()
-    parsed_args = parser.parse_args(args)
+    parsed_args = parser.parse_args(args.argv)
 
     _print = Printer(report_stream, force_color=parsed_args.force_color, enable_color=parsed_args.enable_color)
 
