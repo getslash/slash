@@ -1,6 +1,6 @@
 Changelog
 =========
-
+* :release:`1.13.0 <01-03-2022>`
 * :feature:`-` Support python 3.9
 * :release:`1.12.0 <24-09-2020>`
 * :feature:`1032` Allow specifying directories when reading tests from files
