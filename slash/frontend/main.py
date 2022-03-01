@@ -44,7 +44,7 @@ def main():
         module_name, func_name = module_name.split(":")
         module = __import__(module_name, fromlist=[""])
         func = getattr(module, func_name)
-        returned = func(args.argv)
+        returned = func(args)
         if not isinstance(returned, int):
             returned = returned.exit_code
     return returned

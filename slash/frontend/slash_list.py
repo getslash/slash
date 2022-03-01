@@ -49,7 +49,7 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
     _print = partial(print, file=report_stream)
 
     parser = _get_parser()
-    parsed_args = parser.parse_args(args)
+    parsed_args = parser.parse_args(args.argv)
 
     if parsed_args.filter_strings:
         config.root.run.filter_strings.extend(parsed_args.filter_strings)

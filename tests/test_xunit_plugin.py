@@ -10,7 +10,7 @@ from xml.etree import ElementTree
 def test_xunit_plugin(results, xunit_filename): # pylint: disable=unused-argument
     assert os.path.exists(xunit_filename), 'xunit file not created'
 
-    validate_xml(xunit_filename)
+    validate_xml(xunit_filename, results=results)
 
 
 def test_session_errors(suite, xunit_filename):
@@ -109,6 +109,7 @@ def results(suite, suite_test, test_event, xunit_filename): # pylint: disable=un
     test_event(suite_test)
     summary = suite.run()
     assert 'Traceback' not in summary.get_console_output()
+    return summary
 
 @pytest.fixture(params=['normal', 'skip_decorator_without_reason', 'skip_without_reason', 'skip_with_reason',
                         'error', 'failure', 'add_error', 'add_failure'])
@@ -163,18 +164,26 @@ def test_xunit_parallel_suite(parallel_suite, xunit_filename, action):
         assert element.tag == action
 
 
-
-def validate_xml(xml_filename, suite=None):
+def validate_xml(xml_filename, suite=None, results=None):
     with open(xml_filename) as f:
         etree = ElementTree.parse(f)
 
     root = etree.getroot()
     assert root.tag == 'testsuite'
 
-    _validate_counters(root)
+    test_count = _get_test_counts(root)
 
     if suite is not None:
         assert len(root) == len(suite)
+
+    if results is not None:
+        run_tests_results = list(
+            filter(lambda result: result.is_started(),
+                   results.session.results.iter_test_results())
+        )
+        assert len(list(root)) == len(run_tests_results)
+
+    test_case_tag_count = {'error': 0, 'failure': 0, 'skipped': 0}
 
     for child in list(root):
         assert child.tag == 'testcase'
@@ -183,8 +192,21 @@ def validate_xml(xml_filename, suite=None):
 
         for subchild in iter(child):
             assert subchild.tag in ['skipped', 'error', 'failure']
+            test_case_tag_count.update(
+                {subchild.tag: test_case_tag_count[subchild.tag] + 1}
+            )
+
+    assert test_count['skipped'] == test_case_tag_count['skipped']
+    assert test_count['failures'] == test_case_tag_count['failure']
+    assert test_count['errors'] == test_case_tag_count['error']
+
     return root
 
-def _validate_counters(element):
+
+def _get_test_counts(element):
+    test_count = {}
+
     for number in ['errors', 'failures', 'skipped']:
-        _ = int(element.get(number))
+        test_count.update({number: int(element.get(number))})
+
+    return test_count

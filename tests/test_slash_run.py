@@ -6,6 +6,7 @@ import sys
 
 import pytest
 import slash
+import munch
 from slash import config, site
 from io import StringIO
 from slash.frontend import slash_run
@@ -16,7 +17,7 @@ from .utils import no_op, NullFile, TestCase
 
 def test_slash_run_fails_fast_for_missing_files():
     result = slash_run.slash_run(
-        ["/non/existing/path"], report_stream=NullFile())
+        munch.Munch(argv=["/non/existing/path"]), report_stream=NullFile())
     assert result.exit_code != 0, "slash run unexpectedly succeeded for a missing path"
 
 

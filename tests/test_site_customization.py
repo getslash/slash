@@ -6,6 +6,7 @@ from tempfile import mktemp
 import slash
 import slash.site
 from io import StringIO
+import munch
 from slash.frontend import slash_run
 import requests
 import pkg_resources
@@ -22,7 +23,7 @@ class SlashRunSiteCustomizationTest(TestCase):
     def test_slash_run_calls_site_load(self):
         slash.site.load(working_directory=None)
         self.forge.replay()
-        app = slash_run.slash_run([])
+        app = slash_run.slash_run(munch.Munch(argv=[]))
         assert app.exit_code != 0
 
 _customization_index = 0

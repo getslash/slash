@@ -88,10 +88,18 @@ class Plugin(PluginInterface):
             "tests": str(context.session.results.get_num_results()),
             "errors": str(context.session.results.get_num_errors()),
             "failures": str(context.session.results.get_num_failures()),
-            "skipped": str(context.session.results.get_num_skipped()),
+            "skipped": str(
+                context.session.results.get_num_skipped(include_not_run=False)
+            ),
         })
         self._add_errors(e, context.session.results.global_result)
-        for result in context.session.results.iter_test_results():
+        run_test_results = filter(
+            lambda result: result.is_started(),
+            context.session.results.iter_test_results()
+        )
+
+        for result in run_test_results:
+
             test = E("testcase", {
                 "name": result.test_metadata.address,
                 "classname": result.test_metadata.class_name or '',
