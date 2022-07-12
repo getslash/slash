@@ -146,7 +146,7 @@ else:
                 1 / 0
             except:
                 tb = sys.exc_info()[2]
-            return tb
+            return tb  # pylint: disable=used-before-assignment
 
         @property
         def __class__(self):

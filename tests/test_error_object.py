@@ -116,7 +116,7 @@ def test_capture_exception_twice_caches_object():
     except RuntimeError:
         err2 = Error.capture_exception()
 
-    assert err1 is err2
+    assert err1 is err2  # pylint: disable=used-before-assignment
 
 
 def test_detailed_traceback(error):
@@ -153,7 +153,7 @@ def test_error_frame_correction():
     except CustomException:
         err = Error.capture_exception()
 
-    assert err.traceback.frames[-1].func_name == 'f'
+    assert err.traceback.frames[-1].func_name == 'f'  # pylint: disable=used-before-assignment
 
 
 ####

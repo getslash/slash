@@ -203,7 +203,7 @@ def test_loader():
 @pytest.fixture
 def active_slash_session(request):
     returned = slash.Session()
-    returned.__enter__()
+    returned.__enter__()  # pylint: disable=unnecessary-dunder-call
 
     @request.addfinalizer
     def finalize():  # pylint: disable=unused-variable

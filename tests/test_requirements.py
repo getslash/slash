@@ -281,7 +281,7 @@ def test_class_requirements_siblings(suite_builder):
             pass
 
         @slash.requires(lambda: False) # pylint: disable=unused-variable
-        class FirstTest(BaseTest):
+        class FirstTest(BaseTest):  # pylint: disable=unused-variable
             def test(self):
                 pass
 

@@ -25,7 +25,7 @@ def test_marker_class(exception_class):
     # TypeError: 'mappingproxy' object does not support item assignment
     is_builtin_type = exception_class is AttributeError
     expected = None if is_builtin_type else 'b'
-    assert get_exception_mark(exception_class, 'a')  == expected
+    assert get_exception_mark(exception_class, 'a') == expected
 
     e = exception_class()
     mark_exception(e, 'c', 'd')
@@ -43,6 +43,6 @@ class CustomException2(Exception):
         raise Exception('Set-attr name={} value={}'.format(name, value))
 
 
-@pytest.fixture(params=[CustomException1, CustomException2, AttributeError])
-def exception_class(request):
+@pytest.fixture(params=[CustomException1, CustomException2, AttributeError], name="exception_class")
+def exception_class_fx(request):
     return request.param
