@@ -13,7 +13,7 @@ def test_needs_provides_plugin_name(needs_decorate_method, provides_decorate_met
     @slash.plugins.active  # pylint: disable=abstract-method, unused-variable
     @maybe_decorate(slash.plugins.needs('p'), not needs_decorate_method)
     @autoname
-    class NeedsPlugin(PluginInterface):
+    class NeedsPlugin(PluginInterface):  # pylint: disable=abstract-method, unused-variable
 
         @maybe_decorate(slash.plugins.needs('p'), needs_decorate_method)
         def session_start(self):
@@ -22,7 +22,7 @@ def test_needs_provides_plugin_name(needs_decorate_method, provides_decorate_met
     @slash.plugins.active  # pylint: disable=abstract-method, unused-variable
     @maybe_decorate(slash.plugins.provides('p'), not provides_decorate_method)
     @autoname
-    class ProvidesPlugin(PluginInterface):
+    class ProvidesPlugin(PluginInterface):  # pylint: disable=abstract-method, unused-variable
 
         @maybe_decorate(slash.plugins.provides('p'), provides_decorate_method)
         def session_start(self):

@@ -14,7 +14,7 @@ from .utils import NamedPlugin, maybe_decorate
 def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
 
     @slash.plugins.active  # pylint: disable=unused-variable
-    class SamplePlugin(PluginInterface):
+    class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
 
         def get_name(self):
             return 'sample'
@@ -37,7 +37,7 @@ def test_registers_on_kwargs(class_level_needs, class_level_provides):
     @slash.plugins.active  # pylint: disable=unused-variable
     @maybe_decorate(needs_decorator, class_level_needs)
     @maybe_decorate(provides_decorator, class_level_provides)
-    class SamplePlugin(PluginInterface):
+    class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
 
         def get_name(self):
             return 'sample'
@@ -64,7 +64,7 @@ def test_registers_on_kwargs(class_level_needs, class_level_provides):
 def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
 
     @slash.plugins.active  # pylint: disable=unused-variable
-    class SamplePlugin(PluginInterface):
+    class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
 
         def get_name(self):
             return 'sample'
@@ -80,7 +80,7 @@ def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoin
 
 def test_class_variables_allowed(restore_plugins_on_cleanup):
     @slash.plugins.active  # pylint: disable=unused-variable
-    class SamplePlugin(PluginInterface):
+    class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
 
         ATTRIBUTE = 'some_value'
 
@@ -276,7 +276,7 @@ def test_install_uninstall(no_plugins):
 def test_register_if(no_plugins, checkpoint, cond):
 
     @slash.plugins.active  # pylint: disable=unused-variable
-    class CustomPlugin(NamedPlugin):
+    class CustomPlugin(NamedPlugin):  # pylint: disable=unused-variable
 
         @slash.plugins.register_if(cond)
         def test_start(self):
@@ -290,7 +290,7 @@ def test_register_if(no_plugins, checkpoint, cond):
 def test_register_if_nonexistent_hook(no_plugins, checkpoint):
 
     @slash.plugins.active  # pylint: disable=unused-variable
-    class CustomPlugin(NamedPlugin):
+    class CustomPlugin(NamedPlugin):  # pylint: disable=unused-variable
 
         @slash.plugins.register_if(False)
         def nonexistent_hook(self):

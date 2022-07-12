@@ -56,25 +56,25 @@ def test_fixtures_uses_fixture(suite_builder):
         import slash
 
         @slash.fixture
-        def fixture_1():
+        def fixture_1():  # pylint: disable=unused-variable
             slash.context.result.data['params'] = ["fixture_1"]
 
         @slash.fixture
         @slash.use_fixtures(["fixture_3"])
-        def fixture_2():
+        def fixture_2():  # pylint: disable=unused-variable
             slash.context.result.data['params'].append("fixture_2")
 
         @slash.fixture
-        def fixture_3():
+        def fixture_3():  # pylint: disable=unused-variable
             slash.context.result.data['params'].append("fixture_3")
 
         @slash.use_fixtures(["fixture_1", "fixture_2"])
         @slash.fixture
-        def fixture_4():
+        def fixture_4():  # pylint: disable=unused-variable
             slash.context.result.data['params'].append("fixture_4")
 
         @slash.use_fixtures(["fixture_4"])
-        def test_a(fixture1: slash.use.fixture_1, fixture_2):  # pylint: disable=unused-variable
+        def test_a(fixture1: slash.use.fixture_1, fixture_2):  # pylint: disable=unused-variable,unused-argument
             pass
 
     suite_builder.build().run().assert_success(1).with_data([{'params': ["fixture_1", "fixture_2", "fixture_3",

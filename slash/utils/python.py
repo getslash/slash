@@ -121,7 +121,7 @@ def resolve_underlying_function(thing):
     return thing
 
 
-def reraise(tp, value, tb=None):
+def reraise(tp, value, tb=None):  # pylint: disable=unused-argument
     # A hacky way to check, whether we have a TracebackProxy here. Can't check directly, as
     # it would lead to circular import.
     if value.__traceback__ is not tb:

@@ -29,7 +29,7 @@ class Fixture(FixtureBase):
 
     def get_tags(self, store):
         current_fixture_tags = get_tags(self.fixture_func)
-        returned = current_fixture_tags.copy() if current_fixture_tags is not NO_TAGS else Tags()
+        returned = current_fixture_tags.copy() if current_fixture_tags is not NO_TAGS else Tags()  # pylint: disable=no-member
         required_fixtures_tags = [fixture.get_tags(store) for fixture in store.get_required_fixture_objects(self.fixture_func, self.namespace)]
         for tags in required_fixtures_tags:
             returned.update(tags)

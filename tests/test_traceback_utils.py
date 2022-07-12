@@ -38,7 +38,7 @@ def context():
     else:
         assert False, 'did not fail'
 
-    assert err.traceback.frames[-2].lineno == 6
+    assert err.traceback.frames[-2].lineno == 6  # pylint: disable=used-before-assignment
 
 
 def test_variable_capping():
@@ -56,7 +56,7 @@ def test_variable_capping():
     except ZeroDivisionError:
         err = Error(exc_info=sys.exc_info())
 
-    distilled = err.traceback.to_list()
+    distilled = err.traceback.to_list()  # pylint: disable=used-before-assignment
     assert len(distilled[-1]['locals']['long_var']['value']) == _MAX_VARIABLE_VALUE_LENGTH
 
 
@@ -100,7 +100,7 @@ def test_self_attribute_throws():
         assert False, 'Did not raise'
 
     with vintage.get_no_deprecations_context():
-        locals_ = error.traceback.frames[-1].locals
+        locals_ = error.traceback.frames[-1].locals  # pylint: disable=used-before-assignment
     assert 'self' in locals_
     for key in locals_:
         assert 'self.' not in key
@@ -142,4 +142,4 @@ def test_dict_getting_raises_exception():
         func()
     except ZeroDivisionError:
         error_string = Error(exc_info=sys.exc_info()).traceback.to_string(include_vars=True)
-    assert 'self:' in error_string
+    assert 'self:' in error_string  # pylint: disable=used-before-assignment
