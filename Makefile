@@ -9,7 +9,7 @@ pylint: env
 env: .env/.up-to-date
 
 .env/.up-to-date: setup.py Makefile setup.cfg
-	python -m virtualenv .env
+	python -m venv .env
 	.env/bin/pip install -e .[testing,doc]
 	touch .env/.up-to-date
 
