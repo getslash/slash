@@ -158,7 +158,7 @@ else:
 
 class Unprintable(object):
 
-    def __repr__(self):
+    def __repr__(self):  # pylint: disable=invalid-repr-returned
         1/0                     # pylint: disable=pointless-statement
 
     __str__ = __repr__

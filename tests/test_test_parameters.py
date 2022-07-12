@@ -93,7 +93,7 @@ def test_before_parameters_inheritence(cartesian, with_override):
             if with_override:
                 super(DerivedTest, self).before(a=a)
             else:
-                super(DerivedTest, self).before()
+                super(DerivedTest, self).before()  # pylint: disable=no-value-for-parameter
             _set("before_2_a", a)
             _set("before_2_b", b)
 

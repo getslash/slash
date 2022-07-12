@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,ungrouped-imports,wrong-import-order,wrong-import-position,unnecessary-pass,import-outside-toplevel,consider-using-f-string,redundant-u-string-prefix,unspecified-encoding
+disable= R,attribute-defined-outside-init,bad-continuation,bad-option-value,bare-except,invalid-name,locally-disabled,missing-docstring,redefined-builtin,ungrouped-imports,wrong-import-order,wrong-import-position,unnecessary-pass,import-outside-toplevel,consider-using-f-string,redundant-u-string-prefix,unspecified-encoding,unnecessary-lambda-assignment,use-implicit-booleaness-not-comparison,raise-missing-from
 
 [REPORTS]
 reports=no

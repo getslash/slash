@@ -116,7 +116,7 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         reporter = None if context.session is None else context.session.reporter
         if reporter is not None:
             reporter.notify_before_console_output()
-        returned = super(ConsoleHandler, self).emit(record)
+        returned = super(ConsoleHandler, self).emit(record)  # pylint: disable=assignment-from-no-return
         if reporter is not None:
             reporter.notify_after_console_output()
         return returned
