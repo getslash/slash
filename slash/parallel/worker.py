@@ -59,8 +59,7 @@ class Worker(object):
             self.client = xmlrpc_client.ServerProxy(self.server_addr, allow_none=True)
             self.client.connect(self.client_id, os.getpid())
             self._stop_event = threading.Event()
-            self._watchdog_thread = threading.Thread(target=self.keep_alive, args=(self._stop_event,))
-            self._watchdog_thread.setDaemon(True)
+            self._watchdog_thread = threading.Thread(target=self.keep_alive, args=(self._stop_event,), daemon=True)
             self._watchdog_thread.start()
         except OSError as err:
             self.write_to_error_file("Failed to connect to server, error: {}".format(str(err)))
