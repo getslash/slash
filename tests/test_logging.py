@@ -85,7 +85,7 @@ def test_logs_compression(files_dir, suite, config_override, compression_enabled
 
     if compression_enabled:
         #validate file names
-        if compression_method is "gzip":
+        if compression_method == "gzip":
             session_log_path.endswith("gz")
         else:
             assert session_log_path.endswith(".br")
