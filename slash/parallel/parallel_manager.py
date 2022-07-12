@@ -49,12 +49,10 @@ class ParallelManager(object):
 
     def start_server_in_thread(self, collected):
         self.server = Server(collected)
-        self.server_thread = threading.Thread(target=self.server.serve, args=())
-        self.server_thread.setDaemon(True)
+        self.server_thread = threading.Thread(target=self.server.serve, args=(), daemon=True)
         self.server_thread.start()
         self.keepalive_server = KeepaliveServer()
-        self.keepalive_server_thread = threading.Thread(target=self.keepalive_server.serve, args=())
-        self.keepalive_server_thread.setDaemon(True)
+        self.keepalive_server_thread = threading.Thread(target=self.keepalive_server.serve, args=(), daemon=True)
         self.keepalive_server_thread.start()
 
     def kill_workers(self):
