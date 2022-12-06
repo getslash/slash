@@ -138,16 +138,17 @@ def test_log_file_colorize(files_dir, config_override, suite, suite_test):
 
 
 @pytest.mark.parametrize('level', ['info', 'notice', 'warning'])
-def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test, config_override, level):
+@pytest.mark.parametrize('log_char', ['a', b'a'])
+def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test, config_override, level, log_char):
     assert slash.config.root.log.truncate_console_lines
 
-    long_string = 'a' * 1000
+    long_string = log_char * 1000
     suite_test.append_line('slash.logger.{level}({msg!r})'.format(msg=long_string, level=level))
     summary = suite.run()
     [result] = summary.get_all_results_for_test(suite_test)
     with open(result.get_log_path()) as logfile:
         logfile_data = logfile.read()
-        assert long_string in logfile_data
+        assert str(long_string) in logfile_data
 
 
 @pytest.mark.parametrize('symlink_name', ['last_session_symlink', 'last_session_dir_symlink', 'last_failed_symlink'])

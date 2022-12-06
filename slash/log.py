@@ -109,7 +109,7 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
 
     def _truncate(self, line):
         if len(line) > self.MAX_LINE_LENGTH:
-            line = line[:self.MAX_LINE_LENGTH - 3] + "..."
+            line = str(line[:self.MAX_LINE_LENGTH - 3]) + "..."
         return line
 
     def emit(self, record):
