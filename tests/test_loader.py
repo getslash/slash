@@ -164,9 +164,6 @@ def test_import_errors_with_session():
         assert 'No module named nonexistent' in err.message or "No module named 'nonexistent'" in err.message
 
 
-    return suite
-
-
 def test_fixture_and_test_overrides(tmpdir, config_override):
     tests_dir = tmpdir.join('tests')
     full_path = tests_dir.join('.dir').join('test_something.py')
