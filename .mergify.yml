@@ -7,4 +7,3 @@ rules:
         contexts:
         - codecov/project
         - codecov/patch
-        - continuous-integration/travis-ci
