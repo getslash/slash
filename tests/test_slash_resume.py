@@ -166,3 +166,34 @@ def test_resuming_interrupted_session(suite):
     resumed = get_tests_from_previous_session(results.session.id)
     assert len(resumed) == len(suite)
     assert set(test.address_in_file for test in resumed) == set(address_in_file(test) for test in suite)
+
+@pytest.mark.parametrize('unstarted_only_without_skipped', [True, False])
+def test_unstarted_only_without_skipped(suite, unstarted_only_without_skipped, config_override):
+    fail_index = len(suite) // 2
+    skip_index = fail_index - 1
+    suite[skip_index].when_run.skip(decorator=True)
+    suite[fail_index].when_run.fail()
+    for index, test in enumerate(suite):
+        if index > fail_index:
+            test.expect_not_run()
+    result = suite.run(additional_args=['-x'])
+
+    if unstarted_only_without_skipped:
+        config_override('resume.unstarted_only_without_skipped', True)
+        expected_resume_tests_num = 4
+        expected_status = 'planned'
+        resumed = get_tests_from_previous_session(result.session.id)
+        assert len(resumed) == expected_resume_tests_num
+        for test in resumed:
+            assert test.status == expected_status
+    else:
+        config_override('resume.unstarted_only', True)
+        expected_resume_tests_num = len(suite) - fail_index
+        expected_planned = 4
+        expected_skipped = 1
+        resumed = get_tests_from_previous_session(result.session.id)
+        assert len(resumed) == expected_resume_tests_num
+        num_planned = sum(1 for test in resumed if test.status == "planned")
+        num_skipped = sum(1 for test in resumed if test.status == "skipped")
+        assert num_planned == expected_planned
+        assert num_skipped == expected_skipped

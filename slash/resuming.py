@@ -44,6 +44,7 @@ class ResumeTestStatus(object):
     PLANNED = 'planned'
     SUCCESS = 'success'
     FAILED = 'failed'
+    SKIPPED = 'skipped'
 
 
 class ResumedTestData(object):
@@ -110,6 +111,8 @@ def save_resume_state(session_result, collected_tests):
         test_to_resume.variation = str(metadata.variation.id) if metadata.variation else None
         if result.is_success_finished():
             test_to_resume.status = ResumeTestStatus.SUCCESS
+        elif (not result.is_started()) and result.is_skip():
+            test_to_resume.status = ResumeTestStatus.SKIPPED
         elif not result.is_started() or result.is_skip():
             test_to_resume.status = ResumeTestStatus.PLANNED
         else:
@@ -144,6 +147,8 @@ def _get_resume_status_from_backslash_status(backslash_status):
         return ResumeTestStatus.FAILED
     elif backslash_status in ['SUCCESS']:
         return ResumeTestStatus.SUCCESS
+    elif backslash_status in ['SKIPPED']:
+        return ResumeTestStatus.SKIPPED
     else:
         return ResumeTestStatus.PLANNED
 
@@ -179,10 +184,18 @@ def get_tests_locally(session_id):
 
 def _filter_tests(tests, get_successful_tests):
     unstarted_only, failed_only = config.root.resume.unstarted_only, config.root.resume.failed_only
+    unstarted_only_without_skipped = config.root.resume.unstarted_only_without_skipped
     if unstarted_only and failed_only:
         raise CannotResume("Got both unstarted_only and failed_only, cannot resume")
+    if unstarted_only_without_skipped and failed_only:
+        raise CannotResume("Got both unstarted_only_without_skipped and failed_only, cannot resume")
+    if unstarted_only and unstarted_only_without_skipped:
+        raise CannotResume("Got both unstarted_only and unstarted_only_without_skipped, cannot resume")
     filtered_status = [ResumeTestStatus.SUCCESS] if get_successful_tests else []
     if unstarted_only:
+        filtered_status.append(ResumeTestStatus.PLANNED)
+        filtered_status.append(ResumeTestStatus.SKIPPED)
+    elif unstarted_only_without_skipped:
         filtered_status.append(ResumeTestStatus.PLANNED)
     elif failed_only:
         filtered_status.append(ResumeTestStatus.FAILED)
