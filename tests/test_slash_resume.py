@@ -167,8 +167,13 @@ def test_resuming_interrupted_session(suite):
     assert len(resumed) == len(suite)
     assert set(test.address_in_file for test in resumed) == set(address_in_file(test) for test in suite)
 
-@pytest.mark.parametrize('unstarted_only_without_skipped', [True, False])
-def test_unstarted_only_without_skipped(suite, unstarted_only_without_skipped, config_override):
+@pytest.mark.parametrize('no_skipped,unstarted_only', [
+    (True, True),
+    (False, True),
+    (True, False),
+    (False, False),
+    ])
+def test_no_skipped(suite, no_skipped, unstarted_only, config_override):
     fail_index = len(suite) // 2
     skip_index = fail_index - 1
     suite[skip_index].when_run.skip(decorator=True)
@@ -178,15 +183,16 @@ def test_unstarted_only_without_skipped(suite, unstarted_only_without_skipped, c
             test.expect_not_run()
     result = suite.run(additional_args=['-x'])
 
-    if unstarted_only_without_skipped:
-        config_override('resume.unstarted_only_without_skipped', True)
+    if no_skipped and unstarted_only:
+        config_override('resume.unstarted_only', True)
+        config_override('resume.no_skipped', True)
         expected_resume_tests_num = 4
         expected_status = 'planned'
         resumed = get_tests_from_previous_session(result.session.id)
         assert len(resumed) == expected_resume_tests_num
         for test in resumed:
             assert test.status == expected_status
-    else:
+    elif (not no_skipped) and unstarted_only:
         config_override('resume.unstarted_only', True)
         expected_resume_tests_num = len(suite) - fail_index
         expected_planned = 4
@@ -196,4 +202,28 @@ def test_unstarted_only_without_skipped(suite, unstarted_only_without_skipped, c
         num_planned = sum(1 for test in resumed if test.status == "planned")
         num_skipped = sum(1 for test in resumed if test.status == "skipped")
         assert num_planned == expected_planned
+        assert num_skipped == expected_skipped
+    elif no_skipped and (not unstarted_only):
+        config_override('resume.no_skipped', True)
+        expected_resume_tests_num = len(suite) - fail_index
+        expected_planned = 4
+        expected_failed = 1
+        resumed = get_tests_from_previous_session(result.session.id)
+        assert len(resumed) == expected_resume_tests_num
+        num_planned = sum(1 for test in resumed if test.status == "planned")
+        num_failed = sum(1 for test in resumed if test.status == "failed")
+        assert num_planned == expected_planned
+        assert num_failed == expected_failed
+    else:
+        expected_resume_tests_num = len(suite) - skip_index
+        expected_planned = 4
+        expected_failed = 1
+        expected_skipped = 1
+        resumed = get_tests_from_previous_session(result.session.id)
+        assert len(resumed) == expected_resume_tests_num
+        num_planned = sum(1 for test in resumed if test.status == "planned")
+        num_failed = sum(1 for test in resumed if test.status == "failed")
+        num_skipped = sum(1 for test in resumed if test.status == "skipped")
+        assert num_planned == expected_planned
+        assert num_failed == expected_failed
         assert num_skipped == expected_skipped
