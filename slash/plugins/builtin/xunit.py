@@ -102,9 +102,12 @@ class Plugin(PluginInterface):
 
             test = E("testcase", {
                 "name": result.test_metadata.address,
-                "classname": result.test_metadata.class_name or '',
                 "time": str(result.get_duration().total_seconds())
             })
+
+            if result.test_metadata.class_name:
+                test.attrib["classname"] = result.test_metadata.class_name
+
             self._add_errors(test, result)
 
             for skip in result.get_skips():
