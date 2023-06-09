@@ -40,7 +40,7 @@ class CustomException1(Exception):
 
 class CustomException2(Exception):
     def __setattr__(self, name, value):
-        raise Exception('Set-attr name={} value={}'.format(name, value))
+        raise Exception('Set-attr name={} value={}'.format(name, value))  # pylint: disable=broad-exception-raised
 
 
 @pytest.fixture(params=[CustomException1, CustomException2, AttributeError], name="exception_class")

@@ -29,10 +29,10 @@ def test_exception_during_app_exit_debugger(checkpoint, config_override):
     @hooks.entering_debugger.register  # pylint: disable=no-member
     def callback(*_, **__):  # pylint: disable=unused-variable
         checkpoint()
-        raise Exception('Entering debugger error')
+        raise Exception('Entering debugger error')  # pylint: disable=broad-exception-raised
     config_override('debug.enabled', True)
     with Application() as app:
-        raise Exception('Some Exception')
+        raise Exception('Some Exception')  # pylint: disable=broad-exception-raised
     assert checkpoint
     assert app.exit_code != 0
     assert checkpoint.called_count == 1

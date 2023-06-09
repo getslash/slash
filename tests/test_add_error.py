@@ -54,7 +54,7 @@ def test_add_error_that_forbids_setattr(suite, suite_test):
     def __code__(): # pylint: disable=unused-variable
         class MyException(Exception):
             def __setattr__(self, *args):
-                raise Exception("Set-attr")
+                raise Exception("Set-attr")  # pylint: disable=broad-exception-raised
 
         raise MyException("Special Message")
 

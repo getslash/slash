@@ -82,7 +82,7 @@ class CustomizationTest(TestCase):
         fake_response = self.forge.create_mock(requests.Response)
         fake_response.raise_for_status().whenever()
         fake_response.content = self.get_customization_source()
-        requests.get(url).and_return(fake_response)
+        requests.get(url).and_return(fake_response)  # pylint: disable=missing-timeout
         os.environ["SLASH_SETTINGS"] = url
         self.addCleanup(os.environ.pop, "SLASH_SETTINGS")
         self.forge.replay()

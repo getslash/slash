@@ -70,7 +70,7 @@ def _load_filename(filename):
         _load_source(f.read(), filename)
 
 def _load_url(url):
-    response = requests.get(url)
+    response = requests.get(url)  # pylint: disable=missing-timeout
     response.raise_for_status()
     _load_source(response.content, url)
 

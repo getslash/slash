@@ -43,7 +43,7 @@ def test_requirements_raises_exception(suite, suite_test):
     @suite_test.file.append_body
     def __code__():  # pylint: disable=unused-variable
         def fail_predicate():  # pylint: disable=unused-variable
-            raise Exception("Failing")
+            raise Exception("Failing")  # pylint: disable=broad-exception-raised
 
     suite_test.add_decorator("slash.requires(fail_predicate)")
     suite_test.expect_error()

@@ -15,7 +15,7 @@ def test_notification_formatting():
 
     with slash.Session():
         try:
-            raise Exception('Some message containing {curly_braces}')
+            raise Exception('Some message containing {curly_braces}')  # pylint: disable=broad-exception-raised
         except Exception: # pylint: disable=broad-except
             plugin.entering_debugger(sys.exc_info())
     assert len(messages) == 1

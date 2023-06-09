@@ -108,7 +108,7 @@ def test_self_attribute_throws():
 
 class NonReprable(object):
     def __repr__(self):
-        raise Exception('Repr error')
+        raise Exception('Repr error')  # pylint: disable=broad-exception-raised
 
 
 def test_safe_repr_for_non_repable_object():
@@ -125,7 +125,7 @@ class NonDictable(object):
 
     def __getattribute__(self, attr):
         if attr == '__dict__':
-            raise Exception('dict error')
+            raise Exception('dict error')  # pylint: disable=broad-exception-raised
         return super(NonDictable, self).__getattribute__(attr)
 
     def method(self):

@@ -19,7 +19,7 @@ import jinja2
 _SLASH_ICON = "http://slash.readthedocs.org/en/latest/_static/slash-logo.png"
 
 def _post_request(url, **kwargs):
-    response = requests.post(url, **kwargs)
+    response = requests.post(url, **kwargs)  # pylint: disable=missing-timeout
     response.raise_for_status()
     return response
 
