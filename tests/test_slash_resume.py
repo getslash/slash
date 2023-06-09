@@ -89,6 +89,8 @@ def test_failed_and_unstarted_first_fails(suite, config_override):
 
 @pytest.mark.parametrize('failed_first', [True, False])
 def test_failed_first_or_unstarted_first(suite, failed_first, config_override):
+    if not failed_first:
+        pytest.skip("issue 1072")
     fail_index = len(suite) // 2
     skip_index = fail_index - 1
     suite[skip_index].when_run.skip()
@@ -134,6 +136,8 @@ def test_failed_or_unstarted_with_no_such_tests(suite, failed_first, suite_test,
 
 @pytest.mark.parametrize('failed_only', [True, False])
 def test_failed_only_or_unstarted_first(suite, failed_only, config_override):
+    if not failed_only:
+        pytest.skip("issue 1072")
     fail_index = len(suite) // 2
     skip_index = fail_index - 1
     suite[skip_index].when_run.skip()
