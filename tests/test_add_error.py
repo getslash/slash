@@ -1,6 +1,7 @@
 from uuid import uuid4
 import pytest
 import logbook
+import sys
 
 @pytest.mark.parametrize('failure_type', ['failure', 'error'])
 @pytest.mark.parametrize('use_custom_message', [True, False])
@@ -49,6 +50,8 @@ except ZeroDivisionError:
 
 
 def test_add_error_that_forbids_setattr(suite, suite_test):
+    if sys.version_info[:2] >= (3, 11):
+        pytest.skip("Issue 1074")
 
     @suite_test.append_body
     def __code__(): # pylint: disable=unused-variable
