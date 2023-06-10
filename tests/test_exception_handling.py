@@ -237,7 +237,7 @@ def test_assert_raises_that_not_raises(message):
         assert expected_substring in str(e)
         assert e.expected_types == (CustomException,)
     else:
-        raise Exception('ExpectedExceptionNotCaught exception was not raised :(')
+        raise Exception('ExpectedExceptionNotCaught exception was not raised :(')  # pylint: disable=broad-exception-raised
 
 
 @pytest.mark.parametrize('with_session', [True, False])

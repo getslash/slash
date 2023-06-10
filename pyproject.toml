@@ -1,0 +1,79 @@
+[build-system]
+requires = ["hatchling>=0.25.1", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "slash"
+description = "A Modern Testing Framework for Large-scale Projects"
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "BSD 3-Clause License" }
+
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+dependencies = [
+    "arrow",
+    "colorama",
+    "confetti>=2.5.3",
+    "dessert~=1.4.0",
+    "emport~=1.3.1",
+    "gossip>=2.3.0",
+    "Jinja2",
+    "Logbook>=1.2.0",
+    "ordered-set",
+    "requests>=1.1.0",
+    "SQLAlchemy",
+    "libtmux",
+    "raven",
+    "py>=1.5.0",
+    "pyparsing",
+    "vintage>=0.4.0",
+    "brotli",
+    "IPython==1.2.1; implementation_name=='pypy'",
+    "IPython<7.17.0; implementation_name!='pypy' and python_version<='3.6'",
+    "IPython; implementation_name!='pypy' and python_version>'3.6'",
+]
+
+dynamic = ["version"]
+
+authors = [
+    { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
+]
+
+[project.urls]
+"Homepage" = "http://getslash.github.io/"
+"GitHub" = "https://github.com/getslash/slash"
+
+
+[project.scripts]
+slash  = "slash.frontend.main:main_entry_point"
+
+[project.optional-dependencies]
+testing = [
+    "coverage",
+    "coveralls",
+    "munch",
+    "pytest",
+    "pytest-cov",
+    "pytest-timeout",
+    "pyforge",
+    "astroid~=2.15.5",
+    "pylint~=2.17.4",
+]
+doc = [
+    "alabaster",
+    "docutils",
+    "releases~=1.6.1",
+    "Sphinx",
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.pytest]
+testpaths = "tests"
+timeout_method = "signal"
+addopts = "-ra -W error::DeprecationWarning"
