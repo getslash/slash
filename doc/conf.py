@@ -109,7 +109,6 @@ html_theme_options = {
     'github_repo': 'slash',
     'github_button': True,
     'github_banner': True,
-    'travis_button': 'getslash/slash',
     'analytics_id': 'UA-62537825-1',
     'extra_nav_links': {
         'Slash Website': 'http://getslash.github.io',
