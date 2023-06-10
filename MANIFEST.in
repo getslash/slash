@@ -1,1 +1,1 @@
-include MANIFEST.in tests/* tox.ini travis_build.py .pylintrc
+include MANIFEST.in tests/* tox.ini .pylintrc
