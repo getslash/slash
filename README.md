@@ -4,7 +4,7 @@ Slash
 
 |                       |                                                                                         |
 |-----------------------|-----------------------------------------------------------------------------------------|
-| Build Status          | ![Build Status](https://github.com/getslash/slash/actions/workflows/main.yml/badge.svg?branch=master,develop)      |
+| Build Status          | ![Build Status](https://github.com/getslash/slash/actions/workflows/main.yml/badge.svg?branch=develop)      |
 | Supported Versions    | ![Supported Versions](https://img.shields.io/pypi/pyversions/slash.svg)                 |
 | Latest Version        | ![Latest Version](https://img.shields.io/pypi/v/slash.svg)                              |
 | Test Coverage         | ![Coverage Status](https://codecov.io/gh/getslash/slash/branch/develop/graph/badge.svg) |
