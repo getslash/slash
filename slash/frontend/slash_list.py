@@ -140,7 +140,13 @@ def _report_fixtures(args, session, printer, used_fixtures):
             for line in (_doc_style(doc)).split('\n'):
                 printer('    {}'.format(line))
 
+        source_path = inspect.getsourcefile(fixture_func)
+        relpath_start = args.paths[0] if args.paths else '.'
+        if os.path.splitdrive(source_path)[0] == os.path.splitdrive(os.path.abspath(relpath_start))[0]:
+            # On Windows, ValueError is raised when path and start are on different drives.
+            source_path = os.path.relpath(source_path, relpath_start)
+
         printer('    Source: {}:{}'.format(
-            os.path.relpath(inspect.getsourcefile(fixture_func), args.paths[0] if args.paths else '.'),
+            source_path,
             inspect.getsourcelines(fixture_func)[1]))
         printer('\n')
