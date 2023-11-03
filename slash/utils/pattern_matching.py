@@ -35,7 +35,6 @@ class Include(object):
 
 
 class BinaryMatching(object):
-
     aggregator = None
 
     def __init__(self, matchers):
@@ -72,7 +71,7 @@ word = Word(alphanums + "._,-=/:")
 matcher = Literal("tag:") + ZeroOrMore(" ") + word | word
 matcher.setParseAction(Include)
 
-bool_expr = infixNotation(
+bool_expr = infixNotation(  # pylint: disable=too-many-function-args
     matcher,
     [
         (Keyword("not"), 1, opAssoc.RIGHT, Exclude),
