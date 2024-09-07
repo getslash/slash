@@ -243,6 +243,8 @@ class SessionLogging(object):
                 handler_class = logbook.GZIPCompressionHandler
             elif config.root.log.compression.algorithm == "brotli":
                 handler_class = logbook.BrotliCompressionHandler
+            else:
+                raise InvalidConfiguraion(f"Use unsupported compression algorithm: {config.root.log.compression.algorithm}")
         elif use_rotation:
             kwargs.update({"max_size": 4*1024**2, "backup_count": 1})
             handler_class = logbook.RotatingFileHandler

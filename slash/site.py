@@ -1,9 +1,11 @@
 import os
 import sys
+import importlib.metadata
 
 import requests
 
 from .conf import config
+
 
 def load(thing=None, working_directory=None):
     """
@@ -54,8 +56,7 @@ def _load_environment():
         load(loaded_url_or_file)
 
 def _load_entry_points():
-    import pkg_resources
-    for customize_function_loader in pkg_resources.iter_entry_points("slash.site.customize"): # pylint: disable=no-member
+    for customize_function_loader in importlib.metadata.entry_points(group="slash.site.customize"):
         func = customize_function_loader.load()
         func()
 

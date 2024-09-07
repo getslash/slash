@@ -6,15 +6,15 @@ build-backend = "hatchling.build"
 name = "slash"
 description = "A Modern Testing Framework for Large-scale Projects"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = { text = "BSD 3-Clause License" }
 
 classifiers = [
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
     "arrow",
@@ -62,8 +62,8 @@ testing = [
     "pytest-cov",
     "pytest-timeout",
     "pyforge",
-    "astroid~=2.15.5",
-    "pylint~=2.17.4",
+    "astroid>=3.0",
+    "pylint>=3.0",
 ]
 doc = [
     "alabaster",

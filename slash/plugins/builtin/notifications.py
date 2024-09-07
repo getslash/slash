@@ -1,3 +1,4 @@
+import importlib.resources
 from ..interface import PluginInterface
 from ... import hooks
 from ...conf import config
@@ -9,7 +10,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from vintage import warn_deprecation
 import datetime
-from pkg_resources import resource_string
 import requests
 import slash
 import smtplib
@@ -70,7 +70,7 @@ class Message(object):
     def _get_html_template(self):
         returned = self._email_template
         if returned is None:
-            source = resource_string('slash.plugins.builtin', 'email_template.j2').decode('utf-8')
+            source = importlib.resources.files("slash.plugins.builtin").joinpath("email_template.j2").read_bytes().decode("utf-8")
             returned = type(self)._email_template = jinja2.Template(source)
         return returned
 
