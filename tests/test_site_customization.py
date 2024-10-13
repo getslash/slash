@@ -9,7 +9,7 @@ from io import StringIO
 import munch
 from slash.frontend import slash_run
 import requests
-import pkg_resources
+import importlib.metadata
 
 
 class SlashRunSiteCustomizationTest(TestCase):
@@ -26,6 +26,7 @@ class SlashRunSiteCustomizationTest(TestCase):
         app = slash_run.slash_run(munch.Munch(argv=[]))
         assert app.exit_code != 0
 
+
 _customization_index = 0
 _loaded_customizations = []
 
@@ -35,7 +36,6 @@ def _apply_customization(index=0):
 
 
 class CustomizationTest(TestCase):
-
     def setUp(self):
         super(CustomizationTest, self).setUp()
         global _loaded_customizations
@@ -89,9 +89,9 @@ class CustomizationTest(TestCase):
         self.assert_customization_loaded()
 
     def test_customize_via_pkgutil_entry_point(self):
-        self.forge.replace(pkg_resources, "iter_entry_points")
+        self.forge.replace(importlib.metadata, "entry_points")
         entry_point = self.forge.create_wildcard_mock()
-        pkg_resources.iter_entry_points("slash.site.customize").and_return(iter([entry_point]))
+        importlib.metadata.entry_points(group="slash.site.customize").and_return(iter([entry_point]))
         unused = self.get_customization_source()  # expect a single customization  # pylint: disable=unused-variable
         entry_point.load().and_return(_apply_customization)
         self.forge.replay()
