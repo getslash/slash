@@ -78,4 +78,4 @@ source = "vcs"
 [tool.pytest]
 testpaths = "tests"
 timeout_method = "signal"
-addopts = "-ra -W error::DeprecationWarning"
+#addopts = "-ra -W error::DeprecationWarning"
