@@ -6,15 +6,16 @@ build-backend = "hatchling.build"
 name = "slash"
 description = "A Modern Testing Framework for Large-scale Projects"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = { text = "BSD 3-Clause License" }
 
 classifiers = [
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "arrow",
@@ -41,9 +42,7 @@ dependencies = [
 
 dynamic = ["version"]
 
-authors = [
-    { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
-]
+authors = [{ name = "Rotem Yaari", email = "vmalloc@gmail.com" }]
 
 [project.urls]
 "Homepage" = "http://getslash.github.io/"
@@ -51,7 +50,7 @@ authors = [
 
 
 [project.scripts]
-slash  = "slash.frontend.main:main_entry_point"
+slash = "slash.frontend.main:main_entry_point"
 
 [project.optional-dependencies]
 testing = [
@@ -65,12 +64,7 @@ testing = [
     "astroid~=3.3",
     "pylint~=3.3",
 ]
-doc = [
-    "alabaster",
-    "docutils",
-    "releases~=1.6.1",
-    "Sphinx",
-]
+doc = ["alabaster", "docutils", "releases~=1.6.1", "Sphinx"]
 
 [tool.hatch.version]
 source = "vcs"
