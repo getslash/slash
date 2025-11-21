@@ -2,7 +2,6 @@ import itertools
 
 
 class Cartesian(object):
-
     def __init__(self):
         super(Cartesian, self).__init__()
         self.sets = {}
@@ -31,7 +30,10 @@ class Cartesian(object):
     def check(self, iterator):
         names = list(self.sets)
         sets = [self.sets[name] for name in names]
-        expected = sorted((self._build_combination(names, combination) for combination in itertools.product(*sets)), key=lambda d: sorted(d.items()))
+        expected = sorted(
+            (self._build_combination(names, combination) for combination in itertools.product(*sets)),
+            key=lambda d: sorted(d.items()),
+        )
         got = sorted(iterator, key=lambda d: sorted(d.items()))
         assert got == expected
 
@@ -43,8 +45,8 @@ class Cartesian(object):
             returned[assign_target] = returned[assign_source]
         return returned
 
-class SetMaker(object):
 
+class SetMaker(object):
     def __init__(self, cartesian, name):
         super(SetMaker, self).__init__()
         self.cartesian = cartesian

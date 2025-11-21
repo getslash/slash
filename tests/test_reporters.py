@@ -11,14 +11,17 @@ from slash.utils.python import get_underlying_func, get_arguments
 def reporter_class(request):
     return request.param
 
+
 def test_reporters_inherit_from_interface(reporter_class):
     assert issubclass(reporter_class, ReporterInterface)
+
 
 def test_reporters_conform_to_interface(reporter_class):
     def _dir(cls):
         return set(name for name in dir(cls) if not name.startswith("_"))
 
     assert _dir(reporter_class) <= _dir(ReporterInterface)
+
 
 def test_parameter_lists_conform_to_interface(reporter_class):
     for method_name in dir(reporter_class):
@@ -31,6 +34,7 @@ def test_parameter_lists_conform_to_interface(reporter_class):
         argpsec = [argument.name for argument in get_arguments(derived_method)]
         expected = [argument.name for argument in get_arguments(base_method)]
         assert argpsec == expected
+
 
 def _get_method(cls, method_name):
     returned = getattr(cls, method_name)

@@ -6,7 +6,6 @@ _END = object()
 
 
 class PeekableIterator(object):
-
     """An iterator wrapper which allows peeking into the next element"""
 
     def __init__(self, iterator):
@@ -25,6 +24,7 @@ class PeekableIterator(object):
                 raise StopIteration()
             return returned
         return next(self._iterator)
+
     __next__ = next
 
     def peek_or_none(self):
@@ -54,12 +54,10 @@ def iteration(iterable):
         last_counter0 = None
 
     for index, element in enumerate(iterable):
-
         yield Iteration(element, counter0=index, counter1=index + 1, first=(index == 0), last_counter0=last_counter0)
 
 
 class Iteration(object):
-
     def __init__(self, element, counter0, counter1, first, last_counter0=None):
         super(Iteration, self).__init__()
         self.element = element

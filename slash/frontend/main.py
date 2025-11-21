@@ -4,7 +4,7 @@ import argparse
 import contextlib
 
 import colorama
-import logbook # pylint: disable=F0401
+import logbook  # pylint: disable=F0401
 import sys
 import os
 
@@ -28,11 +28,18 @@ def _get_parser():
         usage="%(prog)s command...",
     )
 
-    parser.add_argument("-v", action="append_const", const=1, dest="verbosity", default=[],
-                        help="Be more verbose. Can be specified multiple times to increase verbosity further")
+    parser.add_argument(
+        "-v",
+        action="append_const",
+        const=1,
+        dest="verbosity",
+        default=[],
+        help="Be more verbose. Can be specified multiple times to increase verbosity further",
+    )
     parser.add_argument("cmd")
     parser.add_argument("argv", nargs=argparse.REMAINDER)
     return parser
+
 
 def main():
     parser = _get_parser()
@@ -49,12 +56,16 @@ def main():
             returned = returned.exit_code
     return returned
 
+
 def slash_version(_):
-    print('Slash v{}'.format(__version__))
+    print("Slash v{}".format(__version__))
     return 0
+
 
 ################################## Boilerplate ################################
 _DEFAULT_LOG_LEVEL = logbook.WARNING
+
+
 @contextlib.contextmanager
 def _setup_logging_context(args):
     log_level = max(logbook.DEBUG, _DEFAULT_LOG_LEVEL - len(args.verbosity))
@@ -62,9 +73,10 @@ def _setup_logging_context(args):
         with logbook.StderrHandler(level=log_level, bubble=False).applicationbound():
             yield
 
+
 #### For use with entry_points/console_scripts
 def main_entry_point():
-    is_windows = os.name == 'nt'
+    is_windows = os.name == "nt"
     if is_windows:
         colorama.init()
     try:
@@ -72,6 +84,7 @@ def main_entry_point():
     finally:
         if is_windows:
             colorama.deinit()
+
 
 if __name__ == "__main__":
     main_entry_point()

@@ -19,16 +19,24 @@ from . import hooks
 _logger = logbook.Logger(__name__)
 
 _custom_colors = {}
-filtered_channels = {'slash.runner', 'slash.loader', 'slash.core.cleanup_manager', 'slash.core.scope_manager', \
-                      'slash.exception_handling', 'slash.core.fixtures.fixture_store'}
+filtered_channels = {
+    "slash.runner",
+    "slash.loader",
+    "slash.core.cleanup_manager",
+    "slash.core.scope_manager",
+    "slash.exception_handling",
+    "slash.core.fixtures.fixture_store",
+}
+
 
 class ErrorHandler(logbook.handlers.Handler):
     def __init__(self):
         super(ErrorHandler, self).__init__(level=logbook.ERROR, bubble=True)
 
     def emit(self, record):
-        if record.extra.get('capture', True):
+        if record.extra.get("capture", True):
             add_error(record.message, exc_info=record.exc_info)
+
 
 class _NormalizedObject(object):
     def __init__(self, obj):
@@ -40,7 +48,7 @@ class _NormalizedObject(object):
 
     @staticmethod
     def _escape(s):
-        return s.replace('\\', '_').replace('/', '_')
+        return s.replace("\\", "_").replace("/", "_")
 
     def __str__(self):
         return self._escape(str(self._obj))
@@ -50,42 +58,40 @@ class _NormalizedObject(object):
 
 
 def set_log_color(logger_name, level, color):
-    """Sets the color displayed in the console, according to the logger name and level
-    """
+    """Sets the color displayed in the console, according to the logger name and level"""
     _custom_colors[logger_name, level] = color
 
-class ColorizedHandlerMixin(logbook.more.ColorizingStreamHandlerMixin):
 
+class ColorizedHandlerMixin(logbook.more.ColorizingStreamHandlerMixin):
     def get_color(self, record):
         returned = _custom_colors.get((record.channel, record.level))
         if returned is not None:
             return returned
 
         if record.level >= logbook.ERROR:
-            return 'red'
+            return "red"
         elif record.level >= logbook.WARNING:
-            return 'yellow'
+            return "yellow"
         elif record.level >= logbook.NOTICE:
             if config.root.log.console_theme.dark_background:
-                return 'white'
+                return "white"
             else:
-                return 'black'
-        return None # default
+                return "black"
+        return None  # default
+
 
 class ColorizedFileHandler(ColorizedHandlerMixin, logbook.FileHandler):
-
     def should_colorize(self, record):
         return True
 
 
 class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
-
     MAX_LINE_LENGTH = 160
 
-    default_format_string = '[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}'
+    default_format_string = "[{record.time:%Y-%m-%d %H:%M:%S}] {record.message}"
 
     def __init__(self, **kw):
-        stream = kw.pop('stream', sys.stderr)
+        stream = kw.pop("stream", sys.stderr)
         logbook.StreamHandler.__init__(self, stream=stream, **kw)
         self._truncate_lines = config.root.log.truncate_console_lines
         self._truncate_errors = config.root.log.truncate_console_errors
@@ -109,7 +115,7 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
 
     def _truncate(self, line):
         if len(line) > self.MAX_LINE_LENGTH:
-            line = str(line[:self.MAX_LINE_LENGTH - 3]) + "..."
+            line = str(line[: self.MAX_LINE_LENGTH - 3]) + "..."
         return line
 
     def emit(self, record):
@@ -121,22 +127,29 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
             reporter.notify_after_console_output()
         return returned
 
-def _slash_logs_filter(record, handler): # pylint: disable=unused-argument
-    return record.extra.get('filter_bypass') or \
-           record.channel not in filtered_channels or \
-           record.level >= config.root.log.core_log_level
+
+def _slash_logs_filter(record, handler):  # pylint: disable=unused-argument
+    return (
+        record.extra.get("filter_bypass")
+        or record.channel not in filtered_channels
+        or record.level >= config.root.log.core_log_level
+    )
+
 
 class SessionLogging(object):
     """
     A context creator for logging within a session and its tests
     """
+
     def __init__(self, session, console_stream=None):
         super(SessionLogging, self).__init__()
         if console_stream is None:
             console_stream = sys.stderr
         self.session = session
         self.warnings_handler = WarnHandler(session.warnings)
-        self.console_handler = ConsoleHandler(bubble=True, level=config.root.log.console_level, stream=console_stream, filter=_slash_logs_filter)
+        self.console_handler = ConsoleHandler(
+            bubble=True, level=config.root.log.console_level, stream=console_stream, filter=_slash_logs_filter
+        )
         #: contains the path for the session logs
         self.session_log_path = None
         self.session_log_handler = None
@@ -166,23 +179,32 @@ class SessionLogging(object):
     @contextmanager
     def get_session_logging_context(self):
         assert self.session_log_handler is None
-        with self._get_file_logging_context(
-            config.root.log.session_subpath, config.root.log.last_session_symlink) as (handler, path):
+        with self._get_file_logging_context(config.root.log.session_subpath, config.root.log.last_session_symlink) as (
+            handler,
+            path,
+        ):
             self.session_log_handler = handler
             self.session_log_path = path
             self.session.results.global_result.set_log_path(path)
             if config.root.log.last_session_dir_symlink is not None and self.session_log_path is not None:
-                self._try_create_symlink(os.path.dirname(self.session_log_path), config.root.log.last_session_dir_symlink)
+                self._try_create_symlink(
+                    os.path.dirname(self.session_log_path), config.root.log.last_session_dir_symlink
+                )
             yield path
 
     @contextmanager
     def _get_file_logging_context(self, filename_template, symlink):
         with ExitStack() as stack:
-            handler = stack.enter_context(self._log_file_handler_context(filename_template, symlink, \
-                                                                         use_compression=config.root.log.compression.enabled))
+            handler = stack.enter_context(
+                self._log_file_handler_context(
+                    filename_template, symlink, use_compression=config.root.log.compression.enabled
+                )
+            )
             stack.enter_context(handler.applicationbound())
             if config.root.log.compression.enabled and config.root.log.compression.use_rotating_raw_file:
-                rotating_handler = stack.enter_context(self._log_file_handler_context(filename_template, symlink, bubble=True, use_rotation=True))
+                rotating_handler = stack.enter_context(
+                    self._log_file_handler_context(filename_template, symlink, bubble=True, use_rotation=True)
+                )
                 stack.enter_context(rotating_handler.applicationbound())
 
             stack.enter_context(self.console_handler.applicationbound())
@@ -203,18 +225,23 @@ class SessionLogging(object):
             yield handler, path
 
     def _should_delete_log(self, result):
-        return (not config.root.log.cleanup.keep_failed) or \
-               (not result.is_global_result() and result.is_success(allow_skips=True)) or \
-               (result.is_global_result() and self.session.results.is_success(allow_skips=True))
+        return (
+            (not config.root.log.cleanup.keep_failed)
+            or (not result.is_global_result() and result.is_success(allow_skips=True))
+            or (result.is_global_result() and self.session.results.is_success(allow_skips=True))
+        )
 
     @contextmanager
     def _get_error_logging_context(self):
         with ExitStack() as stack:
             path = config.root.log.highlights_subpath
-            def _error_added_filter(record, handler): # pylint: disable=unused-argument
-                return record.extra.get('highlight')
 
-            handler = stack.enter_context(self._log_file_handler_context(path, symlink=None, bubble=True, filter=_error_added_filter))
+            def _error_added_filter(record, handler):  # pylint: disable=unused-argument
+                return record.extra.get("highlight")
+
+            handler = stack.enter_context(
+                self._log_file_handler_context(path, symlink=None, bubble=True, filter=_error_added_filter)
+            )
             log_path = handler.stream.name if isinstance(handler, logbook.FileHandler) else None
             if log_path and self.session.results.current is self.session.results.global_result:
                 self.session.results.global_result.add_extra_log_path(log_path)
@@ -233,10 +260,14 @@ class SessionLogging(object):
             elif config.root.log.compression.algorithm == "brotli":
                 log_path += ".br"
             else:
-                raise InvalidConfiguraion("Unsupported compression method: {}".format(config.root.log.compression.algorithm))
+                raise InvalidConfiguraion(
+                    "Unsupported compression method: {}".format(config.root.log.compression.algorithm)
+                )
         return log_path
 
-    def _create_log_file_handler(self, log_path, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
+    def _create_log_file_handler(
+        self, log_path, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False
+    ):
         kwargs = {"bubble": bubble, "filter": filter}
         if use_compression:
             if config.root.log.compression.algorithm == "gzip":
@@ -244,7 +275,7 @@ class SessionLogging(object):
             elif config.root.log.compression.algorithm == "brotli":
                 handler_class = logbook.BrotliCompressionHandler
         elif use_rotation:
-            kwargs.update({"max_size": 4*1024**2, "backup_count": 1})
+            kwargs.update({"max_size": 4 * 1024**2, "backup_count": 1})
             handler_class = logbook.RotatingFileHandler
         elif config.root.log.colorize:
             handler_class = ColorizedFileHandler
@@ -253,7 +284,9 @@ class SessionLogging(object):
         return handler_class(log_path, **kwargs)
 
     @contextmanager
-    def _log_file_handler_context(self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False):
+    def _log_file_handler_context(
+        self, subpath, symlink, bubble=False, filter=_slash_logs_filter, use_compression=False, use_rotation=False
+    ):
         if subpath is None or config.root.log.root is None:
             yield NoopHandler() if bubble else logbook.NullHandler(filter=filter)
         else:
@@ -266,8 +299,9 @@ class SessionLogging(object):
                 ensure_containing_directory(log_path)
                 if symlink:
                     self._try_create_symlink(log_path, symlink)
-                handler = self._create_log_file_handler(log_path, bubble=bubble, use_compression=use_compression,
-                                                        use_rotation=use_rotation, filter=filter)
+                handler = self._create_log_file_handler(
+                    log_path, bubble=bubble, use_compression=use_compression, use_rotation=use_rotation, filter=filter
+                )
                 try:
                     self._log_path_to_handler[log_path] = handler
                     self._set_formatting(handler, config.root.log.format)
@@ -284,7 +318,6 @@ class SessionLogging(object):
                             dir_path = os.path.dirname(log_path)
                             if not os.listdir(dir_path) and dir_path != self._normalize_path(config.root.log.root):
                                 os.rmdir(dir_path)
-
 
     def _normalize_path(self, p):
         return os.path.expanduser(p)
@@ -321,15 +354,17 @@ class SessionLogging(object):
         if fmt is not None:
             handler.format_string = fmt
 
+
 class SilencedLoggersHandler(logbook.Handler):
     def __init__(self, silence_logger_names):
         super(SilencedLoggersHandler, self).__init__(bubble=False)
         self._silenced_names = set(silence_logger_names)
+
     def should_handle(self, record):
         return record.channel in self._silenced_names
 
-class NoopHandler(object):
 
+class NoopHandler(object):
     # Logbook's NullHandler does not bubble by default. This is dummy handler that
     # does not interfere with the stack at all
     def applicationbound(self):
@@ -341,19 +376,22 @@ class NoopHandler(object):
     def __exit__(self, *_):
         pass
 
+
 def add_log_handler(handler):
     """
     Adds a log handler to be entered for sessions and for tests
     """
     _extra_handlers.append(handler)
 
+
 def remove_all_extra_handlers():
     del _extra_handlers[:]
 
+
 _extra_handlers = []
 
-class VERBOSITIES(object):
 
+class VERBOSITIES(object):
     DEBUG = logbook.DEBUG
     INFO = logbook.INFO
     NOTICE = logbook.NOTICE
@@ -365,8 +403,8 @@ class VERBOSITIES(object):
 def _make_bubbling_handler(handler):
     return _BubblingWrapper(handler)
 
-class _BubblingWrapper(logbook.Handler):
 
+class _BubblingWrapper(logbook.Handler):
     def __init__(self, handler):
         super(_BubblingWrapper, self).__init__(bubble=True)
         self._handler = handler
@@ -375,8 +413,9 @@ class _BubblingWrapper(logbook.Handler):
 
 
 def _format_log_path(p):
-    return p.format(context=_NormalizedObject(context), timestamp=datetime.datetime.now(),
-                    project_name=config.root.run.project_name)
+    return p.format(
+        context=_NormalizedObject(context), timestamp=datetime.datetime.now(), project_name=config.root.run.project_name
+    )
 
 
 class RetainedLogHandler(logbook.TestHandler):
@@ -386,6 +425,7 @@ class RetainedLogHandler(logbook.TestHandler):
     This is useful to keep logs that are emitted during session configuration phase, and not lose
     them from the session log
     """
+
     def __init__(self, *args, **kwargs):
         super(RetainedLogHandler, self).__init__(*args, **kwargs)
         self._enabled = True

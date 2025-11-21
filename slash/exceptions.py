@@ -1,6 +1,4 @@
-
 class SlashException(Exception):
-
     @classmethod
     def throw(cls, *args, **kwargs):
         raise cls(*args, **kwargs)
@@ -8,6 +6,7 @@ class SlashException(Exception):
 
 class TerminatedException(BaseException):
     pass
+
 
 INTERRUPTION_EXCEPTIONS = (KeyboardInterrupt, TerminatedException)
 
@@ -92,25 +91,28 @@ class TmuxExecutableNotFound(SlashException):
 
 
 class SlashInternalError(SlashException):
-
     def __init__(self, *args, **kwargs):
         # Internal errors should basically never happen. This is why we use the constructor here to notify the active session that
         # an internal error ocurred, for testability.
         # It is highly unlikely that such exception objects would ever get constructed without being raised, and this helps overcome accidental
         # catch-alls in exception handling
         from slash.ctx import context
+
         if context.session is not None:
             context.session.notify_internal_error()
         super(SlashInternalError, self).__init__(*args, **kwargs)
 
     def __str__(self):
-        return "\n".join(("INTERNAL ERROR:",
-                          super(SlashInternalError, self).__str__(),
-                          "Please open issue at: https://github.com/getslash/slash/issues/new"))
+        return "\n".join(
+            (
+                "INTERNAL ERROR:",
+                super(SlashInternalError, self).__str__(),
+                "Please open issue at: https://github.com/getslash/slash/issues/new",
+            )
+        )
 
 
 class TestFailed(AssertionError):
-
     """
     This exception class distinguishes actual test failures (mostly assertion errors,
     but possibly other conditions as well) from regular asserts.
@@ -118,6 +120,7 @@ class TestFailed(AssertionError):
     This is important, since regular code that is tested can use asserts, and that
     should not be considered a test failure (but rather a code failure)
     """
+
     pass
 
 
@@ -131,7 +134,6 @@ FAILURE_EXCEPTION_TYPES = (TestFailed, AssertionError, ExpectedExceptionNotCaugh
 
 
 class SkipTest(SlashException):
-
     """
     This exception should be raised in order to interrupt the execution of the currently running test, marking
     it as skipped

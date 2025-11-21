@@ -5,6 +5,7 @@ import requests
 
 from .conf import config
 
+
 def load(thing=None, working_directory=None):
     """
     Loads site files (customization files) from various locations.
@@ -17,11 +18,13 @@ def load(thing=None, working_directory=None):
         return _load_defaults(working_directory=working_directory)
     _load_filename_or_url(thing)
 
+
 def _load_defaults(working_directory=None):
     _load_slashrc()
     _load_local_slashrc(working_directory=working_directory)
     _load_environment()
     _load_entry_points()
+
 
 def _load_slashrc():
     user_customization_file_path = config.root.run.user_customization_file_path
@@ -29,6 +32,7 @@ def _load_slashrc():
         user_customization_file_path = os.path.expanduser(user_customization_file_path)
     user_customization_file = os.environ.get("SLASH_USER_SETTINGS", user_customization_file_path)
     _load_file_if_exists(user_customization_file)
+
 
 def _load_local_slashrc(working_directory=None):
     path = os.path.expanduser(config.root.run.project_customization_file_path)
@@ -39,6 +43,7 @@ def _load_local_slashrc(working_directory=None):
     if config.root.run.project_name is None:
         config.root.run.project_name = os.path.basename(os.path.dirname(path))
 
+
 def _load_file_if_exists(path):
     if path is not None and os.path.isfile(path):
         old_sys_path = sys.path[:]
@@ -48,10 +53,12 @@ def _load_file_if_exists(path):
         finally:
             sys.path[:] = old_sys_path
 
+
 def _load_environment():
     loaded_url_or_file = os.environ.get("SLASH_SETTINGS")
     if loaded_url_or_file:
         load(loaded_url_or_file)
+
 
 def _load_entry_points():
     import importlib.metadata
@@ -60,21 +67,25 @@ def _load_entry_points():
         func = customize_function_loader.load()
         func()
 
+
 def _load_filename_or_url(filename_or_url):
     if os.path.isfile(filename_or_url):
         _load_filename(filename_or_url)
     else:
         _load_url(filename_or_url)
 
+
 def _load_filename(filename):
     with open(filename, "r") as f:
         _load_source(f.read(), filename)
+
 
 def _load_url(url):
     response = requests.get(url)  # pylint: disable=missing-timeout
     response.raise_for_status()
     _load_source(response.content, url)
 
+
 def _load_source(source, filename):
-    code = compile(source, os.path.abspath(filename), 'exec')
-    exec(code, {"__file__" : filename}) # pylint: disable=W0122
+    code = compile(source, os.path.abspath(filename), "exec")
+    exec(code, {"__file__": filename})  # pylint: disable=W0122

@@ -9,6 +9,7 @@ _PRINTABLE_CHARS = set(string.ascii_letters) | set(string.digits) | set("-_")
 
 _logger = logbook.Logger(__name__)
 
+
 class Variations(object):
     _current_variation = None
 
@@ -21,7 +22,6 @@ class Variations(object):
 
 
 class Variation(object):
-
     """Represents a single variation of parameter points. A variation is merely a mapping of fixture ids to their values.
     This mostly applies for parametrization fixtures. The other fixtures follow since they are either constant
     or indirectly depend on parametrization"""
@@ -48,7 +48,7 @@ class Variation(object):
         returned = {}
         for name, value in self.values.items():
             returned[name] = self._format_parameter_value_safe(name, value)
-        return ','.join('{}={}'.format(key, returned[key]) for key in sorted(returned))
+        return ",".join("{}={}".format(key, returned[key]) for key in sorted(returned))
 
     def _format_parameter_value_safe(self, name, value):
         label = self.labels[name]
@@ -58,7 +58,7 @@ class Variation(object):
         value = str(value)
         if self._is_printable(value):
             return str(value)
-        return '{}{}'.format(name, label)
+        return "{}{}".format(name, label)
 
     def _is_printable(self, value):
         if not isinstance(value, _PRINTABLE_TYPES):
@@ -88,7 +88,9 @@ class Variation(object):
         return not (self == other)  # pylint: disable=superfluous-parens,unneeded-not
 
     def __repr__(self):
-        return 'Variation({})'.format(', '.join('{}={}'.format(key, value) for key, value in self.param_value_indices.items()))
+        return "Variation({})".format(
+            ", ".join("{}={}".format(key, value) for key, value in self.param_value_indices.items())
+        )
 
     def __nonzero__(self):
         return bool(self.param_value_indices)

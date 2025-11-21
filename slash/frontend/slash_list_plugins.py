@@ -15,9 +15,9 @@ _link_style = make_styler(colorama.Fore.CYAN)  # pylint: disable=no-member
 
 
 def _get_parser():
-    parser = argparse.ArgumentParser('slash list-plugins [options]')
-    parser.add_argument('--force-color', dest='force_color', action='store_true', default=False)
-    parser.add_argument('--no-color', dest='enable_color', action='store_false', default=True)
+    parser = argparse.ArgumentParser("slash list-plugins [options]")
+    parser.add_argument("--force-color", dest="force_color", action="store_true", default=False)
+    parser.add_argument("--no-color", dest="enable_color", action="store_false", default=True)
     return parser
 
 
@@ -34,14 +34,14 @@ def slash_list_plugins(args, report_stream=sys.stdout):
     for plugin in sorted(manager.get_installed_plugins(include_internals=False).values(), key=lambda p: p.get_name()):
         name = plugin.get_name()
         normalized_name = manager.normalize_command_line_name(name)
-        _print(_title_style(name), end=' ')
+        _print(_title_style(name), end=" ")
         if name in active:
-            _print(_enabled_style('active (use --without-{} to deactivate'.format(normalized_name)))
+            _print(_enabled_style("active (use --without-{} to deactivate".format(normalized_name)))
         else:
-            _print(_disabled_style('inactive (use --with-{} to activate)'.format(normalized_name)))
+            _print(_disabled_style("inactive (use --with-{} to activate)".format(normalized_name)))
         if plugin.__doc__:
             for line in plugin.__doc__.splitlines():
                 if line.strip():
-                    _print('\t', line.strip())
+                    _print("\t", line.strip())
 
     return 0

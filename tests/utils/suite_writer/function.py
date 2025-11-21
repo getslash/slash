@@ -6,11 +6,10 @@ from .code_element import CodeElement
 from .parameter import Parameter
 
 
-_FixtureSpec = collections.namedtuple('_FixtureSpec', ['alias_name', 'fixture', 'alias_with_attribute'])
+_FixtureSpec = collections.namedtuple("_FixtureSpec", ["alias_name", "fixture", "alias_with_attribute"])
 
 
 class Function(CodeElement):
-
     def __init__(self, suite, name=None):
         super(Function, self).__init__(suite)
         self._name = name
@@ -39,37 +38,32 @@ class Function(CodeElement):
         return returned
 
     def depend_on_fixture(self, f, alias=False, alias_with_attribute=False):
-        alias_name = 'alias_{}'.format(str(uuid4()).replace('-', '')) if alias else None
+        alias_name = "alias_{}".format(str(uuid4()).replace("-", "")) if alias else None
         self._fixtures.append(_FixtureSpec(alias_name, f, alias_with_attribute))
         return f
 
     def _write_event(self, code_formatter, eventcode):
         if self.suite.debug_info:
-            code_formatter.writeln(
-                '__ut__.events.add({!r}, {!r})'.format(
-                    eventcode, self.id))
+            code_formatter.writeln("__ut__.events.add({!r}, {!r})".format(eventcode, self.id))
 
-    def add_deferred_event(self, decorator=None, name='deferred', extra_code=(), adder=None):
-        event = '{}_{}'.format(name, uuid4())
-        self._deferred_events.append({
-            'decorator': decorator, 'event': event, 'extra_code': extra_code, 'adder': adder})
+    def add_deferred_event(self, decorator=None, name="deferred", extra_code=(), adder=None):
+        event = "{}_{}".format(name, uuid4())
+        self._deferred_events.append({"decorator": decorator, "event": event, "extra_code": extra_code, "adder": adder})
         return event
 
-    def add_event(self, name='event'):
-        event = '{}_{}'.format(name, uuid4())
+    def add_event(self, name="event"):
+        event = "{}_{}".format(name, uuid4())
         self._events.append(event)
         return (event, self.id)
 
     @contextmanager
     def _body_context(self, code_formatter):
         self._write_decorators(code_formatter)
-        code_formatter.writeln('def {}({}):'.format(
-            self._get_function_name(),
-            self._get_parameter_string()))
+        code_formatter.writeln("def {}({}):".format(self._get_function_name(), self._get_parameter_string()))
 
         with code_formatter.indented():
             if not self.suite.debug_info:
-                code_formatter.writeln('pass')
+                code_formatter.writeln("pass")
             self._write_parameter_values(code_formatter)
             self._write_immediate_events(code_formatter)
             self._write_deferred_events(code_formatter)
@@ -80,9 +74,9 @@ class Function(CodeElement):
         code_formatter.writeln()
 
     def _get_parameter_string(self):
-        returned = ', '.join(self._get_argument_strings())
+        returned = ", ".join(self._get_argument_strings())
         if returned and self._additional_parameter_string:
-            returned += ', '
+            returned += ", "
         returned += self._additional_parameter_string
         return returned
 
@@ -100,14 +94,14 @@ class Function(CodeElement):
         if not self.suite.debug_info:
             return
         for index, deferred in enumerate(self._deferred_events, 1):
-            deferred_func_name = '_deferred{}'.format(index)
-            adder = deferred['adder']
+            deferred_func_name = "_deferred{}".format(index)
+            adder = deferred["adder"]
             if adder is None:
-                code_formatter.writeln('@{[decorator]}'.format(deferred))
-            code_formatter.writeln('def {}():'.format(deferred_func_name))
+                code_formatter.writeln("@{[decorator]}".format(deferred))
+            code_formatter.writeln("def {}():".format(deferred_func_name))
             with code_formatter.indented():
-                code_formatter.writeln('__ut__.events.add({[event]!r})'.format(deferred))
-                for line in deferred['extra_code']:
+                code_formatter.writeln("__ut__.events.add({[event]!r})".format(deferred))
+                for line in deferred["extra_code"]:
                     code_formatter.writeln(line)
             if adder is not None:
                 code_formatter.write(adder.format(deferred_func_name))
@@ -118,7 +112,7 @@ class Function(CodeElement):
 
     def _write_decorators(self, code_formatter):
         for d in self._decorators:
-            code_formatter.write('@')
+            code_formatter.write("@")
             code_formatter.writeln(d)
         for p in self._parameters:
             p.write_decorator(code_formatter)
@@ -129,16 +123,14 @@ class Function(CodeElement):
 
         for p in self._iter_notify_parameters():
             if self.suite.is_parallel:
-                code_formatter.writeln("slash.context.result.data.setdefault('param_values', {{}})[{!r}] = {}".format(
-                    p.id, p.name))
+                code_formatter.writeln(
+                    "slash.context.result.data.setdefault('param_values', {{}})[{!r}] = {}".format(p.id, p.name)
+                )
             else:
-                code_formatter.writeln('__ut__.notify_parameter_value({!r}, {})'.format(
-                    p.id, p.name))
+                code_formatter.writeln("__ut__.notify_parameter_value({!r}, {})".format(p.id, p.name))
 
     def _iter_notify_parameters(self):
-        return itertools.chain(
-            self._parameters,
-            (f for _, f, _ in self._fixtures if f.is_generator_fixture()))
+        return itertools.chain(self._parameters, (f for _, f, _ in self._fixtures if f.is_generator_fixture()))
 
     def _get_function_name(self):
         if self._name is None:
@@ -155,14 +147,13 @@ class Function(CodeElement):
         for alias, f, alias_with_attribute in self._fixtures:
             if alias is not None:
                 if alias_with_attribute:
-                    yield '{}: slash.use.{}'.format(alias, f.name)
+                    yield "{}: slash.use.{}".format(alias, f.name)
                 else:
-                    yield '{}: slash.use({!r})'.format(alias, f.name)
+                    yield "{}: slash.use({!r})".format(alias, f.name)
             else:
                 yield f.name
 
 
 class Method(Function):
-
     def _get_argument_strings(self):
-        return itertools.chain(['self'], super(Method, self)._get_argument_strings())
+        return itertools.chain(["self"], super(Method, self)._get_argument_strings())

@@ -1,7 +1,7 @@
 import weakref
 
-class GarbageCollectionMarker(object):
 
+class GarbageCollectionMarker(object):
     def mark(self, obj):
         marker = _Marker(obj)
         obj.__marker__ = _MarkerAnchor(marker)
@@ -9,7 +9,6 @@ class GarbageCollectionMarker(object):
 
 
 class _Marker(object):
-
     destroyed = False
 
     def __init__(self, obj):
@@ -18,7 +17,6 @@ class _Marker(object):
 
 
 class _MarkerAnchor(object):
-
     def __init__(self, marker):
         super(_MarkerAnchor, self).__init__()
         self._marker = marker

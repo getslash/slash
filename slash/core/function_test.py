@@ -10,7 +10,6 @@ from .tagging import get_tags
 
 
 class FunctionTest(RunnableTest):
-
     def __init__(self, function, fixture_store, fixture_namespace, variation):
         super(FunctionTest, self).__init__(fixture_store, fixture_namespace, variation)
         self._func = function
@@ -22,16 +21,18 @@ class FunctionTest(RunnableTest):
         return test_tags + self._get_fixture_tags()
 
     def get_address_in_factory(self):
-        return ''
+        return ""
 
     def run(self):
         with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
             result = self._fixture_store.call_with_fixtures(
-                self._func, namespace=self._fixture_namespace,
-                trigger_test_start=True, trigger_test_end=True,
+                self._func,
+                namespace=self._fixture_namespace,
+                trigger_test_start=True,
+                trigger_test_end=True,
             )
             if isinstance(result, GeneratorType):
-                raise InvalidTest('{} is a generator. Running generators is not supported'.format(self._func))
+                raise InvalidTest("{} is a generator. Running generators is not supported".format(self._func))
 
     def get_test_function(self):
         return self._func
@@ -47,7 +48,6 @@ class FunctionTest(RunnableTest):
 
 
 class FunctionTestFactory(RunnableTestFactory):
-
     def __init__(self, func):
         super(FunctionTestFactory, self).__init__(func)
         self.func = func

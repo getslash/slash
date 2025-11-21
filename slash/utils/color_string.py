@@ -1,10 +1,10 @@
 import colorama
 import functools
 
-class ColorStringBase(object):
 
+class ColorStringBase(object):
     def get_colored(self):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def __repr__(self):
         return repr(str(self))
@@ -14,6 +14,7 @@ class ColorStringBase(object):
 
     def __radd__(self, other):
         return ColorCompoundString(other, self)
+
 
 class ColorString(ColorStringBase):
     def __init__(self, string, color):
@@ -38,22 +39,22 @@ class ColorString(ColorStringBase):
         return str(self._string)
 
     def get_colored(self):
-        return "{}{}{}".format(getattr(colorama.Fore, self._color.upper()), self._string, colorama.Fore.RESET) # pylint: disable=no-member
+        return "{}{}{}".format(getattr(colorama.Fore, self._color.upper()), self._string, colorama.Fore.RESET)  # pylint: disable=no-member
+
 
 class ColorCompoundString(ColorStringBase):
-
     def __init__(self, *strings):
         super(ColorCompoundString, self).__init__()
         self._strings = strings
 
     def __str__(self):
-        return ''.join(str(x) for x in  self._strings)
+        return "".join(str(x) for x in self._strings)
 
     def __len__(self):
         return sum(len(s) for s in self._strings)
 
     def ljust(self):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
     def get_colored(self):
-        return ''.join(s.get_colored() if isinstance(s, ColorStringBase) else s for s in self._strings)
+        return "".join(s.get_colored() if isinstance(s, ColorStringBase) else s for s in self._strings)

@@ -31,9 +31,7 @@ def test_ensure_requirements_called_eagerly(checkpoint1, checkpoint2):
     with slash.Session() as session:
         with session.get_started_context():
             slash.runner.run_tests(make_runnable_tests(test_something))
-    [result] = [
-        res for res in session.results.iter_all_results() if not res.is_global_result()
-    ]
+    [result] = [res for res in session.results.iter_all_results() if not res.is_global_result()]
     assert result.is_skip()
     assert checkpoint1.called
     assert checkpoint2.called
@@ -70,7 +68,6 @@ def test_requirements(
     use_message,
     message_in_retval,
 ):
-
     message = "requires something very important"
     if use_message and message_in_retval:
         retval = "({}, {!r})".format(requirement_fullfilled, message)
@@ -78,9 +75,7 @@ def test_requirements(
         retval = requirement_fullfilled
 
     suite_test.add_decorator(
-        "slash.requires((lambda: {}), {!r})".format(
-            retval, message if use_message and not message_in_retval else ""
-        )
+        "slash.requires((lambda: {}), {!r})".format(retval, message if use_message and not message_in_retval else "")
     )
     if not requirement_fullfilled:
         suite_test.expect_skip()
@@ -123,7 +118,7 @@ def test_requirements_on_class():
     with slash.Session():
         [test] = make_runnable_tests(Test)  # pylint: disable=unbalanced-tuple-unpacking
 
-    assert set([r._req for r in test.get_requirements()]) == set( # pylint: disable=protected-access
+    assert set([r._req for r in test.get_requirements()]) == set(  # pylint: disable=protected-access
         [req1, req2]
     )
 
@@ -138,9 +133,7 @@ def filename_test_fixture(tmpdir):
 
             code.writeln("import slash")
             code.writeln("@slash.fixture")
-            code.writeln(
-                "@slash.requires({}, {})".format(_UNMET_REQ_DECORATOR, '"msg1"')
-            )
+            code.writeln("@slash.requires({}, {})".format(_UNMET_REQ_DECORATOR, '"msg1"'))
             code.writeln("def fixture():")
             with code.indented():
                 code.writeln("return 1")
@@ -164,14 +157,13 @@ def filename_test_fixture(tmpdir):
 
 def test_requirements_on_class_with_fixture_and_autouse_fixture(filename_test_fixture):
     with slash.Session():
-        [test] = make_runnable_tests( # pylint: disable=unbalanced-tuple-unpacking
+        [test] = make_runnable_tests(  # pylint: disable=unbalanced-tuple-unpacking
             filename_test_fixture
         )
     assert sorted([str(r) for r in test.get_requirements()]) == ["msg1", "msg2"]
 
 
 def test_unmet_requirements_trigger_avoided_test_hook(suite, suite_test):
-
     suite_test.add_decorator(_UNMET_REQ_DECORATOR)
     suite_test.expect_skip()
 
@@ -206,7 +198,7 @@ def test_adding_requirement_objects():
         pass
 
     with slash.Session():
-        [test] = make_runnable_tests( # pylint: disable=unbalanced-tuple-unpacking
+        [test] = make_runnable_tests(  # pylint: disable=unbalanced-tuple-unpacking
             test_something
         )  # pylint: disable=unbalanced-tuple-unpacking
 
@@ -228,12 +220,12 @@ def test_cannot_specify_message_with_requirement_object():
 def test_fixture_and_test_requirements(suite, suite_test, is_fixture_requirement_unmet):
     suite_test.depend_on_fixture(suite.slashconf.add_fixture())
     if is_fixture_requirement_unmet:
-        suite_test._fixtures[0][1].add_decorator( # pylint: disable=protected-access
+        suite_test._fixtures[0][1].add_decorator(  # pylint: disable=protected-access
             _UNMET_REQ_DECORATOR
         )
         suite_test.add_decorator(_MET_REQ_DECORATOR)
     else:
-        suite_test._fixtures[0][1].add_decorator( # pylint: disable=protected-access
+        suite_test._fixtures[0][1].add_decorator(  # pylint: disable=protected-access
             _MET_REQ_DECORATOR
         )
         suite_test.add_decorator(_UNMET_REQ_DECORATOR)
@@ -249,7 +241,7 @@ def test_fixture_and_test_requirements(suite, suite_test, is_fixture_requirement
 def test_fixture_of_fixture_requirement(suite, suite_test):
     suite_test.add_decorator(_UNMET_REQ_DECORATOR)
     suite_test.depend_on_fixture(suite.slashconf.add_fixture())
-    suite_test._fixtures[0][1].add_decorator( # pylint: disable=protected-access
+    suite_test._fixtures[0][1].add_decorator(  # pylint: disable=protected-access
         _MET_REQ_DECORATOR
     )
     suite_test.expect_skip()
@@ -280,12 +272,12 @@ def test_class_requirements_siblings(suite_builder):
         class BaseTest(slash.Test):
             pass
 
-        @slash.requires(lambda: False) # pylint: disable=unused-variable
+        @slash.requires(lambda: False)  # pylint: disable=unused-variable
         class FirstTest(BaseTest):  # pylint: disable=unused-variable
             def test(self):
                 pass
 
-        class SecondTest(BaseTest): # pylint: disable=unused-variable
+        class SecondTest(BaseTest):  # pylint: disable=unused-variable
             def test(self):
                 pass
 
@@ -313,26 +305,26 @@ def test_class_requirements_class_and_method(class_can_run, method_can_run):
 
 
 def test_attach_requirements_through_wraps_on_function():
-
     def decorator(func):
         @wraps(func)
         def new_func():
             pass
+
         return new_func
 
     req1, req2, req3, req4 = requirements = [object() for _ in range(4)]
 
     @slash.requires(req4)
-    @slash.parametrize('x', [1, 2, 3])
+    @slash.parametrize("x", [1, 2, 3])
     @slash.requires(req3)
-    @slash.parametrize('y', [2, 3, 4])
+    @slash.parametrize("y", [2, 3, 4])
     @slash.requires(req2)
     @decorator
     @slash.requires(req1)
-    def test_something(x, y): # pylint: disable=unused-argument
+    def test_something(x, y):  # pylint: disable=unused-argument
         pass
 
     found_reqs = slash.core.requirements.get_requirements(test_something)
     assert len(found_reqs) == len(requirements)
     for expected, found in zip(requirements, found_reqs):
-        assert expected is found._req # pylint: disable=trailing-whitespace, protected-access
+        assert expected is found._req  # pylint: disable=trailing-whitespace, protected-access

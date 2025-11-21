@@ -1,5 +1,4 @@
 class ReporterInterface(object):
-
     def notify_before_console_output(self):
         pass
 

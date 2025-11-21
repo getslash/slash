@@ -17,15 +17,15 @@ from ..utils.traceback_utils import distill_call_stack, distill_traceback, disti
 _logger = logbook.Logger(__name__)
 _CAPTURED_ERROR_MARKER = "__slash_captured_error__"
 
-class Error(object):
 
+class Error(object):
     traceback = exception_type = arg = _cached_detailed_traceback_str = None
 
     def __init__(self, msg=None, exc_info=None, frame_correction=0):
         super(Error, self).__init__()
         self.time = arrow.utcnow()
         self._fatal = False
-        self._has_custom_message = (msg is not None)
+        self._has_custom_message = msg is not None
         if msg is None and exc_info is not None:
             msg = traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()
         if not isinstance(msg, str):
@@ -41,28 +41,27 @@ class Error(object):
             self.exception_type, exception, tb = exc_info  # pylint: disable=unpacking-non-sequence
             self.exception_str = repr(exception)
             self._exception_attributes = distill_object_attributes(exception, truncate=False)
-            self.traceback = distill_traceback(
-                tb, frame_correction=get_exception_frame_correction(exception))
+            self.traceback = distill_traceback(tb, frame_correction=get_exception_frame_correction(exception))
         else:
-            self.traceback = distill_call_stack(frame_correction=frame_correction+4)
+            self.traceback = distill_call_stack(frame_correction=frame_correction + 4)
         self._is_failure = False
         self._fatal = exception is not None and is_exception_fatal(exception)
         self._is_failure = isinstance(exception, FAILURE_EXCEPTION_TYPES)
 
     @property
-    @deprecated(since='1.5.0', what='error.exception_attributes')
+    @deprecated(since="1.5.0", what="error.exception_attributes")
     def exception_attributes(self):
         return self._exception_attributes
 
     def forget_exc_info(self):
-        assert hasattr(self, 'exc_info')
+        assert hasattr(self, "exc_info")
         self.exc_info = None
         for frame in self.traceback.frames:
             frame.forget_python_frame()
 
     def log_added(self):
         tb = self.traceback.to_string(include_vars=config.root.log.traceback_variables)
-        _logger.trace('Error added: {}\n{}', self, tb, extra={'highlight': True})
+        _logger.trace("Error added: {}\n{}", self, tb, extra={"highlight": True})
 
     def has_custom_message(self):
         return self._has_custom_message
@@ -74,13 +73,12 @@ class Error(object):
         return self._fatal
 
     @property
-    @deprecated('Use error.exception_str', what='error.exception', since='1.2.3')
+    @deprecated("Use error.exception_str", what="error.exception", since="1.2.3")
     def exception(self):
         return self.exception_str
 
     def mark_fatal(self):
-        """Marks this error as fatal, causing session termination
-        """
+        """Marks this error as fatal, causing session termination"""
         self._fatal = True
         return self
 
@@ -113,27 +111,24 @@ class Error(object):
 
     @property
     def lineno(self):
-        """Line number from which the error was raised
-        """
+        """Line number from which the error was raised"""
         if self.traceback is not None:
             return self.traceback.cause.lineno
 
     @property
     def func_name(self):
-        """Function name from which the error was raised
-        """
+        """Function name from which the error was raised"""
         if self.traceback is not None:
             return self.traceback.cause.func_name
 
     def __repr__(self):
-        return '<{0.__class__.__name__}: {0.message}>'.format(self)
+        return "<{0.__class__.__name__}: {0.message}>".format(self)
 
     def get_detailed_traceback_str(self):
-        """Returns a formatted traceback string for the exception caught
-        """
+        """Returns a formatted traceback string for the exception caught"""
         if self._cached_detailed_traceback_str is None:
             stream = StringIO()
-            f = Formatter(stream, indentation_string='  ')
+            f = Formatter(stream, indentation_string="  ")
             f.writeln("Traceback (most recent call last):")
             with f.indented():
                 for frame in self.traceback.frames:
@@ -142,19 +137,18 @@ class Error(object):
                         globals_ = frame.globals
                     f.writeln('File "{f.filename}", line {f.lineno}, in {f.func_name}:'.format(f=frame))
                     with f.indented():
-                        f.writeln('>', frame.code_line.strip() or '?')
+                        f.writeln(">", frame.code_line.strip() or "?")
                         with f.indented():
-                            for title, vars in [('globals', globals_), ('locals', locals_)]:
+                            for title, vars in [("globals", globals_), ("locals", locals_)]:
                                 for index, (var_name, var_repr) in enumerate(vars.items()):
                                     if index == 0:
                                         f.writeln(title)
                                         f.indent()
-                                    f.writeln(' - {}: {}'.format(var_name, var_repr['value']))
+                                    f.writeln(" - {}: {}".format(var_name, var_repr["value"]))
                             f.dedent()
             self._cached_detailed_traceback_str = stream.getvalue()
 
         return self._cached_detailed_traceback_str
 
     def get_detailed_str(self):
-        return '{}*** {}'.format(
-            self.get_detailed_traceback_str(), self)
+        return "{}*** {}".format(self.get_detailed_traceback_str(), self)

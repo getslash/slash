@@ -9,9 +9,7 @@ from .utils import make_runnable_tests
 
 def test_yield_fixture(yield_fixture_decorator):
     iterations = [uuid4() for i in range(3)]
-    start_checkpoints, end_checkpoints = [
-        {iteration: Checkpoint() for iteration in iterations}
-        for i in range(2)]
+    start_checkpoints, end_checkpoints = [{iteration: Checkpoint() for iteration in iterations} for i in range(2)]
     value = uuid4()
     inner_fixture_value = uuid4()
 
@@ -22,9 +20,8 @@ def test_yield_fixture(yield_fixture_decorator):
         def other_fixture():
             return inner_fixture_value
 
-
         @s.fixture_store.add_fixture
-        @slash.parametrize('iteration', list(iterations))
+        @slash.parametrize("iteration", list(iterations))
         @yield_fixture_decorator
         def fixture(iteration, other_fixture):
             assert other_fixture == inner_fixture_value
@@ -48,9 +45,8 @@ def test_yield_fixture_with_this_argument(yield_fixture_decorator):
 
     with slash.Session() as s:
 
-
         @s.fixture_store.add_fixture
-        @slash.parametrize('iteration', list(iterations))
+        @slash.parametrize("iteration", list(iterations))
         @yield_fixture_decorator
         def fixture(this, iteration):
             yield value
@@ -69,9 +65,8 @@ def test_yield_fixture_with_scope_argument(yield_fixture_decorator):
 
     with slash.Session() as s:
 
-
         @s.fixture_store.add_fixture
-        @yield_fixture_decorator(scope='session')
+        @yield_fixture_decorator(scope="session")
         def fixture():
             yield value
 

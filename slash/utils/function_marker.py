@@ -6,20 +6,21 @@ from ..utils.python import get_underlying_classmethod_function
 def function_marker(name):
     return Marker(name)
 
+
 def append_function_marker(name):
     return Marker(name, append=True)
 
-class Marker(object):
 
+class Marker(object):
     def __init__(self, name, value=True, append=False):
         super(Marker, self).__init__()
         self._name = name
         self._value = value
-        self._mark = '__marked_{}__'.format(self._name)
+        self._mark = "__marked_{}__".format(self._name)
         self._append = append
 
     def __call__(self, func):
-        if not hasattr(func, '__call__') and not isinstance(func, (classmethod, staticmethod)):
+        if not hasattr(func, "__call__") and not isinstance(func, (classmethod, staticmethod)):
             return Marker(self._name, func, append=self._append)
 
         func = self._normalize(func)

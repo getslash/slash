@@ -6,6 +6,7 @@ class PluginInterface(object):
     """
     This class represents the base interface needed from plugin classes.
     """
+
     __metaclass__ = abc.ABCMeta
 
     def activate(self):
@@ -35,6 +36,7 @@ class PluginInterface(object):
         Returns configuration object for plugin
         """
         from slash.plugins import manager
+
         config_name = manager.normalize_config_name(self.get_name())
         return getattr(config.root.plugin_config, config_name)
 
@@ -76,4 +78,4 @@ class PluginInterface(object):
 
         Any implemented plugin must override this method.
         """
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover

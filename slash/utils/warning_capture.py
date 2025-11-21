@@ -2,7 +2,6 @@ import sys
 
 
 class warning_callback_context(object):
-
     """A context for installing callbacks for handling warnings.
 
     Code adopted from the built-in catch_warnings handler
@@ -10,7 +9,7 @@ class warning_callback_context(object):
 
     def __init__(self, callback):
         self._callback = callback
-        self._module = sys.modules['warnings']
+        self._module = sys.modules["warnings"]
         self._entered = False
 
     def __enter__(self):

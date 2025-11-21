@@ -5,7 +5,6 @@ from ...exceptions import UnknownFixtures
 
 
 class Namespace(object):
-
     def __init__(self, store, parent=None):
         super(Namespace, self).__init__()
         self._level = 0 if parent is None else parent.get_level() + 1
@@ -26,7 +25,7 @@ class Namespace(object):
             self = self._parent  # pylint: disable=self-cls-assignment
 
     def __repr__(self):
-        return 'Fixture NS#{}: {}'.format(self.get_level(), ', '.join(self._iter_fixture_names()) or '**None**')
+        return "Fixture NS#{}: {}".format(self.get_level(), ", ".join(self._iter_fixture_names()) or "**None**")
 
     def _iter_fixture_names(self):
         while self is not None:
@@ -45,10 +44,9 @@ class Namespace(object):
         if default is not NOTHING:
             return default
 
-        raise UnknownFixtures('Fixture {!r} not found!'.format(name))
+        raise UnknownFixtures("Fixture {!r} not found!".format(name))
 
     def add_name(self, name, fixture_id):
         assert isinstance(fixture_id, Number)
-        assert name not in self._fixture_names or self._fixture_names[
-            name] == fixture_id
+        assert name not in self._fixture_names or self._fixture_names[name] == fixture_id
         self._fixture_names[name] = fixture_id

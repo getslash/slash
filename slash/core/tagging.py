@@ -32,8 +32,7 @@ def tag_test(test, tag_name, tag_value):
 
 
 def tag(tag_name, tag_value=NOTHING):
-    """Decorator for tagging tests
-    """
+    """Decorator for tagging tests"""
     return Tagger(tag_name=tag_name, tag_value=tag_value)
 
 
@@ -65,11 +64,7 @@ class Tags(object):
             tag_value,
         ) in other._tags.items():  # pylint: disable=protected-access
             if self.get(tag_name, NOTHING) not in (tag_value, NOTHING):
-                raise TaggingConflict(
-                    "Conflicting tag: {} when adding {}, {}".format(
-                        tag_name, self, other
-                    )
-                )
+                raise TaggingConflict("Conflicting tag: {} when adding {}, {}".format(tag_name, self, other))
 
     def __add__(self, other):
         if other is NO_TAGS:

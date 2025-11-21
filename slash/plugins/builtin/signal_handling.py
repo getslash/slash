@@ -12,6 +12,7 @@ _PLUGIN_NAME = "signal handling"
 
 _signal_handlers = {}
 
+
 def register_handler(signal_name, skip_plugin=False):
     def register_handler_func(func):
         signal_no = getattr(signal, signal_name, None)
@@ -19,14 +20,16 @@ def register_handler(signal_name, skip_plugin=False):
             _signal_handlers[signal_no] = func
             if not skip_plugin:
                 from ..plugin_manager import manager
+
                 plugin = manager.get_active_plugins().get(_PLUGIN_NAME)
                 if plugin:
                     plugin._set_handler(signal_no, func)  # pylint: disable=protected-access
         return func
+
     return register_handler_func
 
 
-@register_handler('SIGUSR1', skip_plugin=True)
+@register_handler("SIGUSR1", skip_plugin=True)
 def _usr1_handler(*_, **__):
     if not sys.stdout.isatty():
         message = "Running without TTY when {!r} plugin caught SIGUSR1. Current stack:".format(_PLUGIN_NAME)
@@ -39,13 +42,12 @@ def _usr1_handler(*_, **__):
         launch_debugger(exc_info=(None, None, None))
 
 
-@register_handler('SIGUSR2', skip_plugin=True)
+@register_handler("SIGUSR2", skip_plugin=True)
 def _usr2_handler(*_, **__):
     skip_test("Skipped due to SIGUSR2 signal caught by {!r} plugin".format(_PLUGIN_NAME))
 
 
 class Plugin(PluginInterface):
-
     def __init__(self):
         super(Plugin, self).__init__()
         self._orig_handlers = {}
@@ -61,7 +63,7 @@ class Plugin(PluginInterface):
 
     def activate(self):
         super().activate()
-        for (sig_no, sig_handler) in _signal_handlers.items():
+        for sig_no, sig_handler in _signal_handlers.items():
             self._set_handler(sig_no, sig_handler)
 
     def deactivate(self):

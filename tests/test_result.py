@@ -9,15 +9,14 @@ from slash.exception_handling import handling_exceptions
 from .utils import TestCase, run_tests_assert_success
 
 
-
-@pytest.mark.parametrize('use_error', [True, False])
+@pytest.mark.parametrize("use_error", [True, False])
 def test_result_add_exception_multiple_times(result, use_error):
     with slash.Session():
         second_result = type(result)()
         second_result.mark_started()
         try:
             if use_error:
-                1 / 0               # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement
             else:
                 assert 1 + 1 == 3
         except:
@@ -27,20 +26,19 @@ def test_result_add_exception_multiple_times(result, use_error):
 
     assert result.is_error() == use_error
     assert result.is_failure() == (not use_error)
-    assert len(result.get_errors()
-               if use_error else result.get_failures()) == 1
+    assert len(result.get_errors() if use_error else result.get_failures()) == 1
     assert second_result.is_success()
 
 
 def test_result_summary_some_not_run(suite):
-    suite[2].add_decorator('slash.requires(False)')
+    suite[2].add_decorator("slash.requires(False)")
     suite[2].expect_skip()
     results = suite.run().session.results
     assert results.is_success(allow_skips=True)
 
 
 def test_get_num_skips_no_not_run(suite, suite_test):
-    suite_test.add_decorator('slash.requires(False)')
+    suite_test.add_decorator("slash.requires(False)")
     suite_test.expect_skip()
     results = suite.run().session.results
     assert results.get_num_skipped(include_not_run=False) == 0
@@ -49,7 +47,6 @@ def test_get_num_skips_no_not_run(suite, suite_test):
 
 
 def test_result_summary(suite):
-
     suite[2].when_run.fail()
     suite[3].when_run.raise_exception()
     suite[4].when_run.raise_exception()
@@ -70,7 +67,7 @@ def test_result_not_run(suite, suite_test, is_last_test):
     for test in suite.iter_all_after(suite_test, assert_has_more=not is_last_test):
         test.expect_not_run()
 
-    summary = suite.run(additional_args=['-x'])
+    summary = suite.run(additional_args=["-x"])
 
     num_not_run = summary.session.results.get_num_not_run()
     if is_last_test:
@@ -101,9 +98,7 @@ def test_has_skips(suite):
 
 
 def test_result_data_is_unique():
-
     class SampleTest(slash.Test):
-
         def test_1(self):
             pass
 
@@ -116,16 +111,13 @@ def test_result_data_is_unique():
 
 
 def test_result_test_garbage_collected(gc_marker):
-
     class SomeTest(slash.Test):
-
         def test_something(self):
             pass
 
     # we have to run another test at the end to make sure Slash's internal _last_test
     # doesn't refer to our test
     class OtherTest(slash.Test):
-
         def test_something(self):
             pass
 
@@ -134,7 +126,7 @@ def test_result_test_garbage_collected(gc_marker):
     test_funcs = [SomeTest, OtherTest]
 
     @slash.hooks.register
-    def tests_loaded(tests): # pylint: disable=unused-variable
+    def tests_loaded(tests):  # pylint: disable=unused-variable
         runnable_tests.extend(tests)
         marks.extend(list(gc_marker.mark(t) for t in runnable_tests[:-1]))
 
@@ -157,7 +149,7 @@ def test_add_error_traceback_for_manually_added_errors(suite, suite_test):
 
 
 def test_is_global_result(suite, suite_test):
-    suite_test.append_line('assert not slash.context.result.is_global_result()')
+    suite_test.append_line("assert not slash.context.result.is_global_result()")
     result = suite.run()
     assert result.session.results.global_result.is_global_result()
 
@@ -170,27 +162,27 @@ def test_global_result_is_success(suite, suite_test):
 def test_global_result_error_without_started_context():
     with slash.Session() as session:
         with handling_exceptions(swallow=True):
-            1/0 # pylint: disable=pointless-statement
+            1 / 0  # pylint: disable=pointless-statement
     assert not session.results.is_success()
 
 
 def test_session_cleanups_under_global_result(suite, suite_test):
-
     @suite_test.append_body
-    def __code__(): # pylint: disable=unused-variable
+    def __code__():  # pylint: disable=unused-variable
         def cleanup():
-            slash.context.result.data['ok'] = True
-        slash.add_cleanup(cleanup, scope='session')
+            slash.context.result.data["ok"] = True
+
+        slash.add_cleanup(cleanup, scope="session")
 
     res = suite.run()
-    assert res.session.results.global_result.data['ok']
+    assert res.session.results.global_result.data["ok"]
 
 
-@pytest.mark.parametrize('log_path', [None, 'a/b/c'])
-@pytest.mark.parametrize('log_subpath', [None, 'my_errors.log'])
+@pytest.mark.parametrize("log_path", [None, "a/b/c"])
+@pytest.mark.parametrize("log_subpath", [None, "my_errors.log"])
 def test_log_paths(log_path, log_subpath, config_override, logs_dir):
-    config_path = 'log.highlights_subpath'
-    extra_logs = ['/my/extra/log_{}'.format(i) for i in range(2)]
+    config_path = "log.highlights_subpath"
+    extra_logs = ["/my/extra/log_{}".format(i) for i in range(2)]
 
     config_override(config_path, log_subpath)
     with slash.Session() as curr_session:
@@ -198,7 +190,7 @@ def test_log_paths(log_path, log_subpath, config_override, logs_dir):
         result.set_log_path(log_path)
         expected_logs = [log_path] if log_path else []
         if log_subpath:
-            expected_logs.append(logs_dir.join('files').join(log_subpath))
+            expected_logs.append(logs_dir.join("files").join(log_subpath))
         assert result.get_log_path() is log_path
         assert result.get_log_paths() == expected_logs
         for extra_log in extra_logs:
@@ -206,7 +198,7 @@ def test_log_paths(log_path, log_subpath, config_override, logs_dir):
         assert result.get_log_paths() == expected_logs + extra_logs
 
 
-@pytest.mark.parametrize('error_adder', (Result.add_error, Result.add_failure))
+@pytest.mark.parametrize("error_adder", (Result.add_error, Result.add_failure))
 def test_result_not_started_with_errors(error_adder):
     result = Result()
     assert not result.is_started()
@@ -218,12 +210,9 @@ def test_result_not_started_with_errors(error_adder):
 
 
 class SessionResultTest(TestCase):
-
     def setUp(self):
         super(SessionResultTest, self).setUp()
-        self.results = [
-            Result() for _ in range(10)
-        ]
+        self.results = [Result() for _ in range(10)]
         for r in self.results:
             r.mark_started()
         # one result with both errors and failures

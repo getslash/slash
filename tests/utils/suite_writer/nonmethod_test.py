@@ -2,7 +2,6 @@ from .test import SuiteWriterTest
 
 
 class NonMethodTest(SuiteWriterTest):  # pylint: disable=abstract-method
-
     cls = None
 
     def __init__(self, suite, file):  # pylint: disable=useless-super-delegation

@@ -13,7 +13,11 @@ from .core.session import Session
 from .reporting.console_reporter import ConsoleReporter
 from . import exceptions
 from .exceptions import TerminatedException, SlashException
-from .exception_handling import handling_exceptions, inhibit_unhandled_exception_traceback, should_inhibit_unhandled_exception_traceback
+from .exception_handling import (
+    handling_exceptions,
+    inhibit_unhandled_exception_traceback,
+    should_inhibit_unhandled_exception_traceback,
+)
 from .loader import Loader
 from .log import ConsoleHandler
 from .utils import cli_utils
@@ -26,7 +30,6 @@ inhibit_unhandled_exception_traceback(SlashException)
 
 
 class Application(object):
-
     def __init__(self):
         super(Application, self).__init__()
         self._test_loader = Loader()
@@ -67,8 +70,8 @@ class Application(object):
 
     def enable_interactive(self):
         self.arg_parser.add_argument(
-            '-i', '--interactive', help='Enter an interactive shell',
-            action="store_true", default=False)
+            "-i", "--interactive", help="Enter an interactive shell", action="store_true", default=False
+        )
 
     def _reset_parser(self):
         self.arg_parser = cli_utils.SlashArgumentParser()
@@ -93,9 +96,7 @@ class Application(object):
     def get_reporter(self):
         returned = self._reporter
         if returned is None:
-            returned = ConsoleReporter(
-                level=config.root.log.console_level,
-                stream=self._report_stream)
+            returned = ConsoleReporter(level=config.root.log.console_level, stream=self._report_stream)
 
         return returned
 
@@ -117,15 +118,14 @@ class Application(object):
 
             self._exit_stack.enter_context(
                 cli_utils.get_modified_configuration_from_args_context(self.arg_parser, self._parsed_args)
-                )
+            )
 
             self.session = Session(reporter=self.get_reporter(), console_stream=self._report_stream)
 
-            trigger_hook.configure() # pylint: disable=no-member
+            trigger_hook.configure()  # pylint: disable=no-member
             plugins.manager.configure_for_parallel_mode()
             plugins.manager.activate_pending_plugins()
             cli_utils.configure_plugins_from_args(self._parsed_args)
-
 
             self._exit_stack.enter_context(self.session)
             self._emit_prelude_logs()
@@ -142,7 +142,7 @@ class Application(object):
         try:
             debug_if_needed(exc_info)
         except Exception as e:  # pylint: disable=broad-except
-            _logger.error("Failed to debug_if_needed: {!r}", e, exc_info=True, extra={'capture': False})
+            _logger.error("Failed to debug_if_needed: {!r}", e, exc_info=True, extra={"capture": False})
         if exc_value is not None:
             self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else 1
 
@@ -150,21 +150,21 @@ class Application(object):
                 self.get_reporter().report_error_message(str(exc_value))
 
             elif isinstance(exc_value, Exception):
-                _logger.error('Unexpected error occurred', exc_info=exc_info, extra={'capture': False})
-                self.get_reporter().report_error_message('Unexpected error: {}'.format(exc_value))
+                _logger.error("Unexpected error occurred", exc_info=exc_info, extra={"capture": False})
+                self.get_reporter().report_error_message("Unexpected error: {}".format(exc_value))
 
             if isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
                 self._interrupted = True
 
         if exc_type is not None:
-            trigger_hook.result_summary() # pylint: disable=no-member
+            trigger_hook.result_summary()  # pylint: disable=no-member
         self._exit_stack.__exit__(exc_type, exc_value, exc_tb)
         self._exit_stack = None
         self._reset_parser()
         trigger_hook.app_quit()  # pylint: disable=no-member
         return True
 
-    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
+    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None):  # pylint: disable=unused-argument
         self._prelude_warning_records.append(RecordedWarning.from_native_warning(message, category, filename, lineno))
 
     def _prelude_logging_context(self):
@@ -194,7 +194,7 @@ class Application(object):
     def _sigterm_context(self):
         def handle_sigterm(*_):
             with handling_exceptions():
-                raise TerminatedException('Terminated by signal')
+                raise TerminatedException("Terminated by signal")
 
         prev = signal.signal(signal.SIGTERM, handle_sigterm)
         try:
@@ -203,6 +203,6 @@ class Application(object):
             try:
                 signal.signal(signal.SIGTERM, prev)
             except TypeError as e:
-                #workaround for a strange issue on app cleanup. See https://bugs.python.org/issue23548
-                if 'signal handler must be signal.SIG_IGN' not in str(e):
+                # workaround for a strange issue on app cleanup. See https://bugs.python.org/issue23548
+                if "signal handler must be signal.SIG_IGN" not in str(e):
                     raise

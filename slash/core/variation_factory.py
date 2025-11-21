@@ -13,9 +13,7 @@ from .fixtures.utils import nofixtures
 
 
 class VariationFactory(object):
-
-    """Helper class to produce variations, while properly naming the needed fixtures to help identifying tests
-    """
+    """Helper class to produce variations, while properly naming the needed fixtures to help identifying tests"""
 
     def __init__(self, fixture_store):
         super(VariationFactory, self).__init__()
@@ -37,7 +35,6 @@ class VariationFactory(object):
         self._add_needed_fixtures_from_function(func)
 
     def _add_needed_fixtures_from_function(self, func):
-
         if isinstance(func, tuple):
             namespace, func = func
         else:
@@ -62,28 +59,26 @@ class VariationFactory(object):
                 try:
                     fixture = self._store.get_fixture_by_argument(argument)
                 except FixtureException as e:
-                    raise type(e)('Loading {0.__code__.co_filename}:{0.__name__}: {1}'.format(func, e))
-
+                    raise type(e)("Loading {0.__code__.co_filename}:{0.__name__}: {1}".format(func, e))
 
             self._needed_fixtures.append(fixture)
 
             arg_name = argument.name
             if namespace is not None:
-                arg_name = '{}:{}'.format(namespace, arg_name)
+                arg_name = "{}:{}".format(namespace, arg_name)
 
             self._populate_param_name_bindings(arg_name, fixture)
             self._arg_name_bindings[arg_name] = fixture
 
         for fixture in self._autouse_fixtures:
-            self._populate_param_name_bindings(fixture.info.name, fixture, prefix='::')
+            self._populate_param_name_bindings(fixture.info.name, fixture, prefix="::")
 
-        for fixture_name in getattr(func, '__extrafixtures__', []):
+        for fixture_name in getattr(func, "__extrafixtures__", []):
             fixture = self._store.get_fixture_by_name(fixture_name)
             self._populate_param_name_bindings(fixture_name, fixture)
             self._needed_fixtures.append(fixture)
 
-
-    def _populate_param_name_bindings(self, arg_name, fixture_or_param, prefix=''):
+    def _populate_param_name_bindings(self, arg_name, fixture_or_param, prefix=""):
         visited = {fixture_or_param.info.id}
         stack = [(prefix + arg_name, fixture_or_param)]
         while stack:
@@ -93,11 +88,11 @@ class VariationFactory(object):
                     if obj.info.id in visited:
                         continue
                     visited.add(obj.info.id)
-                    stack.append(('{}.{}'.format(name, sub_name), obj))
+                    stack.append(("{}.{}".format(name, sub_name), obj))
             elif isinstance(fixture, Parametrization):
                 self._param_name_bindings[name] = fixture
             else:
-                raise NotImplementedError() # pragma: no cover
+                raise NotImplementedError()  # pragma: no cover
 
     def iter_variations(self):
         needed_ids = OrderedSet()

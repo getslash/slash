@@ -4,13 +4,15 @@ from logbook import Logger
 
 _logger = Logger(__name__)
 
+
 class TestsDistributer(object):
     def __init__(self, num_tests):
         self._unstarted_tests_indices = [i for i in range(num_tests)]
         self._current_tests_index = 0
         workers_config = ctx.session.parallel_manager.workers.values()
-        self._workers_excluded_tests = {config.get_worker_id(): config.get_excluded_tests() \
-                                        for config in workers_config}
+        self._workers_excluded_tests = {
+            config.get_worker_id(): config.get_excluded_tests() for config in workers_config
+        }
         self._forced_tests_dict = {}
         for config in workers_config:
             for test_index in config.get_forced_tests():
@@ -31,7 +33,7 @@ class TestsDistributer(object):
                 ret = test_index
                 break
             else:
-                _logger.debug('worker id {} cannot execute test number {}, searching another', client_id, test_index)
+                _logger.debug("worker id {} cannot execute test number {}, searching another", client_id, test_index)
         if ret is not None:
             self._unstarted_tests_indices.remove(ret)
         return ret

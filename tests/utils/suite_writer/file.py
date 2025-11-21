@@ -12,26 +12,24 @@ from .test_container import SuiteWriterTestContainer
 
 
 class File(SuiteWriterTestContainer, CodeElement):
-
     def __init__(self, suite, relpath=None):
         super(File, self).__init__(suite)
         self._classes = []
         self._fixtures = []
 
         if relpath is None:
-            relpath = 'test_{}.py'.format(self.id)
+            relpath = "test_{}.py".format(self.id)
         self._relpath = relpath
 
     @property
     def name(self):
         return os.path.basename(self._relpath)
 
-    def add_hook_event(self, hook_name, extra_args=(), evt_name='evt'):
-        self.append_line('@slash.hooks.{}.register'.format(hook_name))
-        event_code = '{}_{}'.format(evt_name, uuid4())
-        self.append_line('def _hook():')
-        self.append_line('    __ut__.events.add({!r}, {})'.format(
-            event_code, ', '.join(extra_args)))
+    def add_hook_event(self, hook_name, extra_args=(), evt_name="evt"):
+        self.append_line("@slash.hooks.{}.register".format(hook_name))
+        event_code = "{}_{}".format(evt_name, uuid4())
+        self.append_line("def _hook():")
+        self.append_line("    __ut__.events.add({!r}, {})".format(event_code, ", ".join(extra_args)))
         return event_code
 
     @property
@@ -71,8 +69,8 @@ class File(SuiteWriterTestContainer, CodeElement):
     def _body_context(self, code_formatter):
         with super(File, self)._body_context(code_formatter):
             if self.suite.debug_info:
-                code_formatter.writeln('import __ut__')
-            code_formatter.writeln('import slash')
+                code_formatter.writeln("import __ut__")
+            code_formatter.writeln("import slash")
             code_formatter.writeln()
             yield None
 

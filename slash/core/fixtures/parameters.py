@@ -11,7 +11,7 @@ from ..tagging import Tags
 from .fixture_base import FixtureBase
 from .utils import FixtureInfo, get_scope_by_name
 
-_PARAM_INFO_ATTR_NAME = '__slash_parametrize__'
+_PARAM_INFO_ATTR_NAME = "__slash_parametrize__"
 
 
 def parametrize(parameter_name, values):
@@ -20,12 +20,11 @@ def parametrize(parameter_name, values):
     """
 
     def decorator(func):
-
         params = getattr(func, _PARAM_INFO_ATTR_NAME, None)
         if params is None:
             params = ParameterizationInfo(func)
 
-            @wraps(func, preserve=['__slash_fixture__'])
+            @wraps(func, preserve=["__slash_fixture__"])
             def new_func(*args, **kwargs):
                 # for better debugging. _current_variation gets set to None on context exit
                 variation = ctx.session.variations.get_current_variation()
@@ -34,6 +33,7 @@ def parametrize(parameter_name, values):
                     if name not in kwargs:
                         kwargs[name] = value
                 return func(*args, **kwargs)
+
             setattr(new_func, _PARAM_INFO_ATTR_NAME, params)
             returned = new_func
         else:
@@ -46,11 +46,11 @@ def parametrize(parameter_name, values):
 
 
 def iterate(**kwargs):
-
     def decorator(func):
         for name, options in kwargs.items():
             func = parametrize(name, options)(func)
         return func
+
     return decorator
 
 
@@ -62,10 +62,8 @@ def toggle(param_name):
     return parametrize(param_name, (True, False))
 
 
-
 @contextmanager
 def bound_parametrizations_context(variation, fixture_store, fixture_namespace):
-
     assert ctx.session.variations.get_current_variation() is None
     ctx.session.variations.set_current_variation(variation)
     try:
@@ -73,7 +71,6 @@ def bound_parametrizations_context(variation, fixture_store, fixture_namespace):
         yield
     finally:
         ctx.session.variations.set_current_variation(None)
-
 
 
 def iter_parametrization_fixtures(func):
@@ -86,19 +83,17 @@ def iter_parametrization_fixtures(func):
 
 
 class ParameterizationInfo(object):
-
     def __init__(self, func):
         super(ParameterizationInfo, self).__init__()
         self._argument_names = get_argument_names(func)
         self._argument_name_set = frozenset(self._argument_names)
         self._params = {}
         self._extra_params = {}
-        self.path = '{}:{}'.format(func.__module__, func.__name__)
+        self.path = "{}:{}".format(func.__module__, func.__name__)
 
     def add_options(self, param_name, values):
         if param_name in self._params:
-            raise ParameterException('{!r} already parametrized for {}'.format(
-            param_name, self.path))
+            raise ParameterException("{!r} already parametrized for {}".format(param_name, self.path))
         values = list(values)
 
         if not isinstance(param_name, (list, tuple)):
@@ -108,7 +103,7 @@ class ParameterizationInfo(object):
 
         values = _normalize_values(values, num_params=len(names))
 
-        p = Parametrization(values=values, path='{}.{}'.format(self.path, param_name))
+        p = Parametrization(values=values, path="{}.{}".format(self.path, param_name))
         for index, name in enumerate(names):
             if name in self._argument_name_set:
                 params_dict = self._params
@@ -133,7 +128,6 @@ def _id(obj):
 
 
 class Parametrization(FixtureBase):
-
     def __init__(self, path, values, info=None, transform=_id):
         super(Parametrization, self).__init__()
         self.path = path
@@ -141,7 +135,7 @@ class Parametrization(FixtureBase):
         if info is None:
             info = FixtureInfo(path=path)
         self.info = info
-        self.scope = get_scope_by_name('test')
+        self.scope = get_scope_by_name("test")
         self.transform = transform
 
     def get_value_by_index(self, index):
@@ -176,7 +170,6 @@ class Parametrization(FixtureBase):
 
 
 class ParametrizationValue(object):
-
     def __init__(self, label=NOTHING, value=NOTHING, tags=None):
         super(ParametrizationValue, self).__init__()
         self._validate_label(label)
@@ -191,11 +184,11 @@ class ParametrizationValue(object):
                 self.tags[name] = value
 
     def _validate_label(self, label):
-        if isinstance(label, str) and not re.match(r'^[a-zA-Z_][0-9a-zA-Z_]{0,29}$', label):
-            raise RuntimeError('Invalid label: {!r}'.format(label))
+        if isinstance(label, str) and not re.match(r"^[a-zA-Z_][0-9a-zA-Z_]{0,29}$", label):
+            raise RuntimeError("Invalid label: {!r}".format(label))
 
     def __rfloordiv__(self, other):
-        assert self.value is NOTHING, 'Parameter already has a value'
+        assert self.value is NOTHING, "Parameter already has a value"
         self.value = other
         return self
 
@@ -203,13 +196,14 @@ class ParametrizationValue(object):
 def _normalize_values(values, num_params=1):
     returned = []
     for index, value in enumerate(values):
-
         value = _normalize_single_value(value, default_label=index)
         if num_params > 1:
             if not isinstance(value.value, (tuple, list)):
-                raise RuntimeError('Invalid parametrization value (expected sequence): {!r}'.format(value.value))
+                raise RuntimeError("Invalid parametrization value (expected sequence): {!r}".format(value.value))
             if len(value.value) != num_params:
-                raise RuntimeError('Invalid parametrization value (invalid length, expected {}): {!r}'.format(num_params, value.value))
+                raise RuntimeError(
+                    "Invalid parametrization value (invalid length, expected {}): {!r}".format(num_params, value.value)
+                )
 
         returned.append(value)
     return returned
@@ -220,6 +214,6 @@ def _normalize_single_value(value, default_label):
         value = ParametrizationValue(label=default_label, value=value)
     if value.value is NOTHING:
         raise mark_exception_frame_correction(
-            RuntimeError('Parameter {} has no value defined!'.format(value.label)),
-            +4)
+            RuntimeError("Parameter {} has no value defined!".format(value.label)), +4
+        )
     return value

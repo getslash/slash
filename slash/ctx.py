@@ -41,23 +41,21 @@ class Context(object):
 
 
 class NullContext(object):
-
     def __setattr__(self, attr, value):
-        raise AttributeError(
-            "Cannot set attribute {!r} on null context".format(attr))
+        raise AttributeError("Cannot set attribute {!r} on null context".format(attr))
 
     @property
     def _always_none(self):
         pass
 
-    session = test = test_id = g = internal_globals = \
-        test_filename = test_classname = test_methodname = result = fixture = _always_none
+    session = test = test_id = g = internal_globals = test_filename = test_classname = test_methodname = result = (
+        fixture
+    ) = _always_none
 
     reporter = NullReporter()
 
 
 class _ContextStack(object):
-
     def __init__(self):
         super(_ContextStack, self).__init__()
         self._stack = [NullContext()]
@@ -81,17 +79,17 @@ class _ContextStack(object):
 
     def pop(self):
         if not self._stack:
-            raise SlashInternalError('Attempting to pop context with empty stack')
+            raise SlashInternalError("Attempting to pop context with empty stack")
 
         if len(self._stack) == 1:
             raise RuntimeError("No more contexts to pop")
         return self._stack.pop(-1)
 
+
 context = _ContextStack()
 
 
 class ContextAttributeProxy(object):
-
     def __init__(self, name):
         super(ContextAttributeProxy, self).__init__()
         self._proxy__name = name
@@ -139,6 +137,7 @@ reporter = ContextAttributeProxy("reporter")
 
 def push_context():
     context.push(Context())
+
 
 def pop_context():
     context.pop()

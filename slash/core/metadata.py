@@ -6,8 +6,8 @@ from ..exceptions import SlashInternalError
 
 _sort_key_generator = itertools.count(1)
 
-class Metadata(object):
 
+class Metadata(object):
     """Class representing the metadata associated with a test object. Generally available
     as test.__slash__
     """
@@ -27,17 +27,17 @@ class Metadata(object):
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
             if not self.module_name:
-                raise SlashInternalError('Could not find module for {}'.format(test))
+                raise SlashInternalError("Could not find module for {}".format(test))
 
             self._file_path = factory.get_filename()
             self.factory_name = factory.get_factory_name()
         else:
             self.module_name = type(test).__module__
             self._file_path = sys.modules[self.module_name].__file__
-            self.factory_name = '?'
+            self.factory_name = "?"
         self.variation = test.get_variation()
         if self.variation is None:
-            raise SlashInternalError('{} has no variations'.format(test))
+            raise SlashInternalError("{} has no variations".format(test))
 
         self._address_override = None
         #: Address string to identify the test inside the file from which it was loaded
@@ -49,7 +49,7 @@ class Metadata(object):
             self._class_name = factory.get_class_name()
         else:
             testfunc = test.get_test_function()
-            if hasattr(testfunc, '__self__'):
+            if hasattr(testfunc, "__self__"):
                 self._class_name = testfunc.__self__.__class__.__name__
             else:
                 self._class_name = None
@@ -75,10 +75,10 @@ class Metadata(object):
         if self._address_override is not None:
             return self._address_override
 
-        returned = '{}:{}'.format(self.file_path, self.address_in_file)
+        returned = "{}:{}".format(self.file_path, self.address_in_file)
         if self.variation:
-            returned += '({})'.format(
-                ', '.join('{}={!r}'.format(key, value) for key, value in self.variation.values.items())
+            returned += "({})".format(
+                ", ".join("{}={!r}".format(key, value) for key, value in self.variation.values.items())
                 if raw_params
                 else self.variation.safe_repr
             )
@@ -88,7 +88,7 @@ class Metadata(object):
 
     def allocate_id(self):
         if self.id is not None:
-            raise SlashInternalError('id field of metadata object should be None, is {}'.format(self.id))
+            raise SlashInternalError("id field of metadata object should be None, is {}".format(self.id))
         self.id = context.session.id_space.allocate()
 
     def set_sort_key(self, key):
@@ -98,7 +98,7 @@ class Metadata(object):
         return self._sort_key
 
     def set_test_full_name(self, name):
-        assert hasattr(self, '_address_override')
+        assert hasattr(self, "_address_override")
         self._address_override = name
 
     def is_interactive(self):
@@ -116,22 +116,21 @@ class Metadata(object):
     def function_name(self):
         returned = self.address_in_file
         if self._class_name:
-            prefix = self._class_name + '.'
+            prefix = self._class_name + "."
             assert returned.startswith(prefix)
-            returned = returned[len(prefix):]
+            returned = returned[len(prefix) :]
 
-        return returned.split('(')[0]
+        return returned.split("(")[0]
 
     @property
     def test_index1(self):
-        """Same as ``test_index0``, only 1-based
-        """
+        """Same as ``test_index0``, only 1-based"""
         if self.test_index0 is None:
             return None
         return self.test_index0 + 1
 
     def __repr__(self):
-        return '<{}>'.format(self.address)
+        return "<{}>".format(self.address)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -143,6 +142,7 @@ class Metadata(object):
 
     def __hash__(self):
         return self.address.__hash__()
+
 
 def ensure_test_metadata(test):
     returned = getattr(test, "__slash__", None)

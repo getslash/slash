@@ -1,6 +1,6 @@
 from ..utils.python import resolve_underlying_function
 
-_SLASH_REQUIRES_KEY_NAME = '__slash_requirements__'
+_SLASH_REQUIRES_KEY_NAME = "__slash_requirements__"
 
 
 def requires(req, message=None):
@@ -12,21 +12,21 @@ def requires(req, message=None):
     if not isinstance(req, Requirement):
         req = Requirement(req, message)
     else:
-        assert message is None, 'Cannot specify message when passing Requirement objects to slash.requires'
+        assert message is None, "Cannot specify message when passing Requirement objects to slash.requires"
 
     def decorator(func_or_class):
         reqs = _get_requirements_list(func_or_class)
         reqs.append(req)
         return func_or_class
+
     return decorator
 
-def _get_requirements_list(thing, create=True):
 
+def _get_requirements_list(thing, create=True):
     thing = resolve_underlying_function(thing)
     existing = getattr(thing, _SLASH_REQUIRES_KEY_NAME, None)
 
     key = id(thing)
-
 
     if existing is None or key != existing[0]:
         new_reqs = (key, [] if existing is None else existing[1][:])
@@ -45,7 +45,6 @@ def get_requirements(test):
 
 
 class Requirement(object):
-
     def __init__(self, req, message=None):
         super(Requirement, self).__init__()
         self._req = req
@@ -55,9 +54,9 @@ class Requirement(object):
         if self._message is not None:
             return self._message
         if isinstance(self._req, bool):
-            return '?'
-        if hasattr(self._req, '__name__'):
-            return '<{.__name__}>'.format(self._req)
+            return "?"
+        if hasattr(self._req, "__name__"):
+            return "<{.__name__}>".format(self._req)
         return repr(self._req)
 
     def is_met(self):
@@ -73,6 +72,7 @@ class Skip(Requirement):
     """
     A special requirement used for implementing @slash.skipped
     """
+
     def __init__(self, reason=None):
         super(Skip, self).__init__(False, reason)
         self.reason = reason

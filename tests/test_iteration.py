@@ -57,16 +57,16 @@ def test_peekable_iterator(objects):
 
 
 def test_cartesian_dict():
-
     params = {
-        'a': [1, 2, 3],
-        'b': [4, 5],
-        'c': [6, 7],
+        "a": [1, 2, 3],
+        "b": [4, 5],
+        "c": [6, 7],
     }
 
-    assert set(frozenset(x.items()) for x in iter_cartesian_dicts(params)) == \
-        set(frozenset([('a', a_value), ('b', b_value), ('c', c_value)])
-            for a_value, b_value, c_value in itertools.product(params['a'], params['b'], params['c']))
+    assert set(frozenset(x.items()) for x in iter_cartesian_dicts(params)) == set(
+        frozenset([("a", a_value), ("b", b_value), ("c", c_value)])
+        for a_value, b_value, c_value in itertools.product(params["a"], params["b"], params["c"])
+    )
 
 
 @pytest.fixture(params=[True, False])

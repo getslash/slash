@@ -11,7 +11,6 @@ from .utils import TestCase
 
 
 class OutputCaptureTest(TestCase):
-
     def setUp(self):
         super(OutputCaptureTest, self).setUp()
         self.stderr = StringIO()
@@ -21,17 +20,18 @@ class OutputCaptureTest(TestCase):
 
 
 class ArgumentParsingTest(OutputCaptureTest):
-
     def setUp(self):
         super(ArgumentParsingTest, self).setUp()
-        self.config = Config({
-            "a": {"a1": {"flag1": True // conf_utils.Cmdline(off="--no-flag1")}},
-            "b": {"b1": {"flag2": False // conf_utils.Cmdline(on="--flag2")}},
-            "string_value": "",
-            "int_value": 0 // conf_utils.Cmdline(increase="--increase", decrease="--decrease"),
-            "arg_value": "" // conf_utils.Cmdline(arg="--arg-value"),
-            "list": ["existing_item"] // conf_utils.Cmdline(append="--append"),
-        })
+        self.config = Config(
+            {
+                "a": {"a1": {"flag1": True // conf_utils.Cmdline(off="--no-flag1")}},
+                "b": {"b1": {"flag2": False // conf_utils.Cmdline(on="--flag2")}},
+                "string_value": "",
+                "int_value": 0 // conf_utils.Cmdline(increase="--increase", decrease="--decrease"),
+                "arg_value": "" // conf_utils.Cmdline(arg="--arg-value"),
+                "list": ["existing_item"] // conf_utils.Cmdline(append="--append"),
+            }
+        )
         self._parser = cli_utils.SlashArgumentParser()
         cli_utils.configure_arg_parser_by_config(self._parser, self.config)
 
@@ -81,7 +81,7 @@ class ArgumentParsingTest(OutputCaptureTest):
 
     def test_config_assign_missing_assignment(self):
         with self.assertRaises(SystemExit) as caught:
-            with self._cli(['-o', 'blap']):
+            with self._cli(["-o", "blap"]):
                 pass
         self.assertNotEqual(caught.exception.code, 0)
 
@@ -144,7 +144,7 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
     def test_help_shows_available_plugins(self):
         cli_utils.configure_arg_parser_by_plugins(self._parser)
         with self.assertRaises(SystemExit):
-            self._parser.parse_args(['-h'])
+            self._parser.parse_args(["-h"])
         output = self.stdout.getvalue()
         self.assertIn("--with-sample-plugin", output)
         self.assertIn("--plugin-option", output)
@@ -159,7 +159,6 @@ class PluginCommandLineArgumentsTestWithDashes(PluginCommandLineArgumentsTest):
 
 
 class SampleCommandLinePlugin(PluginInterface):
-
     def __init__(self, name="sample plugin"):
         self._name = name
 
@@ -177,7 +176,6 @@ class SampleCommandLinePlugin(PluginInterface):
 
 
 class InternalPlugin(PluginInterface):
-
     def __init__(self, name="internal plugin"):
         self._name = name
 

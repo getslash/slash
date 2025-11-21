@@ -14,24 +14,28 @@ def test_plugin_discovery(no_plugins, root_path, expected_names, config_override
 
 @pytest.fixture
 def root_path(tmpdir):
-    return str(tmpdir.join('root_path'))
+    return str(tmpdir.join("root_path"))
+
 
 @pytest.fixture
 def expected_names(root_path):
     returned = set()
-    for index, path in enumerate([
+    for index, path in enumerate(
+        [
             "a/b/p1.py",
             "a/b/p2.py",
             "a/p3.py",
             "a/b/c/p4.py",
-    ]):
+        ]
+    ):
         plugin_name = "auto plugin {}".format(index)
-        class_name = plugin_name.replace(' ', '_')
+        class_name = plugin_name.replace(" ", "_")
         path = os.path.join(root_path, path)
         if not os.path.isdir(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
         with open(path, "w") as f:
-            f.write("""
+            f.write(
+                """
 import slash.plugins
 from slash.plugins.interface import PluginInterface
 
@@ -40,7 +44,8 @@ class {class_name}(PluginInterface):
         return {name!r}
 
 def install_plugins():
-""".format(class_name=class_name, name=plugin_name))
+""".format(class_name=class_name, name=plugin_name)
+            )
             if index % 2 == 0:
                 # don't install
                 f.write("     pass")
@@ -48,9 +53,9 @@ def install_plugins():
                 returned.add(plugin_name)
                 f.write("     slash.plugins.manager.install({class_name}())".format(class_name=class_name))
     for junk_file in [
-            "a/junk1.p",
-            "a/b/junk2",
-            "a/b/c/junk3",
+        "a/junk1.p",
+        "a/b/junk2",
+        "a/b/c/junk3",
     ]:
         with open(os.path.join(root_path, junk_file), "w") as f:
             f.write("---JUNK----")

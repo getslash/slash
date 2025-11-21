@@ -20,7 +20,7 @@ def test_fixture_cleanup_at_end_of_suite(suite):
 
 def test_fixture_cleanup_failure_fails_test(suite, suite_test, defined_fixture):
     suite_test.depend_on_fixture(defined_fixture)
-    defined_fixture.add_cleanup(extra_code=['raise Exception()'])
+    defined_fixture.add_cleanup(extra_code=["raise Exception()"])
     suite_test.expect_error()
     suite.run()
 
@@ -45,7 +45,6 @@ def test_fixture_dependency_chain(suite, suite_test):
 
 
 def test_fixture_dependency_both_directly_and_indirectly(suite, suite_test):
-
     fixture1 = suite.slashconf.add_fixture()
     num_values1 = 2
     fixture1.add_parameter(num_values=num_values1)
@@ -65,38 +64,40 @@ def test_fixture_dependency_both_directly_and_indirectly(suite, suite_test):
 
 def test_fixture_context(suite, suite_test):
     fixture1 = suite.slashconf.add_fixture()
-    fixture1.append_line('assert this == slash.context.fixture')
+    fixture1.append_line("assert this == slash.context.fixture")
     fixture2 = suite.slashconf.add_fixture()
-    fixture2.append_line('assert this == slash.context.fixture')
+    fixture2.append_line("assert this == slash.context.fixture")
     fixture2.depend_on_fixture(fixture1)
     suite_test.depend_on_fixture(fixture1)
     suite.run()
 
-@pytest.mark.parametrize('where', [['before'], ['after'], ['before', 'after']])
+
+@pytest.mark.parametrize("where", [["before"], ["after"], ["before", "after"]])
 def test_fixtures_in_before_after(suite, where):
     test_class = suite.files[-1].add_class()
     suite_test = test_class.add_method_test()
 
     fixture = suite.slashconf.add_fixture()
-    fixture_event = fixture.add_event(name='fixture')
+    fixture_event = fixture.add_event(name="fixture")
 
     assert len(suite_test.cls.tests) == 1
 
     before = suite_test.cls.add_before_method()
-    evt1 = before.add_event(name='before')
+    evt1 = before.add_event(name="before")
     after = suite_test.cls.add_after_method()
-    evt2 = after.add_event(name='after')
+    evt2 = after.add_event(name="after")
 
     for func in before, after:
         if func.name in where:
             func.depend_on_fixture(fixture)
-            func.append_line('assert {} == {}'.format(fixture.name, fixture.get_value_string()))
+            func.append_line("assert {} == {}".format(fixture.name, fixture.get_value_string()))
 
     summary = suite.run()
 
     assert evt1 in summary.events
     assert evt2 in summary.events
     assert fixture_event in summary.events
+
 
 def test_fixture_and_parameter(suite, suite_test, get_fixture_location):
     fixture = get_fixture_location(suite_test).add_fixture()
@@ -106,15 +107,14 @@ def test_fixture_and_parameter(suite, suite_test, get_fixture_location):
 
 
 def test_fixture_which_name_startswith_test(suite):
-    fixture = suite.slashconf.add_fixture(name='test_my_fixture')
+    fixture = suite.slashconf.add_fixture(name="test_my_fixture")
     suite[-1].depend_on_fixture(fixture)
     for test in suite:
         test.expect_deselect()
     summary = suite.run(expect_session_errors=True)
     assert not summary.ok()
-    for output in [summary.get_console_output(),
-                   str(summary.session.results.global_result.get_errors()[0])]:
-        assert 'Invalid fixture name' in output
+    for output in [summary.get_console_output(), str(summary.session.results.global_result.get_errors()[0])]:
+        assert "Invalid fixture name" in output
 
 
 def test_fixture_with_parameters(suite_builder):
@@ -123,17 +123,21 @@ def test_fixture_with_parameters(suite_builder):
         import slash
 
         @slash.fixture
-        @slash.parameters.iterate(my_param=['a',])
+        @slash.parameters.iterate(
+            my_param=[
+                "a",
+            ]
+        )
         def fixture_1(my_param):  # pylint: disable=unused-variable
             yield my_param
 
-        @slash.parameters.iterate(my_param=['b'])
+        @slash.parameters.iterate(my_param=["b"])
         @slash.fixture
         def fixture_2(my_param):  # pylint: disable=unused-variable
             yield my_param
 
         def test_a(fixture_1, fixture_2):  # pylint: disable=unused-variable
-            assert fixture_1 == 'a'
-            assert fixture_2 == 'b'
+            assert fixture_1 == "a"
+            assert fixture_2 == "b"
 
     suite_builder.build().run().assert_results_breakdown(success=1)

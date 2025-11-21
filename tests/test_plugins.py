@@ -10,93 +10,82 @@ from slash.plugins import IncompatiblePlugin, PluginInterface
 from .utils import NamedPlugin, maybe_decorate
 
 
-
 def test_registers_on_none(restore_plugins_on_cleanup, checkpoint):
-
     @slash.plugins.active  # pylint: disable=unused-variable
     class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
-
         def get_name(self):
-            return 'sample'
+            return "sample"
 
         @plugins.registers_on(None)
         def some_method_here(self):
             checkpoint()
 
-    gossip.trigger('slash.some_method_here')
+    gossip.trigger("slash.some_method_here")
     assert not checkpoint.called
 
 
-@pytest.mark.parametrize('class_level_needs', [True, False])
-@pytest.mark.parametrize('class_level_provides', [True, False])
+@pytest.mark.parametrize("class_level_needs", [True, False])
+@pytest.mark.parametrize("class_level_provides", [True, False])
 def test_registers_on_kwargs(class_level_needs, class_level_provides):
-
-    needs_decorator = plugins.needs('other_requirement')
-    provides_decorator = plugins.provides('another_provided_requirement')
+    needs_decorator = plugins.needs("other_requirement")
+    provides_decorator = plugins.provides("another_provided_requirement")
 
     @slash.plugins.active  # pylint: disable=unused-variable
     @maybe_decorate(needs_decorator, class_level_needs)
     @maybe_decorate(provides_decorator, class_level_provides)
     class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
-
         def get_name(self):
-            return 'sample'
+            return "sample"
 
-        @plugins.registers_on('some.hook', provides=['provided_requirement'], needs=['some_requirement'], tags=['tag'])
+        @plugins.registers_on("some.hook", provides=["provided_requirement"], needs=["some_requirement"], tags=["tag"])
         @maybe_decorate(needs_decorator, not class_level_needs)
         @maybe_decorate(provides_decorator, not class_level_provides)
         def plugin_method(self):
             pass
 
-
-    @gossip.register('some.hook', provides=['some_requirement', 'other_requirement'])
+    @gossip.register("some.hook", provides=["some_requirement", "other_requirement"])
     def _unused():
         pass
 
-    gossip.trigger('some.hook')
-    hook = gossip.get_hook('some.hook')
-    [registration] = [reg for reg in hook.get_registrations() if reg.func.__name__ == 'plugin_method']
-    assert registration.tags == {'tag'}
-    assert registration.needs == frozenset(['some_requirement', 'other_requirement'])
-    assert registration.provides == frozenset(['provided_requirement', 'another_provided_requirement'])
+    gossip.trigger("some.hook")
+    hook = gossip.get_hook("some.hook")
+    [registration] = [reg for reg in hook.get_registrations() if reg.func.__name__ == "plugin_method"]
+    assert registration.tags == {"tag"}
+    assert registration.needs == frozenset(["some_requirement", "other_requirement"])
+    assert registration.provides == frozenset(["provided_requirement", "another_provided_requirement"])
 
 
 def test_registers_on_with_private_methods(restore_plugins_on_cleanup, checkpoint):
-
     @slash.plugins.active  # pylint: disable=unused-variable
     class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
-
         def get_name(self):
-            return 'sample'
+            return "sample"
 
-        @plugins.registers_on('some_hook')
+        @plugins.registers_on("some_hook")
         def _handler(self):
             checkpoint()
 
     assert not checkpoint.called
-    gossip.trigger('some_hook')
+    gossip.trigger("some_hook")
     assert checkpoint.called
 
 
 def test_class_variables_allowed(restore_plugins_on_cleanup):
     @slash.plugins.active  # pylint: disable=unused-variable
     class SamplePlugin(PluginInterface):  # pylint: disable=unused-variable
-
-        ATTRIBUTE = 'some_value'
+        ATTRIBUTE = "some_value"
 
         def get_name(self):
-            return 'sample'
+            return "sample"
 
 
 def test_active_decorator(restore_plugins_on_cleanup):
-
     plugins.manager.uninstall_all()
 
     @slash.plugins.active
     class SamplePlugin(PluginInterface):
-
         def get_name(self):
-            return 'sample'
+            return "sample"
 
     assert isinstance(SamplePlugin, type)
     assert issubclass(SamplePlugin, PluginInterface)
@@ -104,26 +93,25 @@ def test_active_decorator(restore_plugins_on_cleanup):
     assert isinstance(active, SamplePlugin)
 
 
-@pytest.mark.parametrize('is_internal', [True, False])
+@pytest.mark.parametrize("is_internal", [True, False])
 def test_custom_hook_registration(request, is_internal):
-
-    hook_name = 'some_hook'
+    hook_name = "some_hook"
     with pytest.raises(LookupError):
         gossip.get_hook(hook_name)
 
     class MyPlugin(PluginInterface):
-
         def get_name(self):
             return "plugin"
 
         @plugins.registers_on(hook_name)
         def unknown(self):
             pass
+
     p = MyPlugin()
     plugins.manager.install(p, activate=True, is_internal=is_internal)
 
     @request.addfinalizer
-    def cleanup():              # pylint: disable=unused-variable
+    def cleanup():  # pylint: disable=unused-variable
         plugins.manager.uninstall(p)
 
     registrations = gossip.get_hook(hook_name).get_registrations()
@@ -137,10 +125,9 @@ def test_custom_hook_registration(request, is_internal):
 
 
 def test_multiple_registers_on(request):
-    hook_names = ['some_hook_{}'.format(i) for i in range(2)]
+    hook_names = ["some_hook_{}".format(i) for i in range(2)]
 
     class MyPlugin(PluginInterface):
-
         def get_name(self):
             return "plugin"
 
@@ -152,8 +139,9 @@ def test_multiple_registers_on(request):
     expected_func = MyPlugin.unknown
     p = MyPlugin()
     plugins.manager.install(p, activate=True)
+
     @request.addfinalizer
-    def cleanup():              # pylint: disable=unused-variable
+    def cleanup():  # pylint: disable=unused-variable
         plugins.manager.uninstall(p)
 
     for hook_name in hook_names:
@@ -166,12 +154,11 @@ def test_multiple_registers_on(request):
     for hook_name in hook_names:
         assert not gossip.get_hook(hook_name).get_registrations()
 
-def test_register_invalid_hook():
 
+def test_register_invalid_hook():
     initially_installed = list(plugins.manager.get_installed_plugins())
 
     class MyPlugin(PluginInterface):
-
         def get_name(self):
             return "plugin"
 
@@ -185,14 +172,12 @@ def test_register_invalid_hook():
 
 
 def test_register_custom_hooks_strict_group():
-
     initially_installed = list(plugins.manager.get_installed_plugins())
 
     hook_name = "some_group.some_hook"
     gossip.get_or_create_group("some_group").set_strict()
 
     class MyPlugin(PluginInterface):
-
         def get_name(self):
             return "plugin"
 
@@ -208,9 +193,9 @@ def test_register_custom_hooks_strict_group():
 
 def test_builtin_plugins_hooks_start_condition():
     "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
-    for hook in gossip.get_group('slash').get_hooks():
+    for hook in gossip.get_group("slash").get_hooks():
         for registration in hook.get_registrations():
-            assert registration.token.startswith('slash.'), 'Callback {} is not a builtin!'.format(hook.full_name)
+            assert registration.token.startswith("slash."), "Callback {} is not a builtin!".format(hook.full_name)
 
 
 def test_builtin_plugins_are_installed():
@@ -219,13 +204,12 @@ def test_builtin_plugins_are_installed():
     for filename in os.listdir(os.path.join(os.path.dirname(plugins.__file__), "builtin")):
         if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
             continue
-        plugin_name = filename[:(-3)].replace('_', ' ')
+        plugin_name = filename[:(-3)].replace("_", " ")
         assert plugin_name in installed
 
 
-@pytest.mark.usefixtures('disable_vintage_deprecations')
+@pytest.mark.usefixtures("disable_vintage_deprecations")
 def test_get_installed_plugins():
-
     class CustomPlugin(PluginInterface):
         def __init__(self, name):
             super(CustomPlugin, self).__init__()
@@ -234,8 +218,8 @@ def test_get_installed_plugins():
         def get_name(self):
             return self._name
 
-    some_plugin = CustomPlugin('some-plugin')
-    internal_plugin = CustomPlugin('internal-plugin')
+    some_plugin = CustomPlugin("some-plugin")
+    internal_plugin = CustomPlugin("internal-plugin")
     plugins.manager.install(some_plugin)
     plugins.manager.install(internal_plugin, is_internal=True)
 
@@ -244,10 +228,11 @@ def test_get_installed_plugins():
     assert internal_plugin.get_name() in plugins.manager.get_installed_plugins(include_internals=True)
     assert internal_plugin.get_name() not in plugins.manager.get_installed_plugins(include_internals=False)
 
-def test_cannot_install_incompatible_subclasses(no_plugins):
 
+def test_cannot_install_incompatible_subclasses(no_plugins):
     class Incompatible(object):
         pass
+
     for invalid in (Incompatible, Incompatible(), PluginInterface, object(), 1, "string"):
         with pytest.raises(IncompatiblePlugin):
             plugins.manager.install(invalid)
@@ -258,9 +243,9 @@ def test_install_uninstall(no_plugins):
     plugin_name = "some plugin name"
 
     class CustomPlugin(PluginInterface):
-
         def get_name(self):
             return plugin_name
+
     with pytest.raises(LookupError):
         plugins.manager.get_plugin(plugin_name)
     plugin = CustomPlugin()
@@ -271,13 +256,10 @@ def test_install_uninstall(no_plugins):
         plugins.manager.get_plugin(plugin_name)
 
 
-
-@pytest.mark.parametrize('cond', [True, False])
+@pytest.mark.parametrize("cond", [True, False])
 def test_register_if(no_plugins, checkpoint, cond):
-
     @slash.plugins.active  # pylint: disable=unused-variable
     class CustomPlugin(NamedPlugin):  # pylint: disable=unused-variable
-
         @slash.plugins.register_if(cond)
         def test_start(self):
             checkpoint()
@@ -288,17 +270,14 @@ def test_register_if(no_plugins, checkpoint, cond):
 
 
 def test_register_if_nonexistent_hook(no_plugins, checkpoint):
-
     @slash.plugins.active  # pylint: disable=unused-variable
     class CustomPlugin(NamedPlugin):  # pylint: disable=unused-variable
-
         @slash.plugins.register_if(False)
         def nonexistent_hook(self):
             checkpoint()
 
 
 def test_restoring_state_context():
-
     class Plugin1(NamedPlugin):
         pass
 
@@ -316,22 +295,22 @@ def test_restoring_state_context():
     class Plugin5(NamedPlugin):
         pass
 
-
     manager = slash.plugins.manager
     manager.install(Plugin3())
     installed = manager.get_installed_plugins().copy()
     active = manager.get_active_plugins().copy()
 
-
     with manager.restoring_state_context():
         manager.install(Plugin1())
         manager.uninstall(Plugin2)
-        manager.activate('Plugin3')
+        manager.activate("Plugin3")
         manager.deactivate(Plugin4)
         manager.install(Plugin5(), activate=True)
-        assert set(manager.get_installed_plugins()) == set(installed)\
-            .union({'Plugin1', 'Plugin5'})\
-            .difference({'Plugin2'})
-        assert set(manager.get_active_plugins()) == set(active).union({'Plugin3', 'Plugin5'}).difference({'Plugin2', 'Plugin4'})
+        assert set(manager.get_installed_plugins()) == set(installed).union({"Plugin1", "Plugin5"}).difference(
+            {"Plugin2"}
+        )
+        assert set(manager.get_active_plugins()) == set(active).union({"Plugin3", "Plugin5"}).difference(
+            {"Plugin2", "Plugin4"}
+        )
     assert manager.get_installed_plugins() == installed
     assert manager.get_active_plugins() == active

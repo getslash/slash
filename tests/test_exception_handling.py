@@ -13,8 +13,8 @@ from slash.utils.python import PYPY
 from .utils import CustomException, TestCase
 
 
-@pytest.mark.parametrize('is_fatal', [True, False])
-@pytest.mark.parametrize('context', [None, 'Something'])
+@pytest.mark.parametrize("is_fatal", [True, False])
+@pytest.mark.parametrize("context", [None, "Something"])
 def test_handling_exceptions_log(context, is_fatal):
     raised = CustomException()
     if is_fatal:
@@ -24,41 +24,41 @@ def test_handling_exceptions_log(context, is_fatal):
             with exception_handling.handling_exceptions(context=context, swallow=True):
                 raise raised
     assert len(handler.records) == 3
-    assert handler.records[1].message.startswith('Error added')
-    assert handler.records[2].message.startswith('Swallowing')
+    assert handler.records[1].message.startswith("Error added")
+    assert handler.records[2].message.startswith("Swallowing")
     handle_exc_msg = handler.records[0].message
-    assert handle_exc_msg.startswith('Handling exception')
+    assert handle_exc_msg.startswith("Handling exception")
 
     if context:
-        assert 'Context: {}'.format(context) in handle_exc_msg
+        assert "Context: {}".format(context) in handle_exc_msg
     else:
-        assert 'Context' not in handle_exc_msg
+        assert "Context" not in handle_exc_msg
     if is_fatal:
-        assert 'FATAL' in handle_exc_msg
+        assert "FATAL" in handle_exc_msg
     else:
-        assert 'FATAL' not in handle_exc_msg
+        assert "FATAL" not in handle_exc_msg
 
 
 def test_handling_exceptions_swallow_skip_test(suite, suite_test):
-
     @suite_test.append_body
-    def __code__():             # pylint: disable=unused-variable
+    def __code__():  # pylint: disable=unused-variable
         from slash.exception_handling import handling_exceptions
+
         with handling_exceptions(swallow=True):
             slash.skip_test()
-        __ut__.events.add('NEVER') # pylint: disable=undefined-variable
+        __ut__.events.add("NEVER")  # pylint: disable=undefined-variable
 
     suite_test.expect_skip()
 
     summary = suite.run()
-    assert not summary.events.has_event('NEVER')
+    assert not summary.events.has_event("NEVER")
 
 
 def test_handling_exceptions_skip_test_would_not_return_skip_test():
     with pytest.raises(SkipTest) as caught:
         with slash.Session():
             with exception_handling.handling_exceptions() as handled:
-                raise SkipTest('Unittest')
+                raise SkipTest("Unittest")
 
     assert isinstance(caught.value, SkipTest)
     assert handled.exception is caught.value
@@ -66,7 +66,6 @@ def test_handling_exceptions_skip_test_would_not_return_skip_test():
 
 
 def test_passthrough_types():
-
     value = CustomException()
 
     with slash.Session():
@@ -104,7 +103,7 @@ class FakeTracebackTest(TestCase):
         self.debugger_called = False
         self._tb_len = 0
 
-    @pytest.mark.skipif(PYPY, reason='Cannot run on PyPy')
+    @pytest.mark.skipif(PYPY, reason="Cannot run on PyPy")
     def test_fake_traceback(self):
         with slash.Session(), pytest.raises(ZeroDivisionError):
             with exception_handling.handling_exceptions(fake_traceback=False):
@@ -152,7 +151,6 @@ def test_handling_exceptions():
 
 
 class DebuggingTest(TestCase):
-
     def setUp(self):
         super(DebuggingTest, self).setUp()
         self.forge.replace_with(debug, "launch_debugger", self.dummy_debugger)
@@ -207,17 +205,19 @@ def test_disable_exception_swallowing_function():
 
 def test_disable_exception_swallowing_decorator():
     raised = CustomException()
+
     @exception_handling.disable_exception_swallowing
     def func():
         raise raised
+
     with pytest.raises(CustomException) as caught:
         with exception_handling.get_exception_swallowing_context():
             func()
     assert caught.value is raised
 
 
-@pytest.mark.parametrize('message', [None, 'My custom message'])
-@pytest.mark.parametrize('exc_types', [CustomException, (CustomException, ZeroDivisionError)])
+@pytest.mark.parametrize("message", [None, "My custom message"])
+@pytest.mark.parametrize("exc_types", [CustomException, (CustomException, ZeroDivisionError)])
 def test_assert_raises(exc_types, message):
     raised = CustomException()
     with slash.Session():
@@ -227,9 +227,9 @@ def test_assert_raises(exc_types, message):
     assert caught.exception is raised
 
 
-@pytest.mark.parametrize('message', [None, 'My custom message'])
+@pytest.mark.parametrize("message", [None, "My custom message"])
 def test_assert_raises_that_not_raises(message):
-    expected_substring = message or 'not raised'
+    expected_substring = message or "not raised"
     try:
         with slash.assert_raises(CustomException, msg=message):
             pass
@@ -237,18 +237,19 @@ def test_assert_raises_that_not_raises(message):
         assert expected_substring in str(e)
         assert e.expected_types == (CustomException,)
     else:
-        raise Exception('ExpectedExceptionNotCaught exception was not raised :(')  # pylint: disable=broad-exception-raised
+        raise Exception("ExpectedExceptionNotCaught exception was not raised :(")  # pylint: disable=broad-exception-raised
 
 
-@pytest.mark.parametrize('with_session', [True, False])
+@pytest.mark.parametrize("with_session", [True, False])
 def test_handling_exceptions_inside_assert_raises_with_session(with_session):
     value = CustomException()
 
     with ExitStack() as ctx:
-
         if with_session:
             session = ctx.enter_context(slash.Session())
-            ctx.enter_context(session.get_started_context()) # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
+            ctx.enter_context(
+                session.get_started_context()
+            )  # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
         else:
             session = None
 
@@ -261,8 +262,8 @@ def test_handling_exceptions_inside_assert_raises_with_session(with_session):
         assert session.results.get_num_errors() == 0
 
 
-@pytest.mark.parametrize('message', [None, 'My custom message'])
-@pytest.mark.parametrize('exc_types', [CustomException, (CustomException, ZeroDivisionError)])
+@pytest.mark.parametrize("message", [None, "My custom message"])
+@pytest.mark.parametrize("exc_types", [CustomException, (CustomException, ZeroDivisionError)])
 def test_allowing_exceptions(exc_types, message):
     raised = CustomException()
     with slash.Session():
@@ -282,15 +283,16 @@ def test_allowing_exceptions_that_not_raises():
     assert handler.records[0].message.startswith("Exception/CustomException not raised")
 
 
-@pytest.mark.parametrize('with_session', [True, False])
+@pytest.mark.parametrize("with_session", [True, False])
 def test_handling_exceptions_inside_allowing_exceptions_with_session(with_session):
     value = CustomException()
 
     with ExitStack() as ctx:
-
         if with_session:
             session = ctx.enter_context(slash.Session())
-            ctx.enter_context(session.get_started_context()) # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
+            ctx.enter_context(
+                session.get_started_context()
+            )  # https://github.com/PyCQA/pylint/issues/2056: pylint: disable=no-member
         else:
             session = None
 

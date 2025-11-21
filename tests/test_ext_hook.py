@@ -5,6 +5,7 @@ import sys
 
 _module_name_generator = ("custom_module_{}".format(x) for x in itertools.count())
 
+
 class ExtHookTest(TestCase):
     def setUp(self):
         super(ExtHookTest, self).setUp()
@@ -18,11 +19,11 @@ class ExtHookTest(TestCase):
             f.write("value = {!r}".format(self.expected_value))
 
     def test_ext_hook_import(self):
-        module = __import__("slash.ext.{}".format(self.module_name), fromlist=[''])
+        module = __import__("slash.ext.{}".format(self.module_name), fromlist=[""])
         self.assertEqual(module.value, self.expected_value)
 
     def test_slash_ext(self):
-        from slash import ext   # pylint: disable=unused-variable,unused-import
+        from slash import ext  # pylint: disable=unused-variable,unused-import
 
     def test_ext_hook_import_nonexistent(self):
         with self.assertRaises(ImportError):

@@ -22,7 +22,7 @@ def test_fixture_is_override():
 
             @s.fixture_store.add_fixture
             @slash.fixture
-            def fixture1():     # pylint: disable=function-redefined
+            def fixture1():  # pylint: disable=function-redefined
                 pass
 
             inner = fixture1
@@ -39,30 +39,29 @@ def test_fixture_is_override():
 
 
 def test_fixture_namespaces(tmpdir):
+    root_dir = tmpdir.join("tests")
 
-    root_dir = tmpdir.join('tests')
-
-    with _into(root_dir.join('slashconf.py')) as writeln:
+    with _into(root_dir.join("slashconf.py")) as writeln:
         _write_fixture1(writeln)
 
-    with _into(root_dir.join('test_something.py')) as writeln:
+    with _into(root_dir.join("test_something.py")) as writeln:
         _write_fixture1(writeln)
 
-        writeln('def test_something(fixture1):')
-        writeln('    pass')
+        writeln("def test_something(fixture1):")
+        writeln("    pass")
 
     run_tests_assert_success([str(root_dir)])
 
+
 def _write_fixture1(writeln):
-    writeln('import slash')
+    writeln("import slash")
 
-    writeln('@slash.fixture')
-    writeln('def fixture1():')
-    writeln('    pass')
-
+    writeln("@slash.fixture")
+    writeln("def fixture1():")
+    writeln("    pass")
 
 
 @contextmanager
 def _into(f):
-    with f.open('w', ensure=True) as f:
+    with f.open("w", ensure=True) as f:
         yield functools.partial(print, file=f)

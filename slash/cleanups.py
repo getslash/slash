@@ -7,7 +7,7 @@ from .ctx import context
 @functools.wraps(cleanup_manager.CleanupManager.add_cleanup)
 def add_cleanup(*args, **kwargs):
     if context.session is None or context.session.cleanups is None:
-        raise RuntimeError('Adding cleanups requires an active session')
+        raise RuntimeError("Adding cleanups requires an active session")
     return context.session.cleanups.add_cleanup(*args, **kwargs)
 
 

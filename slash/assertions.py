@@ -13,10 +13,9 @@ def _get_message(msg, description):
 
 
 class _CaughtContext(object):
-
     def __init__(self, message, exc_types, ensure_caught):
         if not isinstance(exc_types, tuple):
-            exc_types = (exc_types, )
+            exc_types = (exc_types,)
         self._expected_classes = exc_types
         self._caught = _CaughtException()
         self._ignore_ctx = None
@@ -41,7 +40,7 @@ class _CaughtContext(object):
         if self._msg is None:
             expected_classes = self._expected_classes
             if not isinstance(expected_classes, tuple):
-                expected_classes = (expected_classes, )
+                expected_classes = (expected_classes,)
             msg = "{} not raised".format("/".join(e.__name__ for e in expected_classes))
         if self._ensure_caught:
             raise ExpectedExceptionNotCaught(msg, self._expected_classes)
@@ -72,8 +71,7 @@ def allowing_exceptions(exception_class, msg=None):
 
 
 def assert_almost_equal(a, b, delta=0.00000001):
-    """Asserts that abs(a - b) <= delta
-    """
+    """Asserts that abs(a - b) <= delta"""
     assert abs(a - b) <= delta
 
 

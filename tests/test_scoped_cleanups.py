@@ -11,7 +11,6 @@ _MODULE_SCOPE_ADDER = 'slash.add_cleanup({0}, scope="module")'
 
 
 def test_cleanups_from_test_start(suite):
-
     num_tests = 5
     for _ in range(num_tests):
         suite.add_test()
@@ -23,56 +22,55 @@ def test_cleanups_from_test_start(suite):
     def test_start():
         test_id = slash.context.test.__slash__.id
         test_ids.append(test_id)
-        events.append(('test_start', test_id))
+        events.append(("test_start", test_id))
 
         @slash.add_cleanup
         def cleanup():
-            events.append(('test_cleanup', test_id))
+            events.append(("test_cleanup", test_id))
 
     @slash.hooks.register
     def before_session_cleanup():
-        events.append('before_session_cleanup')
+        events.append("before_session_cleanup")
 
     @slash.hooks.register
     def session_start():
-        slash.add_cleanup(events.append, args=(('session_cleanup', 1),))
-        slash.add_cleanup(events.append, args=(('session_cleanup', 2),))
+        slash.add_cleanup(events.append, args=(("session_cleanup", 1),))
+        slash.add_cleanup(events.append, args=(("session_cleanup", 2),))
 
     @slash.hooks.register
     def after_session_end():
-        events.append('after_session_end')
+        events.append("after_session_end")
 
     @slash.hooks.register
     def session_end():
-        events.append('session_end')
+        events.append("session_end")
 
     suite.run()
 
     expected_session_cleanup = [
-        'before_session_cleanup',
-        ('session_cleanup', 2),
-        ('session_cleanup', 1),
-        'session_end',
-        'after_session_end',
+        "before_session_cleanup",
+        ("session_cleanup", 2),
+        ("session_cleanup", 1),
+        "session_end",
+        "after_session_end",
     ]
     assert len(events) - len(expected_session_cleanup) == len(suite) * 2 == num_tests * 2
 
     expected = []
     for test_id in test_ids:
-        expected.append(('test_start', test_id))
-        expected.append(('test_cleanup', test_id))
+        expected.append(("test_start", test_id))
+        expected.append(("test_cleanup", test_id))
     expected.extend(expected_session_cleanup)
     assert events == expected
 
 
 def test_module_scope(scoped_suite, file1_tests, file2_tests):
     file1_test = file1_tests[0]
-    file1_end = file1_tests[-1].add_deferred_event(decorator='slash.add_cleanup')
+    file1_end = file1_tests[-1].add_deferred_event(decorator="slash.add_cleanup")
     file1_test_cleanup = file1_test.add_deferred_event(adder=_MODULE_SCOPE_ADDER)
 
     summary = scoped_suite.run()
     assert summary.events[file1_end].timestamp < summary.events[file1_test_cleanup].timestamp
-
 
 
 def test_cleanups_without_session_start_never_called(checkpoint):
@@ -92,10 +90,9 @@ def test_cleanups_before_session_start_get_deferred(checkpoint):
 
 
 def test_cleanups_within_cleanups_preserve_scope(checkpoint1):
-    """Cleanups added from within other cleanups should happen within the scope of the parent cleanups
-    """
+    """Cleanups added from within other cleanups should happen within the scope of the parent cleanups"""
 
-    @slash.parametrize('x', [1, 2])
+    @slash.parametrize("x", [1, 2])
     def test_something(x):
         pass
 
@@ -117,7 +114,7 @@ def test_cleanups_within_cleanups_preserve_scope(checkpoint1):
 
 def test_errors_associated_with_correct_result(scoped_suite, file1_tests, file2_tests):
     file1_test = file1_tests[0]
-    file1_test_cleanup = file1_test.add_deferred_event(adder=_MODULE_SCOPE_ADDER, extra_code=['assert 1 == 2'])
+    file1_test_cleanup = file1_test.add_deferred_event(adder=_MODULE_SCOPE_ADDER, extra_code=["assert 1 == 2"])
     file1_test.expect_failure()
 
     scoped_suite.run()

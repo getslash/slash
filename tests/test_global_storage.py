@@ -7,6 +7,7 @@ from .utils import TestCase
 class GlobalStorageTest(TestCase):
     hook_called = False
     token = object()
+
     def test_global_storage_exists_on_session_start(self):
         @slash.exception_handling.disable_exception_swallowing
         def _on_session_start():
@@ -14,11 +15,9 @@ class GlobalStorageTest(TestCase):
             slash.g.value = "value"
             self.assertEqual(slash.g.value, "value")
             self.hook_called = True
+
         slash.hooks.session_start.register(_on_session_start, token=self.token)  # pylint: disable=no-member
-        self.addCleanup(
-            gossip.unregister_token,
-            self.token
-        )
+        self.addCleanup(gossip.unregister_token, self.token)
         with slash.Session() as s:
             with s.get_started_context():
                 pass

@@ -7,7 +7,6 @@ from contextlib import contextmanager
 
 
 class CodeElement(Element):
-
     def __init__(self, suite):
         super(CodeElement, self).__init__(suite)
         self.suite = suite
@@ -40,6 +39,7 @@ class CodeElement(Element):
 
     def append_body(self, code_element):
         self._add_body(code_element, prepend=False)
+
     include = append_body
 
     def prepend_body(self, code_element):

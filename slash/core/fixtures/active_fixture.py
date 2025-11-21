@@ -1,7 +1,7 @@
 from ...exception_handling import handling_exceptions
 
-class ActiveFixture(object):
 
+class ActiveFixture(object):
     def __init__(self, fixture):
         super(ActiveFixture, self).__init__()
         self.fixture = fixture

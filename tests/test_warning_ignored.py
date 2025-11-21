@@ -19,13 +19,16 @@ class CustomWarning(UserWarning):
     pass
 
 
-@pytest.mark.parametrize('emitter,catch,can_test_negative', [
-    (_warn('hello'), _catch(message='hello'), True),
-    (_warn('hello'), _catch(message=re.compile('^hello$')), True),
-    (_warn('message', category=CustomWarning), _catch(category=CustomWarning), True),
-    (_warn('message'), _catch(filename=__file__), False),
-    (_warn('message'), _catch(filename=re.compile('^{}$'.format(re.escape(__file__)))), False),
-])
+@pytest.mark.parametrize(
+    "emitter,catch,can_test_negative",
+    [
+        (_warn("hello"), _catch(message="hello"), True),
+        (_warn("hello"), _catch(message=re.compile("^hello$")), True),
+        (_warn("message", category=CustomWarning), _catch(category=CustomWarning), True),
+        (_warn("message"), _catch(filename=__file__), False),
+        (_warn("message"), _catch(filename=re.compile("^{}$".format(re.escape(__file__)))), False),
+    ],
+)
 def test_ignore_warnings(emitter, catch, can_test_negative):
     catch()
 
@@ -35,24 +38,34 @@ def test_ignore_warnings(emitter, catch, can_test_negative):
 
     if can_test_negative:
         with slash.Session() as session:
-            warnings.warn('uncaught', category=DeprecationWarning)
+            warnings.warn("uncaught", category=DeprecationWarning)
         caught = list(session.warnings)
         assert len(caught) == 1
-        assert caught[0].message == 'uncaught'
+        assert caught[0].message == "uncaught"
 
 
-_WARN_MESSAGE = 'Hello World'
-@pytest.mark.parametrize('catch,should_ignore', [
-    (_catch(message=_WARN_MESSAGE, filename=__file__), True),
-    (_catch(message=re.compile('^Hello.*$'), filename=__file__), True),
-    (_catch(message=_WARN_MESSAGE, filename=re.compile('^{}'.format(re.escape(os.path.dirname(__file__))))), True),
-    (_catch(message=re.compile('^Hello.*$'), filename=re.compile('^{}'.format(re.escape(os.path.dirname(__file__))))), True),
-    # Negative  (OR relation instead of AND)
-    (_catch(message=_WARN_MESSAGE, category=DeprecationWarning), False),
-    (_catch(message=re.compile('^Hello.*$'), category=DeprecationWarning), False),
-    (_catch(filename=__file__, category=DeprecationWarning), False),
-    (_catch(filename=re.compile('^{}$'.format(re.escape(__file__))), category=DeprecationWarning), False),
-])
+_WARN_MESSAGE = "Hello World"
+
+
+@pytest.mark.parametrize(
+    "catch,should_ignore",
+    [
+        (_catch(message=_WARN_MESSAGE, filename=__file__), True),
+        (_catch(message=re.compile("^Hello.*$"), filename=__file__), True),
+        (_catch(message=_WARN_MESSAGE, filename=re.compile("^{}".format(re.escape(os.path.dirname(__file__))))), True),
+        (
+            _catch(
+                message=re.compile("^Hello.*$"), filename=re.compile("^{}".format(re.escape(os.path.dirname(__file__))))
+            ),
+            True,
+        ),
+        # Negative  (OR relation instead of AND)
+        (_catch(message=_WARN_MESSAGE, category=DeprecationWarning), False),
+        (_catch(message=re.compile("^Hello.*$"), category=DeprecationWarning), False),
+        (_catch(filename=__file__, category=DeprecationWarning), False),
+        (_catch(filename=re.compile("^{}$".format(re.escape(__file__))), category=DeprecationWarning), False),
+    ],
+)
 def test_ignore_warnings_with_multiple_criteria(catch, should_ignore):
     catch()
 
@@ -74,9 +87,9 @@ def test_ignore_warnigns_with_no_parameter():
     assert not session.warnings
 
 
-@pytest.mark.parametrize('should_clear_warnings', [True, False])
+@pytest.mark.parametrize("should_clear_warnings", [True, False])
 def test_ignored_warnings(should_clear_warnings):
-    message = 'my warning'
+    message = "my warning"
     with slash.Session() as session:
         with slash.ignored_warnings(message=message):
             warnings.warn(message=message)

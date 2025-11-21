@@ -18,9 +18,9 @@ from .result import SessionResults
 from .scope_manager import ScopeManager
 from .variation import Variations
 
+
 class Session(Activatable):
-    """ Represents a slash session
-    """
+    """Represents a slash session"""
 
     start_time = end_time = host_fqdn = host_name = None
     _has_internal_errors = False
@@ -28,8 +28,11 @@ class Session(Activatable):
     def __init__(self, reporter=None, console_stream=None):
         super(Session, self).__init__()
         self.parent_session_id = config.root.parallel.parent_session_id
-        self.id = "{}_0".format(uuid.uuid1()) if not self.parent_session_id else \
-                    "{}_{}".format(self.parent_session_id.split('_')[0], config.root.parallel.worker_id)
+        self.id = (
+            "{}_0".format(uuid.uuid1())
+            if not self.parent_session_id
+            else "{}_{}".format(self.parent_session_id.split("_")[0], config.root.parallel.worker_id)
+        )
         self.id_space = IDSpace(self.id)
         self.test_index_counter = itertools.count()
         self.scope_manager = ScopeManager(self)
@@ -72,7 +75,7 @@ class Session(Activatable):
         return self._started
 
     def activate(self):
-        assert not self._active, 'Attempted to activate an already-active session'
+        assert not self._active, "Attempted to activate an already-active session"
         with handling_exceptions():
             ctx.push_context()
             assert ctx.context.session is None
@@ -88,16 +91,16 @@ class Session(Activatable):
         self._active = True
 
     def deactivate(self):
-        assert self._active, 'Session not active'
+        assert self._active, "Session not active"
         self._active = False
         self.results.global_result.mark_finished()
 
         exc_info = sys.exc_info()
 
-        self._warning_capture_context.__exit__(*exc_info) # pylint: disable=no-member
+        self._warning_capture_context.__exit__(*exc_info)  # pylint: disable=no-member
         self._warning_capture_context = None
 
-        self._logging_context.__exit__(*exc_info) # pylint: disable=no-member
+        self._logging_context.__exit__(*exc_info)  # pylint: disable=no-member
         self._logging_context = None
         self.results.global_result.mark_finished()
         ctx.pop_context()
@@ -113,9 +116,9 @@ class Session(Activatable):
     def get_started_context(self):
         if self.host_fqdn is None:
             type(self).host_fqdn = socket.getfqdn()
-        self.host_name = self.host_fqdn.split('.')[0]
+        self.host_name = self.host_fqdn.split(".")[0]
         self.start_time = time.time()
-        self.cleanups.push_scope('session-global')
+        self.cleanups.push_scope("session-global")
         session_start_called = False
         try:
             with handling_exceptions():
@@ -127,14 +130,14 @@ class Session(Activatable):
             self._started = True
             yield
         except exceptions.INTERRUPTION_EXCEPTIONS:
-            hooks.session_interrupt() # pylint: disable=no-member
+            hooks.session_interrupt()  # pylint: disable=no-member
             raise
         finally:
             self._started = False
             self.end_time = time.time()
 
             with handling_exceptions():
-                self.cleanups.pop_scope('session-global')
+                self.cleanups.pop_scope("session-global")
 
             if session_start_called:
                 with handling_exceptions():
@@ -162,8 +165,7 @@ class Session(Activatable):
     _total_num_tests = 0
 
     def get_total_num_tests(self):
-        """Returns the total number of tests expected to run in this session
-        """
+        """Returns the total number of tests expected to run in this session"""
         return self._total_num_tests
 
     def increment_total_num_tests(self, increment):

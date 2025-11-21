@@ -9,38 +9,47 @@ import slash
 from slash.exceptions import TestFailed as _TestFailed, ExpectedExceptionNotCaught
 
 
-@pytest.mark.parametrize('pair', [
-    (1, 1),
-    (1, 1.00000001),
-])
+@pytest.mark.parametrize(
+    "pair",
+    [
+        (1, 1),
+        (1, 1.00000001),
+    ],
+)
 def test_assert_almost_equal_positive(pair):
     a, b = pair
     slash.assert_almost_equal(a, b)
 
 
-@pytest.mark.parametrize('combination', [
-    (1, 1, 0),
-    (1, 1, 0.1),
-    (1, 1.1, 0.5),
-    (1.0001, 1.00009, 0.00002),
-])
+@pytest.mark.parametrize(
+    "combination",
+    [
+        (1, 1, 0),
+        (1, 1, 0.1),
+        (1, 1.1, 0.5),
+        (1.0001, 1.00009, 0.00002),
+    ],
+)
 def test_assert_almost_equal_positive_with_delta(combination):
     a, b, delta = combination
     slash.assert_almost_equal(a, b, delta)
 
 
-@pytest.mark.parametrize('combination', [
-    (1, 12, 0),
-    (1, 1.1, 0.00001),
-    (1.0001, 1.00009, 0.000001),
-])
+@pytest.mark.parametrize(
+    "combination",
+    [
+        (1, 12, 0),
+        (1, 1.1, 0.00001),
+        (1.0001, 1.00009, 0.000001),
+    ],
+)
 def test_assert_almost_equal_negative_with_delta(combination):
     a, b, delta = combination
     with pytest.raises(AssertionError):
         slash.assert_almost_equal(a, b, delta)
 
 
-@pytest.mark.parametrize('func', [slash.assert_raises])
+@pytest.mark.parametrize("func", [slash.assert_raises])
 def test_assert_raises(func):
     thrown = CustomException()
     with func(CustomException) as caught:
@@ -63,7 +72,7 @@ def test_assert_raises(func):
         assert False, "assert_raises allowed success"
 
 
-@pytest.mark.parametrize('func', [slash.assert_raises])
+@pytest.mark.parametrize("func", [slash.assert_raises])
 def test_assert_raises_multiple_exceptions(func):
     class CustomException1(Exception):
         pass
@@ -78,21 +87,23 @@ def test_assert_raises_multiple_exceptions(func):
 
     for exc_type in exception_types:
         with func(exception_types) as caught:
-            value = exc_type('!')
+            value = exc_type("!")
             raise value
         assert caught.exception is value
 
-    value = CustomException3('!')
+    value = CustomException3("!")
     with pytest.raises(CustomException3) as caught:
         with func(exception_types):
             raise value
     assert caught.value is value
+
 
 # boilerplate
 
 
 class OtherException(BaseException):
     pass
+
 
 _MESSAGE = "SOME MESSAGE HERE"
 
@@ -128,8 +139,8 @@ _current_negative_assertion = None
 
 @contextmanager
 def checking(assertion, negative_assertion):
-    global _current_positive_assertion # pylint: disable=global-statement
-    global _current_negative_assertion # pylint: disable=global-statement
+    global _current_positive_assertion  # pylint: disable=global-statement
+    global _current_negative_assertion  # pylint: disable=global-statement
     assert _current_positive_assertion is None
     _current_positive_assertion = assertion
     _current_negative_assertion = negative_assertion

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from . import pattern_matching
 
-SuiteEntry = namedtuple('SuiteEntry', 'path, matcher, repeat')
+SuiteEntry = namedtuple("SuiteEntry", "path, matcher, repeat")
 
 
 def iter_suite_file_paths(suite_files):
@@ -22,7 +22,7 @@ def iter_suite_file_paths(suite_files):
                 if not os.path.isabs(path):
                     path = os.path.relpath(os.path.join(dirname, path))
 
-                if not path.endswith('.py') and '.py:' not in path and not os.path.isdir(path):
+                if not path.endswith(".py") and ".py:" not in path and not os.path.isdir(path):
                     for p, other_filter in iter_suite_file_paths([path]):
                         yield p, _and_matchers(suite_entry.matcher, other_filter)
                     continue
@@ -48,19 +48,19 @@ def _and_matchers(a, b):
 
 
 def _parse_path_filter_and_repeat(line):
-    if '#' not in line:
+    if "#" not in line:
         return SuiteEntry(line, None, 1)
 
-    line, remainders = line.split('#', 1)
+    line, remainders = line.split("#", 1)
     line = line.strip()
-    remainders = remainders.split(',')
+    remainders = remainders.split(",")
 
     matcher = None
     repeat = 1
     for remainder in remainders:
         remainder = remainder.strip()
-        if remainder.startswith('filter:'):
-            matcher = pattern_matching.Matcher(remainder.split(':', 1)[1])
-        if remainder.startswith('repeat:'):
-            repeat = int(remainder.split(':', 1)[1])
+        if remainder.startswith("filter:"):
+            matcher = pattern_matching.Matcher(remainder.split(":", 1)[1])
+        if remainder.startswith("repeat:"):
+            repeat = int(remainder.split(":", 1)[1])
     return SuiteEntry(line, matcher, repeat)

@@ -16,13 +16,14 @@ from .utils.iteration import PeekableIterator
 
 
 _logger = logbook.Logger(__name__)
-log.set_log_color(_logger.name, logbook.NOTICE, 'blue')
+log.set_log_color(_logger.name, logbook.NOTICE, "blue")
 
 
 def run_tests(iterable, stop_on_error=None):
     """
     Runs tests from an iterable using the current session
     """
+
     # pylint: disable=maybe-no-member
     def should_stop_on_error():
         if stop_on_error is None:
@@ -48,13 +49,11 @@ def run_tests(iterable, stop_on_error=None):
             _logger.notice(
                 "#{}: {}",
                 test.__slash__.test_index1,
-                test.__slash__.get_address(
-                    raw_params=config.root.log.show_raw_param_values
-                ),
-                extra={'highlight': True, 'filter_bypass': True})
+                test.__slash__.get_address(raw_params=config.root.log.show_raw_param_values),
+                extra={"highlight": True, "filter_bypass": True},
+            )
 
             _run_single_test(test, test_iterator)
-
 
             result = context.session.results[test]
             context.session.reporter.report_test_end(test, result)
@@ -78,25 +77,27 @@ def run_tests(iterable, stop_on_error=None):
             context.session.mark_complete()
         elif last_filename is not None:
             context.session.reporter.report_file_end(last_filename)
-        _logger.trace('Session finished. is_success={0} has_skips={1}',
-                  context.session.results.is_success(allow_skips=True), bool(context.session.results.get_num_skipped()))
+        _logger.trace(
+            "Session finished. is_success={0} has_skips={1}",
+            context.session.results.is_success(allow_skips=True),
+            bool(context.session.results.get_num_skipped()),
+        )
 
 
 def _dump_variation(test):
-    _logger.trace('Variation information:\n{}',
-                  '\n'.join('\t{}: {!r}'.format(k, v) for k, v in sorted(test.get_variation().id.items())))
+    _logger.trace(
+        "Variation information:\n{}",
+        "\n".join("\t{}: {!r}".format(k, v) for k, v in sorted(test.get_variation().id.items())),
+    )
 
 
 def _run_single_test(test, test_iterator):
     next_test = test_iterator.peek_or_none()
     with ExitStack() as exit_stack:
-
         # sets the current result, test id etc.
         result, prev_result = exit_stack.enter_context(_get_test_context(test))
 
         with handling_exceptions(swallow=True):
-
-
             should_run = _process_requirements_and_exclusions(test)
             if not should_run:
                 return
@@ -126,38 +127,37 @@ def _run_single_test(test, test_iterator):
                 except context.session.get_skip_exception_types():
                     pass
 
+
 def _process_requirements_and_exclusions(test):
-    """Returns whether or not a test should run based on requirements and exclusions, also triggers skips and relevant hooks
-    """
+    """Returns whether or not a test should run based on requirements and exclusions, also triggers skips and relevant hooks"""
     unmet_reqs = test.get_unmet_requirements()
     if not unmet_reqs:
         return _process_exclusions(test)
-
 
     messages = set()
     for req, message in unmet_reqs:
         if isinstance(req, requirements.Skip):
             context.result.add_skip(req.reason)
-            msg = 'Skipped' if not req.reason else req.reason
+            msg = "Skipped" if not req.reason else req.reason
         else:
-            msg = 'Unmet requirement: {}'.format(message or req)
+            msg = "Unmet requirement: {}".format(message or req)
             context.result.add_skip(msg)
         messages.add(msg)
 
-    hooks.test_avoided(reason=', '.join(messages)) # pylint: disable=no-member
+    hooks.test_avoided(reason=", ".join(messages))  # pylint: disable=no-member
     return False
+
 
 def _process_exclusions(test):
     if is_excluded(test):
-        reason = 'Excluded due to parameter combination exclusion rules'
+        reason = "Excluded due to parameter combination exclusion rules"
         context.result.add_skip(reason)
-        hooks.test_avoided(reason=reason) # pylint: disable=no-member
+        hooks.test_avoided(reason=reason)  # pylint: disable=no-member
         return False
     return True
 
 
 class TestStartEndController(object):
-
     def __init__(self, result, prev_result):
         self._result = result
         self._prev_result = prev_result
@@ -170,43 +170,48 @@ class TestStartEndController(object):
         if not self._started:
             self._started = True
             self._result.mark_started()
-            hooks.test_start() # pylint: disable=no-member
+            hooks.test_start()  # pylint: disable=no-member
 
     def end(self):
         if self._started:
             self._started = False
             try:
                 with context.session.cleanups.forbid_implicit_scoping_context():
-                    hooks.test_end() # pylint: disable=no-member
+                    hooks.test_end()  # pylint: disable=no-member
                     self._result.mark_finished()
             finally:
                 context.result = self._prev_result
-
 
     def __exit__(self, *args):
         self.end()
 
 
-def _fire_test_summary_hooks(test, result): # pylint: disable=unused-argument
+def _fire_test_summary_hooks(test, result):  # pylint: disable=unused-argument
     with handling_exceptions():
         if result.is_just_failure():
             hooks.test_failure()  # pylint: disable=no-member
         elif result.is_skip():
-            hooks.test_skip(reason=result.get_skips()[0]) # pylint: disable=no-member
+            hooks.test_skip(reason=result.get_skips()[0])  # pylint: disable=no-member
         elif result.is_success():
             hooks.test_success()  # pylint: disable=no-member
         else:
-            _logger.debug('Firing test_error hook for {0} (result: {1})', test, result)
+            _logger.debug("Firing test_error hook for {0} (result: {1})", test, result)
             hooks.test_error()  # pylint: disable=no-member
 
 
 def _set_test_metadata(test):
     ensure_test_metadata(test)
     if test.__slash__.test_index0 is not None:
-        raise SlashInternalError('Test index of {} should be None when setting test metadata but is {}'
-                                 .format(test, test.__slash__.test_index0))
-    test.__slash__.test_index0 = next(context.session.test_index_counter) if config.root.parallel.worker_id is None \
-                                 else context.session.current_parallel_test_index
+        raise SlashInternalError(
+            "Test index of {} should be None when setting test metadata but is {}".format(
+                test, test.__slash__.test_index0
+            )
+        )
+    test.__slash__.test_index0 = (
+        next(context.session.test_index_counter)
+        if config.root.parallel.worker_id is None
+        else context.session.current_parallel_test_index
+    )
 
 
 def _mark_unrun_tests(test_iterator):
@@ -214,6 +219,7 @@ def _mark_unrun_tests(test_iterator):
     for test in remaining:
         with _get_test_context(test, logging=False):
             pass
+
 
 @contextmanager
 def _get_test_context(test, logging=True):
@@ -225,11 +231,12 @@ def _get_test_context(test, logging=True):
         context.result = result
         try:
             # pylint: disable=superfluous-parens
-            with (context.session.logging.get_test_logging_context(result) if logging else ExitStack()):
+            with context.session.logging.get_test_logging_context(result) if logging else ExitStack():
                 _logger.debug("Started test #{0.__slash__.test_index1}: {0}", test)
                 yield result, prev_result
         finally:
             context.result = prev_result
+
 
 @contextmanager
 def _set_current_test_context(test):

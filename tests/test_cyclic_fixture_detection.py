@@ -9,12 +9,14 @@ def test_cyclic_fixture_detection(suite, suite_test):
 
     suite_test.depend_on_fixture(fixture1)
     for test in suite:
-        test.expect_deselect() # no test should start at all....
+        test.expect_deselect()  # no test should start at all....
 
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.global_result.is_success()
-    assert re.search(r'yclic fixture dependency detected in \S+: {0} -> {1} -> {0}'.format(fixture1.name, fixture2.name),
-                     summary.get_console_output())
+    assert re.search(
+        r"yclic fixture dependency detected in \S+: {0} -> {1} -> {0}".format(fixture1.name, fixture2.name),
+        summary.get_console_output(),
+    )
 
 
 def test_cyclic_fixture_detection_depend_on_self(suite, suite_test):
@@ -23,9 +25,11 @@ def test_cyclic_fixture_detection_depend_on_self(suite, suite_test):
 
     suite_test.depend_on_fixture(fixture)
     for test in suite:
-        test.expect_deselect() # no test should start at all...
+        test.expect_deselect()  # no test should start at all...
 
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.global_result.is_success()
-    assert re.search(r'yclic fixture dependency detected in \S+: {} depends on itself'.format(fixture.name),
-                     summary.get_console_output())
+    assert re.search(
+        r"yclic fixture dependency detected in \S+: {} depends on itself".format(fixture.name),
+        summary.get_console_output(),
+    )

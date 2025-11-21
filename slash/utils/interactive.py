@@ -14,6 +14,7 @@ from ..exception_handling import handle_exception
 
 from IPython.terminal.embed import embed  # pylint: disable=F0401
 
+
 def _interact(ns):
     def _handle_exception(shell, exc_type, exc_value, exc_tb, tb_offset):
         exc_info = (exc_type, exc_value, exc_tb)
@@ -21,20 +22,25 @@ def _interact(ns):
         if not _is_exception_in_ipython_eval(exc_tb):
             handle_exception(exc_info)
         if isinstance(exc_value, TerminatedException):
-            context.result.add_error('Terminated')
+            context.result.add_error("Terminated")
             shell.exit_now = True
 
     colors = config.root.interactive.colors
     if colors is None:
         colors = "Linux" if config.root.log.console_theme.dark_background else "LightBG"
-    embed(user_ns=ns, display_banner=False, custom_exceptions=((Exception, TerminatedException), _handle_exception),
-          colors=colors)
+    embed(
+        user_ns=ns,
+        display_banner=False,
+        custom_exceptions=((Exception, TerminatedException), _handle_exception),
+        colors=colors,
+    )
 
 
 def _is_exception_in_ipython_eval(exc_tb):
     while exc_tb.tb_next is not None:
         exc_tb = exc_tb.tb_next
-    return exc_tb.tb_frame.f_code.co_filename.lower().startswith('<ipython')
+    return exc_tb.tb_frame.f_code.co_filename.lower().startswith("<ipython")
+
 
 def start_interactive_shell(**namespace):
     """
@@ -49,20 +55,24 @@ def start_interactive_shell(**namespace):
     hooks.before_interactive_shell(namespace=namespace)  # pylint: disable=no-member
     _interact(namespace)
 
+
 def _start_interactive_test():
     return start_interactive_shell()
+
 
 def generate_interactive_test():
     [returned] = FunctionTestFactory(_start_interactive_test).generate_tests(context.session.fixture_store)
     returned.__slash__ = metadata.Metadata(None, returned)
     returned.__slash__.mark_interactive()
-    returned.__slash__.set_file_path('<Interactive>')
-    returned.__slash__.set_test_full_name('Interactive')
-    returned.__slash__.factory_name = 'Interactive'
+    returned.__slash__.set_file_path("<Interactive>")
+    returned.__slash__.set_test_full_name("Interactive")
+    returned.__slash__.factory_name = "Interactive"
     return returned
 
+
 def _humanize_time_delta(seconds):
-    return str(datetime.timedelta(seconds=seconds)).partition('.')[0]
+    return str(datetime.timedelta(seconds=seconds)).partition(".")[0]
+
 
 @contextmanager
 def notify_if_slow_context(message, slow_seconds=1, end_message=None, show_duration=True):
@@ -86,5 +96,5 @@ def notify_if_slow_context(message, slow_seconds=1, end_message=None, show_durat
         thread.join()
         if should_report_end_msg and end_message is not None:
             if show_duration:
-                end_message += ' (took {})'.format(_humanize_time_delta(time.time() - start_time))
+                end_message += " (took {})".format(_humanize_time_delta(time.time() - start_time))
             context.session.reporter.report_message(end_message)

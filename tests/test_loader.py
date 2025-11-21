@@ -21,16 +21,15 @@ def test_total_num_tests(suite):
 
 
 def test_loader_sort_filenames(tmpdir):
-
     tests_dir = tmpdir.join(str(uuid4()))
 
     filenames = []
 
     for _ in range(10):
-        filename = str(uuid4()).replace('-', '') + '.py'
+        filename = str(uuid4()).replace("-", "") + ".py"
 
-        with tests_dir.join(filename).open('w', ensure=True) as f:
-            f.write('def test_something():\n    pass')
+        with tests_dir.join(filename).open("w", ensure=True) as f:
+            f.write("def test_something():\n    pass")
 
         filenames.append(filename)
 
@@ -41,9 +40,9 @@ def test_loader_sort_filenames(tmpdir):
 
 
 def test_loader_skips_empty_dirs(tmpdir):
-    tests_dir = tmpdir.join('tests')
-    with tests_dir.join('.dir').join('test_something.py').open('w', ensure=True) as f:
-        f.write('def test_something():\n    pass')
+    tests_dir = tmpdir.join("tests")
+    with tests_dir.join(".dir").join("test_something.py").open("w", ensure=True) as f:
+        f.write("def test_something():\n    pass")
 
     with Session():
         runnables = Loader().get_runnables(str(tests_dir))
@@ -52,35 +51,34 @@ def test_loader_skips_empty_dirs(tmpdir):
 
 
 def test_loader_warns_duplicate_test_funcs(tmpdir):
-    tests_dir = tmpdir.join('tests')
-    full_path = tests_dir.join('.dir').join('test_something.py')
-    test_name = 'test_something'
-    with full_path.open('w', ensure=True) as f:
-        f.write('def {}():\n    assert True\n'.format(test_name))
-        f.write('def {}():\n    assert True\n'.format(test_name))
+    tests_dir = tmpdir.join("tests")
+    full_path = tests_dir.join(".dir").join("test_something.py")
+    test_name = "test_something"
+    with full_path.open("w", ensure=True) as f:
+        f.write("def {}():\n    assert True\n".format(test_name))
+        f.write("def {}():\n    assert True\n".format(test_name))
     with Session() as session:
         Loader().get_runnables([str(full_path)])
         assert len(session.warnings) == 1
-        assert 'Duplicate' in session.warnings.warnings[0].details['message']
-        assert test_name in session.warnings.warnings[0].details['message']
+        assert "Duplicate" in session.warnings.warnings[0].details["message"]
+        assert test_name in session.warnings.warnings[0].details["message"]
 
 
 def test_loader_warns_on_duplicate_fixtures(suite):
-    fixture_name = 'fixture_name'
+    fixture_name = "fixture_name"
     fixture1 = suite.slashconf.add_fixture(name=fixture_name)
-    fixture1.append_line('assert this == slash.context.fixture')
+    fixture1.append_line("assert this == slash.context.fixture")
     fixture2 = suite.slashconf.add_fixture(name=fixture_name)
-    fixture2.append_line('assert this == slash.context.fixture')
+    fixture2.append_line("assert this == slash.context.fixture")
     summary = suite.run()
     assert len(summary.session.warnings) == 1
-    assert 'Duplicate' in summary.session.warnings.warnings[0].details['message']
-    assert fixture_name in summary.session.warnings.warnings[0].details['message']
+    assert "Duplicate" in summary.session.warnings.warnings[0].details["message"]
+    assert fixture_name in summary.session.warnings.warnings[0].details["message"]
 
 
-@pytest.mark.parametrize('specific_method', [True, False])
-@pytest.mark.parametrize('with_parameters', [True, False])
+@pytest.mark.parametrize("specific_method", [True, False])
+@pytest.mark.parametrize("with_parameters", [True, False])
 def test_iter_specific_factory(suite, suite_test, specific_method, with_parameters):
-
     if suite_test.cls is not None and specific_method:
         suite_test.cls.add_method_test()
 
@@ -103,10 +101,10 @@ def test_iter_specific_factory(suite, suite_test, specific_method, with_paramete
     else:
         factory_name = suite_test.name
 
-    pattern = '{}:{}'.format(os.path.join(path, suite_test.file.get_relative_path()), factory_name)
+    pattern = "{}:{}".format(os.path.join(path, suite_test.file.get_relative_path()), factory_name)
     if suite_test.cls is not None and specific_method:
         assert len(suite_test.cls.tests) > 1
-        pattern += '.{}'.format(suite_test.name)
+        pattern += ".{}".format(suite_test.name)
     suite.run(args=[pattern])
 
 
@@ -117,6 +115,7 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
     assert len(errors) == 1
     [error] = errors  # pylint: disable=unused-variable
 
+
 def test_no_traceback_for_slash_exception():
     suite = Suite()
     summary = suite.run(expect_session_errors=True)
@@ -124,7 +123,8 @@ def test_no_traceback_for_slash_exception():
     [err] = summary.session.results.global_result.get_errors()
     assert err.exception_type is CannotLoadTests
     output = summary.get_console_output()
-    assert 'Traceback' not in output
+    assert "Traceback" not in output
+
 
 def test_no_traceback_for_marked_exceptions():
     suite = Suite()
@@ -132,25 +132,26 @@ def test_no_traceback_for_marked_exceptions():
     @suite.slashconf.append_body
     def __code__():  # pylint: disable=unused-variable
         from slash.exception_handling import inhibit_unhandled_exception_traceback
-        raise inhibit_unhandled_exception_traceback(Exception('Some Error'))
+
+        raise inhibit_unhandled_exception_traceback(Exception("Some Error"))
 
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.is_success()
     errors = summary.session.results.global_result.get_errors()
     assert [err.exception_type for err in errors] == [Exception]
-    assert 'Some Error' in errors[0].exception_str
+    assert "Some Error" in errors[0].exception_str
     output = summary.get_console_output()
-    assert 'Traceback' not in output
+    assert "Traceback" not in output
+
 
 def test_import_errors_with_session():
-
     suite = Suite()
 
     for _ in range(20):
         suite.add_test()
 
     problematic = suite.files[1]
-    problematic.prepend_line('from nonexistent import nonexistent')
+    problematic.prepend_line("from nonexistent import nonexistent")
 
     for test in suite:
         test.expect_deselect()
@@ -161,17 +162,17 @@ def test_import_errors_with_session():
 
     errs = summary.session.results.global_result.get_errors()
     for err in errs:
-        assert 'No module named nonexistent' in err.message or "No module named 'nonexistent'" in err.message
+        assert "No module named nonexistent" in err.message or "No module named 'nonexistent'" in err.message
 
 
 def test_fixture_and_test_overrides(tmpdir, config_override):
-    tests_dir = tmpdir.join('tests')
-    full_path = tests_dir.join('.dir').join('test_something.py')
-    test_prefix = 'test_something'
-    with full_path.open('w', ensure=True) as f:
-        f.write('import slash\n')
+    tests_dir = tmpdir.join("tests")
+    full_path = tests_dir.join(".dir").join("test_something.py")
+    test_prefix = "test_something"
+    with full_path.open("w", ensure=True) as f:
+        f.write("import slash\n")
         f.write('@slash.tag("tag-1")\ndef test_something1():\n    pass\n')
-        f.write('def test_something2():\n    pass\n')
+        f.write("def test_something2():\n    pass\n")
     config_override("run.filter_strings", ["tag:tag-1"])
     with Session():
         runnables = Loader().get_runnables(["{}:{}{}".format(full_path, test_prefix, index) for index in range(1, 3)])

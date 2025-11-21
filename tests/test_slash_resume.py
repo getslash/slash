@@ -1,15 +1,17 @@
 # pylint: disable=redefined-outer-name
 import pytest
 import slash
-from slash.resuming import (CannotResume, get_last_resumeable_session_id, get_tests_from_previous_session)
+from slash.resuming import CannotResume, get_last_resumeable_session_id, get_tests_from_previous_session
 
 
 def address_in_file(test):
     return ("{0.cls.name}.{0.name}" if test.cls is not None else "{.name}").format(test)
 
+
 def test_resume_no_session():
     with pytest.raises(CannotResume):
         get_tests_from_previous_session("nonexisting_session")
+
 
 def test_get_last_resumeable_session(suite):
     suite[len(suite) // 2].when_run.fail()
@@ -20,13 +22,14 @@ def test_get_last_resumeable_session(suite):
         prev_id = results.session.id
         assert get_last_resumeable_session_id() == results.session.id
 
+
 def test_resume(suite):
     fail_index = len(suite) // 2
     suite[fail_index].when_run.fail()
     for index, test in enumerate(suite):
         if index > fail_index:
             test.expect_not_run()
-    result = suite.run(additional_args=['-x'])
+    result = suite.run(additional_args=["-x"])
     resumed = get_tests_from_previous_session(result.session.id)
 
     assert len(resumed) + result.session.results.get_num_started() - 1 == len(suite)
@@ -35,14 +38,14 @@ def test_resume(suite):
 def test_resume_with_filter(suite, config_override):
     fail_index = len(suite) // 2
     suite[fail_index].when_run.fail()
-    for test in suite[fail_index + 1:]:
+    for test in suite[fail_index + 1 :]:
         test.expect_not_run()
-    result = suite.run(additional_args=['-x'])
+    result = suite.run(additional_args=["-x"])
     resumed = get_tests_from_previous_session(result.session.id)
 
     filtered_out_test_name = resumed[0].address_in_file
     with slash.Session():
-        config_override('run.filter_strings', [f'not {filtered_out_test_name}'])
+        config_override("run.filter_strings", [f"not {filtered_out_test_name}"])
         tests = slash.loader.Loader().get_runnables(resumed)
     assert filtered_out_test_name not in [test.__slash__.address_in_file for test in tests]
 
@@ -61,6 +64,7 @@ def test_resume_with_parametrization(suite, suite_test):
     assert len(resumed) == 1
     assert resumed[0].address_in_file == address_in_file(suite[fail_index])
 
+
 def test_different_folder_no_resume_session_id(suite, tmpdir):  # pylint: disable=unused-argument
     fail_index = len(suite) // 2
     suite[fail_index].when_run.fail()
@@ -72,22 +76,25 @@ def test_different_folder_no_resume_session_id(suite, tmpdir):  # pylint: disabl
         with pytest.raises(CannotResume):
             sessoin_id = get_last_resumeable_session_id()
 
+
 def test_delete_old_sessions(suite, config_override):
     result = suite.run()
     assert result.session.id == get_last_resumeable_session_id()
-    config_override('resume.state_retention_days', 0)
+    config_override("resume.state_retention_days", 0)
     result = suite.run()
     with pytest.raises(CannotResume):
         get_last_resumeable_session_id()
 
+
 def test_failed_and_unstarted_first_fails(suite, config_override):
-    config_override('resume.failed_first', True)
-    config_override('resume.unstarted_first', True)
+    config_override("resume.failed_first", True)
+    config_override("resume.unstarted_first", True)
     result = suite.run()
     with pytest.raises(CannotResume):
         get_tests_from_previous_session(result.session.id)
 
-@pytest.mark.parametrize('failed_first', [True, False])
+
+@pytest.mark.parametrize("failed_first", [True, False])
 def test_failed_first_or_unstarted_first(suite, failed_first, config_override):
     if not failed_first:
         pytest.skip("issue 1072")
@@ -98,12 +105,12 @@ def test_failed_first_or_unstarted_first(suite, failed_first, config_override):
     for index, test in enumerate(suite):
         if index > fail_index:
             test.expect_not_run()
-    result = suite.run(additional_args=['-x'])
+    result = suite.run(additional_args=["-x"])
     regular_order = get_tests_from_previous_session(result.session.id)
     if failed_first:
-        config_override('resume.failed_first', True)
+        config_override("resume.failed_first", True)
     else:
-        config_override('resume.unstarted_first', True)
+        config_override("resume.unstarted_first", True)
 
     order_after_changing_config = get_tests_from_previous_session(result.session.id)
     assert len(order_after_changing_config) + result.session.results.get_num_started() - 2 == len(suite)
@@ -116,11 +123,12 @@ def test_failed_first_or_unstarted_first(suite, failed_first, config_override):
         assert regular_order[0] == order_after_changing_config[1]
         assert regular_order[2:] == order_after_changing_config[2:]
     else:
-        failed_test = order_after_changing_config.pop(len(order_after_changing_config)-1)
+        failed_test = order_after_changing_config.pop(len(order_after_changing_config) - 1)
         order_after_changing_config.insert(1, failed_test)
         assert regular_order == order_after_changing_config
 
-@pytest.mark.parametrize('failed_first', [True, False])
+
+@pytest.mark.parametrize("failed_first", [True, False])
 def test_failed_or_unstarted_with_no_such_tests(suite, failed_first, suite_test, config_override):
     if failed_first:
         suite_test.when_run.skip()
@@ -128,13 +136,14 @@ def test_failed_or_unstarted_with_no_such_tests(suite, failed_first, suite_test,
         suite_test.when_run.fail()
     result = suite.run()
     if failed_first:
-        config_override('resume.failed_first', True)
+        config_override("resume.failed_first", True)
     else:
-        config_override('resume.unstarted_first', True)
+        config_override("resume.unstarted_first", True)
     [resumed_test] = get_tests_from_previous_session(result.session.id)
     assert resumed_test.address_in_file == address_in_file(suite_test)
 
-@pytest.mark.parametrize('failed_only', [True, False])
+
+@pytest.mark.parametrize("failed_only", [True, False])
 def test_failed_only_or_unstarted_first(suite, failed_only, config_override):
     if not failed_only:
         pytest.skip("issue 1072")
@@ -145,21 +154,22 @@ def test_failed_only_or_unstarted_first(suite, failed_only, config_override):
     for index, test in enumerate(suite):
         if index > fail_index:
             test.expect_not_run()
-    result = suite.run(additional_args=['-x'])
+    result = suite.run(additional_args=["-x"])
 
     if failed_only:
-        config_override('resume.failed_only', True)
+        config_override("resume.failed_only", True)
         expected_resume_tests_num = 1
-        expected_status = 'failed'
+        expected_status = "failed"
     else:
-        config_override('resume.unstarted_only', True)
+        config_override("resume.unstarted_only", True)
         expected_resume_tests_num = len(suite) - fail_index
-        expected_status = 'planned'
+        expected_status = "planned"
     resumed = get_tests_from_previous_session(result.session.id)
 
     assert len(resumed) == expected_resume_tests_num
     for test in resumed:
         assert test.status == expected_status
+
 
 def test_resuming_interrupted_session(suite):
     suite[0].when_run.interrupt()
@@ -171,12 +181,16 @@ def test_resuming_interrupted_session(suite):
     assert len(resumed) == len(suite)
     assert set(test.address_in_file for test in resumed) == set(address_in_file(test) for test in suite)
 
-@pytest.mark.parametrize('no_skipped,unstarted_only', [
-    (True, True),
-    (False, True),
-    (True, False),
-    (False, False),
-    ])
+
+@pytest.mark.parametrize(
+    "no_skipped,unstarted_only",
+    [
+        (True, True),
+        (False, True),
+        (True, False),
+        (False, False),
+    ],
+)
 def test_no_skipped(suite, no_skipped, unstarted_only, config_override):
     fail_index = len(suite) // 2
     skip_index = fail_index - 1
@@ -185,19 +199,19 @@ def test_no_skipped(suite, no_skipped, unstarted_only, config_override):
     for index, test in enumerate(suite):
         if index > fail_index:
             test.expect_not_run()
-    result = suite.run(additional_args=['-x'])
+    result = suite.run(additional_args=["-x"])
 
     if no_skipped and unstarted_only:
-        config_override('resume.unstarted_only', True)
-        config_override('resume.no_skipped', True)
+        config_override("resume.unstarted_only", True)
+        config_override("resume.no_skipped", True)
         expected_resume_tests_num = 4
-        expected_status = 'planned'
+        expected_status = "planned"
         resumed = get_tests_from_previous_session(result.session.id)
         assert len(resumed) == expected_resume_tests_num
         for test in resumed:
             assert test.status == expected_status
     elif (not no_skipped) and unstarted_only:
-        config_override('resume.unstarted_only', True)
+        config_override("resume.unstarted_only", True)
         expected_resume_tests_num = len(suite) - fail_index
         expected_planned = 4
         expected_skipped = 1
@@ -208,7 +222,7 @@ def test_no_skipped(suite, no_skipped, unstarted_only, config_override):
         assert num_planned == expected_planned
         assert num_skipped == expected_skipped
     elif no_skipped and (not unstarted_only):
-        config_override('resume.no_skipped', True)
+        config_override("resume.no_skipped", True)
         expected_resume_tests_num = len(suite) - fail_index
         expected_planned = 4
         expected_failed = 1

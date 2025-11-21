@@ -7,23 +7,22 @@ from .test_container import SuiteWriterTestContainer
 
 
 class Class(SuiteWriterTestContainer, CodeElement, Element):
-
     def __init__(self, suite, file):
         super(Class, self).__init__(suite)
         self._decorators = []
         self.file = file
         self.suite = file.suite
-        self.name = 'Test{}'.format(self.id)
+        self.name = "Test{}".format(self.id)
         self.before = self.after = None
 
     def add_before_method(self):
         assert self.before is None
-        self.before = Method(self.suite, name='before')
+        self.before = Method(self.suite, name="before")
         return self.before
 
     def add_after_method(self):
         assert self.after is None
-        self.after = Method(self.suite, name='after')
+        self.after = Method(self.suite, name="after")
         return self.after
 
     def add_decorator(self, decorator_string):
@@ -38,11 +37,10 @@ class Class(SuiteWriterTestContainer, CodeElement, Element):
     @contextmanager
     def _body_context(self, code_formatter):
         for d in self._decorators:
-            code_formatter.write('@')
+            code_formatter.write("@")
             code_formatter.writeln(d)
-        code_formatter.writeln('class {}(slash.Test):'.format(self.name))
+        code_formatter.writeln("class {}(slash.Test):".format(self.name))
         with code_formatter.indented():
-
             if self.before is not None:
                 self.before.write(code_formatter)
             if self.after is not None:

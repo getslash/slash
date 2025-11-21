@@ -5,7 +5,7 @@ from slash.reporting.console_reporter import ConsoleReporter
 
 
 def test_app_reporter(checkpoint):
-    hooks.app_quit.register(checkpoint) # pylint: disable=no-member
+    hooks.app_quit.register(checkpoint)  # pylint: disable=no-member
     with Application() as app:
         assert isinstance(app.session.reporter, ConsoleReporter)
         assert not checkpoint.called
@@ -13,7 +13,6 @@ def test_app_reporter(checkpoint):
 
 
 def test_custom_reporter():
-
     class DummyReporter(object):
         pass
 
@@ -29,10 +28,11 @@ def test_exception_during_app_exit_debugger(checkpoint, config_override):
     @hooks.entering_debugger.register  # pylint: disable=no-member
     def callback(*_, **__):  # pylint: disable=unused-variable
         checkpoint()
-        raise Exception('Entering debugger error')  # pylint: disable=broad-exception-raised
-    config_override('debug.enabled', True)
+        raise Exception("Entering debugger error")  # pylint: disable=broad-exception-raised
+
+    config_override("debug.enabled", True)
     with Application() as app:
-        raise Exception('Some Exception')  # pylint: disable=broad-exception-raised
+        raise Exception("Some Exception")  # pylint: disable=broad-exception-raised
     assert checkpoint
     assert app.exit_code != 0
     assert checkpoint.called_count == 1

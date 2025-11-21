@@ -31,7 +31,6 @@ _logger = Logger(__name__)
 
 
 class Loader(object):
-
     """
     Provides iteration interfaces to load runnable tests from various places
     """
@@ -51,30 +50,26 @@ class Loader(object):
                 self._cached_matchers = None
         return self._cached_matchers
 
-
     def get_runnables(self, paths, prepend_interactive=False):
         assert context.session is not None
         sources = self._generate_repeats(self._generate_test_sources(paths))
         returned = self._collect(sources)
         self._duplicate_funcs |= self._local_config.duplicate_funcs
-        for (path, name, line) in sorted(self._duplicate_funcs):
-            _logger.warning('Duplicate function definition, File: {}, Name: {}, Line: {}', path, name, line)
+        for path, name, line in sorted(self._duplicate_funcs):
+            _logger.warning("Duplicate function definition, File: {}, Name: {}, Line: {}", path, name, line)
 
         if prepend_interactive:
             returned.insert(0, generate_interactive_test())
 
         for index, test in enumerate(returned):
             test.__slash__.parallel_index = index
-        hooks.tests_loaded(tests=returned) # pylint: disable=no-member
-        returned.sort(key=lambda test: (
-            test.__slash__.repeat_all_index, test.__slash__.get_sort_key()
-        ))
+        hooks.tests_loaded(tests=returned)  # pylint: disable=no-member
+        returned.sort(key=lambda test: (test.__slash__.repeat_all_index, test.__slash__.get_sort_key()))
         for test in returned:
             if test.__slash__.id is not None:
-                raise SlashInternalError('Slash ID of {!r} should be None, but is {}'.format(test, test.__slash__.id))
+                raise SlashInternalError("Slash ID of {!r} should be None, but is {}".format(test, test.__slash__.id))
             test.__slash__.allocate_id()
         return returned
-
 
     def _generate_repeats(self, tests):
         returned = []
@@ -90,7 +85,6 @@ class Loader(object):
                 returned.append(clone)
         return returned
 
-
     def _collect(self, iterator):
         returned = []
         context.reporter.report_collection_start()
@@ -104,9 +98,8 @@ class Loader(object):
         return returned
 
     def _generate_test_sources(self, thing, matcher=None):
-
         if isinstance(thing, tuple):
-            assert len(thing) == 2, '_generate_test_sources on tuples requires a tuple of (loadable_obj, matcher)'
+            assert len(thing) == 2, "_generate_test_sources on tuples requires a tuple of (loadable_obj, matcher)"
             iterator = self._generate_test_sources(thing[0], matcher=thing[1])
 
         elif isinstance(thing, (list, GeneratorType, itertools.chain)):
@@ -135,13 +128,12 @@ class Loader(object):
 
     def _iter_test_address(self, address):
         drive, address = os.path.splitdrive(address)
-        if ':' in address:
-            path, address_in_file = address.split(':', 1)
+        if ":" in address:
+            path, address_in_file = address.split(":", 1)
         else:
             path = address
             address_in_file = None
         path = os.path.join(drive, path)
-
 
         tests = list(self._iter_path(path))
 
@@ -151,7 +143,6 @@ class Loader(object):
 
         matched = False
         for test in tests:
-
             if address_in_file is not None:
                 if not self._address_in_file_matches(address_in_file, test):
                     continue
@@ -160,7 +151,7 @@ class Loader(object):
                 continue
             yield test
         if not matched:
-            raise CannotLoadTests('Cannot find test(s) for {!r}'.format(address))
+            raise CannotLoadTests("Cannot find test(s) for {!r}".format(address))
 
     def _address_in_file_matches(self, address_in_file, test):
         if address_in_file == test.__slash__.factory_name:
@@ -168,8 +159,8 @@ class Loader(object):
         test_address_in_file = test.__slash__.address_in_file
         if address_in_file == test_address_in_file:
             return True
-        if '(' in test_address_in_file:
-            if address_in_file == test_address_in_file[:test_address_in_file.index('(')]:
+        if "(" in test_address_in_file:
+            if address_in_file == test_address_in_file[: test_address_in_file.index("(")]:
                 return True
         return False
 
@@ -177,7 +168,6 @@ class Loader(object):
         return self._iter_paths([path])
 
     def _iter_paths(self, paths):
-
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
@@ -198,11 +188,10 @@ class Loader(object):
                         with dessert.rewrite_assertions_context():
                             module = import_file(file_path)
                 except Exception as e:
-
                     tb_file, tb_lineno, _, _ = _extract_tb()
                     raise mark_exception_handled(
-                        CannotLoadTests(
-                            "Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e)))
+                        CannotLoadTests("Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
+                    )
                 if module is not None:
                     self._duplicate_funcs |= check_duplicate_functions(file_path)
                     with self._adding_local_fixtures(file_path, module):
@@ -214,16 +203,13 @@ class Loader(object):
         with context.session.fixture_store.new_namespace_context():
             self._local_config.push_path(os.path.dirname(file_path))
             try:
-                context.session.fixture_store.add_fixtures_from_dict(
-                    self._local_config.get_dict())
+                context.session.fixture_store.add_fixtures_from_dict(self._local_config.get_dict())
                 with context.session.fixture_store.new_namespace_context():
-                    context.session.fixture_store.add_fixtures_from_dict(
-                        vars(module))
+                    context.session.fixture_store.add_fixtures_from_dict(vars(module))
                     context.session.fixture_store.resolve()
                     yield
             finally:
                 self._local_config.pop_path()
-
 
     def _is_excluded(self, test):
         matchers = self._get_matchers()
@@ -254,7 +240,6 @@ class Loader(object):
                 yield test
 
     def _get_runnable_test_factory(self, thing):
-
         if isinstance(thing, type) and issubclass(thing, Test):
             return TestTestFactory(thing)
 
@@ -271,9 +256,10 @@ def _walk(p):
         return
 
     for path, dirnames, filenames in os.walk(p):
-        dirnames[:] = sorted(dirname for dirname in dirnames if not dirname.startswith('.'))
+        dirnames[:] = sorted(dirname for dirname in dirnames if not dirname.startswith("."))
         for filename in sorted(filenames):
             yield os.path.join(path, filename)
+
 
 def _extract_tb():
     _, exc_value, exc_tb = sys.exc_info()

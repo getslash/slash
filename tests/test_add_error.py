@@ -3,17 +3,18 @@ import pytest
 import logbook
 import sys
 
-@pytest.mark.parametrize('failure_type', ['failure', 'error'])
-@pytest.mark.parametrize('use_custom_message', [True, False])
+
+@pytest.mark.parametrize("failure_type", ["failure", "error"])
+@pytest.mark.parametrize("use_custom_message", [True, False])
 def test_add_error_custom_exc_info(suite, suite_test, failure_type, use_custom_message):
     message = str(uuid4())
 
     if use_custom_message:
-        add_error_args = '{!r}, '.format(message)
+        add_error_args = "{!r}, ".format(message)
     else:
-        add_error_args = ''
+        add_error_args = ""
 
-    add_error_args += 'exc_info=exc_info'
+    add_error_args += "exc_info=exc_info"
 
     code = """
 import sys
@@ -30,14 +31,14 @@ except ZeroDivisionError:
     for line in code.strip().splitlines():
         suite_test.append_line(line)
 
-    if failure_type == 'error':
+    if failure_type == "error":
         suite_test.expect_error()
     else:
         suite_test.expect_failure()
     summary = suite.run()
     [result] = summary.get_all_results_for_test(suite_test)
 
-    if failure_type == 'error':
+    if failure_type == "error":
         [err] = result.get_errors()
     else:
         [err] = result.get_failures()
@@ -54,7 +55,7 @@ def test_add_error_that_forbids_setattr(suite, suite_test):
         pytest.skip("Issue 1074")
 
     @suite_test.append_body
-    def __code__(): # pylint: disable=unused-variable
+    def __code__():  # pylint: disable=unused-variable
         class MyException(Exception):
             def __setattr__(self, *args):
                 raise Exception("Set-attr")  # pylint: disable=broad-exception-raised
@@ -70,10 +71,9 @@ def test_add_error_that_forbids_setattr(suite, suite_test):
 
 
 def test_add_fatal_error(suite, suite_test):
-
     @suite_test.append_body
-    def __code__():             # pylint: disable=unused-variable
-        slash.add_error('bla').mark_fatal() # pylint: disable=undefined-variable
+    def __code__():  # pylint: disable=unused-variable
+        slash.add_error("bla").mark_fatal()  # pylint: disable=undefined-variable
 
     suite_test.expect_error()
     for test in suite.iter_all_after(suite_test):
@@ -85,33 +85,34 @@ def test_add_fatal_error(suite, suite_test):
 
 def test_session_level_add_error_message(suite, suite_test):
     @suite_test.file.append_body
-    def __code__():                       # pylint: disable=unused-variable
-        @slash.hooks.session_end.register # pylint: disable=undefined-variable
+    def __code__():  # pylint: disable=unused-variable
+        @slash.hooks.session_end.register  # pylint: disable=undefined-variable
         def _callback():
-            slash.add_error('session: add_error') # pylint: disable=undefined-variable
+            slash.add_error("session: add_error")  # pylint: disable=undefined-variable
+
     res = suite.run(expect_session_errors=True)
     errors = res.session.results.global_result.get_errors()
     assert len(errors) == 1
     [err] = errors
-    assert err.message == 'session: add_error'
+    assert err.message == "session: add_error"
 
 
-@pytest.mark.parametrize('log_variables', [True, False])
+@pytest.mark.parametrize("log_variables", [True, False])
 def test_add_error_log_traceback_variables(suite, suite_test, log_variables, config_override, tmpdir):
-    config_override('log.core_log_level', logbook.TRACE)
-    config_override('log.traceback_variables', log_variables)
-    config_override('log.root', str(tmpdir.join('logs')))
+    config_override("log.core_log_level", logbook.TRACE)
+    config_override("log.traceback_variables", log_variables)
+    config_override("log.root", str(tmpdir.join("logs")))
 
     @suite_test.prepend_body
-    def __code__():          # pylint: disable=unused-variable
+    def __code__():  # pylint: disable=unused-variable
         # to avoid the line itself from being detected
-        x_variable = 'x' * 3 # pylint: disable=unused-variable
+        x_variable = "x" * 3  # pylint: disable=unused-variable
+
         class Object(object):
-
             def __init__(self):
-                self.property_value = 'yyy'
+                self.property_value = "yyy"
 
-        self = Object() # pylint: disable=unused-variable
+        self = Object()  # pylint: disable=unused-variable
 
     suite_test.when_run.error()
     res = suite.run()
@@ -126,20 +127,21 @@ def test_add_error_log_traceback_variables(suite, suite_test, log_variables, con
             if variable_name in line and variable_value in line:
                 found = True
                 break
-        assert found == log_variables, 'Variable {!r} not found in traceback log!'.format(variable_name)
-    _search_variable('x_variable', 'xxx')
-    _search_variable('self.property_value', 'yyy')
+        assert found == log_variables, "Variable {!r} not found in traceback log!".format(variable_name)
+
+    _search_variable("x_variable", "xxx")
+    _search_variable("self.property_value", "yyy")
 
 
 def test_add_error_log_traceback_variables_self_none(suite, suite_test, config_override, tmpdir):
-    config_override('log.core_log_level', logbook.TRACE)
-    config_override('log.traceback_variables', True)
-    config_override('log.root', str(tmpdir.join('logs')))
+    config_override("log.core_log_level", logbook.TRACE)
+    config_override("log.traceback_variables", True)
+    config_override("log.root", str(tmpdir.join("logs")))
 
     @suite_test.prepend_body
-    def __code__():          # pylint: disable=unused-variable
+    def __code__():  # pylint: disable=unused-variable
         # to avoid the line itself from being detected
-        self = None # pylint: disable=unused-variable
+        self = None  # pylint: disable=unused-variable
 
     suite_test.when_run.error()
     res = suite.run()
@@ -148,6 +150,6 @@ def test_add_error_log_traceback_variables_self_none(suite, suite_test, config_o
     with open(result.get_log_path()) as f:
         lines = f.read()
 
-    assert 'self: None' in lines
+    assert "self: None" in lines
     [err] = result.get_errors()
-    assert 'Test exception' in str(err)
+    assert "Test exception" in str(err)

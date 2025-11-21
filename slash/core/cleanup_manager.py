@@ -11,14 +11,11 @@ from ..exceptions import CannotAddCleanup, IncorrectScope, SlashInternalError
 _logger = logbook.Logger(__name__)
 
 
-
-_LAST_SCOPE = Sentinel('LAST_SCOPE')
-_DEDUCE = Sentinel('DEDUCE')
-
+_LAST_SCOPE = Sentinel("LAST_SCOPE")
+_DEDUCE = Sentinel("DEDUCE")
 
 
 class CleanupManager(object):
-
     def __init__(self):
         super(CleanupManager, self).__init__()
         self._scope_stack = []
@@ -55,26 +52,26 @@ class CleanupManager(object):
         :param kwargs: keyword arguments to pass to the cleanup function
         """
 
-        scope_name = kwargs.pop('scope', self._default_scope)
+        scope_name = kwargs.pop("scope", self._default_scope)
 
-        critical = kwargs.pop('critical', False)
-        success_only = kwargs.pop('success_only', False)
+        critical = kwargs.pop("critical", False)
+        success_only = kwargs.pop("success_only", False)
 
-        new_kwargs = kwargs.pop('kwargs', {}).copy()
-        new_args = list(kwargs.pop('args', ()))
-        assert (not args) and (not kwargs), \
-            'Passing *args/**kwargs to slash.add_cleanup is not supported. Use args=(...) and/or kwargs={...} instead'
+        new_kwargs = kwargs.pop("kwargs", {}).copy()
+        new_args = list(kwargs.pop("args", ()))
+        assert (not args) and (
+            not kwargs
+        ), "Passing *args/**kwargs to slash.add_cleanup is not supported. Use args=(...) and/or kwargs={...} instead"
 
         added = _Cleanup(_func, new_args, new_kwargs, critical=critical, success_only=success_only)
 
-
         if scope_name is None:
             if not self._allow_implicit_scopes:
-                raise CannotAddCleanup('Cleanup added at a stage requiring explicit scoping')
+                raise CannotAddCleanup("Cleanup added at a stage requiring explicit scoping")
             scope = self._scope_stack[-1] if self._scope_stack else None
         else:
             if scope_name not in self._scopes_by_name:
-                raise IncorrectScope('Incorrect scope specified: {!r}'.format(scope_name))
+                raise IncorrectScope("Incorrect scope specified: {!r}".format(scope_name))
             scope = self._scopes_by_name[scope_name][-1]
 
         _logger.trace("Adding cleanup to scope {}: {!r}", scope, added)
@@ -106,7 +103,7 @@ class CleanupManager(object):
         return self._scope_stack[-1]
 
     def push_scope(self, scope_name):
-        _logger.trace('CleanupManager: pushing scope {0!r}', scope_name)
+        _logger.trace("CleanupManager: pushing scope {0!r}", scope_name)
         scope = _Scope(scope_name)
         self._scope_stack.append(scope)
         self._scopes_by_name.setdefault(scope_name, []).append(scope)
@@ -121,32 +118,38 @@ class CleanupManager(object):
             in_failure = not context.result.is_success(allow_skips=True)
             in_interruption = context.result.is_interrupted()
 
-        _logger.trace('CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})', scope_name, in_failure, in_interruption)
+        _logger.trace(
+            "CleanupManager: popping scope {0!r} (failure: {1}, interrupt: {2})",
+            scope_name,
+            in_failure,
+            in_interruption,
+        )
         scope = self._scope_stack[-1]
         if scope.name != scope_name:
-            raise SlashInternalError('Attempted to pop scope {!r}, but current scope is {!r}'.format(scope_name, scope.name))
+            raise SlashInternalError(
+                "Attempted to pop scope {!r}, but current scope is {!r}".format(scope_name, scope.name)
+            )
         try:
-            self.call_cleanups(
-                scope=scope,
-                in_failure=in_failure, in_interruption=in_interruption)
+            self.call_cleanups(scope=scope, in_failure=in_failure, in_interruption=in_interruption)
 
         finally:
             self._scope_stack.pop()
             self._scopes_by_name[scope_name].pop()
 
     def call_cleanups(self, scope=_LAST_SCOPE, in_failure=False, in_interruption=False):
-
-        _logger.trace('Calling cleanups of scope {0.name!r} (failure={1}, interrupt={2})', scope, in_failure, in_interruption)
+        _logger.trace(
+            "Calling cleanups of scope {0.name!r} (failure={1}, interrupt={2})", scope, in_failure, in_interruption
+        )
 
         if scope is _LAST_SCOPE:
             scope = self._scope_stack[-1]
-            _logger.trace('Deducing last scope={0.name!r}', scope)
+            _logger.trace("Deducing last scope={0.name!r}", scope)
 
-        if scope.name == 'test': # pylint: disable=no-member
+        if scope.name == "test":  # pylint: disable=no-member
             with handling_exceptions():
                 hooks.before_test_cleanups()  # pylint: disable=no-member
 
-        stack = scope.cleanups # pylint: disable=no-member
+        stack = scope.cleanups  # pylint: disable=no-member
         while stack:
             cleanup = stack.pop()
             if in_interruption and not cleanup.critical:
@@ -163,9 +166,7 @@ class CleanupManager(object):
                     self._current_scope = previous_scope
 
 
-
 class _Cleanup(object):
-
     def __init__(self, func, args, kwargs, critical=False, success_only=False):
         assert not (success_only and critical)
         super(_Cleanup, self).__init__()
@@ -185,14 +186,14 @@ class _Cleanup(object):
             raise
 
     def _get_repr(self):
-        qual_name = getattr(self.func, '__qualname__', None) or getattr(self.func, '__name__', str(self.func))
-        module_name = getattr(self.func, '__module__', '???')
+        qual_name = getattr(self.func, "__qualname__", None) or getattr(self.func, "__name__", str(self.func))
+        module_name = getattr(self.func, "__module__", "???")
         func_desc = "{}.{}".format(module_name, qual_name)
-        repr_prefix = ''
+        repr_prefix = ""
         if self.success_only:
-            repr_prefix += 'Success Only '
+            repr_prefix += "Success Only "
         if self.critical:
-            repr_prefix += 'Critical '
+            repr_prefix += "Critical "
         return "<{}Cleanup {} ({},{})>".format(repr_prefix, func_desc, self.args, self.kwargs)
 
     def __repr__(self):
@@ -200,7 +201,6 @@ class _Cleanup(object):
 
 
 class _Scope(object):
-
     def __init__(self, name):
         super(_Scope, self).__init__()
         self.name = name

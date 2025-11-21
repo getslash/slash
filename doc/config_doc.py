@@ -20,5 +20,5 @@ class ConfigDoc(Directive):
         return returned
 
 
-def setup(app):                 # pylint: disable=unused-argument
-    directives.register_directive('config_doc', ConfigDoc)
+def setup(app):  # pylint: disable=unused-argument
+    directives.register_directive("config_doc", ConfigDoc)

@@ -41,9 +41,7 @@ dependencies = [
 
 dynamic = ["version"]
 
-authors = [
-    { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
-]
+authors = [{ name = "Rotem Yaari", email = "vmalloc@gmail.com" }]
 
 [project.urls]
 "Homepage" = "http://getslash.github.io/"
@@ -51,7 +49,7 @@ authors = [
 
 
 [project.scripts]
-slash  = "slash.frontend.main:main_entry_point"
+slash = "slash.frontend.main:main_entry_point"
 
 [project.optional-dependencies]
 testing = [
@@ -65,15 +63,17 @@ testing = [
     "astroid~=2.15.5",
     "pylint~=2.17.4",
 ]
-doc = [
-    "alabaster",
-    "docutils",
-    "releases~=1.6.1",
-    "Sphinx",
-]
+doc = ["alabaster", "docutils", "releases~=1.6.1", "Sphinx"]
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
 
 [tool.pytest]
 testpaths = ["tests"]

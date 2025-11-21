@@ -17,7 +17,8 @@ def get_exception_mark(e, name, default=None):
     """
     return _ensure_exception_marks(e).get(name, default)
 
-_EXCEPTION_MARKS_NAME = '__slash_exc_marks__'
+
+_EXCEPTION_MARKS_NAME = "__slash_exc_marks__"
 
 
 def _ensure_exception_marks(e):
@@ -30,8 +31,8 @@ def _ensure_exception_marks(e):
         safe_set_attribute(e, _EXCEPTION_MARKS_NAME, returned)
     return returned
 
-class ExceptionMarker(object):
 
+class ExceptionMarker(object):
     def __init__(self, name):
         super(ExceptionMarker, self).__init__()
         self.name = name

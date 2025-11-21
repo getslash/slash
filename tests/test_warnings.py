@@ -15,13 +15,13 @@ import slash
 from .utils import run_tests_assert_success, without_pyc
 
 
-@pytest.mark.parametrize('reprify', [repr, str])
+@pytest.mark.parametrize("reprify", [repr, str])
 def test_str_repr(warning, reprify):
-    assert 'this is a warning' in reprify(warning)
+    assert "this is a warning" in reprify(warning)
 
 
 def test_location(warning):
-    assert warning.details['filename'] == without_pyc(__file__)
+    assert warning.details["filename"] == without_pyc(__file__)
 
 
 def test_to_dict(warning):
@@ -29,7 +29,6 @@ def test_to_dict(warning):
 
 
 def test_warning_added_hook(suite, suite_test):
-
     captured = []
 
     @slash.hooks.register
@@ -39,16 +38,16 @@ def test_warning_added_hook(suite, suite_test):
     suite_test.append_line('slash.logger.warning("message {}", "here")')
     suite.run()
     assert captured
-    [w] = captured # pylint: disable=unbalanced-tuple-unpacking
-    assert w.message == 'message here'
+    [w] = captured  # pylint: disable=unbalanced-tuple-unpacking
+    assert w.message == "message here"
     assert isinstance(w.lineno, int)
     assert isinstance(w.filename, str)
     assert w.lineno
     assert w.filename
     assert w.filename.rsplit(os.path.sep, 1)[-1] == suite_test.file.get_relative_path()
-    warning_type = w.details['type']
+    warning_type = w.details["type"]
     assert isinstance(warning_type, str)
-    assert warning_type == 'LogbookWarning'
+    assert warning_type == "LogbookWarning"
 
 
 def _get_current_line_info():
@@ -57,7 +56,6 @@ def _get_current_line_info():
 
 
 def test_native_warnings(message):
-
     def test_example():
         with logbook.TestHandler() as handler:
             filename, line_no = _get_current_line_info()
@@ -79,6 +77,7 @@ def test_deprecation(message):
     @deprecated(message=message)
     def deprecated_func():
         pass
+
     with capturing_native_warnings() as handlers:
         deprecated_func()
     assert len(handlers.native_warnings) == 1
@@ -89,13 +88,12 @@ def test_deprecation(message):
 
 @pytest.fixture
 def message():
-    return 'some message here {}'.format(uuid4())
+    return "some message here {}".format(uuid4())
 
 
 @pytest.fixture
 def warning():
     class SampleTest(slash.Test):
-
         def test(self):
             slash.logger.warning("this is a warning. Param: {0}", 1)
 
@@ -111,18 +109,20 @@ def warning():
 def capturing_native_warnings():
     with logbook.TestHandler() as log_handler:
         with warnings.catch_warnings(record=True) as recorded:
-            warnings.simplefilter('always')
-            handlers = collections.namedtuple('Handlers', ('log', 'native_warnings'))(log_handler, recorded)
+            warnings.simplefilter("always")
+            handlers = collections.namedtuple("Handlers", ("log", "native_warnings"))(log_handler, recorded)
             yield handlers
 
-@pytest.mark.parametrize('should_ignore', [True, False])
+
+@pytest.mark.parametrize("should_ignore", [True, False])
 def test_capture_warnings_before_session_start(request, suite, should_ignore):
     request.addfinalizer(slash.clear_ignored_warnings)
     warning_message = "warning_message"
 
     @slash.hooks.register
-    def configure():    # pylint: disable=unused-variable
+    def configure():  # pylint: disable=unused-variable
         warnings.warn(warning_message)
+
     if should_ignore:
         slash.ignore_warnings(message=warning_message)
     session_warnings = suite.run().session.warnings

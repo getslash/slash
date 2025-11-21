@@ -25,7 +25,7 @@ def test_requirement_mismatch_end_of_module():
             file1.add_function_test()
 
         t = file1.add_function_test()
-        t.add_decorator('slash.requires(lambda: False)')
+        t.add_decorator("slash.requires(lambda: False)")
         t.expect_skip()
 
     suite.run()
@@ -37,18 +37,19 @@ def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
     for module_index, tests in enumerate(tests_by_module):
         for test_index, test in enumerate(tests):
             scope_manager.begin_test(test)
-            assert dummy_fixture_store._scopes == ['session', 'module', 'test']
+            assert dummy_fixture_store._scopes == ["session", "module", "test"]
             expected = _increment_scope(
                 last_scopes,
                 test=1,
                 module=1 if test_index == 0 else 0,
-                session=1 if test_index == 0 and module_index == 0 else 0)
+                session=1 if test_index == 0 and module_index == 0 else 0,
+            )
             assert dummy_fixture_store._scope_ids == expected
             # make sure the dict is copied
             assert expected is not dummy_fixture_store._scope_ids
             last_scopes = expected
             scope_manager.end_test(test)
-            assert dummy_fixture_store._scopes == ['session', 'module']
+            assert dummy_fixture_store._scopes == ["session", "module"]
             assert dummy_fixture_store._scope_ids == last_scopes
 
     scope_manager.flush_remaining_scopes()
@@ -56,29 +57,28 @@ def test_scope_manager(dummy_fixture_store, scope_manager, tests_by_module):
 
 
 def test_get_current_scope(suite_builder):
-
     @suite_builder.first_file.add_code
     def __code__():
         # pylint: disable=unused-variable,redefined-outer-name,reimported
         import slash
         import gossip
 
-        TOKEN = 'testing-current-scope-token'
+        TOKEN = "testing-current-scope-token"
 
         def _validate_current_scope(expected_scope):
             assert slash.get_current_scope() == expected_scope
 
-        @gossip.register('slash.after_session_start', token=TOKEN)
+        @gossip.register("slash.after_session_start", token=TOKEN)
         def session_validation():
-            assert slash.get_current_scope() == 'session'
+            assert slash.get_current_scope() == "session"
 
-        @gossip.register('slash.configure', token=TOKEN)
-        @gossip.register('slash.app_quit', token=TOKEN)
+        @gossip.register("slash.configure", token=TOKEN)
+        @gossip.register("slash.app_quit", token=TOKEN)
         def _no_scope():
             assert slash.get_current_scope() is None
 
         def test_something():
-            assert slash.get_current_scope() == 'test'
+            assert slash.get_current_scope() == "test"
 
         gossip.unregister_token(TOKEN)
 
@@ -89,7 +89,7 @@ def test_get_current_scope(suite_builder):
 @pytest.fixture
 def scope_manager(dummy_fixture_store, forge):
     session = slash.Session()
-    forge.replace_with(session, 'fixture_store', dummy_fixture_store)
+    forge.replace_with(session, "fixture_store", dummy_fixture_store)
     return ScopeManager(session)
 
 
@@ -100,7 +100,6 @@ def dummy_fixture_store():
 
 @pytest.fixture
 def tests_by_module():
-
     def test_func():
         pass
 
@@ -110,7 +109,7 @@ def tests_by_module():
 
     with slash.Session():
         for module_index in range(num_modules):
-            module_name = '__module_{}'.format(module_index)
+            module_name = "__module_{}".format(module_index)
             returned.append([])
             for test_index in range(num_tests_per_module):  # pylint: disable=unused-variable
                 [test] = make_runnable_tests(test_func)  # pylint: disable=unbalanced-tuple-unpacking
@@ -135,12 +134,10 @@ def _increment_scope(prev_scopes, **increments):
 
 
 class DummyFixtureStore(object):
-
     def __init__(self):
         super(DummyFixtureStore, self).__init__()
         self._scopes = []
-        self._counters = collections.defaultdict(
-            functools.partial(itertools.count, 1))
+        self._counters = collections.defaultdict(functools.partial(itertools.count, 1))
         self._scope_ids = {}
 
     def push_scope(self, scope):

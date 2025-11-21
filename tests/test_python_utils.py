@@ -18,9 +18,7 @@ def test_call_all_raise_first(funcs):
 
 @pytest.fixture
 def funcs():
-
     class Func(object):
-
         called_count = 0
         exc_type = None
 
@@ -39,7 +37,7 @@ def funcs():
     return [Func() for _ in range(10)]
 
 
-@pytest.mark.parametrize('class_method', [True, False])
+@pytest.mark.parametrize("class_method", [True, False])
 def test_resolve_underlying_function_method(class_method):
     if class_method:
         decorator = classmethod
@@ -47,18 +45,17 @@ def test_resolve_underlying_function_method(class_method):
         decorator = lambda f: f
 
     class Blap(object):
-
         @decorator
         def method(self):
             pass
 
     resolved = resolve_underlying_function(Blap.method)
-    assert resolved is resolve_underlying_function(Blap.method) # stable
-    assert not hasattr(resolved, '__func__')
-    assert resolved.__name__ == 'method'
+    assert resolved is resolve_underlying_function(Blap.method)  # stable
+    assert not hasattr(resolved, "__func__")
+    assert resolved.__name__ == "method"
 
 
-@pytest.mark.parametrize('thing', [object(), object, None, 2, "string"])
+@pytest.mark.parametrize("thing", [object(), object, None, 2, "string"])
 def test_resolve_underlying_function_method_no_op(thing):
     assert resolve_underlying_function(thing) is thing
 
@@ -70,21 +67,21 @@ def _example_decorator(func):
 
     return new_func
 
-def test_resolve_underlying_decorator_regular_func():
 
+def test_resolve_underlying_decorator_regular_func():
     def orig():
         pass
+
     decorated = _example_decorator(orig)
     assert resolve_underlying_function(decorated) is orig
 
+
 def test_resolve_underlying_decorator_method():
-
     class Blap(object):
-
         def orig(self):
             pass
 
         decorated = _example_decorator(orig)
 
     assert resolve_underlying_function(Blap.decorated) is resolve_underlying_function(Blap.orig)
-    assert resolve_underlying_function(Blap.decorated).__name__ == 'orig'
+    assert resolve_underlying_function(Blap.decorated).__name__ == "orig"

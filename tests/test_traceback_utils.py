@@ -8,12 +8,11 @@ from slash.utils import traceback_utils
 from slash.utils.traceback_utils import _MAX_VARIABLE_VALUE_LENGTH
 
 
-
 def test_traceback_line_numbers(tmpdir):
-    filename = tmpdir.join('filename.py')
+    filename = tmpdir.join("filename.py")
 
-    with filename.open('w') as f:
-        f.write('''from contextlib import contextmanager
+    with filename.open("w") as f:
+        f.write("""from contextlib import contextmanager
 def f():
     with context():
         a = 1
@@ -28,7 +27,7 @@ def g():
 @contextmanager
 def context():
     yield
-''')
+""")
 
     mod = emport.import_file(str(filename))
     try:
@@ -36,20 +35,19 @@ def context():
     except ZeroDivisionError:
         err = Error(exc_info=sys.exc_info())
     else:
-        assert False, 'did not fail'
+        assert False, "did not fail"
 
     assert err.traceback.frames[-2].lineno == 6  # pylint: disable=used-before-assignment
 
 
 def test_variable_capping():
-
     def f():
         g()
 
     def g():
-        long_var = 'a' * 1000
+        long_var = "a" * 1000
         assert len(long_var) > _MAX_VARIABLE_VALUE_LENGTH
-        1/0                     # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement
 
     try:
         f()
@@ -57,9 +55,7 @@ def test_variable_capping():
         err = Error(exc_info=sys.exc_info())
 
     distilled = err.traceback.to_list()  # pylint: disable=used-before-assignment
-    assert len(distilled[-1]['locals']['long_var']['value']) == _MAX_VARIABLE_VALUE_LENGTH
-
-
+    assert len(distilled[-1]["locals"]["long_var"]["value"]) == _MAX_VARIABLE_VALUE_LENGTH
 
 
 def test_is_test_code(suite, suite_test):
@@ -70,11 +66,10 @@ def test_is_test_code(suite, suite_test):
     assert err.traceback.frames[-1].is_in_test_code()
 
     error_json = err.traceback.to_list()
-    assert error_json[-1]['is_in_test_code']
+    assert error_json[-1]["is_in_test_code"]
 
 
 def test_self_attribute_throws():
-
     class CustomException(Exception):
         pass
 
@@ -83,10 +78,9 @@ def test_self_attribute_throws():
         x.method()
 
     class DangerousObject(object):
-
         def __getattribute__(self, attr):
-            if attr == '__dict__':
-                1/0  # pylint: disable=pointless-statement
+            if attr == "__dict__":
+                1 / 0  # pylint: disable=pointless-statement
             return super(DangerousObject, self).__getattribute__(attr)
 
         def method(self):
@@ -97,43 +91,41 @@ def test_self_attribute_throws():
     except CustomException:
         error = Error(exc_info=sys.exc_info())
     else:
-        assert False, 'Did not raise'
+        assert False, "Did not raise"
 
     with vintage.get_no_deprecations_context():
         locals_ = error.traceback.frames[-1].locals  # pylint: disable=used-before-assignment
-    assert 'self' in locals_
+    assert "self" in locals_
     for key in locals_:
-        assert 'self.' not in key
+        assert "self." not in key
 
 
 class NonReprable(object):
     def __repr__(self):
-        raise Exception('Repr error')  # pylint: disable=broad-exception-raised
+        raise Exception("Repr error")  # pylint: disable=broad-exception-raised
 
 
 def test_safe_repr_for_non_repable_object():
     # pylint: disable=protected-access
     obj = NonReprable()
     returned = traceback_utils._safe_repr(obj, blacklisted_types=())
-    assert 'unprintable' in returned.lower()
+    assert "unprintable" in returned.lower()
 
     returned = traceback_utils._safe_repr(obj, blacklisted_types=(NonReprable,))
-    assert 'unprintable' not in returned.lower()
+    assert "unprintable" not in returned.lower()
 
 
 class NonDictable(object):
-
     def __getattribute__(self, attr):
-        if attr == '__dict__':
-            raise Exception('dict error')  # pylint: disable=broad-exception-raised
+        if attr == "__dict__":
+            raise Exception("dict error")  # pylint: disable=broad-exception-raised
         return super(NonDictable, self).__getattribute__(attr)
 
     def method(self):
-        1/0 # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement
 
 
 def test_dict_getting_raises_exception():
-
     def func():
         x = NonDictable()
         x.method()
@@ -142,4 +134,4 @@ def test_dict_getting_raises_exception():
         func()
     except ZeroDivisionError:
         error_string = Error(exc_info=sys.exc_info()).traceback.to_string(include_vars=True)
-    assert 'self:' in error_string  # pylint: disable=used-before-assignment
+    assert "self:" in error_string  # pylint: disable=used-before-assignment

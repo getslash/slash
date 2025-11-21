@@ -20,7 +20,7 @@ def test_error_exception_str_repr(error):
 
 def test_detailed_exception(error):
     assert error.get_detailed_str()
-    assert 'NotImplementedError' in error.get_detailed_str()
+    assert "NotImplementedError" in error.get_detailed_str()
 
 
 def test_error_filename(error):
@@ -33,10 +33,13 @@ def test_error_func_name(error):
 
 def test_code_string(error):
     assert error.cause.code_line == "    raise NotImplementedError()"
-    assert error.cause.code_string == """def func_3():
+    assert (
+        error.cause.code_string
+        == """def func_3():
 
     local_func_3 = global_func_3
     raise NotImplementedError()\n"""
+    )
 
 
 def test_error_exc_info(error):
@@ -74,36 +77,27 @@ def test_error_frame_objects_forgotten_by_default(suite, suite_test):
         assert frame.python_frame is None
 
 
-@pytest.mark.usefixtures('disable_vintage_deprecations')
+@pytest.mark.usefixtures("disable_vintage_deprecations")
 def test_frame_locals(error):
-    assert error.traceback.frames[-3].locals == {
-        "local_func_1": {
-            "value": "'global_func_1'"
-        }}
+    assert error.traceback.frames[-3].locals == {"local_func_1": {"value": "'global_func_1'"}}
 
 
 def test_to_list(error):
     serialized = error.traceback.to_list()
-    assert serialized[-3]['locals'] == {
-        "local_func_1": {
-            "value": "'global_func_1'"
-        }}
+    assert serialized[-3]["locals"] == {"local_func_1": {"value": "'global_func_1'"}}
     # Just make sure that it's serializable
     json.dumps(serialized)
 
 
-@pytest.mark.usefixtures('disable_vintage_deprecations')
+@pytest.mark.usefixtures("disable_vintage_deprecations")
 def test_frame_locals_no_assertion_markers(assertion_error):
     for var_name, _ in assertion_error.cause.locals.items():
         assert "@" not in var_name
 
 
-@pytest.mark.usefixtures('disable_vintage_deprecations')
+@pytest.mark.usefixtures("disable_vintage_deprecations")
 def test_frame_globals(error):
-    assert error.traceback.frames[-3].globals == {
-        "global_func_1": {
-            "value": "'global_func_1'"
-        }}
+    assert error.traceback.frames[-3].globals == {"global_func_1": {"value": "'global_func_1'"}}
 
 
 def test_capture_exception_twice_caches_object():
@@ -135,7 +129,6 @@ def test_error_mark_fatal(error):
 
 
 def test_error_frame_correction():
-
     class CustomException(Exception):
         pass
 
@@ -153,7 +146,7 @@ def test_error_frame_correction():
     except CustomException:
         err = Error.capture_exception()
 
-    assert err.traceback.frames[-1].func_name == 'f'  # pylint: disable=used-before-assignment
+    assert err.traceback.frames[-1].func_name == "f"  # pylint: disable=used-before-assignment
 
 
 ####
@@ -175,7 +168,7 @@ def non_exception_error():
         return func2()
 
     def func2():
-        return Error('some_error')
+        return Error("some_error")
 
     err = func1()
     return err
@@ -199,7 +192,6 @@ def func_2():
 
 
 def func_3():
-
     local_func_3 = global_func_3
     raise NotImplementedError()
 

@@ -8,13 +8,12 @@ from slash.frontend.slash_run import slash_run
 
 
 def test_errors_during_initialization_hoook(suite, init_hook):
-
     @init_hook.register
     def callback():  # pylint: disable=unused-variable
-        raise slash.exceptions.SlashException('some error')
+        raise slash.exceptions.SlashException("some error")
 
     exit_code, output = _console_run(suite)
-    assert 'some error' in output
+    assert "some error" in output
     assert exit_code != 0
 
 
@@ -26,15 +25,17 @@ def test_slashrc_errors(suite):
     exit_code, output = _console_run(suite)
     assert exit_code != 0
     output = output.lower()
-    assert 'unexpected error' in output
-    assert 'division' in output
-    assert 'zero' in output
+    assert "unexpected error" in output
+    assert "division" in output
+    assert "zero" in output
 
 
-@pytest.fixture(params=[
-    slash.hooks.session_start,  # pylint: disable=no-member
-    slash.hooks.configure,  # pylint: disable=no-member
-])
+@pytest.fixture(
+    params=[
+        slash.hooks.session_start,  # pylint: disable=no-member
+        slash.hooks.configure,  # pylint: disable=no-member
+    ]
+)
 def init_hook(request):
     return request.param
 

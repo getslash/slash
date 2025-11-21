@@ -16,13 +16,12 @@ from .active_fixture import ActiveFixture
 from .fixture import Fixture
 from .namespace import Namespace
 from .parameters import Parametrization, iter_parametrization_fixtures
-from .utils import (get_real_fixture_name_from_argument, get_scope_by_name,
-                    nofixtures)
+from .utils import get_real_fixture_name_from_argument, get_scope_by_name, nofixtures
 
 _logger = logbook.Logger(__name__)
 
-class FixtureStore(object):
 
+class FixtureStore(object):
     def __init__(self):
         super(FixtureStore, self).__init__()
         self._namespaces = [Namespace(self)]
@@ -30,10 +29,10 @@ class FixtureStore(object):
         self._fixtures_by_id = {}
         self._fixtures_by_fixture_info = {}
         self._active_fixtures_by_scope = collections.defaultdict(dict)
-        self._active_fixture_dependencies = {} # maps fixture id to the frozenset of (param_id, variation index)
+        self._active_fixture_dependencies = {}  # maps fixture id to the frozenset of (param_id, variation index)
         self._computing = set()
         self._all_needed_parametrization_ids_by_fixture_id = {}
-        self._known_fixture_ids = collections.defaultdict(dict) # maps fixture ids to known combinations
+        self._known_fixture_ids = collections.defaultdict(dict)  # maps fixture ids to known combinations
 
     def get_active_fixture(self, fixture):
         return self._active_fixtures_by_scope[fixture.info.scope].get(fixture.info.id)
@@ -41,8 +40,9 @@ class FixtureStore(object):
     def _compute_id(self, variation, p):
         if isinstance(p, Parametrization):
             return variation.param_value_indices[p.info.id]
-        combination = frozenset((f.info.id, self._compute_id(variation, f))
-                                for f in self.iter_all_needed_fixture_objects(p))
+        combination = frozenset(
+            (f.info.id, self._compute_id(variation, f)) for f in self.iter_all_needed_fixture_objects(p)
+        )
         known = self._known_fixture_ids[p.info.id]
         return known.setdefault(combination, len(known))
 
@@ -59,7 +59,7 @@ class FixtureStore(object):
         if not nofixtures.is_marked(test_func):
             fixture_names = self.get_required_fixture_names(test_func)
             kwargs = self.get_fixture_dict(fixture_names, namespace)
-            used_fixtures_decorator_names = getattr(test_func, '__extrafixtures__', None)
+            used_fixtures_decorator_names = getattr(test_func, "__extrafixtures__", None)
             if used_fixtures_decorator_names is not None:
                 used_fixture_names_only = set(used_fixtures_decorator_names) - set(fixture_names)
                 for name, fixture in self._get_fixtures_set(used_fixture_names_only, namespace=namespace):
@@ -102,11 +102,10 @@ class FixtureStore(object):
         return set(self.get_fixture_dict(names, namespace=namespace, get_values=False).values())
 
     def resolve_name(self, parameter_name, start_point, namespace=None):
-
         if namespace is None:
             namespace = self.get_current_namespace()
 
-        parts = parameter_name.split('.')[::-1]
+        parts = parameter_name.split(".")[::-1]
 
         if not parts:
             raise UnknownFixtures(parameter_name)
@@ -115,7 +114,7 @@ class FixtureStore(object):
             current_name = parts.pop()
             param_fixtures = dict(iter_parametrization_fixtures(start_point))
             if current_name in param_fixtures:
-                if parts: # we cannot decend further than a parameter
+                if parts:  # we cannot decend further than a parameter
                     raise UnknownFixtures(parameter_name)
                 start_point = param_fixtures[current_name]
             else:
@@ -189,15 +188,16 @@ class FixtureStore(object):
 
     def _raise_cyclic_dependency_error(self, fixtureobj, path, new_id):
         raise CyclicFixtureDependency(
-            'Cyclic fixture dependency detected in {}: {}'.format(
+            "Cyclic fixture dependency detected in {}: {}".format(
                 fixtureobj.info.func.__code__.co_filename,
-                ' -> '.join(self._fixtures_by_id[f_id].info.name
-                            for f_id in path + [new_id])))
+                " -> ".join(self._fixtures_by_id[f_id].info.name for f_id in path + [new_id]),
+            )
+        )
 
     def push_scope(self, scope):
         scope = get_scope_by_name(scope)
 
-    def pop_scope(self, scope): # pylint: disable=unused-argument
+    def pop_scope(self, scope):  # pylint: disable=unused-argument
         if slash_context.result is not None and slash_context.result.is_interrupted():
             return
         scope = get_scope_by_name(scope)
@@ -214,14 +214,12 @@ class FixtureStore(object):
 
     def add_fixtures_from_dict(self, d):
         for thing in d.values():
-            fixture_info = getattr(thing, '__slash_fixture__', None)
+            fixture_info = getattr(thing, "__slash_fixture__", None)
             if fixture_info is None:
                 continue
             assert self.get_current_namespace() is self._namespaces[-1]
             fixture_info = self.add_fixture(thing).__slash_fixture__
-            self.get_current_namespace().add_name(
-                fixture_info.name, fixture_info.id)
-
+            self.get_current_namespace().add_name(fixture_info.name, fixture_info.id)
 
     def add_fixture(self, fixture_func):
         fixture_info = fixture_func.__slash_fixture__
@@ -229,7 +227,7 @@ class FixtureStore(object):
         if existing_fixture is not None:
             return existing_fixture.fixture_func
         if is_valid_test_name(fixture_info.name):
-            raise InvalidFixtureName('Invalid fixture name: {.name}'.format(fixture_info))
+            raise InvalidFixtureName("Invalid fixture name: {.name}".format(fixture_info))
         fixture_object = Fixture(self, fixture_func)
         current_namespace = self._namespaces[-1]
         current_namespace.add_name(fixture_info.name, fixture_info.id)
@@ -275,13 +273,17 @@ class FixtureStore(object):
                 required_name = real_name = element
             if required_name in skip_names:
                 continue
-            if element == 'this':
+            if element == "this":
                 continue
             fixture = namespace.get_fixture_by_name(real_name)
             fixtures_set.add((required_name, fixture))
             if hasattr(fixture.fixture_func, "__extrafixtures__"):
-                self._get_fixtures_set(fixture.fixture_func.__extrafixtures__, skip_names=skip_names,
-                                       namespace=namespace, fixtures_set=fixtures_set)
+                self._get_fixtures_set(
+                    fixture.fixture_func.__extrafixtures__,
+                    skip_names=skip_names,
+                    namespace=namespace,
+                    fixtures_set=fixtures_set,
+                )
         return fixtures_set
 
     def get_fixture_value(self, fixture, name=None):
@@ -325,8 +327,7 @@ class FixtureStore(object):
         assert not fixture.is_parameter()
 
         if fixture.info.id in self._computing:
-            raise CyclicFixtureDependency(
-                'Fixture {!r} is a part of a dependency cycle!'.format(name))
+            raise CyclicFixtureDependency("Fixture {!r} is a part of a dependency cycle!".format(name))
         active_fixture = self.get_active_fixture(fixture)
         if active_fixture is not None:
             if self._is_active_fixture_valid(fixture):
@@ -354,7 +355,6 @@ class FixtureStore(object):
         return new_dependencies.issubset(self._active_fixture_dependencies[fixture.info.id])
 
     def _compute_fixture_dependencies(self, fixture):
-
         param_indices = self._compute_all_needed_parametrization_ids(fixture)
         if not param_indices:
             return frozenset()
@@ -363,8 +363,10 @@ class FixtureStore(object):
         variation = ctx.session.variations.get_current_variation()
         assert variation is not None, "Dependency computation requires current variation"
 
-        return frozenset((param_id, variation.param_value_indices[param_id])
-                         for param_id in self._compute_all_needed_parametrization_ids(fixture))
+        return frozenset(
+            (param_id, variation.param_value_indices[param_id])
+            for param_id in self._compute_all_needed_parametrization_ids(fixture)
+        )
 
     def _call_fixture(self, fixture, relative_name):
         assert relative_name
@@ -373,15 +375,14 @@ class FixtureStore(object):
         kwargs = {}
 
         if fixture.keyword_arguments is None:
-            raise UnresolvedFixtureStore('Fixture {} is unresolved!'.format(fixture.info.name))
+            raise UnresolvedFixtureStore("Fixture {} is unresolved!".format(fixture.info.name))
 
         for required_name, needed_fixture in fixture.keyword_arguments.items():
             if needed_fixture.is_parameter():
                 continue
             kwargs[required_name] = self._compute_fixture_value(
-                required_name, needed_fixture,
-                relative_name='{} -> {}'.format(relative_name, required_name))
-
+                required_name, needed_fixture, relative_name="{} -> {}".format(relative_name, required_name)
+            )
 
         assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]
         _logger.trace("Activating fixture {}...", fixture)
@@ -393,7 +394,7 @@ class FixtureStore(object):
             returned = active_fixture.value = fixture.get_value(kwargs, active_fixture)
         finally:
             slash_context.fixture = prev_context_fixture
-        _logger.trace(' -- {} = {!r}', relative_name, returned)
+        _logger.trace(" -- {} = {!r}", relative_name, returned)
         return returned
 
     def _deactivate_fixture(self, fixture):

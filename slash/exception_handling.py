@@ -11,6 +11,7 @@ from .conf import config
 import functools
 import threading
 import logbook
+
 try:
     import raven  # pylint: disable=F0401
 except ImportError:
@@ -50,11 +51,11 @@ _EXCEPTION_HANDLERS = [
 class _IgnoredState(threading.local):
     ignored_exception_types = ()
 
+
 _ignored_state = _IgnoredState()
 
 
 class thread_ignore_exception_context(object):
-
     def __init__(self, exc_type):
         super(thread_ignore_exception_context, self).__init__()
         self._exc_type = exc_type
@@ -91,19 +92,19 @@ def handling_exceptions(fake_traceback=True, **kwargs):
     else:
         fake_tbs = tuple()
     swallow = kwargs.pop("swallow", False)
-    swallow_types = kwargs.pop('swallow_types', ())
+    swallow_types = kwargs.pop("swallow_types", ())
     if swallow:
-        swallow_types = swallow_types + (Exception, )
-    assert isinstance(swallow_types, (list, tuple)), 'swallow_types must be either a list or a tuple'
-    passthrough_types = kwargs.pop('passthrough_types', ()) + tuple(_ignored_state.ignored_exception_types)
+        swallow_types = swallow_types + (Exception,)
+    assert isinstance(swallow_types, (list, tuple)), "swallow_types must be either a list or a tuple"
+    passthrough_types = kwargs.pop("passthrough_types", ()) + tuple(_ignored_state.ignored_exception_types)
     return _HandlingException(fake_tbs, swallow_types, passthrough_types, kwargs)
 
 
 class _HandledException(object):
     exception = None
 
-class _HandlingException(object):
 
+class _HandlingException(object):
     def __init__(self, fake_tbs, swallow_types, passthrough_types, handling_kwargs):
         self._fake_traceback = fake_tbs
         self._kwargs = handling_kwargs
@@ -126,14 +127,14 @@ class _HandlingException(object):
             (first_tb, last_tb) = self._fake_traceback
             (second_tb, _) = create_traceback_proxy(exc_info[2])
             last_tb.tb_next = second_tb
-            exc_info = (exc_info[0], exc_info[1], first_tb._tb) # pylint: disable=protected-access
+            exc_info = (exc_info[0], exc_info[1], first_tb._tb)  # pylint: disable=protected-access
         handle_exception(exc_info, **self._kwargs)
         self._handled.exception = exc_info[1]
         skip_types = () if slash_context.session is None else slash_context.session.get_skip_exception_types()
         if isinstance(exc_value, skip_types) or isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
-            _logger.trace('Swallowing {!r}', exc_value)
+            _logger.trace("Swallowing {!r}", exc_value)
             return True
         return None
 
@@ -212,11 +213,11 @@ def mark_exception_fatal(exception):
 
 def mark_exception_frame_correction(exception, correction=+1):
     current_correction = get_exception_frame_correction(exception)
-    return mark_exception(exception, 'frame_correction', current_correction + correction)
+    return mark_exception(exception, "frame_correction", current_correction + correction)
 
 
 def get_exception_frame_correction(exception):
-    return get_exception_mark(exception, 'frame_correction', 0)
+    return get_exception_mark(exception, "frame_correction", 0)
 
 
 def is_exception_fatal(exception):
@@ -250,6 +251,7 @@ def disable_exception_swallowing(func_or_exception):
         except BaseException as e:
             disable_exception_swallowing(e)
             raise
+
     return func
 
 

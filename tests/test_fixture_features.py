@@ -9,9 +9,8 @@ def test_fixture_cleanup(suite, suite_test):
     suite.run()
 
 
-@pytest.mark.parametrize('scope', ['session', 'module'])
+@pytest.mark.parametrize("scope", ["session", "module"])
 def test_fixture_autouse_with_scoping(suite, suite_test, scope):
-
     fixture = suite_test.file.add_fixture(autouse=True, scope=scope)
     fixture.add_cleanup()
 

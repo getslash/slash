@@ -5,7 +5,6 @@ from ..exceptions import SlashInternalError
 
 
 class RunnableTestFactory(object):
-
     def __init__(self, param=None):
         super(RunnableTestFactory, self).__init__()
         self._param = param
@@ -41,7 +40,7 @@ class RunnableTestFactory(object):
         returned = self._filename
         if returned is None:
             returned = sys.modules[self._param.__module__].__file__
-        if returned.endswith('.pyc'):
+        if returned.endswith(".pyc"):
             returned = returned[:-1]
         assert returned
         return returned

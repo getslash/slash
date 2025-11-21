@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import munch
 import itertools
@@ -21,7 +22,6 @@ from .utils import get_temporary_slashrc_context
 
 
 class Suite(object):
-
     def __init__(self, strategy=BalancedStrategy(), path=None, debug_info=True, is_parallel=False):
         super(Suite, self).__init__()
         self._path = path
@@ -73,30 +73,29 @@ class Suite(object):
     @property
     def slashconf(self):
         if self._slashconf is None:
-            self._slashconf = File(self, relpath='slashconf.py')
+            self._slashconf = File(self, relpath="slashconf.py")
         return self._slashconf
 
     @property
     def slashrc(self):
         if self._slashrc is None:
-            self._slashrc = File(self, relpath='.slashrc')
+            self._slashrc = File(self, relpath=".slashrc")
         return self._slashrc
 
     def add_test(self, type=None, file=None):  # pylint: disable=unused-argument
         if type is None:
             type = self.strategy.get_test_type()
-        if type == 'function':
+        if type == "function":
             returned = self.add_function_test()
-        elif type == 'method':
+        elif type == "method":
             returned = self.add_method_test()
         else:
-            raise NotImplementedError('Unknown test type {!r}'.format(type))  # pragma: no cover
+            raise NotImplementedError("Unknown test type {!r}".format(type))  # pragma: no cover
         assert returned in self._notified
         return returned
 
     def add_method_test(self):
-        cls = self.strategy.get_class_for_test(
-            self.strategy.get_file_for_test(self))
+        cls = self.strategy.get_class_for_test(self.strategy.get_file_for_test(self))
         return cls.add_method_test()
 
     def add_function_test(self):
@@ -125,8 +124,17 @@ class Suite(object):
     def __getitem__(self, idx):
         return self._notified[idx]
 
-    def run(self, verify=True, expect_interruption=False, additional_args=(), args=None, commit=True, sort=True, num_workers=1,
-            expect_session_errors=False):
+    def run(
+        self,
+        verify=True,
+        expect_interruption=False,
+        additional_args=(),
+        args=None,
+        commit=True,
+        sort=True,
+        num_workers=1,
+        expect_session_errors=False,
+    ):
         if commit:
             self.commit()
         path = self._last_committed_path
@@ -138,43 +146,45 @@ class Suite(object):
             args = [path]
         args.extend(additional_args)
         if self.is_parallel:
-            args.extend(['--parallel', str(num_workers), '-vvvvv', '--parallel-addr', 'localhost'])
+            args.extend(["--parallel", str(num_workers), "-vvvvv", "--parallel-addr", "localhost"])
         with self._capture_events(returned), self._custom_sorting(sort):
             with self._custom_slashrc(path):
                 app = slash_run(
-                    munch.Munch(argv=args, cmd="run"), report_stream=report_stream,
+                    munch.Munch(argv=args, cmd="run"),
+                    report_stream=report_stream,
                     app_callback=captured.append,
                 )
                 returned.exit_code = app.exit_code
             if app.interrupted:
-                assert expect_interruption, 'Unexpectedly interrupted'
+                assert expect_interruption, "Unexpectedly interrupted"
             else:
-                assert not expect_interruption, 'Session was not interrupted as expected'
+                assert not expect_interruption, "Session was not interrupted as expected"
 
         if captured:
             assert len(captured) == 1
             returned.session = captured[0].session
-            assert not returned.session.has_internal_errors(), 'Session has internal errors!'
+            assert not returned.session.has_internal_errors(), "Session has internal errors!"
 
         if verify:
-            validate_run(self, returned, expect_interruption=expect_interruption, expect_session_errors=expect_session_errors)
-
+            validate_run(
+                self, returned, expect_interruption=expect_interruption, expect_session_errors=expect_session_errors
+            )
 
         return returned
 
     @contextmanager
     def _custom_sorting(self, do_sort):
-        @gossip.register('slash.tests_loaded')
+        @gossip.register("slash.tests_loaded")
         def tests_loaded(tests):
             if do_sort:
                 for test in tests:
                     if not test.__slash__.is_interactive():
                         test.__slash__.set_sort_key(int(self._get_test_id_from_runnable(test)))
+
         try:
             yield
         finally:
             tests_loaded.gossip.unregister()
-
 
     def _get_test_id_from_runnable(self, test):
         return get_test_id_from_test_address(test.__slash__.address)
@@ -191,12 +201,11 @@ class Suite(object):
 
     @contextmanager
     def _capture_events(self, summary):
-
-        sys.modules['__ut__'] = summary.tracker
+        sys.modules["__ut__"] = summary.tracker
         try:
             yield
         finally:
-            sys.modules.pop('__ut__')
+            sys.modules.pop("__ut__")
 
     def commit(self):
         path = self._path
@@ -211,10 +220,9 @@ class Suite(object):
         if self._slashrc is not None:
             files = itertools.chain(files, [self._slashrc])
 
-
         # TODO: clean up paths  # pylint: disable=fixme
         for file in files:
-            with open(os.path.join(path, file.get_relative_path()), 'w') as f:
+            with open(os.path.join(path, file.get_relative_path()), "w") as f:
                 formatter = CodeFormatter(f)
                 file.write(formatter)
 

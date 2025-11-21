@@ -6,7 +6,6 @@ from .color_string import ColorString
 
 
 class Formatter(object):
-
     def __init__(self, stream, indentation_string=" "):
         super(Formatter, self).__init__()
         self._indentation_string = indentation_string
@@ -23,7 +22,7 @@ class Formatter(object):
 
     def write(self, *args, **kwargs):
         try:
-            end = kwargs.pop('end', '')
+            end = kwargs.pop("end", "")
             for arg in args:
                 if isinstance(arg, ColorString):
                     if self._isatty:
@@ -55,7 +54,7 @@ class Formatter(object):
             del self._indentation_list[increment:]
         else:
             self._indentation_list.extend(string for x in range(increment))
-        self._indentation = ''.join(self._indentation_list)
+        self._indentation = "".join(self._indentation_list)
 
     @contextmanager
     def indented(self, increment=1, string=None):
@@ -67,7 +66,6 @@ class Formatter(object):
 
 
 class LineTracker(object):
-
     def __init__(self, stream):
         super(LineTracker, self).__init__()
         self._stream = stream
@@ -76,7 +74,7 @@ class LineTracker(object):
     def write(self, output):
         self._stream.write(output)
         if output:
-            self._empty_line = output.endswith('\n')
+            self._empty_line = output.endswith("\n")
 
     def is_line_empty(self):
         return self._empty_line

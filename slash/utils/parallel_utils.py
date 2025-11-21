@@ -1,5 +1,6 @@
 from ..conf import config
 
+
 def is_parallel_session():
     return config.root.parallel.num_workers != 0
 
@@ -13,6 +14,4 @@ def is_child_session():
 
 
 class ParallelPluginModes(object):
-    DISABLED, ENABLED, PARENT_ONLY, CHILD_ONLY = MODES = (
-        'disabled', 'enabled', 'parent-only', 'child-only'
-    )
+    DISABLED, ENABLED, PARENT_ONLY, CHILD_ONLY = MODES = ("disabled", "enabled", "parent-only", "child-only")

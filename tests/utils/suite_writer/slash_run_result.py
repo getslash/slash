@@ -13,7 +13,6 @@ _logger = logbook.Logger(__name__)
 
 
 class SlashRunResult(object):
-
     _console_output = None
 
     def __init__(self, report_stream):
@@ -49,34 +48,32 @@ class SlashRunResult(object):
         return matching[0]
 
     def __repr__(self):
-        return '<Summary ({})>'.format(self.session.results)
+        return "<Summary ({})>".format(self.session.results)
 
 
 class Tracker(object):
-
     def __init__(self):
         super(Tracker, self).__init__()
         self.events = Events()
         self.active_fixtures = {}
 
     def notify_fixture_start(self, f_id, value):
-        _logger.debug('started fixture {}', f_id)
+        _logger.debug("started fixture {}", f_id)
         assert f_id not in self.active_fixtures
         self.active_fixtures[f_id] = value
 
     def notify_fixture_end(self, f_id):
-        _logger.debug('ended fixture {}', f_id)
+        _logger.debug("ended fixture {}", f_id)
         self.active_fixtures.pop(f_id)
 
     def notify_parameter_value(self, p_id, value):
-        slash.context.result.data.setdefault('param_values', {})[p_id] = value
+        slash.context.result.data.setdefault("param_values", {})[p_id] = value
 
     def get_fixture_memento(self):
         return copy.deepcopy(self.active_fixtures)
 
 
 class Event(object):
-
     def __init__(self, args):
         super(Event, self).__init__()
         self.args = args
@@ -86,11 +83,10 @@ class Event(object):
         return self.timestamp < other_event.timestamp
 
     def __repr__(self):
-        return '<Event #{}: {}>'.format(self.timestamp, self.args)
+        return "<Event #{}: {}>".format(self.timestamp, self.args)
 
 
 class Events(object):
-
     def __init__(self):
         super(Events, self).__init__()
         self._events = []
@@ -122,4 +118,4 @@ class Events(object):
         return args
 
     def __repr__(self):
-        return '<Events>'
+        return "<Events>"

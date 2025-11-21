@@ -9,22 +9,22 @@ import pytest
 from .utils.suite_writer import Suite
 
 
-@pytest.mark.parametrize('parametrize', [True, False])
+@pytest.mark.parametrize("parametrize", [True, False])
 def test_class_name(suite, suite_test, test_type, parametrize):
     if parametrize:
         suite_test.add_parameter(num_values=3)
     summary = suite.run()
     for result in summary.get_all_results_for_test(suite_test):
-        if test_type == 'method':
-            assert result.test_metadata.class_name.startswith('Test')
-            assert '(' not in result.test_metadata.class_name
-        elif test_type == 'function':
+        if test_type == "method":
+            assert result.test_metadata.class_name.startswith("Test")
+            assert "(" not in result.test_metadata.class_name
+        elif test_type == "function":
             assert result.test_metadata.class_name is None
         else:
             raise NotImplementedError()  # pragma: no cover
 
 
-@pytest.mark.parametrize('parametrize', [True, False])
+@pytest.mark.parametrize("parametrize", [True, False])
 def test_function_name(suite, suite_test, parametrize):
     if parametrize:
         suite_test.add_parameter(num_values=3)
@@ -32,28 +32,30 @@ def test_function_name(suite, suite_test, parametrize):
     summary = suite.run()
     for result in summary.get_all_results_for_test(suite_test):
         function_name = result.test_metadata.function_name
-        assert function_name.startswith('test_')
-        assert '.' not in result.test_metadata.function_name
-        assert '(' not in result.test_metadata.function_name
+        assert function_name.startswith("test_")
+        assert "." not in result.test_metadata.function_name
+        assert "(" not in result.test_metadata.function_name
 
 
 def test_variation(suite, suite_test):
     fixture = suite.slashconf.add_fixture()
     param = fixture.add_parameter()  # pylint: disable=unused-variable
     suite_test.depend_on_fixture(fixture)
-    suite_test.append_line('slash.context.result.data["variation"] = slash.context.test.__slash__.variation.values.copy()')
+    suite_test.append_line(
+        'slash.context.result.data["variation"] = slash.context.test.__slash__.variation.values.copy()'
+    )
     summary = suite.run()
     for result in summary.get_all_results_for_test(suite_test):
-        assert len(result.data['variation']) == 1
-        assert fixture.name not in result.data['variation']
-        assert '{}.{}'.format(fixture.name, param.name) in result.data['variation']
+        assert len(result.data["variation"]) == 1
+        assert fixture.name not in result.data["variation"]
+        assert "{}.{}".format(fixture.name, param.name) in result.data["variation"]
 
 
 def test_function_name_with_special_parameters(test_type):
     suite = Suite()
     assert len(suite) == 0  # pylint: disable=len-as-condition
     suite_test = suite.add_test(type=test_type)
-    values = ['a.b', 'a(b']
+    values = ["a.b", "a(b"]
     suite_test.add_parameter(values=values)
 
     # we can't verify result because we would not be able to parse the function properly
@@ -62,9 +64,9 @@ def test_function_name_with_special_parameters(test_type):
     for result, value in itertools.zip_longest(summary.session.results, values):
         function_name = result.test_metadata.function_name
         assert value not in function_name
-        assert '.' not in result.test_metadata.function_name
-        assert '(' not in result.test_metadata.function_name
-        assert function_name.startswith('test_')
+        assert "." not in result.test_metadata.function_name
+        assert "(" not in result.test_metadata.function_name
+        assert function_name.startswith("test_")
 
 
 def test_module_name_not_none_or_empty_string(suite):
@@ -83,16 +85,15 @@ def test_test_index(suite):
 
 def test_set_test_name(test_metadata):
     assert test_metadata.file_path in str(test_metadata)
-    custom_name = 'some_custom_name'
+    custom_name = "some_custom_name"
     test_metadata.set_test_full_name(custom_name)
-    assert str(test_metadata) == '<{}>'.format(custom_name)
+    assert str(test_metadata) == "<{}>".format(custom_name)
 
 
 def test_class_name_with_dot_parameters():
-
     # pylint: disable=unused-argument
 
-    @slash.parametrize('path', ['x.y'])
+    @slash.parametrize("path", ["x.y"])
     def test_something(path):
         pass
 
@@ -103,7 +104,7 @@ def test_class_name_with_dot_parameters():
 
 
 def test_set_file_path(test_metadata):
-    file_path = '/tmp/file_path.py'
+    file_path = "/tmp/file_path.py"
     assert file_path not in test_metadata.address
     test_metadata.set_file_path(file_path)
     assert test_metadata.file_path == file_path
@@ -125,7 +126,7 @@ class TestMetadataTest(TestCase):
 
     def setUp(self):
         @slash.hooks.register
-        def tests_loaded(tests): # pylint: disable=unused-variable
+        def tests_loaded(tests):  # pylint: disable=unused-variable
             TestMetadataTest.loaded_tests = tests
 
         super(TestMetadataTest, self).setUp()
@@ -150,9 +151,14 @@ class TestMetadataTest(TestCase):
     def test_parameterized_test_address(self):
         parameterized = set(x.test_metadata.address for x in self.results[1:])
 
-        self.assertEqual(parameterized, set(
-            "{0}:T002.test_parameters(after:c={2},b={3},before:a={1})".format(self.filename, a, c, b)
-            for a, b, c in itertools.product([1, 2], [3, 4], [5, 6])))
+        self.assertEqual(
+            parameterized,
+            set(
+                "{0}:T002.test_parameters(after:c={2},b={3},before:a={1})".format(self.filename, a, c, b)
+                for a, b, c in itertools.product([1, 2], [3, 4], [5, 6])
+            ),
+        )
+
 
 _TEST_FILE_TEMPLATE = """
 import slash
