@@ -6,12 +6,10 @@ build-backend = "hatchling.build"
 name = "slash"
 description = "A Modern Testing Framework for Large-scale Projects"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 license = { text = "BSD 3-Clause License" }
 
 classifiers = [
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
