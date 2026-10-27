@@ -3,10 +3,10 @@ import dessert
 from emport import import_file
 from ..utils.python import check_duplicate_functions
 
-class LocalConfig(object):
 
+class LocalConfig:
     def __init__(self):
-        super(LocalConfig, self).__init__()
+        super().__init__()
         self._slashconf_vars_cache = {}
         self._configs = []
         self.duplicate_funcs = set()
@@ -21,12 +21,13 @@ class LocalConfig(object):
         return self._configs[-1]
 
     def _iter_slashconf_paths(self, dir_path):
-        slashconf_path = os.path.join(dir_path, 'slashconf.py')
-        slashconf_dir = os.path.join(dir_path, 'slashconf')
+        slashconf_path = os.path.join(dir_path, "slashconf.py")
+        slashconf_dir = os.path.join(dir_path, "slashconf")
 
         if os.path.isfile(slashconf_path):
-            assert not os.path.isdir(slashconf_dir), \
-                f"Cannot use both file and directory for configuration in the same path ({dir_path!r})"
+            assert not os.path.isdir(
+                slashconf_dir
+            ), f"Cannot use both file and directory for configuration in the same path ({dir_path!r})"
             yield slashconf_path
 
         elif os.path.isdir(slashconf_dir):
@@ -59,7 +60,7 @@ class LocalConfig(object):
     def _traverse_upwards(self, path):
         path = os.path.abspath(path)
         if not os.path.exists(path):
-            raise RuntimeError("Path doesn't exist: {}".format(path))
+            raise RuntimeError(f"Path doesn't exist: {path}")
 
         if os.path.isfile(path):
             path = os.path.dirname(path)

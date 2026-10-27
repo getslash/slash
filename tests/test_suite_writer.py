@@ -3,7 +3,7 @@ import pytest
 from .utils.suite_writer import Suite
 
 
-@pytest.mark.parametrize('num_tests', [1, 10])
+@pytest.mark.parametrize("num_tests", [1, 10])
 def test_len(num_tests):
     s = Suite()
     for _ in range(num_tests):

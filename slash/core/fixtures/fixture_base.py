@@ -1,5 +1,4 @@
-class FixtureBase(object):
-
+class FixtureBase:
     info = None
     keyword_arguments = None
     parametrization_ids = None

@@ -1,6 +1,7 @@
 from .utils import TestCase
 from slash import Session
 
+
 class TestIDSpace(TestCase):
     def test_ids_are_unique(self):
         ids = []

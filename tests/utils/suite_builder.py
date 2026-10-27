@@ -7,21 +7,21 @@ from slash.frontend.slash_run import slash_run
 
 from .suite_writer.utils import get_code_lines
 
-class SuiteBuilder(object):
 
+class SuiteBuilder:
     def __init__(self, path):
-        super(SuiteBuilder, self).__init__()
+        super().__init__()
         self.path = path
         self.files = [SuiteBuilderFile()]
 
     def build(self):
-        returned = SuiteBuilderSuite(os.path.join(self.path, 'suite-{}'.format(uuid4())))
+        returned = SuiteBuilderSuite(os.path.join(self.path, f"suite-{uuid4()}"))
         for index, file in enumerate(self.files):
-            with open(os.path.join(returned.path, 'test_file_{}.py'.format(index)), 'w') as f:
+            with open(os.path.join(returned.path, f"test_file_{index}.py"), "w") as f:
                 for code in file.code_snippets:
                     for line in get_code_lines(code):
                         f.write(line)
-                        f.write('\n')
+                        f.write("\n")
         return returned
 
     @property
@@ -29,8 +29,7 @@ class SuiteBuilder(object):
         return self.files[0]
 
 
-class SuiteBuilderFile(object):
-
+class SuiteBuilderFile:
     def __init__(self):
         self.code_snippets = []
 
@@ -39,20 +38,18 @@ class SuiteBuilderFile(object):
         return self
 
 
-class SuiteBuilderSuite(object):
-
+class SuiteBuilderSuite:
     def __init__(self, path):
         self.path = path
         os.makedirs(path)
 
     def run(self, *args):
         app = slash_run(munch.Munch(argv=[self.path] + list(args), cmd="run"))
-        assert not app.session.has_internal_errors(), 'Session has internal errors!'
+        assert not app.session.has_internal_errors(), "Session has internal errors!"
         return SuiteBuilderSuiteResult(app)
 
 
-class SuiteBuilderSuiteResult(object):
-
+class SuiteBuilderSuiteResult:
     def __init__(self, slash_app):
         self.slash_app = slash_app
 
@@ -84,7 +81,7 @@ class SuiteBuilderSuiteResult(object):
                     results.pop(index)
                     break
             else:
-                assert False, 'No result found for {}'.format(data_set)
+                assert False, f"No result found for {data_set}"
         assert not results
         return self
 
@@ -96,8 +93,7 @@ class SuiteBuilderSuiteResult(object):
         assert failure == results.get_num_failures()
 
 
-class AssertAllHelper(object):
-
+class AssertAllHelper:
     def __init__(self, suite_builder_result):
         self.suite_builder_result = suite_builder_result
         self._results = suite_builder_result.slash_app.session.results

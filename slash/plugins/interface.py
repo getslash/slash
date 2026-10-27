@@ -2,24 +2,23 @@ import abc
 from ..conf import config
 
 
-class PluginInterface(object):
+class PluginInterface:
     """
     This class represents the base interface needed from plugin classes.
     """
+
     __metaclass__ = abc.ABCMeta
 
     def activate(self):
         """
         Called when the plugin is activated
         """
-        pass
 
     def get_default_config(self):
         """
         Optional: should return a dictionary or a confetti object which will be placed under
         ``slash.config.plugin_config.<plugin_name>``
         """
-        pass
 
     def get_config(self):
         """
@@ -27,7 +26,6 @@ class PluginInterface(object):
 
         .. deprecated:: 1.5.0
         """
-        pass
 
     @property
     def current_config(self):
@@ -35,6 +33,7 @@ class PluginInterface(object):
         Returns configuration object for plugin
         """
         from slash.plugins import manager
+
         config_name = manager.normalize_config_name(self.get_name())
         return getattr(config.root.plugin_config, config_name)
 
@@ -46,26 +45,23 @@ class PluginInterface(object):
           deactivated upon process termination. The intention here is to make plugins friendlier to cases
           in which multiple sessions get established one after another, each with a different set of plugins.
         """
-        pass
 
     def configure_argument_parser(self, parser):
         """
         Gives a chance to the plugin to add options received from command-line
         """
-        pass
 
     def configure_from_parsed_args(self, args):
         """
         Called after successful parsing of command-line arguments
         """
-        pass
 
     def get_description(self):
         """
         Retrieves a quick description for this plugin, mostly used in command-line help or online documentation.
         It is not mandatory to override this method.
         """
-        return None
+        return
 
     def get_name(self):
         """
@@ -76,4 +72,4 @@ class PluginInterface(object):
 
         Any implemented plugin must override this method.
         """
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover

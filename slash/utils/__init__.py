@@ -13,6 +13,7 @@ def skip_test(*args):
     """
     raise SkipTest(*args)
 
+
 def repeat(num_repetitions):
     """
     Marks a test to be repeated multiple times when run
@@ -28,6 +29,7 @@ def skipped(thing, reason=None):
         return functools.partial(skipped, reason=thing)
 
     return requirements.requires(requirements.Skip(reason))(thing)
+
 
 def register_skip_exception(exception_type):
     """
@@ -49,7 +51,7 @@ def add_error(msg=None, frame_correction=0, exc_info=None):
     :param exc_info: (optional) - the exc_info tuple of the exception being recorded
     """
     if context.session is not None:
-        return context.session.results.current.add_error(msg, frame_correction=frame_correction+1, exc_info=exc_info)
+        return context.session.results.current.add_error(msg, frame_correction=frame_correction + 1, exc_info=exc_info)
 
 
 def add_failure(msg=None, frame_correction=0, exc_info=None):
@@ -61,7 +63,9 @@ def add_failure(msg=None, frame_correction=0, exc_info=None):
       the amount of frames to skip to reach the actual cause of the added failure
     """
     if context.session is not None:
-        return context.session.results.current.add_failure(msg, frame_correction=frame_correction+1, exc_info=exc_info)
+        return context.session.results.current.add_failure(
+            msg, frame_correction=frame_correction + 1, exc_info=exc_info
+        )
 
 
 def set_test_detail(key, value):

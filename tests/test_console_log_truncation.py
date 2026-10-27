@@ -6,11 +6,10 @@ import slash
 from io import StringIO
 
 
-@pytest.mark.parametrize('use_truncation', [True, False])
+@pytest.mark.parametrize("use_truncation", [True, False])
 def test_line_truncation(long_text, use_truncation, config_override):
-
-    config_override('log.truncate_console_lines', use_truncation)
-    config_override('log.console_level', logbook.DEBUG)
+    config_override("log.truncate_console_lines", use_truncation)
+    config_override("log.console_level", logbook.DEBUG)
 
     console = StringIO()
 
@@ -26,4 +25,4 @@ def test_line_truncation(long_text, use_truncation, config_override):
 
 @pytest.fixture
 def long_text():
-    return 'a' * 200
+    return "a" * 200

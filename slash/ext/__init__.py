@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 slash.ext
 ~~~~~~~~~
@@ -11,8 +10,10 @@ This code is an adaptation of flask.ext, copyright 2011 Armin Ronacher, licensed
 
 def setup():
     from ..exthook import ExtensionImporter
-    importer = ExtensionImporter(['slash_%s'], __name__)
+
+    importer = ExtensionImporter(["slash_%s"], __name__)
     importer.install()
+
 
 setup()
 del setup

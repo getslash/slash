@@ -4,12 +4,9 @@ import pytest
 @pytest.mark.parametrize("scope", ["module", "test"])
 @pytest.mark.parametrize("error_adder", [None, "add_error", "add_failure"])
 def test_fixture_start_end_test(suite, suite_test, scope, error_adder):
-
     fixture = suite.slashconf.add_fixture(scope=scope)
 
-    start_event = fixture.add_deferred_event(
-        "this.test_start", name="fixture_test_start"
-    )
+    start_event = fixture.add_deferred_event("this.test_start", name="fixture_test_start")
     end_event = fixture.add_deferred_event("this.test_end", name="fixture_test_end")
     test_event = suite_test.add_event()
 
@@ -41,16 +38,14 @@ def test_fixture_end_test_raises_exception(suite_builder):
         def fixture(this, param):
             @this.test_end
             def test_end(*_, **__):
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
             return param
 
         def test_something(fixture):
             slash.context.result.data["value"] = fixture
 
-    suite_builder.build().run().assert_all(2).exception(ZeroDivisionError).with_data(
-        [{"value": 1}, {"value": 2}]
-    )
+    suite_builder.build().run().assert_all(2).exception(ZeroDivisionError).with_data([{"value": 1}, {"value": 2}])
 
 
 def test_fixture_start_test_raises_exception(suite_builder):
@@ -59,12 +54,12 @@ def test_fixture_start_test_raises_exception(suite_builder):
         # pylint: disable=unused-variable
         import slash  # pylint: disable=redefined-outer-name, reimported
 
-        @slash.fixture(scope='module')
+        @slash.fixture(scope="module")
         @slash.parametrize("param", [1, 2])
         def fixture(this, param):
             @this.test_start
             def test_start(*_, **__):
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
             return param
 
@@ -82,12 +77,12 @@ def test_fixture_start_test_raises_exception_w_before(suite_builder):
         # pylint: disable=unused-variable
         import slash  # pylint: disable=redefined-outer-name, reimported
 
-        @slash.fixture(scope='module')
+        @slash.fixture(scope="module")
         @slash.parametrize("param", [1, 2])
         def fixture(this, param):
             @this.test_start
             def test_start(*_, **__):
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
             return param
 

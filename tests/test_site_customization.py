@@ -9,14 +9,14 @@ from io import StringIO
 import munch
 from slash.frontend import slash_run
 import requests
-import pkg_resources
+import importlib.metadata
 
 
 class SlashRunSiteCustomizationTest(TestCase):
     "Make sure ``slash run`` calls site.load()"
 
     def setUp(self):
-        super(SlashRunSiteCustomizationTest, self).setUp()
+        super().setUp()
         self.forge.replace(slash.site, "load")
         self.forge.replace_with(sys, "stderr", StringIO())
 
@@ -25,6 +25,7 @@ class SlashRunSiteCustomizationTest(TestCase):
         self.forge.replay()
         app = slash_run.slash_run(munch.Munch(argv=[]))
         assert app.exit_code != 0
+
 
 _customization_index = 0
 _loaded_customizations = []
@@ -35,9 +36,8 @@ def _apply_customization(index=0):
 
 
 class CustomizationTest(TestCase):
-
     def setUp(self):
-        super(CustomizationTest, self).setUp()
+        super().setUp()
         global _loaded_customizations
         global _customization_index
         _customization_index = 0
@@ -45,7 +45,7 @@ class CustomizationTest(TestCase):
 
     def get_customization_source(self):
         global _customization_index
-        returned = "import {0}; {0}._apply_customization({1})".format(__name__, _customization_index)
+        returned = f"import {__name__}; {__name__}._apply_customization({_customization_index})"
         _customization_index += 1
         return returned
 
@@ -89,16 +89,16 @@ class CustomizationTest(TestCase):
         self.assert_customization_loaded()
 
     def test_customize_via_pkgutil_entry_point(self):
-        self.forge.replace(pkg_resources, "iter_entry_points")
+        self.forge.replace(importlib.metadata, "entry_points")
         entry_point = self.forge.create_wildcard_mock()
-        pkg_resources.iter_entry_points("slash.site.customize").and_return(iter([entry_point]))
-        unused = self.get_customization_source()  # expect a single customization  # pylint: disable=unused-variable
+        importlib.metadata.entry_points(group="slash.site.customize").and_return(iter([entry_point]))  # pylint: disable=no-member
+        unused = self.get_customization_source()  # expect a single customization  # pylint: disable=unused-variable  # noqa: F841
         entry_point.load().and_return(_apply_customization)
         self.forge.replay()
         self.assert_customization_loaded()
 
     def assert_customization_loaded(self):
-        global _loaded_customizations
-        global _customization_index
+        global _loaded_customizations  # noqa: PLW0602
+        global _customization_index  # noqa: PLW0602
         slash.site.load()
         self.assertEqual(_loaded_customizations, list(range(_customization_index)))

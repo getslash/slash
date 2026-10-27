@@ -1,7 +1,6 @@
 from ..utils.marks import mark
 from ..utils import parallel_utils
-from .interface import PluginInterface # pylint: disable=unused-import
-
+from .interface import PluginInterface  # pylint: disable=unused-import
 
 
 def registers_on(hook_name, **kwargs):
@@ -21,19 +20,17 @@ def parallel_mode(mode):
     :param mode: Can be either ``disabled``, ``enabled``, ``parent-only`` or ``child-only``
     """
     possible_values = parallel_utils.ParallelPluginModes.MODES
-    assert mode in possible_values, "parallel mode value must be one of {}".format(possible_values)
+    assert mode in possible_values, f"parallel mode value must be one of {possible_values}"
     return mark("parallel_mode", mode)
 
 
 def register_if(condition):
-    """Marks the decorated plugins method to only be registered if *condition* is ``True``
-    """
+    """Marks the decorated plugins method to only be registered if *condition* is ``True``"""
     return mark("register_if", condition)
 
 
 def active(plugin_class):
-    """Decorator for automatically installing and activating a plugin upon definition
-    """
+    """Decorator for automatically installing and activating a plugin upon definition"""
     plugin = plugin_class()
     manager.install(plugin)
     manager.activate(plugin)
@@ -49,4 +46,4 @@ def provides(what):
     return mark("plugin_provides", what, append=True)
 
 
-from .plugin_manager import manager, IncompatiblePlugin, UnknownPlugin, IllegalPluginName, RegistrationInfo # pylint: disable=unused-import
+from .plugin_manager import manager, IncompatiblePlugin, UnknownPlugin, IllegalPluginName, RegistrationInfo  # pylint: disable=unused-import

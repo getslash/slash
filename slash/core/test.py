@@ -11,10 +11,10 @@ from .requirements import get_requirements
 from .tagging import get_tags
 from .fixtures.utils import nofixtures
 
-class TestTestFactory(RunnableTestFactory):
 
+class TestTestFactory(RunnableTestFactory):
     def __init__(self, testclass):
-        super(TestTestFactory, self).__init__(testclass)
+        super().__init__(testclass)
         self.testclass = testclass
 
     def get_class_name(self):
@@ -40,43 +40,45 @@ class TestTestFactory(RunnableTestFactory):
                 yield case  # pylint: disable=protected-access
 
     def _iter_parametrization_variations(self, test_method_name, fixture_store):
-        return fixture_store.iter_parametrization_variations(methods=itertools.chain(
-            zip(itertools.repeat('before'), self._get_all_before_methods()),
-            zip(itertools.repeat('after'), self._get_all_after_methods()),
-            [getattr(self.testclass, test_method_name)],
-        ))
+        return fixture_store.iter_parametrization_variations(
+            methods=itertools.chain(
+                zip(itertools.repeat("before"), self._get_all_before_methods()),
+                zip(itertools.repeat("after"), self._get_all_after_methods()),
+                [getattr(self.testclass, test_method_name)],
+            )
+        )
 
     def _get_all_before_methods(self):
-        return self._iter_inherited_methods('before')
+        return self._iter_inherited_methods("before")
 
     def _get_all_after_methods(self):
-        return self._iter_inherited_methods('after')
+        return self._iter_inherited_methods("after")
 
     def _iter_inherited_methods(self, name):
-
         for cls in self.testclass.__mro__:
             if hasattr(cls, name):
                 yield getattr(cls, name)
 
     def get_unmet_requirements(self):
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover
 
 
 class Test(RunnableTest):
     """
     This is a base class for implementing unittest-style test classes.
     """
+
     def __init__(self, test_method_name, fixture_store, fixture_namespace, variation):
-        super(Test, self).__init__(fixture_store, fixture_namespace, variation)
+        super().__init__(fixture_store, fixture_namespace, variation)
         self._test_method_name = test_method_name
 
     def get_test_function(self):
         return getattr(self, self._test_method_name)
 
     def get_tags(self):
-        test_tags = (get_tags(type(self))
-                     + get_tags(getattr(type(self), self._test_method_name))
-                     + self.get_variation().tags)
+        test_tags = (
+            get_tags(type(self)) + get_tags(getattr(type(self), self._test_method_name)) + self.get_variation().tags
+        )
         if nofixtures.is_marked(self.get_test_function()):
             return test_tags
         return test_tags + self._get_fixture_tags()
@@ -84,7 +86,6 @@ class Test(RunnableTest):
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
     __slash_needed_contexts__ = None
-
 
     @classmethod
     def skip_all(cls, reason=None):
@@ -96,15 +97,15 @@ class Test(RunnableTest):
         return self._fixture_store.get_required_fixture_objects(method, namespace=self._fixture_namespace)
 
     def get_address_in_factory(self):
-        returned = ''
+        returned = ""
         if self._test_method_name is not None:
-            returned += ".{}".format(self._test_method_name)
+            returned += f".{self._test_method_name}"
         return returned
 
     def _get_call_string(self, kwargs):
         if not kwargs:
             return ""
-        return "({})".format(", ".join("{}={!r}".format(k, v) for k, v in kwargs.items()))
+        return "({})".format(", ".join(f"{k}={v!r}" for k, v in kwargs.items()))
 
     def get_requirements(self):
         test_requirements = get_requirements(type(self)) + get_requirements(self.get_test_function())
@@ -118,13 +119,15 @@ class Test(RunnableTest):
         """
         method = self.get_test_function()
         with bound_parametrizations_context(self._variation, self._fixture_store, self._fixture_namespace):
-            _call_with_fixtures = functools.partial(self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace)
+            _call_with_fixtures = functools.partial(
+                self._fixture_store.call_with_fixtures, namespace=self._fixture_namespace
+            )
             _call_with_fixtures(self.before)
             try:
                 with handling_exceptions():
                     result = _call_with_fixtures(method, trigger_test_start=True)
                     if isinstance(result, GeneratorType):
-                        raise InvalidTest('{} is a generator. Running generators is not supported'.format(method))
+                        raise InvalidTest(f"{method} is a generator. Running generators is not supported")
 
             finally:
                 with handling_exceptions():
@@ -134,15 +137,15 @@ class Test(RunnableTest):
         """
         Gets called before each separate case generated from this test class
         """
-        pass
+
     def after(self):
         """
         Gets called after each separate case from this test class executed, assuming :meth:`.before` was successful.
         """
-        pass
 
     def _format_kwargs(self, kwargs):
-        return ", ".join("{}={!r}".format(x, y) for x, y in kwargs.items())
+        return ", ".join(f"{x}={y!r}" for x, y in kwargs.items())
+
 
 def abstract_test_class(cls):
     """
@@ -152,6 +155,7 @@ def abstract_test_class(cls):
     assert issubclass(cls, Test), "abstract_test_class only operates on slash.Test subclasses"
     cls.__slash_abstract__ = True
     return cls
+
 
 def is_abstract_base_class(cls):
     """
@@ -163,4 +167,4 @@ def is_abstract_base_class(cls):
 
 
 def is_valid_test_name(name):
-    return name.startswith('test_')
+    return name.startswith("test_")

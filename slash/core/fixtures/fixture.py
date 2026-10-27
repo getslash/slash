@@ -17,11 +17,9 @@ from ..tagging import get_tags, NO_TAGS, Tags
 _fixture_id = itertools.count()
 
 
-
 class Fixture(FixtureBase):
-
     def __init__(self, store, fixture_func):
-        super(Fixture, self).__init__()
+        super().__init__()
         self.fixture_func = fixture_func
         self.info = self.fixture_func.__slash_fixture__
         self.scope = self.info.scope
@@ -30,7 +28,9 @@ class Fixture(FixtureBase):
     def get_tags(self, store):
         current_fixture_tags = get_tags(self.fixture_func)
         returned = current_fixture_tags.copy() if current_fixture_tags is not NO_TAGS else Tags()  # pylint: disable=no-member
-        required_fixtures_tags = [fixture.get_tags(store) for fixture in store.get_required_fixture_objects(self.fixture_func, self.namespace)]
+        required_fixtures_tags = [
+            fixture.get_tags(store) for fixture in store.get_required_fixture_objects(self.fixture_func, self.namespace)
+        ]
         for tags in required_fixtures_tags:
             returned.update(tags)
         return returned
@@ -44,7 +44,7 @@ class Fixture(FixtureBase):
     parametrization_ids = None
 
     def __repr__(self):
-        return '<Function Fixture around {}>'.format(self.fixture_func)
+        return f"<Function Fixture around {self.fixture_func}>"
 
     def is_override(self):
         parent = self.namespace.get_parent()
@@ -62,8 +62,8 @@ class Fixture(FixtureBase):
 
     def get_value(self, kwargs, active_fixture):
         if self.info.needs_this:
-            assert 'this' not in kwargs
-            kwargs['this'] = active_fixture
+            assert "this" not in kwargs
+            kwargs["this"] = active_fixture
         with ExitStack() as stack:
             if context.session is not None:
                 stack.enter_context(context.session.cleanups.default_scope_override(self.info.scope_name))
@@ -96,14 +96,15 @@ class Fixture(FixtureBase):
             try:
                 needed_fixture = self.namespace.get_fixture_by_name(get_real_fixture_name_from_argument(arg))
 
-                if needed_fixture.scope < self.scope: # pylint: disable=no-member
-                    raise InvalidFixtureScope('Fixture {} is dependent on {}, which has a smaller scope ({} > {})'.format(
-                        self.info.name, param_name, self.scope, needed_fixture.scope)) # pylint: disable=no-member
+                if needed_fixture.scope < self.scope:  # pylint: disable=no-member
+                    raise InvalidFixtureScope(
+                        f"Fixture {self.info.name} is dependent on {param_name}, which has a smaller scope ({self.scope} > {needed_fixture.scope})"
+                    )  # pylint: disable=no-member
 
                 if needed_fixture is self:
-                    raise CyclicFixtureDependency('Cyclic fixture dependency detected in {}: {} depends on itself'.format(
-                        self.info.func.__code__.co_filename,
-                        self.info.name))
+                    raise CyclicFixtureDependency(
+                        f"Cyclic fixture dependency detected in {self.info.func.__code__.co_filename}: {self.info.name} depends on itself"
+                    )
                 keyword_arguments[param_name] = needed_fixture
             except LookupError:
                 raise UnknownFixtures(param_name)

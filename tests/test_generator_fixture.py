@@ -9,8 +9,7 @@ def test_generator_fixture(suite, suite_test, get_fixture_location):
 
 
 def test_generator_fixture_with_name():
-
-    @slash.generator_fixture(name='a_generator')
+    @slash.generator_fixture(name="a_generator")
     def my_generator():
         yield 5
 
@@ -29,4 +28,4 @@ def test_generator_fixture_with_name():
 
     with session, session.get_started_context():
         run_tests_in_session(test_something, session=session)
-    assert session.results.is_success(), 'run failed'
+    assert session.results.is_success(), "run failed"

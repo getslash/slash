@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import collections
 
@@ -11,22 +11,25 @@ from .ctx import context
 from .exception_handling import handling_exceptions
 from contextlib import contextmanager
 
+_native_logger = logbook.Logger("slash.native_warnings")
 
-_native_logger = logbook.Logger('slash.native_warnings')
 
 def capture_all_warnings():
-    warnings.simplefilter('always')
-    warnings.filterwarnings('ignore', category=ImportWarning)
+    warnings.simplefilter("always")
+    warnings.filterwarnings("ignore", category=ImportWarning)
+
 
 class LogbookWarning(UserWarning):
     pass
 
-class SessionWarnings(object):
+
+class SessionWarnings:
     """
     Holds all warnings emitted during the session
     """
+
     def __init__(self):
-        super(SessionWarnings, self).__init__()
+        super().__init__()
         self.warnings = []
 
     @contextmanager
@@ -41,16 +44,18 @@ class SessionWarnings(object):
                 return True
         return False
 
-    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None): # pylint: disable=unused-argument
+    def _capture_native_warning(self, message, category, filename, lineno, file=None, line=None):  # pylint: disable=unused-argument
         warning = RecordedWarning.from_native_warning(message, category, filename, lineno)
         if self.warning_should_be_filtered(warning):
             return
         self.add(warning)
         if not issubclass(category, LogbookWarning):
-            _native_logger.warning('{filename}:{lineno}: {warning!r}', filename=filename, lineno=lineno, warning=warning)
+            _native_logger.warning(
+                "{filename}:{lineno}: {warning!r}", filename=filename, lineno=lineno, warning=warning
+            )
 
     def add(self, warning):
-        hooks.warning_added(warning=warning) # pylint: disable=no-member
+        hooks.warning_added(warning=warning)  # pylint: disable=no-member
         self.warnings.append(warning)
 
     def __iter__(self):
@@ -71,35 +76,43 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
     Like a stream handler but keeps the values in memory.
     This logger provides some ways to store warnings to log again at the end of the session.
     """
-    default_format_string = (u'[{record.time:%Y-%m-%d %H:%M}] '
-      '{record.level_name}: {record.extra[source]}: {record.message}')
+
+    default_format_string = (
+        "[{record.time:%Y-%m-%d %H:%M}] " "{record.level_name}: {record.extra[source]}: {record.message}"
+    )
+
     def __init__(self, session_warnings, format_string=None, filter=None, bubble=True):
         logbook.Handler.__init__(self, logbook.WARNING, filter, bubble)
         logbook.StringFormatterHandlerMixin.__init__(self, format_string)
         self.session_warnings = session_warnings
 
     def should_handle(self, record):
-        """Returns `True` if this record is a warning """
+        """Returns `True` if this record is a warning"""
         if record.channel == _native_logger.name:
             return False
         return record.level == self.level
 
     def emit(self, record):
-        warnings.warn_explicit(message=record.message, category=LogbookWarning, filename=record.filename,
-                               lineno=record.lineno, module=record.module)
+        warnings.warn_explicit(
+            message=record.message,
+            category=LogbookWarning,
+            filename=record.filename,
+            lineno=record.lineno,
+            module=record.module,
+        )
 
 
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
-class RecordedWarning(object):
 
+class RecordedWarning:
     def __init__(self, details, message, category=None):
-        super(RecordedWarning, self).__init__()
+        super().__init__()
         self.details = details
-        self.details['session_id'] = context.session_id if context.session else None
-        self.details['test_id'] = context.test_id if context.test_id else None
-        self.details.setdefault('func_name', None)
-        self.key = WarningKey(filename=self.details['filename'], lineno=self.details['lineno'])
+        self.details["session_id"] = context.session_id if context.session else None
+        self.details["test_id"] = context.test_id if context.test_id else None
+        self.details.setdefault("func_name", None)
+        self.key = WarningKey(filename=self.details["filename"], lineno=self.details["lineno"])
         self.category = category
         self._repr = message
 
@@ -108,31 +121,33 @@ class RecordedWarning(object):
         details = record.to_dict()
         return cls(details, handler.format(record))
 
-
     @classmethod
     def from_native_warning(cls, message, category, filename, lineno):
         if isinstance(message, Warning):
             message = message.args[0]
 
-        return cls({
-            'message': message,
-            'type': category.__name__,
-            'filename': filename,
-            'lineno': lineno,
-            }, message=message, category=category)
+        return cls(
+            {
+                "message": message,
+                "type": category.__name__,
+                "filename": filename,
+                "lineno": lineno,
+            },
+            message=message,
+            category=category,
+        )
 
     @property
     def message(self):
-        return self.details.get('message')
+        return self.details.get("message")
 
     @property
     def lineno(self):
-        return self.details.get('lineno')
+        return self.details.get("lineno")
 
     @property
     def filename(self):
-        return self.details.get('filename')
-
+        return self.details.get("filename")
 
     def to_dict(self):
         return self.details.copy()
@@ -140,8 +155,8 @@ class RecordedWarning(object):
     def __repr__(self):
         return self._repr
 
-class _IgnoredWarning(object):
 
+class _IgnoredWarning:
     def __init__(self, category, filename, lineno, message):
         self.category = category
         self.filename = filename
@@ -154,7 +169,7 @@ class _IgnoredWarning(object):
             return False
         if regex_or_str == warning_str:
             return True
-        elif hasattr(regex_or_str, 'match'):
+        elif hasattr(regex_or_str, "match"):  # noqa: SIM102
             if regex_or_str.match(warning_str):
                 return True
         return False
@@ -169,7 +184,7 @@ class _IgnoredWarning(object):
         if self.lineno and warning.lineno != self.lineno:
             return False
 
-        if self.message and not self._pattern_matches(self.message, warning.message):
+        if self.message and not self._pattern_matches(self.message, warning.message):  # noqa: SIM103
             return False
 
         return True
@@ -177,16 +192,17 @@ class _IgnoredWarning(object):
     def __repr__(self):
         extras = ""
         if self.category:
-            extras += "category: {} ".format(self.category)
+            extras += f"category: {self.category} "
         if self.message:
-            extras += "message: {} ".format(self.message)
+            extras += f"message: {self.message} "
         if self.lineno:
-            extras += "lineno: {} ".format(self.lineno)
+            extras += f"lineno: {self.lineno} "
         if self.filename:
-            extras += "filename: {} ".format(self.filename)
+            extras += f"filename: {self.filename} "
         if not extras:
             extras = "-"
-        return "<IgnoredWarning: {}>".format(extras.strip())
+        return f"<IgnoredWarning: {extras.strip()}>"
+
 
 _ignored_warnings = []
 

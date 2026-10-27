@@ -6,35 +6,37 @@ from slash.ctx import Context, ContextAttributeProxy
 from slash.reporting.null_reporter import NullReporter
 
 
-@pytest.mark.parametrize('on_stack', [True, False])
+@pytest.mark.parametrize("on_stack", [True, False])
 def test_context_dir_method_loaded_context(loaded_context, on_stack):
     output = dir(context if on_stack else loaded_context)
-    assert 'test_id' in output
+    assert "test_id" in output
 
 
 def test_context_dir_no_context_loaded():
-    assert 'test_id' in dir(context)
+    assert "test_id" in dir(context)
 
 
 def test_null_context_cant_setattr():
     with pytest.raises(AttributeError):
         context.x = 2
-    assert not hasattr(context, 'x')
+    assert not hasattr(context, "x")
 
 
 def test_dir_object(loaded_context, queried_context):
-    class Object(object):
+    class Object:
         x = 2
         y = 3
+
     loaded_context.test_id = obj = Object()
     assert dir(queried_context.test_id) == dir(obj)
 
 
 def test_call_object(loaded_context, queried_context):
-    value = 'some value'
+    value = "some value"
 
     def func():
         return value
+
     loaded_context.test_id = func
 
     assert queried_context.test_id() == value
@@ -64,13 +66,13 @@ def test_session_context_result():
 
 
 def test_context_test_filename(suite, suite_test):
-    suite_test.append_line('assert slash.context.test_filename == slash.context.test.__slash__.file_path')
+    suite_test.append_line("assert slash.context.test_filename == slash.context.test.__slash__.file_path")
     suite.run()
 
 
 def test_test_context_result(suite):
     for test in suite:
-        test.append_line('assert slash.context.result is slash.session.results[slash.context.test]')
+        test.append_line("assert slash.context.result is slash.session.results[slash.context.test]")
 
     @slash.hooks.result_summary.register  # pylint: disable=no-member
     def assert_result_back_to_normal():  # pylint: disable=unused-variable
@@ -102,7 +104,7 @@ def test_object_proxy_eq(contextobj, realobj):
 
 
 def test_object_proxy_ne(contextobj, realobj):
-    assert not (contextobj != realobj)  # pylint: disable=superfluous-parens
+    assert not (contextobj != realobj)  # pylint: disable=superfluous-parens  # noqa: SIM202
 
 
 def test_object_proxy_str_repr(contextobj, realobj):
@@ -112,14 +114,13 @@ def test_object_proxy_str_repr(contextobj, realobj):
 
 @pytest.fixture
 def contextobj(loaded_context, realobj):
-    setattr(loaded_context, "obj", realobj)
+    loaded_context.obj = realobj
     return ContextAttributeProxy("obj")
 
 
 @pytest.fixture
 def realobj():
-    class Object(object):
-
+    class Object:
         __attr__ = object()
         attr = object()
 
@@ -140,11 +141,12 @@ def pop_all(request):
         while len(context._stack) > 1:  # pylint: disable=protected-access
             context.pop()
 
-@pytest.fixture(params=['global', 'proxy'])
+
+@pytest.fixture(params=["global", "proxy"])
 def queried_context(request):
-    if request.param == 'global':
+    if request.param == "global":
         return context
-    elif request.param == 'proxy':
+    elif request.param == "proxy":
         return ctx
     else:
-        raise NotImplementedError() # pragma: no cover
+        raise NotImplementedError()  # pragma: no cover

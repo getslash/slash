@@ -1,14 +1,12 @@
-from __future__ import print_function
 from contextlib import contextmanager
 import errno
 
 from .color_string import ColorString
 
 
-class Formatter(object):
-
+class Formatter:
     def __init__(self, stream, indentation_string=" "):
-        super(Formatter, self).__init__()
+        super().__init__()
         self._indentation_string = indentation_string
         self._indentation_list = []
         self._indentation = ""
@@ -19,11 +17,11 @@ class Formatter(object):
         self.writeln("-" * length)
 
     def writeln(self, *args, **kwargs):
-        self.write(end="\n", *args, **kwargs)
+        self.write(end="\n", *args, **kwargs)  # noqa: B026
 
     def write(self, *args, **kwargs):
         try:
-            end = kwargs.pop('end', '')
+            end = kwargs.pop("end", "")
             for arg in args:
                 if isinstance(arg, ColorString):
                     if self._isatty:
@@ -38,7 +36,7 @@ class Formatter(object):
                     if index != len(lines) - 1:
                         self._stream.write("\n")
             self._stream.write(end)
-        except IOError as e:
+        except OSError as e:
             if e.errno not in (errno.EIO, errno.EPIPE):
                 raise
 
@@ -55,7 +53,7 @@ class Formatter(object):
             del self._indentation_list[increment:]
         else:
             self._indentation_list.extend(string for x in range(increment))
-        self._indentation = ''.join(self._indentation_list)
+        self._indentation = "".join(self._indentation_list)
 
     @contextmanager
     def indented(self, increment=1, string=None):
@@ -66,17 +64,16 @@ class Formatter(object):
             self._indent(increment=-increment)
 
 
-class LineTracker(object):
-
+class LineTracker:
     def __init__(self, stream):
-        super(LineTracker, self).__init__()
+        super().__init__()
         self._stream = stream
         self._empty_line = True
 
     def write(self, output):
         self._stream.write(output)
         if output:
-            self._empty_line = output.endswith('\n')
+            self._empty_line = output.endswith("\n")
 
     def is_line_empty(self):
         return self._empty_line

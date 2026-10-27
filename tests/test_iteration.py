@@ -33,7 +33,7 @@ def test_iteration_unsupported_sizing():
     for i in iteration(x for x in itertools.count()):
         assert i.first
         with pytest.raises(NotImplementedError):
-            i.last  # pylint: disable=pointless-statement
+            i.last  # pylint: disable=pointless-statement  # noqa: B018
         assert i.last_counter0 is None
         assert i.last_counter1 is None
         break
@@ -57,16 +57,16 @@ def test_peekable_iterator(objects):
 
 
 def test_cartesian_dict():
-
     params = {
-        'a': [1, 2, 3],
-        'b': [4, 5],
-        'c': [6, 7],
+        "a": [1, 2, 3],
+        "b": [4, 5],
+        "c": [6, 7],
     }
 
-    assert set(frozenset(x.items()) for x in iter_cartesian_dicts(params)) == \
-        set(frozenset([('a', a_value), ('b', b_value), ('c', c_value)])
-            for a_value, b_value, c_value in itertools.product(params['a'], params['b'], params['c']))
+    assert {frozenset(x.items()) for x in iter_cartesian_dicts(params)} == {
+        frozenset([("a", a_value), ("b", b_value), ("c", c_value)])
+        for a_value, b_value, c_value in itertools.product(params["a"], params["b"], params["c"])
+    }
 
 
 @pytest.fixture(params=[True, False])
