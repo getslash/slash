@@ -36,7 +36,6 @@ def test_code_string(error):
     assert (
         error.cause.code_string
         == """def func_3():
-
     local_func_3 = global_func_3
     raise NotImplementedError()\n"""
     )
