@@ -5,6 +5,7 @@ slash.exthook
 Mechanism behind slash.ext imports. Adopted from flask.ext, copyright 2011 by Armin Ronacher, Licensed under BSD.
 """
 
+import importlib.util
 import sys
 import os
 from .utils.python import reraise
@@ -34,9 +35,17 @@ class ExtensionImporter:
     def install(self):
         sys.meta_path[:] = [x for x in sys.meta_path if self != x] + [self]
 
-    def find_module(self, fullname, path=None):  # pylint: disable=W0613
+    def find_spec(self, fullname, path=None, target=None):  # pylint: disable=W0613
         if fullname.startswith(self.prefix):
-            return self
+            return importlib.util.spec_from_loader(fullname, self)
+        return None
+
+    def create_module(self, spec):
+        return self.load_module(spec.name)
+
+    def exec_module(self, module):
+        # The redirected module was already executed when it was imported in create_module
+        pass
 
     def load_module(self, fullname):
         if fullname in sys.modules:
