@@ -6,6 +6,7 @@ from pyparsing import (
     Keyword,
     ZeroOrMore,
     Literal,
+    QuotedString,
 )
 
 
@@ -67,7 +68,7 @@ class Exclude(object):
         return not self.matcher.matches(metadata)
 
 
-word = Word(alphanums + "._,-=/:")
+word = Word(alphanums + "._,-=/:") | QuotedString("'") | QuotedString('"')
 matcher = Literal("tag:") + ZeroOrMore(" ") + word | word
 matcher.set_parse_action(Include)
 
