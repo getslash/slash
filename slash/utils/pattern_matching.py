@@ -1,5 +1,5 @@
 from pyparsing import (
-    infixNotation,
+    infix_notation,
     opAssoc,
     Word,
     alphanums,
@@ -69,9 +69,9 @@ class Exclude(object):
 
 word = Word(alphanums + "._,-=/:")
 matcher = Literal("tag:") + ZeroOrMore(" ") + word | word
-matcher.setParseAction(Include)
+matcher.set_parse_action(Include)
 
-bool_expr = infixNotation(  # pylint: disable=too-many-function-args
+bool_expr = infix_notation(  # pylint: disable=too-many-function-args
     matcher,
     [
         (Keyword("not"), 1, opAssoc.RIGHT, Exclude),
@@ -84,7 +84,7 @@ bool_expr = infixNotation(  # pylint: disable=too-many-function-args
 class Matcher(object):
     def __init__(self, pattern):
         super(Matcher, self).__init__()
-        self._matcher = bool_expr.parseString(pattern)[0]
+        self._matcher = bool_expr.parse_string(pattern)[0]
 
     def __repr__(self):
         return repr(self._matcher)
