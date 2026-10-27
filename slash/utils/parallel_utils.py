@@ -13,5 +13,5 @@ def is_child_session():
     return config.root.parallel.worker_id is not None
 
 
-class ParallelPluginModes(object):
+class ParallelPluginModes:
     DISABLED, ENABLED, PARENT_ONLY, CHILD_ONLY = MODES = ("disabled", "enabled", "parent-only", "child-only")

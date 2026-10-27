@@ -29,9 +29,9 @@ class ServerStates(Enum):
     STOP_SERVE = 6
 
 
-class KeepaliveServer(object):
+class KeepaliveServer:
     def __init__(self):
-        super(KeepaliveServer, self).__init__()
+        super().__init__()
         self.clients_last_communication_time = {}
         self.last_request_time = time.time()
         self.state = ServerStates.NOT_INITIALIZED
@@ -66,9 +66,9 @@ class KeepaliveServer(object):
             return copy.deepcopy(self.clients_last_communication_time)
 
 
-class Server(object):
+class Server:
     def __init__(self, tests):
-        super(Server, self).__init__()
+        super().__init__()
         self.worker_error_reported = False
         self.interrupted = False
         self.state = ServerStates.NOT_INITIALIZED
@@ -126,7 +126,7 @@ class Server(object):
         self._tests_distrubuter.clear_unstarted_tests()
 
     def _get_worker_session_id(self, client_id):
-        return "worker_{}".format(client_id)
+        return f"worker_{client_id}"
 
     def connect(self, client_id, client_pid):
         _logger.notice("Client_id {} connected", client_id)
@@ -142,7 +142,7 @@ class Server(object):
             self.state = ServerStates.WAIT_FOR_COLLECTION_VALIDATION
 
     def validate_collection(self, client_id, sorted_client_collection):
-        if not self._sorted_collection == sorted_client_collection:
+        if self._sorted_collection != sorted_client_collection:
             _logger.error("Client_id {} sent wrong collection", client_id, extra={"capture": False})
             return False
         self.num_collections_validated += 1

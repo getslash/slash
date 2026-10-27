@@ -6,15 +6,15 @@ from .element import Element
 
 class Parameter(Element):
     def __init__(self, suite, num_values=3, values=None):
-        super(Parameter, self).__init__(suite)
-        self.name = "param_{}".format(self.id)
+        super().__init__(suite)
+        self.name = f"param_{self.id}"
         if values is None:
             values = [str(uuid4()) for _ in range(num_values)]
         self.values = values
         self.labels = []
 
     def write_decorator(self, code_formatter):
-        code_formatter.writeln("@slash.parametrize({!r}, {})".format(self.name, self._format_values()))
+        code_formatter.writeln(f"@slash.parametrize({self.name!r}, {self._format_values()})")
 
     def _format_values(self):
         returned = "["
@@ -23,7 +23,7 @@ class Parameter(Element):
             if label is None:
                 returned += repr(value)
             else:
-                returned += "slash.param({!r}, {!r})".format(label, value)
+                returned += f"slash.param({label!r}, {value!r})"
             returned += ", "
         returned += "]"
         return returned

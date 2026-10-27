@@ -11,7 +11,7 @@ def test_session_cleanup(suite, suite_test):
     def __code__():
         @slash.add_cleanup
         def session_cleanup():
-            1 / 0  # pylint: disable=pointless-statement
+            1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.is_success()
@@ -95,7 +95,7 @@ def test_add_skip_from_fixture_cleanup(suite, suite_test, cleanup_mechanism):
     fixture = suite.slashconf.add_fixture()
     suite_test.depend_on_fixture(fixture)
     cleanup = fixture.add_deferred_event(
-        decorator="{}.add_cleanup".format(cleanup_mechanism), extra_code=["slash.skip_test()"]
+        decorator=f"{cleanup_mechanism}.add_cleanup", extra_code=["slash.skip_test()"]
     )
     summary = suite.run()
     assert summary.events[cleanup].timestamp
@@ -155,9 +155,8 @@ def test_errors_in_cleanup(suite, suite_test, fail_test):
 
 
 def test_add_test_cleanup_from_session_scope_forbidden(checkpoint):
-    with slash.Session():
-        with pytest.raises(IncorrectScope):
-            slash.add_cleanup(checkpoint, scope="test")
+    with slash.Session(), pytest.raises(IncorrectScope):
+        slash.add_cleanup(checkpoint, scope="test")
 
     assert not checkpoint.called
 

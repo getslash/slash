@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 from slash import config as slash_config
 
@@ -52,7 +52,7 @@ class Plugin(PluginInterface):
             elif report_type_name == "xml":
                 self._reporters.append(self._cov.xml_report)
             else:
-                raise RuntimeError("Unknown report type: {!r}".format(report_type_name))
+                raise RuntimeError(f"Unknown report type: {report_type_name!r}")
         self._cov.start()
 
     def session_end(self):

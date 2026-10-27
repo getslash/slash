@@ -20,7 +20,7 @@ def parallel_mode(mode):
     :param mode: Can be either ``disabled``, ``enabled``, ``parent-only`` or ``child-only``
     """
     possible_values = parallel_utils.ParallelPluginModes.MODES
-    assert mode in possible_values, "parallel mode value must be one of {}".format(possible_values)
+    assert mode in possible_values, f"parallel mode value must be one of {possible_values}"
     return mark("parallel_mode", mode)
 
 

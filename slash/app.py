@@ -29,9 +29,9 @@ _logger = logbook.Logger(__name__)
 inhibit_unhandled_exception_traceback(SlashException)
 
 
-class Application(object):
+class Application:
     def __init__(self):
-        super(Application, self).__init__()
+        super().__init__()
         self._test_loader = Loader()
         self.set_report_stream(sys.stderr)
         self._argv = None
@@ -142,7 +142,7 @@ class Application(object):
         try:
             debug_if_needed(exc_info)
         except Exception as e:  # pylint: disable=broad-except
-            _logger.error("Failed to debug_if_needed: {!r}", e, exc_info=True, extra={"capture": False})
+            _logger.error("Failed to debug_if_needed: {!r}", e, exc_info=True, extra={"capture": False})  # noqa: G201
         if exc_value is not None:
             self._exit_code = exc_value.code if isinstance(exc_value, SystemExit) else 1
 
@@ -151,7 +151,7 @@ class Application(object):
 
             elif isinstance(exc_value, Exception):
                 _logger.error("Unexpected error occurred", exc_info=exc_info, extra={"capture": False})
-                self.get_reporter().report_error_message("Unexpected error: {}".format(exc_value))
+                self.get_reporter().report_error_message(f"Unexpected error: {exc_value}")
 
             if isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
                 self._interrupted = True

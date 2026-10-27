@@ -1,4 +1,4 @@
-class Activatable(object):
+class Activatable:
     def activate(self):
         raise NotImplementedError()  # pragma: no cover
 

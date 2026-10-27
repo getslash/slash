@@ -97,7 +97,7 @@ def test_cleanups_within_cleanups_preserve_scope(checkpoint1):
         pass
 
     with slash.Session() as s:
-        [fake_test1, fake_test2] = Loader().get_runnables(test_something)  # pylint: disable=unbalanced-tuple-unpacking
+        [fake_test1, _fake_test2] = Loader().get_runnables(test_something)  # pylint: disable=unbalanced-tuple-unpacking
 
         s.scope_manager.begin_test(fake_test1)
 
@@ -114,7 +114,7 @@ def test_cleanups_within_cleanups_preserve_scope(checkpoint1):
 
 def test_errors_associated_with_correct_result(scoped_suite, file1_tests, file2_tests):
     file1_test = file1_tests[0]
-    file1_test_cleanup = file1_test.add_deferred_event(adder=_MODULE_SCOPE_ADDER, extra_code=["assert 1 == 2"])
+    file1_test_cleanup = file1_test.add_deferred_event(adder=_MODULE_SCOPE_ADDER, extra_code=["assert 1 == 2"])  # noqa: F841
     file1_test.expect_failure()
 
     scoped_suite.run()

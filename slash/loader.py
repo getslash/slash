@@ -30,13 +30,13 @@ from .utils.interactive import generate_interactive_test
 _logger = Logger(__name__)
 
 
-class Loader(object):
+class Loader:
     """
     Provides iteration interfaces to load runnable tests from various places
     """
 
     def __init__(self):
-        super(Loader, self).__init__()
+        super().__init__()
         self._local_config = LocalConfig()
         self._duplicate_funcs = set()
 
@@ -67,7 +67,7 @@ class Loader(object):
         returned.sort(key=lambda test: (test.__slash__.repeat_all_index, test.__slash__.get_sort_key()))
         for test in returned:
             if test.__slash__.id is not None:
-                raise SlashInternalError("Slash ID of {!r} should be None, but is {}".format(test, test.__slash__.id))
+                raise SlashInternalError(f"Slash ID of {test!r} should be None, but is {test.__slash__.id}")
             test.__slash__.allocate_id()
         return returned
 
@@ -121,8 +121,8 @@ class Loader(object):
             if self._is_excluded(test):
                 continue
             if resume_state.address_in_file == test.__slash__.address_in_file:
-                if resume_state.variation:
-                    if not resume_state.variation == test.get_variation().id:
+                if resume_state.variation:  # noqa: SIM102
+                    if not resume_state.variation == test.get_variation().id:  # noqa: SIM201
                         continue
                 yield test
 
@@ -143,7 +143,7 @@ class Loader(object):
 
         matched = False
         for test in tests:
-            if address_in_file is not None:
+            if address_in_file is not None:  # noqa: SIM102
                 if not self._address_in_file_matches(address_in_file, test):
                     continue
             matched = True
@@ -151,7 +151,7 @@ class Loader(object):
                 continue
             yield test
         if not matched:
-            raise CannotLoadTests("Cannot find test(s) for {!r}".format(address))
+            raise CannotLoadTests(f"Cannot find test(s) for {address!r}")
 
     def _address_in_file_matches(self, address_in_file, test):
         if address_in_file == test.__slash__.factory_name:
@@ -159,7 +159,7 @@ class Loader(object):
         test_address_in_file = test.__slash__.address_in_file
         if address_in_file == test_address_in_file:
             return True
-        if "(" in test_address_in_file:
+        if "(" in test_address_in_file:  # noqa: SIM102
             if address_in_file == test_address_in_file[: test_address_in_file.index("(")]:
                 return True
         return False
@@ -171,7 +171,7 @@ class Loader(object):
         paths = list(paths)
         for path in paths:
             if not os.path.exists(path):
-                msg = "Path {!r} could not be found".format(path)
+                msg = f"Path {path!r} could not be found"
                 with handling_exceptions():
                     raise CannotLoadTests(msg)
         for path in paths:
@@ -190,13 +190,12 @@ class Loader(object):
                 except Exception as e:
                     tb_file, tb_lineno, _, _ = _extract_tb()
                     raise mark_exception_handled(
-                        CannotLoadTests("Could not load {0!r} ({1}:{2} - {3})".format(file_path, tb_file, tb_lineno, e))
+                        CannotLoadTests(f"Could not load {file_path!r} ({tb_file}:{tb_lineno} - {e})")
                     )
                 if module is not None:
                     self._duplicate_funcs |= check_duplicate_functions(file_path)
                     with self._adding_local_fixtures(file_path, module):
-                        for runnable in self._iter_runnable_tests_in_module(file_path, module):
-                            yield runnable
+                        yield from self._iter_runnable_tests_in_module(file_path, module)
 
     @contextmanager
     def _adding_local_fixtures(self, file_path, module):
@@ -243,9 +242,8 @@ class Loader(object):
         if isinstance(thing, type) and issubclass(thing, Test):
             return TestTestFactory(thing)
 
-        if isinstance(thing, FunctionType):
-            if is_valid_test_name(thing.__name__):
-                return FunctionTestFactory(thing)
+        if isinstance(thing, FunctionType) and is_valid_test_name(thing.__name__):
+            return FunctionTestFactory(thing)
 
         return None
 

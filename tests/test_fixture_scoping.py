@@ -86,14 +86,14 @@ def fixture_store():
     return FixtureStore()
 
 
-class FixtureTree(object):
+class FixtureTree:
     def __init__(self, fixture_store, structure):
-        super(FixtureTree, self).__init__()
+        super().__init__()
         self._structure = structure
         self._cleanups_made = set()
         self._fixture_store = fixture_store
         self._fixtures = {}
-        self._fixture_namegen = ("fixture_{:05}".format(x) for x in itertools.count(1000))
+        self._fixture_namegen = (f"fixture_{x:05}" for x in itertools.count(1000))
         self._required_names = []
         self._populate_fixtures()
         self._values = {}
@@ -113,9 +113,7 @@ class FixtureTree(object):
         assert self._values[name] == value
 
     def make_value(self, name):
-        assert name not in self._values, "Fixture generated more than once! (scope={})".format(
-            get_scope_name_by_scope(self._fixtures[name].__slash_fixture__.scope)
-        )
+        assert name not in self._values, f"Fixture generated more than once! (scope={get_scope_name_by_scope(self._fixtures[name].__slash_fixture__.scope)})"
         value = str(uuid1())
         self._values[name] = value
         return value
@@ -131,7 +129,7 @@ class FixtureTree(object):
         self._fixture_store.pop_scope(scope)
         scope_id = get_scope_by_name(scope)
         for fixture_name, fixture in self._fixtures.items():
-            if fixture.__slash_fixture__.scope <= scope_id:
+            if fixture.__slash_fixture__.scope <= scope_id:  # noqa: SIM102
                 if fixture_name in self._values:
                     assert fixture_name in self._cleanups_made
                     self._cleanups_made.remove(fixture_name)
@@ -143,7 +141,7 @@ class FixtureTree(object):
 
         graph = self._structure.graph
 
-        key_to_fixture_name = dict((key, next(self._fixture_namegen)) for key in graph)
+        key_to_fixture_name = {key: next(self._fixture_namegen) for key in graph}
 
         stack = list(self._structure.graph)
 
@@ -176,14 +174,14 @@ class FixtureTree(object):
         code.writeln("def {}(this, {}):".format(name, ", ".join(dependent_names)))
         with code.indented():
             for dependent_name in dependent_names:
-                code.writeln("tree.check_value({0!r}, {0})".format(dependent_name))
+                code.writeln(f"tree.check_value({dependent_name!r}, {dependent_name})")
             code.writeln("@this.add_cleanup")
             code.writeln("def cleanup():")
             with code.indented():
-                code.writeln("tree.cleanup({!r})".format(name))
-            code.writeln("return tree.make_value({!r})".format(name))
+                code.writeln(f"tree.cleanup({name!r})")
+            code.writeln(f"return tree.make_value({name!r})")
         globs = {"tree": self}
-        exec(buff.getvalue(), globs)  # pylint: disable=exec-used
+        exec(buff.getvalue(), globs)  # pylint: disable=exec-used  # noqa: S102
         return slash.fixture(scope=scope)(globs[name])
 
 

@@ -1,5 +1,5 @@
 # pylint: disable=redefined-outer-name, unused-argument
-from __future__ import print_function
+
 
 import functools
 import os
@@ -51,7 +51,7 @@ def test_dir(tmpdir, names, indices):
         with returned.join(name).open("w", ensure=True) as f:
             _print = functools.partial(print, file=f)
             _print("import slash")
-            _print('@slash.tag("index", {})'.format(index))
+            _print(f'@slash.tag("index", {index})')
             _print("def test_something():")
             _print("    pass")
     return str(returned)

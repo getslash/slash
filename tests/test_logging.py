@@ -41,9 +41,8 @@ def test_add_error_for_error_log_level(tmpdir, should_consider_error, config_ove
         logger.error(message)
         logger.error(non_capture_message, extra={"capture": False})
 
-    with slash.Session() as session:
-        with session.get_started_context():
-            slash.runner.run_tests(make_runnable_tests(test_with_log_error))
+    with slash.Session() as session, session.get_started_context():
+        slash.runner.run_tests(make_runnable_tests(test_with_log_error))
     [result] = [res for res in session.results.iter_all_results() if not res.is_global_result()]
     expected_error_messages = [message] if should_consider_error else []
     assert [res.message for res in result.get_errors()] == expected_error_messages
@@ -153,7 +152,7 @@ def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test
     assert slash.config.root.log.truncate_console_lines
 
     long_string = log_char * 1000
-    suite_test.append_line("slash.logger.{level}({msg!r})".format(msg=long_string, level=level))
+    suite_test.append_line(f"slash.logger.{level}({long_string!r})")
     summary = suite.run()
     [result] = summary.get_all_results_for_test(suite_test)
     with open(result.get_log_path()) as logfile:
@@ -163,7 +162,7 @@ def test_console_truncation_does_not_truncate_files(files_dir, suite, suite_test
 
 @pytest.mark.parametrize("symlink_name", ["last_session_symlink", "last_session_dir_symlink", "last_failed_symlink"])
 def test_log_symlinks_without_root_path(suite, config_override, symlink_name):
-    config_override("log.{}".format(symlink_name), "some/subdir")
+    config_override(f"log.{symlink_name}", "some/subdir")
     assert suite.run().ok()
 
 
@@ -258,7 +257,7 @@ def test_errors_log_for_session(suite, errors_log_path, request, logs_dir):
     @gossip.register("slash.session_start")
     def on_session_start():
         try:
-            1 / 0  # pylint: disable=pointless-statement
+            1 / 0  # pylint: disable=pointless-statement  # noqa: B018
         except ZeroDivisionError:
             slash.add_error()
 
@@ -282,7 +281,7 @@ def test_filtering_slash_logs(files_dir, config_override, level, core_log_level)
     suite = Suite()
     suite_test = suite.add_test(type="function")
     long_string = "a" * 1000
-    suite_test.append_line("slash.logger.{level}({msg!r})".format(msg=long_string, level=level))
+    suite_test.append_line(f"slash.logger.{level}({long_string!r})")
     summary = suite.run()
     result = summary.get_all_results_for_test(suite_test)[0]
 
@@ -321,7 +320,7 @@ def test_show_raw_param_values(suite_builder, raw_values, config_override, unifi
         def test_1(param):
             pass
 
-    res = suite_builder.build().run().assert_success(1).slash_app.session.results
+    res = suite_builder.build().run().assert_success(1).slash_app.session.results  # noqa: F841
     with unified_session_log_path.open() as f:
         log_text = f.read()
 
@@ -387,7 +386,7 @@ _silenced_logger = logbook.Logger("silenced_logger")
 
 class LogFormattingTest(TestCase):
     def setUp(self):
-        super(LogFormattingTest, self).setUp()
+        super().setUp()
         self.log_path = self.get_new_path()
         self.override_config("log.root", self.log_path)
         self.override_config("log.format", "-- {record.message} --")
@@ -441,7 +440,7 @@ class LoggingTest(TestCase):
 
     def _test_test_logs_written(self):
         for test_metadata in self.tests_metadata:
-            test_dir = "{:03}-{}".format(test_metadata.test_index0, test_metadata.id)
+            test_dir = f"{test_metadata.test_index0:03}-{test_metadata.id}"
             log_path = os.path.join(self.log_path, self.session.id, test_dir, "debug.log")
             with open(log_path) as f:
                 data = f.read()
@@ -465,12 +464,12 @@ class LoggingTest(TestCase):
                 assert filename.endswith(".log")
                 filename = os.path.join(path, filename)
                 with open(filename) as f:
-                    assert _silenced_logger.name not in f.read(), "Silenced logs appear in log file {}".format(filename)
+                    assert _silenced_logger.name not in f.read(), f"Silenced logs appear in log file {filename}"
 
 
 class ExtraLoggersTest(TestCase):
     def setUp(self):
-        super(ExtraLoggersTest, self).setUp()
+        super().setUp()
         self.session = slash.Session()
         self.handler = logbook.TestHandler()
         self.addCleanup(slash.log.remove_all_extra_handlers)
@@ -484,7 +483,7 @@ class ExtraLoggersTest(TestCase):
                 if test_result.test_id in record.message:
                     break
             else:
-                self.fail("Test id {} does not appear in logger".format(test_result.test_id))
+                self.fail(f"Test id {test_result.test_id} does not appear in logger")
 
 
 class SampleTest(slash.Test):
@@ -506,13 +505,13 @@ def _mark(text=None):
 
 class TestLocaltimeLogging(TestCase):
     def setUp(self):
-        super(TestLocaltimeLogging, self).setUp()
+        super().setUp()
         self.assertFalse(slash.config.root.log.localtime)
         self.path = self.get_new_path()
         self.override_config("log.localtime", True)
         self.override_config("log.root", self.path)
 
     def test_local_time(self):
-        with slash.Session() as session:  # pylint: disable=unused-variable
+        with slash.Session() as session:  # pylint: disable=unused-variable  # noqa: F841
             slash.logger.info("Hello")
         self.assertNotEqual(os.listdir(self.path), [])

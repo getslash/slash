@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Slash documentation build configuration file, created by
 # sphinx-quickstart on Fri Feb 22 23:34:56 2013.

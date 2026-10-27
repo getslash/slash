@@ -10,7 +10,6 @@ import logbook
 
 from sentinels import NOTHING
 
-
 PYPY = hasattr(sys, "pypy_version_info")
 _logger = logbook.Logger(__name__)
 
@@ -86,9 +85,9 @@ def get_arguments(func):
     return returned
 
 
-class FunctionArgument(object):
+class FunctionArgument:
     def __init__(self, name, annotation=NOTHING):
-        super(FunctionArgument, self).__init__()
+        super().__init__()
         self.name = name
         self.annotation = annotation
 

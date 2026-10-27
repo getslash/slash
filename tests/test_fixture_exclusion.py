@@ -34,11 +34,7 @@ def test_fixture_exclusion_nested(suite, suite_test):
     param_value = param.values[0]
 
     suite_test.add_decorator(
-        'slash.exclude("{fixture_name}.{param_name}", {values})'.format(
-            fixture_name=fixture.name,
-            param_name=param.name,
-            values=[param_value],
-        )
+        f'slash.exclude("{fixture.name}.{param.name}", {[param_value]})'
     )
     suite_test.exclude_param_value(param.name, param_value)
     suite.run()
@@ -123,7 +119,7 @@ def test_exclude_on_fixture():
         results = resolve_and_run(test_something)
     assert len(results) == 4
     params = [result.test_metadata.variation.values for result in results]
-    for result, params in zip(results, params):
+    for result, params in zip(results, params):  # noqa: B020
         assert params["fixture2.param"] in [3, 4]
         if result.get_skips():
             assert params["fixture1.param"] == 1

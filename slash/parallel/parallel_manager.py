@@ -18,12 +18,12 @@ MAX_CONNECTION_RETRIES = 200
 
 
 def get_xmlrpc_proxy(address, port):
-    return xmlrpc_client.ServerProxy("http://{}:{}".format(address, port))
+    return xmlrpc_client.ServerProxy(f"http://{address}:{port}")
 
 
-class ParallelManager(object):
+class ParallelManager:
     def __init__(self, args):
-        super(ParallelManager, self).__init__()
+        super().__init__()
         self.server = None
         self.workers_error_dircetory = mkdtemp()
         self.args = args
@@ -86,8 +86,8 @@ class ParallelManager(object):
         while self.server.state == ServerStates.WAIT_FOR_CLIENTS:
             if time.time() - self.server.start_time > config.root.parallel.worker_connect_timeout * self.workers_num:
                 self.handle_error(
-                    "Timeout: Not all clients connected to server, terminating.\n\
-                                   Clients connected: {}".format(self.server.connected_clients)
+                    f"Timeout: Not all clients connected to server, terminating.\n\
+                                   Clients connected: {self.server.connected_clients}"
                 )
             time.sleep(TIME_BETWEEN_CHECKS)
 
@@ -127,7 +127,7 @@ class ParallelManager(object):
                     extra={"capture": False},
                 )
             self.handle_error(
-                "No request sent to server for {} seconds, terminating".format(config.root.parallel.no_request_timeout)
+                f"No request sent to server for {config.root.parallel.no_request_timeout} seconds, terminating"
             )
 
     def start(self):

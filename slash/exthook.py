@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 slash.exthook
 ~~~~~~~~~~~~~
@@ -11,11 +10,11 @@ import os
 from .utils.python import reraise
 
 
-class ExtensionImporter(object):
+class ExtensionImporter:
     """This importer redirects imports from this submodule to other locations."""
 
     def __init__(self, module_choices, wrapper_module):
-        super(ExtensionImporter, self).__init__()
+        super().__init__()
         self.module_choices = module_choices
         self.wrapper_module = wrapper_module
         self.prefix = wrapper_module + "."
@@ -71,7 +70,7 @@ class ExtensionImporter(object):
             if "." not in modname:
                 setattr(sys.modules[self.wrapper_module], modname, module)
             return module
-        raise ImportError("No module named %s" % fullname)
+        raise ImportError(f"No module named {fullname}")
 
     def is_important_traceback(self, important_module, tb):
         """Walks a traceback's frames and checks if any of the frames

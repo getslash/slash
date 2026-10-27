@@ -11,7 +11,7 @@ from .tagging import get_tags
 
 class FunctionTest(RunnableTest):
     def __init__(self, function, fixture_store, fixture_namespace, variation):
-        super(FunctionTest, self).__init__(fixture_store, fixture_namespace, variation)
+        super().__init__(fixture_store, fixture_namespace, variation)
         self._func = function
 
     def get_tags(self):
@@ -32,7 +32,7 @@ class FunctionTest(RunnableTest):
                 trigger_test_end=True,
             )
             if isinstance(result, GeneratorType):
-                raise InvalidTest("{} is a generator. Running generators is not supported".format(self._func))
+                raise InvalidTest(f"{self._func} is a generator. Running generators is not supported")
 
     def get_test_function(self):
         return self._func
@@ -49,7 +49,7 @@ class FunctionTest(RunnableTest):
 
 class FunctionTestFactory(RunnableTestFactory):
     def __init__(self, func):
-        super(FunctionTestFactory, self).__init__(func)
+        super().__init__(func)
         self.func = func
 
     def _generate_tests(self, fixture_store):

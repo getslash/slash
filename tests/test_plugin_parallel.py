@@ -11,7 +11,7 @@ import slash.plugins
 def test_parallel_mode(plugin, config_override, session_state, plugin_parallel_mode):
     slash.plugins.manager._pending_deactivation = set()
 
-    if not session_state == "not_parallel":
+    if session_state != "not_parallel":
         config_override("parallel.num_workers", 1)
     if session_state == "child":
         config_override("parallel.worker_id", 1)
@@ -66,9 +66,7 @@ def test_parallel_mode_activation_causes_warning(config_override, checkpoint, is
         slash.hooks.session_start()  # pylint: disable=no-member
 
         warning_message_expected = (
-            "Activating plugin {} though it's configuration for parallel mode doesn't fit to current session".format(
-                plugin.get_name()
-            )
+            f"Activating plugin {plugin.get_name()} though it's configuration for parallel mode doesn't fit to current session"
         )
         is_warning_appeared = warning_message_expected in [warning.message for warning in slash.session.warnings]
         assert is_warning_appeared if is_parallel_mode else not is_warning_appeared

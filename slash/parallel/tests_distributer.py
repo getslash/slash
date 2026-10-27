@@ -1,11 +1,10 @@
 from slash import ctx
 from logbook import Logger
 
-
 _logger = Logger(__name__)
 
 
-class TestsDistributer(object):
+class TestsDistributer:
     def __init__(self, num_tests):
         self._unstarted_tests_indices = [i for i in range(num_tests)]
         self._current_tests_index = 0

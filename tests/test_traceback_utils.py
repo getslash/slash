@@ -47,7 +47,7 @@ def test_variable_capping():
     def g():
         long_var = "a" * 1000
         assert len(long_var) > _MAX_VARIABLE_VALUE_LENGTH
-        1 / 0  # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
     try:
         f()
@@ -77,11 +77,11 @@ def test_self_attribute_throws():
         x = DangerousObject()
         x.method()
 
-    class DangerousObject(object):
+    class DangerousObject:
         def __getattribute__(self, attr):
             if attr == "__dict__":
-                1 / 0  # pylint: disable=pointless-statement
-            return super(DangerousObject, self).__getattribute__(attr)
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
+            return super().__getattribute__(attr)
 
         def method(self):
             raise CustomException()
@@ -100,9 +100,9 @@ def test_self_attribute_throws():
         assert "self." not in key
 
 
-class NonReprable(object):
+class NonReprable:
     def __repr__(self):
-        raise Exception("Repr error")  # pylint: disable=broad-exception-raised
+        raise Exception("Repr error")  # pylint: disable=broad-exception-raised  # noqa: TRY002
 
 
 def test_safe_repr_for_non_repable_object():
@@ -115,14 +115,14 @@ def test_safe_repr_for_non_repable_object():
     assert "unprintable" not in returned.lower()
 
 
-class NonDictable(object):
+class NonDictable:
     def __getattribute__(self, attr):
         if attr == "__dict__":
-            raise Exception("dict error")  # pylint: disable=broad-exception-raised
-        return super(NonDictable, self).__getattribute__(attr)
+            raise Exception("dict error")  # pylint: disable=broad-exception-raised  # noqa: TRY002
+        return super().__getattribute__(attr)
 
     def method(self):
-        1 / 0  # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
 
 def test_dict_getting_raises_exception():

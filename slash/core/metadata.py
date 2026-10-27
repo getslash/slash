@@ -7,7 +7,7 @@ from ..exceptions import SlashInternalError
 _sort_key_generator = itertools.count(1)
 
 
-class Metadata(object):
+class Metadata:
     """Class representing the metadata associated with a test object. Generally available
     as test.__slash__
     """
@@ -16,7 +16,7 @@ class Metadata(object):
     test_index0 = None
 
     def __init__(self, factory, test):
-        super(Metadata, self).__init__()
+        super().__init__()
         #: The test's unique id
         self.id = None
         self.tags = test.get_tags()
@@ -27,7 +27,7 @@ class Metadata(object):
             #: The path to the file from which this test was loaded
             self.module_name = factory.get_module_name()
             if not self.module_name:
-                raise SlashInternalError("Could not find module for {}".format(test))
+                raise SlashInternalError(f"Could not find module for {test}")
 
             self._file_path = factory.get_filename()
             self.factory_name = factory.get_factory_name()
@@ -37,7 +37,7 @@ class Metadata(object):
             self.factory_name = "?"
         self.variation = test.get_variation()
         if self.variation is None:
-            raise SlashInternalError("{} has no variations".format(test))
+            raise SlashInternalError(f"{test} has no variations")
 
         self._address_override = None
         #: Address string to identify the test inside the file from which it was loaded
@@ -75,10 +75,10 @@ class Metadata(object):
         if self._address_override is not None:
             return self._address_override
 
-        returned = "{}:{}".format(self.file_path, self.address_in_file)
+        returned = f"{self.file_path}:{self.address_in_file}"
         if self.variation:
             returned += "({})".format(
-                ", ".join("{}={!r}".format(key, value) for key, value in self.variation.values.items())
+                ", ".join(f"{key}={value!r}" for key, value in self.variation.values.items())
                 if raw_params
                 else self.variation.safe_repr
             )
@@ -88,7 +88,7 @@ class Metadata(object):
 
     def allocate_id(self):
         if self.id is not None:
-            raise SlashInternalError("id field of metadata object should be None, is {}".format(self.id))
+            raise SlashInternalError(f"id field of metadata object should be None, is {self.id}")
         self.id = context.session.id_space.allocate()
 
     def set_sort_key(self, key):
@@ -130,7 +130,7 @@ class Metadata(object):
         return self.test_index0 + 1
 
     def __repr__(self):
-        return "<{}>".format(self.address)
+        return f"<{self.address}>"
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):

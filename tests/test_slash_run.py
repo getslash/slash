@@ -1,5 +1,5 @@
 # pylint: disable=redefined-outer-name
-from __future__ import print_function
+
 
 import os
 import sys
@@ -33,7 +33,7 @@ def test_slash_run_filter_strings(suite, suite_test):
 
 class ArgumentParsingTest(TestCase):
     def setUp(self):
-        super(ArgumentParsingTest, self).setUp()
+        super().setUp()
         self.stderr = StringIO()
         self.stdout = StringIO()
         self.addCleanup(setattr, sys, "stderr", sys.stderr)
@@ -53,7 +53,7 @@ class ArgumentParsingTest(TestCase):
     def test_interspersed_positional_arguments(self):
         self.forge.replace_with(slash_run, "_collect_tests", self._collect_tests_stub)
 
-        self.forge.replace_with(sys, "argv", "/path/to/slash run -vv test1.py -x test2.py --pdb".split())
+        self.forge.replace_with(sys, "argv", ["/path/to/slash", "run", "-vv", "test1.py", "-x", "test2.py", "--pdb"])
         with self.assertRaises(SystemExit) as caught:
             main_entry_point()
         self.assertTrue(self.callback_success)
@@ -136,7 +136,7 @@ def test_slash_run_from_file(tmpdir, suite):
 @pytest.mark.parametrize("failure_type", ["fail", "error"])
 def test_slash_run_directory_failure(suite, failure_type):
     getattr(suite[1].when_run, failure_type)()
-    path = suite.commit()  # pylint: disable=unused-variable
+    path = suite.commit()  # pylint: disable=unused-variable  # noqa: F841
     assert suite.run().exit_code != 0
 
 
@@ -158,11 +158,10 @@ def test_slash_run_specific_file(suite):
 
 
 def test_session_host_variables():
-    with slash.Session() as session:
-        with session.get_started_context():
-            assert session.host_fqdn is not None
-            assert session.host_name is not None
-            assert session.host_fqdn.startswith(session.host_name)
+    with slash.Session() as session, session.get_started_context():
+        assert session.host_fqdn is not None
+        assert session.host_name is not None
+        assert session.host_fqdn.startswith(session.host_name)
 
 
 @pytest.fixture(autouse=True)

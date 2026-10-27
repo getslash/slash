@@ -59,7 +59,7 @@ def test_fancy_message(long_headline, multiline):
 
 def test_console_reporter_with_closed_stream(forge):
     def raise_io_error(*args, **kwargs):
-        raise IOError("args: {!r}, kwargs: {!r}".format(args, kwargs))
+        raise OSError(f"args: {args!r}, kwargs: {kwargs!r}")
 
     output = StringIO()
     reporter = ConsoleReporter(logbook.TRACE, output)

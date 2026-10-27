@@ -24,7 +24,7 @@ def is_process_running(pid):
     return True
 
 
-class WorkerConfiguration(object):
+class WorkerConfiguration:
     def __init__(self, args, worker_id):
         self._worker_id = worker_id
         self.argv = (
@@ -81,9 +81,7 @@ class WorkerConfiguration(object):
         test_index = self._test_or_index_to_index(test_or_test_index)
         if test_index in self._forced_tests:
             raise RuntimeError(
-                "Cannot exclude test_index {} for client {} since it has been forced before".format(
-                    test_index, self._worker_id
-                )
+                f"Cannot exclude test_index {test_index} for client {self._worker_id} since it has been forced before"
             )
         if test_index in self._excluded_tests:
             _logger.warning(
@@ -97,9 +95,7 @@ class WorkerConfiguration(object):
         test_index = self._test_or_index_to_index(test_or_test_index)
         if test_index in self._excluded_tests:
             raise RuntimeError(
-                "Cannot force test_index {} for client {} since it has been excluded before".format(
-                    test_index, self._worker_id
-                )
+                f"Cannot force test_index {test_index} for client {self._worker_id} since it has been excluded before"
             )
         if test_index in self._forced_tests:
             _logger.warning(
@@ -140,7 +136,7 @@ class ProcessWorkerConfiguration(WorkerConfiguration):
 
 class TmuxWorkerConfiguration(WorkerConfiguration):
     def __init__(self, basic_args, worker_id):
-        super(TmuxWorkerConfiguration, self).__init__(basic_args, worker_id)
+        super().__init__(basic_args, worker_id)
         self._window_handle = None
 
     def _start(self):
@@ -149,7 +145,7 @@ class TmuxWorkerConfiguration(WorkerConfiguration):
         if config.root.tmux.use_panes:
             self._window_handle = create_new_pane(command)
         else:
-            self._window_handle = create_new_window("worker {}".format(self._worker_id), command)
+            self._window_handle = create_new_window(f"worker {self._worker_id}", command)
 
     def get_pid(self):
         if self._pid is None:
@@ -158,7 +154,7 @@ class TmuxWorkerConfiguration(WorkerConfiguration):
 
     def handle_timeout(self):
         if not config.root.tmux.use_panes:
-            self._window_handle.rename_window("stopped_client_{}".format(self._worker_id))
+            self._window_handle.rename_window(f"stopped_client_{self._worker_id}")
 
     def is_active(self):
         return is_process_running(self.get_pid())

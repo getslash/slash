@@ -17,12 +17,12 @@ def test_sphinx_doctest(doctest_path):  # pylint: disable=redefined-outer-name
 
 
 assert os.path.exists(_DOCS_ROOT)
-_DOCTEST_PATHS = list(
+_DOCTEST_PATHS = [
     os.path.join(path, filename)
     for path, _, filenames in os.walk(_DOCS_ROOT)
     for filename in filenames
     if filename.endswith(".rst")
-)
+]
 _README_PATH = os.path.join(_HERE, "..", "README.md")
 
 

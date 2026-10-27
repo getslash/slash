@@ -8,7 +8,7 @@ from contextlib import contextmanager
 
 class CodeElement(Element):
     def __init__(self, suite):
-        super(CodeElement, self).__init__(suite)
+        super().__init__(suite)
         self.suite = suite
         self._body = []
 

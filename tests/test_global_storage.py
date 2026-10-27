@@ -18,7 +18,6 @@ class GlobalStorageTest(TestCase):
 
         slash.hooks.session_start.register(_on_session_start, token=self.token)  # pylint: disable=no-member
         self.addCleanup(gossip.unregister_token, self.token)
-        with slash.Session() as s:
-            with s.get_started_context():
-                pass
+        with slash.Session() as s, s.get_started_context():
+            pass
         self.assertTrue(self.hook_called)

@@ -1,6 +1,6 @@
-class Details(object):
+class Details:
     def __init__(self, set_callback=None):
-        super(Details, self).__init__()
+        super().__init__()
         self._details = {}
         self._set_callback = set_callback
 
@@ -14,7 +14,7 @@ class Details(object):
         """Appends a value to a list key, or creates it if needed"""
         lst = self._details.setdefault(key, [])
         if not isinstance(lst, list):
-            raise TypeError("Cannot append value to a {.__class__.__name__!r} value".format(lst))
+            raise TypeError(f"Cannot append value to a {lst.__class__.__name__!r} value")
         lst.append(value)
         if self._set_callback is not None:
             self._set_callback(key, lst)

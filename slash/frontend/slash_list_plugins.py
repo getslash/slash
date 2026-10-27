@@ -36,9 +36,9 @@ def slash_list_plugins(args, report_stream=sys.stdout):
         normalized_name = manager.normalize_command_line_name(name)
         _print(_title_style(name), end=" ")
         if name in active:
-            _print(_enabled_style("active (use --without-{} to deactivate".format(normalized_name)))
+            _print(_enabled_style(f"active (use --without-{normalized_name} to deactivate"))
         else:
-            _print(_disabled_style("inactive (use --with-{} to activate)".format(normalized_name)))
+            _print(_disabled_style(f"inactive (use --with-{normalized_name} to activate)"))
         if plugin.__doc__:
             for line in plugin.__doc__.splitlines():
                 if line.strip():

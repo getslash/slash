@@ -11,12 +11,12 @@ def append_function_marker(name):
     return Marker(name, append=True)
 
 
-class Marker(object):
+class Marker:
     def __init__(self, name, value=True, append=False):
-        super(Marker, self).__init__()
+        super().__init__()
         self._name = name
         self._value = value
-        self._mark = "__marked_{}__".format(self._name)
+        self._mark = f"__marked_{self._name}__"
         self._append = append
 
     def __call__(self, func):

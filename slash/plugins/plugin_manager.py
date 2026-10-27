@@ -35,9 +35,9 @@ class IllegalPluginName(ValueError):
     pass
 
 
-class PluginManager(object):
+class PluginManager:
     def __init__(self):
-        super(PluginManager, self).__init__()
+        super().__init__()
         self._installed = {}
         self._cmd_line_to_name = {}
         self._config_to_name = {}
@@ -128,7 +128,7 @@ class PluginManager(object):
         plugin_parallel_mode = try_get_mark(plugin, "parallel_mode", parallel_utils.ParallelPluginModes.ENABLED)
         if plugin_parallel_mode == parallel_utils.ParallelPluginModes.ENABLED:
             return False
-        if (
+        if (  # noqa: SIM103
             (plugin_parallel_mode == parallel_utils.ParallelPluginModes.DISABLED)
             or (
                 plugin_parallel_mode == parallel_utils.ParallelPluginModes.PARENT_ONLY
@@ -153,15 +153,15 @@ class PluginManager(object):
         :class:`slash.plugins.PluginInterface`.
         """
         if not isinstance(plugin, PluginInterface):
-            raise IncompatiblePlugin("Invalid plugin type: {!r}".format(type(plugin)))
+            raise IncompatiblePlugin(f"Invalid plugin type: {type(plugin)!r}")
         plugin_name = plugin.get_name()
         if re.search(r"[^A-Za-z0-9_ -]", plugin_name):
-            raise IllegalPluginName("Illegal plugin name: {}".format(plugin_name))
+            raise IllegalPluginName(f"Illegal plugin name: {plugin_name}")
 
         if any(char in plugin_name for char in _DEPRECATED_CHARACTERS):
             warn_deprecation(
                 "In the future, dashes and underscore will not be allowed in plugin names - "
-                "spaces should be used instead (plugin name: {!r})".format(plugin_name)
+                f"spaces should be used instead (plugin name: {plugin_name!r})"
             )
         self._configure(plugin)
         self._installed[plugin_name] = PluginInfo(plugin, is_internal)
@@ -183,13 +183,13 @@ class PluginManager(object):
 
     def install_builtin_plugins(self):
         for builtin_plugin_module in self._iter_builtin_plugin_modules():
-            module = __import__("slash.plugins.builtin.{}".format(builtin_plugin_module), fromlist=[""])
+            module = __import__(f"slash.plugins.builtin.{builtin_plugin_module}", fromlist=[""])
             self.install(module.Plugin())
 
     def _iter_builtin_plugin_modules(self):
         builtin_dir = os.path.join(os.path.dirname(__file__), "builtin")
         for filename in os.listdir(builtin_dir):
-            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
+            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):  # noqa: PIE810
                 continue
             yield filename[:-3]
 
@@ -227,10 +227,8 @@ class PluginManager(object):
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
         if self._is_parallel_supported(plugin):
-            _logger.warn(
-                "Activating plugin {} though it's configuration for parallel mode doesn't fit to current session".format(
-                    plugin.get_name()
-                )
+            _logger.warning(
+                f"Activating plugin {plugin.get_name()} though it's configuration for parallel mode doesn't fit to current session"
             )
         plugin.activate()
         for hook, callback, kwargs in self._get_plugin_registrations(plugin):
@@ -309,7 +307,7 @@ class PluginManager(object):
             plugin_config.pop(config_name)
 
     def _get_token(self, plugin_name):
-        return "slash.plugins.{}".format(plugin_name)
+        return f"slash.plugins.{plugin_name}"
 
     def _get_installed_plugin_instance_by_name(self, plugin_name):
         plugin_info = self._installed.get(plugin_name)
@@ -336,7 +334,7 @@ class PluginManager(object):
             plugin_instance = plugin
             plugin_name = plugin.get_name()
         if plugin_instance is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin_instance:
-            raise UnknownPlugin("Unknown plugin: {}".format(plugin_name))
+            raise UnknownPlugin(f"Unknown plugin: {plugin_name}")
         return plugin_instance
 
     def _get_plugin_registrations(self, plugin):
@@ -368,7 +366,7 @@ class PluginManager(object):
             else:
                 if method_name.startswith("_"):
                     continue
-                registration_list = [RegistrationInfo("slash.{}".format(method_name), expect_exists=True)]
+                registration_list = [RegistrationInfo(f"slash.{method_name}", expect_exists=True)]
 
             for registration_info in registration_list:
                 if registration_info.hook_name is None:

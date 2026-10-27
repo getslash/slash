@@ -56,7 +56,7 @@ def test_tags_addition_conflicting_keys():
 def test_setting_getting_tags_on_metadata(taggable):
     slash.tag("tagname")(taggable)
 
-    with slash.Session() as s:  # pylint: disable=unused-variable
+    with slash.Session() as s:  # pylint: disable=unused-variable  # noqa: F841
         tests = Loader().get_runnables(taggable)
     assert tests
     for t in tests:
@@ -196,14 +196,14 @@ def _tag_class_and_method(taggable, tags):
     if not isinstance(taggable, MethodTest):
         return _simple_tagging_strategy(taggable, tags)
 
-    for (tag_name, tag_value), taggable in zip(tags, itertools.cycle([taggable.cls, taggable])):
+    for (tag_name, tag_value), taggable in zip(tags, itertools.cycle([taggable.cls, taggable])):  # noqa: B020, PLR1704
         taggable.add_decorator(_get_slash_tag_string(tag_name, tag_value))
 
 
 def _get_slash_tag_string(tag_name, tag_value):
-    returned = "slash.tag({!r}".format(tag_name)
+    returned = f"slash.tag({tag_name!r}"
     if tag_value is not NOTHING:
-        returned += ", {!r}".format(tag_value)
+        returned += f", {tag_value!r}"
     returned += ")"
     return returned
 

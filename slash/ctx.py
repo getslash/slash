@@ -1,18 +1,18 @@
 from .exceptions import SlashInternalError
 from .reporting.null_reporter import NullReporter
 
-__all__ = ["context", "session", "test", "test_id", "g", "internal_globals"]
+__all__ = ["context", "g", "internal_globals", "session", "test", "test_id"]
 
 
-class GlobalStorage(object):
+class GlobalStorage:
     pass
 
 
-class Context(object):
+class Context:
     session = test = test_id = result = fixture = None
 
     def __init__(self):
-        super(Context, self).__init__()
+        super().__init__()
         self.g = GlobalStorage()
         self.internal_globals = GlobalStorage()
 
@@ -40,9 +40,9 @@ class Context(object):
         return getattr(current_test.__slash__, field_name)
 
 
-class NullContext(object):
+class NullContext:
     def __setattr__(self, attr, value):
-        raise AttributeError("Cannot set attribute {!r} on null context".format(attr))
+        raise AttributeError(f"Cannot set attribute {attr!r} on null context")
 
     @property
     def _always_none(self):
@@ -55,9 +55,9 @@ class NullContext(object):
     reporter = NullReporter()
 
 
-class _ContextStack(object):
+class _ContextStack:
     def __init__(self):
-        super(_ContextStack, self).__init__()
+        super().__init__()
         self._stack = [NullContext()]
 
     def __getattr__(self, attr):
@@ -70,7 +70,7 @@ class _ContextStack(object):
 
     def __setattr__(self, attr, value):
         if attr.startswith("_"):
-            return super(_ContextStack, self).__setattr__(attr, value)
+            return super().__setattr__(attr, value)
         setattr(self._stack[-1], attr, value)
 
     def push(self, ctx):
@@ -89,9 +89,9 @@ class _ContextStack(object):
 context = _ContextStack()
 
 
-class ContextAttributeProxy(object):
+class ContextAttributeProxy:
     def __init__(self, name):
-        super(ContextAttributeProxy, self).__init__()
+        super().__init__()
         self._proxy__name = name
 
     @property
@@ -103,7 +103,7 @@ class ContextAttributeProxy(object):
 
     def __setattr__(self, attr, value):
         if attr == "_proxy__name":
-            return super(ContextAttributeProxy, self).__setattr__(attr, value)
+            return super().__setattr__(attr, value)
         setattr(self._obj, attr, value)
 
     def __eq__(self, other):

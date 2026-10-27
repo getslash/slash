@@ -21,9 +21,9 @@ from .validation import validate_run, get_test_id_from_test_address
 from .utils import get_temporary_slashrc_context
 
 
-class Suite(object):
-    def __init__(self, strategy=BalancedStrategy(), path=None, debug_info=True, is_parallel=False):
-        super(Suite, self).__init__()
+class Suite:
+    def __init__(self, strategy=BalancedStrategy(), path=None, debug_info=True, is_parallel=False):  # noqa: B008
+        super().__init__()
         self._path = path
         self._last_committed_path = None
         self.strategy = strategy
@@ -90,7 +90,7 @@ class Suite(object):
         elif type == "method":
             returned = self.add_method_test()
         else:
-            raise NotImplementedError("Unknown test type {!r}".format(type))  # pragma: no cover
+            raise NotImplementedError(f"Unknown test type {type!r}")  # pragma: no cover
         assert returned in self._notified
         return returned
 

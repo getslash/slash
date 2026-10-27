@@ -26,7 +26,7 @@ class CustomWarning(UserWarning):
         (_warn("hello"), _catch(message=re.compile("^hello$")), True),
         (_warn("message", category=CustomWarning), _catch(category=CustomWarning), True),
         (_warn("message"), _catch(filename=__file__), False),
-        (_warn("message"), _catch(filename=re.compile("^{}$".format(re.escape(__file__)))), False),
+        (_warn("message"), _catch(filename=re.compile(f"^{re.escape(__file__)}$")), False),
     ],
 )
 def test_ignore_warnings(emitter, catch, can_test_negative):
@@ -52,10 +52,10 @@ _WARN_MESSAGE = "Hello World"
     [
         (_catch(message=_WARN_MESSAGE, filename=__file__), True),
         (_catch(message=re.compile("^Hello.*$"), filename=__file__), True),
-        (_catch(message=_WARN_MESSAGE, filename=re.compile("^{}".format(re.escape(os.path.dirname(__file__))))), True),
+        (_catch(message=_WARN_MESSAGE, filename=re.compile(f"^{re.escape(os.path.dirname(__file__))}")), True),
         (
             _catch(
-                message=re.compile("^Hello.*$"), filename=re.compile("^{}".format(re.escape(os.path.dirname(__file__))))
+                message=re.compile("^Hello.*$"), filename=re.compile(f"^{re.escape(os.path.dirname(__file__))}")
             ),
             True,
         ),
@@ -63,7 +63,7 @@ _WARN_MESSAGE = "Hello World"
         (_catch(message=_WARN_MESSAGE, category=DeprecationWarning), False),
         (_catch(message=re.compile("^Hello.*$"), category=DeprecationWarning), False),
         (_catch(filename=__file__, category=DeprecationWarning), False),
-        (_catch(filename=re.compile("^{}$".format(re.escape(__file__))), category=DeprecationWarning), False),
+        (_catch(filename=re.compile(f"^{re.escape(__file__)}$"), category=DeprecationWarning), False),
     ],
 )
 def test_ignore_warnings_with_multiple_criteria(catch, should_ignore):

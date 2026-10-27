@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import collections
 
@@ -10,7 +10,6 @@ from .utils.warning_capture import warning_callback_context
 from .ctx import context
 from .exception_handling import handling_exceptions
 from contextlib import contextmanager
-
 
 _native_logger = logbook.Logger("slash.native_warnings")
 
@@ -24,13 +23,13 @@ class LogbookWarning(UserWarning):
     pass
 
 
-class SessionWarnings(object):
+class SessionWarnings:
     """
     Holds all warnings emitted during the session
     """
 
     def __init__(self):
-        super(SessionWarnings, self).__init__()
+        super().__init__()
         self.warnings = []
 
     @contextmanager
@@ -106,9 +105,9 @@ class WarnHandler(logbook.Handler, logbook.StringFormatterHandlerMixin):
 WarningKey = collections.namedtuple("WarningKey", ("filename", "lineno"))
 
 
-class RecordedWarning(object):
+class RecordedWarning:
     def __init__(self, details, message, category=None):
-        super(RecordedWarning, self).__init__()
+        super().__init__()
         self.details = details
         self.details["session_id"] = context.session_id if context.session else None
         self.details["test_id"] = context.test_id if context.test_id else None
@@ -157,7 +156,7 @@ class RecordedWarning(object):
         return self._repr
 
 
-class _IgnoredWarning(object):
+class _IgnoredWarning:
     def __init__(self, category, filename, lineno, message):
         self.category = category
         self.filename = filename
@@ -170,7 +169,7 @@ class _IgnoredWarning(object):
             return False
         if regex_or_str == warning_str:
             return True
-        elif hasattr(regex_or_str, "match"):
+        elif hasattr(regex_or_str, "match"):  # noqa: SIM102
             if regex_or_str.match(warning_str):
                 return True
         return False
@@ -185,7 +184,7 @@ class _IgnoredWarning(object):
         if self.lineno and warning.lineno != self.lineno:
             return False
 
-        if self.message and not self._pattern_matches(self.message, warning.message):
+        if self.message and not self._pattern_matches(self.message, warning.message):  # noqa: SIM103
             return False
 
         return True
@@ -193,16 +192,16 @@ class _IgnoredWarning(object):
     def __repr__(self):
         extras = ""
         if self.category:
-            extras += "category: {} ".format(self.category)
+            extras += f"category: {self.category} "
         if self.message:
-            extras += "message: {} ".format(self.message)
+            extras += f"message: {self.message} "
         if self.lineno:
-            extras += "lineno: {} ".format(self.lineno)
+            extras += f"lineno: {self.lineno} "
         if self.filename:
-            extras += "filename: {} ".format(self.filename)
+            extras += f"filename: {self.filename} "
         if not extras:
             extras = "-"
-        return "<IgnoredWarning: {}>".format(extras.strip())
+        return f"<IgnoredWarning: {extras.strip()}>"
 
 
 _ignored_warnings = []

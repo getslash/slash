@@ -5,7 +5,7 @@ from ..exceptions import TaggingConflict
 _TAGS_NAME = "__slash_tags__"
 
 
-class Tagger(object):
+class Tagger:
     def __init__(self, tag_name, tag_value):
         self.tag_name = tag_name
         self.tag_value = tag_value
@@ -26,7 +26,7 @@ def tag_test(test, tag_name, tag_value):
         tags = Tags()
         setattr(test, _TAGS_NAME, tags)
     if tags.get(tag_name, NOTHING) not in (tag_value, NOTHING):
-        raise TaggingConflict("Tag {} is already set on {}".format(tag_name, test))
+        raise TaggingConflict(f"Tag {tag_name} is already set on {test}")
     tags[tag_name] = tag_value
     return test
 
@@ -40,9 +40,9 @@ def get_tags(test):
     return getattr(test, _TAGS_NAME, NO_TAGS)
 
 
-class Tags(object):
+class Tags:
     def __init__(self, tags=None):
-        super(Tags, self).__init__()
+        super().__init__()
         if tags is None:
             tags = {}
         self._tags = tags
@@ -64,7 +64,7 @@ class Tags(object):
             tag_value,
         ) in other._tags.items():  # pylint: disable=protected-access
             if self.get(tag_name, NOTHING) not in (tag_value, NOTHING):
-                raise TaggingConflict("Conflicting tag: {} when adding {}, {}".format(tag_name, self, other))
+                raise TaggingConflict(f"Conflicting tag: {tag_name} when adding {self}, {other}")
 
     def __add__(self, other):
         if other is NO_TAGS:
@@ -105,7 +105,7 @@ class Tags(object):
         return iter(self._tags)
 
 
-class _NoTags(object):
+class _NoTags:
     def __contains__(self, tag_name):
         return False
 

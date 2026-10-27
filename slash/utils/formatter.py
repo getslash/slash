@@ -1,13 +1,12 @@
-from __future__ import print_function
 from contextlib import contextmanager
 import errno
 
 from .color_string import ColorString
 
 
-class Formatter(object):
+class Formatter:
     def __init__(self, stream, indentation_string=" "):
-        super(Formatter, self).__init__()
+        super().__init__()
         self._indentation_string = indentation_string
         self._indentation_list = []
         self._indentation = ""
@@ -18,7 +17,7 @@ class Formatter(object):
         self.writeln("-" * length)
 
     def writeln(self, *args, **kwargs):
-        self.write(end="\n", *args, **kwargs)
+        self.write(end="\n", *args, **kwargs)  # noqa: B026
 
     def write(self, *args, **kwargs):
         try:
@@ -37,7 +36,7 @@ class Formatter(object):
                     if index != len(lines) - 1:
                         self._stream.write("\n")
             self._stream.write(end)
-        except IOError as e:
+        except OSError as e:
             if e.errno not in (errno.EIO, errno.EPIPE):
                 raise
 
@@ -65,9 +64,9 @@ class Formatter(object):
             self._indent(increment=-increment)
 
 
-class LineTracker(object):
+class LineTracker:
     def __init__(self, stream):
-        super(LineTracker, self).__init__()
+        super().__init__()
         self._stream = stream
         self._empty_line = True
 

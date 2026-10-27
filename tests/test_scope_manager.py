@@ -109,7 +109,7 @@ def tests_by_module():
 
     with slash.Session():
         for module_index in range(num_modules):
-            module_name = "__module_{}".format(module_index)
+            module_name = f"__module_{module_index}"
             returned.append([])
             for test_index in range(num_tests_per_module):  # pylint: disable=unused-variable
                 [test] = make_runnable_tests(test_func)  # pylint: disable=unbalanced-tuple-unpacking
@@ -133,9 +133,9 @@ def _increment_scope(prev_scopes, **increments):
     return returned
 
 
-class DummyFixtureStore(object):
+class DummyFixtureStore:
     def __init__(self):
-        super(DummyFixtureStore, self).__init__()
+        super().__init__()
         self._scopes = []
         self._counters = collections.defaultdict(functools.partial(itertools.count, 1))
         self._scope_ids = {}

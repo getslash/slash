@@ -16,10 +16,10 @@ def test_result_add_exception_multiple_times(result, use_error):
         second_result.mark_started()
         try:
             if use_error:
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
             else:
                 assert 1 + 1 == 3
-        except:
+        except:  # noqa: E722
             for _ in range(3):
                 result.add_exception()
             second_result.add_exception()
@@ -128,10 +128,10 @@ def test_result_test_garbage_collected(gc_marker):
     @slash.hooks.register
     def tests_loaded(tests):  # pylint: disable=unused-variable
         runnable_tests.extend(tests)
-        marks.extend(list(gc_marker.mark(t) for t in runnable_tests[:-1]))
+        marks.extend(list(gc_marker.mark(t) for t in runnable_tests[:-1]))  # noqa: C400
 
-    with slash.Session() as s:  # pylint: disable=unused-variable
-        session = run_tests_assert_success(test_funcs)  # pylint: disable=unused-variable
+    with slash.Session() as s:  # pylint: disable=unused-variable  # noqa: F841
+        session = run_tests_assert_success(test_funcs)  # pylint: disable=unused-variable  # noqa: F841
         del runnable_tests[:]
 
     gc.collect()
@@ -160,9 +160,8 @@ def test_global_result_is_success(suite, suite_test):
 
 
 def test_global_result_error_without_started_context():
-    with slash.Session() as session:
-        with handling_exceptions(swallow=True):
-            1 / 0  # pylint: disable=pointless-statement
+    with slash.Session() as session, handling_exceptions(swallow=True):
+        1 / 0  # pylint: disable=pointless-statement  # noqa: B018
     assert not session.results.is_success()
 
 
@@ -182,7 +181,7 @@ def test_session_cleanups_under_global_result(suite, suite_test):
 @pytest.mark.parametrize("log_subpath", [None, "my_errors.log"])
 def test_log_paths(log_path, log_subpath, config_override, logs_dir):
     config_path = "log.highlights_subpath"
-    extra_logs = ["/my/extra/log_{}".format(i) for i in range(2)]
+    extra_logs = [f"/my/extra/log_{i}" for i in range(2)]
 
     config_override(config_path, log_subpath)
     with slash.Session() as curr_session:
@@ -211,14 +210,14 @@ def test_result_not_started_with_errors(error_adder):
 
 class SessionResultTest(TestCase):
     def setUp(self):
-        super(SessionResultTest, self).setUp()
+        super().setUp()
         self.results = [Result() for _ in range(10)]
         for r in self.results:
             r.mark_started()
         # one result with both errors and failures
         try:
-            1 / 0
-        except:
+            1 / 0  # noqa: B018
+        except:  # noqa: E722
             self.results[1].add_error()
             self.results[1].add_failure()
             # one result with failure

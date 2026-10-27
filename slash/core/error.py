@@ -13,16 +13,15 @@ from ..utils.formatter import Formatter
 from ..utils.python import safe_set_attribute
 from ..utils.traceback_utils import distill_call_stack, distill_traceback, distill_object_attributes
 
-
 _logger = logbook.Logger(__name__)
 _CAPTURED_ERROR_MARKER = "__slash_captured_error__"
 
 
-class Error(object):
+class Error:
     traceback = exception_type = arg = _cached_detailed_traceback_str = None
 
     def __init__(self, msg=None, exc_info=None, frame_correction=0):
-        super(Error, self).__init__()
+        super().__init__()
         self.time = arrow.utcnow()
         self._fatal = False
         self._has_custom_message = msg is not None
@@ -122,7 +121,7 @@ class Error(object):
             return self.traceback.cause.func_name
 
     def __repr__(self):
-        return "<{0.__class__.__name__}: {0.message}>".format(self)
+        return f"<{self.__class__.__name__}: {self.message}>"
 
     def get_detailed_traceback_str(self):
         """Returns a formatted traceback string for the exception caught"""
@@ -135,7 +134,7 @@ class Error(object):
                     with get_no_deprecations_context():
                         locals_ = frame.locals
                         globals_ = frame.globals
-                    f.writeln('File "{f.filename}", line {f.lineno}, in {f.func_name}:'.format(f=frame))
+                    f.writeln(f'File "{frame.filename}", line {frame.lineno}, in {frame.func_name}:')
                     with f.indented():
                         f.writeln(">", frame.code_line.strip() or "?")
                         with f.indented():
@@ -151,4 +150,4 @@ class Error(object):
         return self._cached_detailed_traceback_str
 
     def get_detailed_str(self):
-        return "{}*** {}".format(self.get_detailed_traceback_str(), self)
+        return f"{self.get_detailed_traceback_str()}*** {self}"

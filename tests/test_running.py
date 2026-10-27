@@ -10,7 +10,7 @@ from slash.runner import run_tests
 @pytest.mark.parametrize("adder", ["add_failure", "add_error"])
 def test_stop_on_error_with_error_and_skip(suite, adder):
     suite_test = suite[2]
-    suite_test.append_line('slash.{}("err")'.format(adder))
+    suite_test.append_line(f'slash.{adder}("err")')
     suite_test.append_line("slash.skip_test()")
     suite_test.expect_skip()
 
@@ -31,7 +31,7 @@ def test_stop_on_error_from_previous_run(suite, adder):
 
     # avoid slash.ctx here, because the stored object would be a proxy
     test_a.append_line("slash.g.inject_to_result = slash.context.session.results.current")
-    test_b.append_line('slash.g.inject_to_result.{}("injected")'.format(adder))
+    test_b.append_line(f'slash.g.inject_to_result.{adder}("injected")')
 
     if adder == "add_error":
         test_a.expect_error()
@@ -59,7 +59,7 @@ def test_simple_run(suite):
 
 def test_iter_results_ordering(suite):
     for index, test in enumerate(suite):
-        test.append_line('slash.context.result.data["index"] = {}'.format(index))
+        test.append_line(f'slash.context.result.data["index"] = {index}')
 
     results = list(suite.run().session.results.iter_test_results())
 
@@ -161,11 +161,11 @@ def fatal_error_adder(request, failure_type):
                 )
             )
         elif request.param == "adding":
-            test.append_line('slash.add_{}("msg").mark_fatal()'.format(failure_type))
+            test.append_line(f'slash.add_{failure_type}("msg").mark_fatal()')
         else:
             raise NotImplementedError()  # pragma: no cover
 
-        getattr(test, "expect_{}".format(failure_type))()
+        getattr(test, f"expect_{failure_type}")()
 
     return adder
 

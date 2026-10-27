@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import argparse
 import inspect
@@ -89,7 +89,7 @@ def slash_list(args, report_stream=sys.stdout, error_stream=sys.stderr):
         if len(runnables):  # pylint: disable=len-as-condition
             return 0
     except CannotLoadTests as e:
-        _print(_error_style("Could not load tests ({})".format(e)), error=True)
+        _print(_error_style(f"Could not load tests ({e})"), error=True)
         return -1
     print("No tests were found!", file=sys.stderr)
     return int(not parsed_args.allow_empty)
@@ -102,7 +102,7 @@ def _report_tests(args, runnables, printer):
     visited = set()
 
     for runnable in runnables:
-        extra = "" if not args.show_tags else "  Tags: {}".format(list(runnable.get_tags()))
+        extra = "" if not args.show_tags else f"  Tags: {list(runnable.get_tags())}"
         address = runnable.__slash__.address
         if not args.show_params:
             address = address.split("(")[0]
@@ -111,14 +111,14 @@ def _report_tests(args, runnables, printer):
         if address in visited and not args.show_duplicates:
             continue
         visited.add(address)
-        printer("{}{}".format(_title_style(address), extra))
+        printer(f"{_title_style(address)}{extra}")
 
 
 def _convert_address_to_relpath(address):
     filename, remainder = address.rsplit(":", 1)
     if os.path.isabs(filename):
         filename = os.path.relpath(filename)
-    return "{}:{}".format(filename, remainder)
+    return f"{filename}:{remainder}"
 
 
 def _report_fixtures(args, session, printer, used_fixtures):
@@ -141,10 +141,10 @@ def _report_fixtures(args, session, printer, used_fixtures):
         if fixture.is_override():
             additional_info += " -- " + _override_style("Override")
 
-        printer(_title_style("{}{}".format(fixture.info.name, additional_info)))
+        printer(_title_style(f"{fixture.info.name}{additional_info}"))
         if doc:
             for line in (_doc_style(doc)).split("\n"):
-                printer("    {}".format(line))
+                printer(f"    {line}")
 
         source_path = inspect.getsourcefile(fixture_func)
         relpath_start = args.paths[0] if args.paths else "."
@@ -152,5 +152,5 @@ def _report_fixtures(args, session, printer, used_fixtures):
             # On Windows, ValueError is raised when path and start are on different drives.
             source_path = os.path.relpath(source_path, relpath_start)
 
-        printer("    Source: {}:{}".format(source_path, inspect.getsourcelines(fixture_func)[1]))
+        printer(f"    Source: {source_path}:{inspect.getsourcelines(fixture_func)[1]}")
         printer("\n")

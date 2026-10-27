@@ -142,5 +142,5 @@ class TestParametersTest(TestCase):
             for test in make_runnable_tests(Parameterized):
                 test.run()
         self.assertEqual(
-            set(tuple(x) for x in variations), set(itertools.product(a_values, b_values, c_values, d_values))
+            {tuple(x) for x in variations}, set(itertools.product(a_values, b_values, c_values, d_values))
         )

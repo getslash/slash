@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import threading
 import time
@@ -96,5 +96,5 @@ def notify_if_slow_context(message, slow_seconds=1, end_message=None, show_durat
         thread.join()
         if should_report_end_msg and end_message is not None:
             if show_duration:
-                end_message += " (took {})".format(_humanize_time_delta(time.time() - start_time))
+                end_message += f" (took {_humanize_time_delta(time.time() - start_time)})"
             context.session.reporter.report_message(end_message)

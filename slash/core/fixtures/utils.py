@@ -29,8 +29,8 @@ def fixture(func=None, name=None, scope=None, autouse=False):
 
 def use_fixtures(fixture_names):
     if not isinstance(fixture_names, list):
-        raise RuntimeError(
-            "use_fixtures expects a list of fixture names as an argument (got {!r})".format(fixture_names)
+        raise RuntimeError(  # noqa: TRY004
+            f"use_fixtures expects a list of fixture names as an argument (got {fixture_names!r})"
         )
 
     def decorator(func):
@@ -51,14 +51,14 @@ nofixtures.__doc__ = (
 )
 
 
-class FixtureInfo(object):
+class FixtureInfo:
     def __init__(self, func=None, name=None, scope=None, autouse=False, path=None):
-        super(FixtureInfo, self).__init__()
+        super().__init__()
         self.path = path
         self.id = next(_id_gen)
         if name is None:
             if func is None:
-                name = "__unnamed_{}".format(self.id)
+                name = f"__unnamed_{self.id}"
             else:
                 name = func.__name__
         if scope is None:
@@ -92,7 +92,7 @@ def get_scope_name_by_scope(scope_id):
 
 _SCOPES = dict(zip(("test", "module", "session"), itertools.count()))
 
-_SCOPES_BY_ID = dict((id, name) for (name, id) in _SCOPES.items())
+_SCOPES_BY_ID = {id: name for (name, id) in _SCOPES.items()}
 
 
 def generator_fixture(func=None, **kw):
@@ -179,7 +179,7 @@ class use(six.with_metaclass(_use_type)):  # pylint: disable=no-init
         self.real_fixture_name = real_fixture_name
 
     def __repr__(self):
-        return "<slash.use({!r})>".format(self.real_fixture_name)
+        return f"<slash.use({self.real_fixture_name!r})>"
 
 
 def get_real_fixture_name_from_argument(argument):
@@ -188,4 +188,4 @@ def get_real_fixture_name_from_argument(argument):
     return argument.name
 
 
-__all__ = ["fixture", "nofixtures", "generator_fixture", "yield_fixture", "use", "use_fixtures"]
+__all__ = ["fixture", "generator_fixture", "nofixtures", "use", "use_fixtures", "yield_fixture"]

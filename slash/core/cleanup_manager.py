@@ -15,9 +15,9 @@ _LAST_SCOPE = Sentinel("LAST_SCOPE")
 _DEDUCE = Sentinel("DEDUCE")
 
 
-class CleanupManager(object):
+class CleanupManager:
     def __init__(self):
-        super(CleanupManager, self).__init__()
+        super().__init__()
         self._scope_stack = []
         self._scopes_by_name = {}
         self._pending = []
@@ -71,7 +71,7 @@ class CleanupManager(object):
             scope = self._scope_stack[-1] if self._scope_stack else None
         else:
             if scope_name not in self._scopes_by_name:
-                raise IncorrectScope("Incorrect scope specified: {!r}".format(scope_name))
+                raise IncorrectScope(f"Incorrect scope specified: {scope_name!r}")
             scope = self._scopes_by_name[scope_name][-1]
 
         _logger.trace("Adding cleanup to scope {}: {!r}", scope, added)
@@ -127,7 +127,7 @@ class CleanupManager(object):
         scope = self._scope_stack[-1]
         if scope.name != scope_name:
             raise SlashInternalError(
-                "Attempted to pop scope {!r}, but current scope is {!r}".format(scope_name, scope.name)
+                f"Attempted to pop scope {scope_name!r}, but current scope is {scope.name!r}"
             )
         try:
             self.call_cleanups(scope=scope, in_failure=in_failure, in_interruption=in_interruption)
@@ -166,10 +166,10 @@ class CleanupManager(object):
                     self._current_scope = previous_scope
 
 
-class _Cleanup(object):
+class _Cleanup:
     def __init__(self, func, args, kwargs, critical=False, success_only=False):
         assert not (success_only and critical)
-        super(_Cleanup, self).__init__()
+        super().__init__()
         self.func = func
         self.args = args
         self.kwargs = kwargs
@@ -188,23 +188,23 @@ class _Cleanup(object):
     def _get_repr(self):
         qual_name = getattr(self.func, "__qualname__", None) or getattr(self.func, "__name__", str(self.func))
         module_name = getattr(self.func, "__module__", "???")
-        func_desc = "{}.{}".format(module_name, qual_name)
+        func_desc = f"{module_name}.{qual_name}"
         repr_prefix = ""
         if self.success_only:
             repr_prefix += "Success Only "
         if self.critical:
             repr_prefix += "Critical "
-        return "<{}Cleanup {} ({},{})>".format(repr_prefix, func_desc, self.args, self.kwargs)
+        return f"<{repr_prefix}Cleanup {func_desc} ({self.args},{self.kwargs})>"
 
     def __repr__(self):
         return self._repr
 
 
-class _Scope(object):
+class _Scope:
     def __init__(self, name):
-        super(_Scope, self).__init__()
+        super().__init__()
         self.name = name
         self.cleanups = []
 
     def __repr__(self):
-        return "<Scope: {}>".format(self.name)
+        return f"<Scope: {self.name}>"

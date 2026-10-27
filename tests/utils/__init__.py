@@ -22,13 +22,12 @@ from slash.utils.python import PYPY
 
 import unittest
 
-
 _logger = logbook.Logger(__name__)
 
 
 class TestCase(unittest.TestCase):
     def setUp(self):
-        super(TestCase, self).setUp()
+        super().setUp()
         self._handler = LoggingHandler()
         self._handler.push_application()
         self.addCleanup(self._handler.pop_application)
@@ -64,10 +63,10 @@ class TestCase(unittest.TestCase):
         if self._forge is not None:
             self._forge.restore_all_replacements()
             self._forge.verify()
-        super(TestCase, self).tearDown()
+        super().tearDown()
 
 
-class NullFile(object):
+class NullFile:
     def write(self, s):
         pass
 
@@ -158,9 +157,9 @@ else:
     skip_on_pypy = _noop
 
 
-class Unprintable(object):
+class Unprintable:
     def __repr__(self):  # pylint: disable=invalid-repr-returned
-        1 / 0  # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
     __str__ = __repr__
 

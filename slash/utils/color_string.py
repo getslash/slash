@@ -2,7 +2,7 @@ import colorama
 import functools
 
 
-class ColorStringBase(object):
+class ColorStringBase:
     def get_colored(self):
         raise NotImplementedError()  # pragma: no cover
 
@@ -18,7 +18,7 @@ class ColorStringBase(object):
 
 class ColorString(ColorStringBase):
     def __init__(self, string, color):
-        super(ColorString, self).__init__()
+        super().__init__()
         self._string = string
         self._color = color
 
@@ -39,12 +39,12 @@ class ColorString(ColorStringBase):
         return str(self._string)
 
     def get_colored(self):
-        return "{}{}{}".format(getattr(colorama.Fore, self._color.upper()), self._string, colorama.Fore.RESET)  # pylint: disable=no-member
+        return f"{getattr(colorama.Fore, self._color.upper())}{self._string}{colorama.Fore.RESET}"  # pylint: disable=no-member
 
 
 class ColorCompoundString(ColorStringBase):
     def __init__(self, *strings):
-        super(ColorCompoundString, self).__init__()
+        super().__init__()
         self._strings = strings
 
     def __str__(self):

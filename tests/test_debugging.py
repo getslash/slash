@@ -97,7 +97,7 @@ def skipped_exc_info(request):
 @pytest.fixture
 def exc_info():
     try:
-        1 / 0
+        1 / 0  # noqa: B018
     except:
         return sys.exc_info()
 

@@ -2,7 +2,7 @@ import copy
 from .tagging import NO_TAGS
 
 
-class RunnableTest(object):
+class RunnableTest:
     """
     This class is meant to serve as a base class to any test that can
     actually be executed by the Slash runner.
@@ -11,7 +11,7 @@ class RunnableTest(object):
     __slash__ = None
 
     def __init__(self, fixture_store, fixture_namespace, variation):
-        super(RunnableTest, self).__init__()
+        super().__init__()
         self._fixture_store = fixture_store
         self._fixture_namespace = fixture_namespace
         self._variation = variation
@@ -82,4 +82,4 @@ class RunnableTest(object):
         return self._fixture_namespace
 
     def __repr__(self):
-        return "<Runnable test {!r}>".format(self.__slash__)
+        return f"<Runnable test {self.__slash__!r}>"

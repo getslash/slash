@@ -18,15 +18,13 @@ _HAS_PID_PGID = platform.system() != "Windows"
 _logger = logbook.Logger(__name__)
 
 
-class Worker(object):
+class Worker:
     def __init__(self, client_id, session_id):
-        super(Worker, self).__init__()
+        super().__init__()
         self.client_id = client_id
         self.session_id = session_id
-        self.server_addr = "http://{}:{}".format(config.root.parallel.server_addr, config.root.parallel.server_port)
-        self.keepalive_server_addr = "http://{}:{}".format(
-            config.root.parallel.server_addr, config.root.parallel.keepalive_port
-        )
+        self.server_addr = f"http://{config.root.parallel.server_addr}:{config.root.parallel.server_port}"
+        self.keepalive_server_addr = f"http://{config.root.parallel.server_addr}:{config.root.parallel.keepalive_port}"
         self._stop_event = None
         self._watchdog_thread = None
 
@@ -51,11 +49,11 @@ class Worker(object):
 
     def error_added(self, error, result):
         if result.is_global_result():
-            self.client.report_session_error("Session error in client id {}: {}".format(self.client_id, error.message))
+            self.client.report_session_error(f"Session error in client id {self.client_id}: {error.message}")
 
     def write_to_error_file(self, msg):
         try:
-            file_name = "{}-{}.log".format(config.root.parallel.worker_error_file, self.client_id)
+            file_name = f"{config.root.parallel.worker_error_file}-{self.client_id}.log"
             worker_error_file = os.path.join(config.root.parallel.workers_error_dir, file_name)
             with open(worker_error_file, "a") as error_file:
                 error_file.write(msg)
@@ -70,7 +68,7 @@ class Worker(object):
             self._watchdog_thread = threading.Thread(target=self.keep_alive, args=(self._stop_event,), daemon=True)
             self._watchdog_thread.start()
         except OSError as err:
-            self.write_to_error_file("Failed to connect to server, error: {}".format(str(err)))
+            self.write_to_error_file(f"Failed to connect to server, error: {err!s}")
 
     def _stop_keepalive_thread(self):
         if self._stop_event is not None and not self._stop_event.is_set():

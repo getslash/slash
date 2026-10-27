@@ -46,9 +46,9 @@ def _op(operator_func, operator_token, inverse_func, inverse_token):
     _OPERATORS[inverse_func] = Operator(inverse_token, inverse_func, operator_func)
 
 
-class Operator(object):
+class Operator:
     def __init__(self, template, func, inverse_func):
-        super(Operator, self).__init__()
+        super().__init__()
         self.template = template
         self.func = func
         self.inverse_func = inverse_func

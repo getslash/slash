@@ -19,10 +19,9 @@ def test_handling_exceptions_log(context, is_fatal):
     raised = CustomException()
     if is_fatal:
         exception_handling.mark_exception_fatal(raised)
-    with slash.Session():
-        with logbook.TestHandler() as handler:
-            with exception_handling.handling_exceptions(context=context, swallow=True):
-                raise raised
+    with slash.Session(), logbook.TestHandler() as handler:  # noqa: SIM117
+        with exception_handling.handling_exceptions(context=context, swallow=True):
+            raise raised
     assert len(handler.records) == 3
     assert handler.records[1].message.startswith("Error added")
     assert handler.records[2].message.startswith("Swallowing")
@@ -30,7 +29,7 @@ def test_handling_exceptions_log(context, is_fatal):
     assert handle_exc_msg.startswith("Handling exception")
 
     if context:
-        assert "Context: {}".format(context) in handle_exc_msg
+        assert f"Context: {context}" in handle_exc_msg
     else:
         assert "Context" not in handle_exc_msg
     if is_fatal:
@@ -55,10 +54,8 @@ def test_handling_exceptions_swallow_skip_test(suite, suite_test):
 
 
 def test_handling_exceptions_skip_test_would_not_return_skip_test():
-    with pytest.raises(SkipTest) as caught:
-        with slash.Session():
-            with exception_handling.handling_exceptions() as handled:
-                raise SkipTest("Unittest")
+    with pytest.raises(SkipTest) as caught, slash.Session(), exception_handling.handling_exceptions() as handled:
+        raise SkipTest("Unittest")
 
     assert isinstance(caught.value, SkipTest)
     assert handled.exception is caught.value
@@ -68,18 +65,16 @@ def test_handling_exceptions_skip_test_would_not_return_skip_test():
 def test_passthrough_types():
     value = CustomException()
 
-    with slash.Session():
-        with pytest.raises(CustomException) as caught:
-            with exception_handling.handling_exceptions(passthrough_types=(CustomException,)) as handled:
-                raise value
+    with slash.Session(), pytest.raises(CustomException) as caught:  # noqa: SIM117
+        with exception_handling.handling_exceptions(passthrough_types=(CustomException,)) as handled:
+            raise value
     assert value is caught.value
     assert handled.exception is None
     assert not exception_handling.is_exception_handled(value)
 
-    with slash.Session():
-        with pytest.raises(CustomException) as caught:
-            with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)) as handled:
-                raise value
+    with slash.Session(), pytest.raises(CustomException) as caught:  # noqa: SIM117
+        with exception_handling.handling_exceptions(passthrough_types=(AttributeError,)) as handled:
+            raise value
     assert value is caught.value
     assert handled.exception is value
     assert exception_handling.is_exception_handled(value)
@@ -88,16 +83,15 @@ def test_passthrough_types():
 def test_swallow_types():
     value = CustomException()
 
-    with slash.Session():
-        with exception_handling.handling_exceptions(swallow_types=(CustomException,)) as handled:
-            raise value
+    with slash.Session(), exception_handling.handling_exceptions(swallow_types=(CustomException,)) as handled:
+        raise value
     assert sys.exc_info() == exception_handling.NO_EXC_INFO
     assert handled.exception is value
 
 
 class FakeTracebackTest(TestCase):
     def setUp(self):
-        super(FakeTracebackTest, self).setUp()
+        super().setUp()
         self.override_config("debug.enabled", True)
         self.forge.replace_with(debug, "launch_debugger", self.verify_fake_traceback_debugger)
         self.debugger_called = False
@@ -105,17 +99,16 @@ class FakeTracebackTest(TestCase):
 
     @pytest.mark.skipif(PYPY, reason="Cannot run on PyPy")
     def test_fake_traceback(self):
-        with slash.Session(), pytest.raises(ZeroDivisionError):
+        with slash.Session(), pytest.raises(ZeroDivisionError):  # noqa: SIM117
             with exception_handling.handling_exceptions(fake_traceback=False):
                 self._expected_line_number = inspect.currentframe().f_lineno + 1
                 a = 1 / 0
                 return a
 
-        with slash.Session(), pytest.raises(ZeroDivisionError):
-            with exception_handling.handling_exceptions():
-                self._expected_line_number = inspect.currentframe().f_lineno + 1
-                a = 1 / 0
-                return a
+        with slash.Session(), pytest.raises(ZeroDivisionError), exception_handling.handling_exceptions():
+            self._expected_line_number = inspect.currentframe().f_lineno + 1
+            a = 1 / 0
+            return a
 
     def verify_fake_traceback_debugger(self, exc_info):
         assert traceback.extract_tb(exc_info[2])[-1][1] == self._expected_line_number
@@ -138,7 +131,7 @@ class FakeTracebackTest(TestCase):
 def test_handling_exceptions():
     value = CustomException()
 
-    with slash.Session(), pytest.raises(CustomException) as caught:
+    with slash.Session(), pytest.raises(CustomException) as caught:  # noqa: SIM117
         with exception_handling.handling_exceptions() as handled1:
             with exception_handling.handling_exceptions() as handled2:
                 with exception_handling.handling_exceptions() as handled3:
@@ -152,7 +145,7 @@ def test_handling_exceptions():
 
 class DebuggingTest(TestCase):
     def setUp(self):
-        super(DebuggingTest, self).setUp()
+        super().setUp()
         self.forge.replace_with(debug, "launch_debugger", self.dummy_debugger)
         self.debugger_called = False
 
@@ -176,9 +169,8 @@ class DebuggingTest(TestCase):
         self.assertTrue(self.debugger_called)
 
     def _raise_exception_in_context(self, exception_type):
-        with slash.Session(), self.assertRaises(exception_type):
-            with exception_handling.handling_exceptions():
-                raise exception_type()
+        with slash.Session(), self.assertRaises(exception_type), exception_handling.handling_exceptions():
+            raise exception_type()
 
 
 def test_swallow_exceptions():
@@ -188,18 +180,16 @@ def test_swallow_exceptions():
 
 def test_no_swallow():
     raised = CustomException()
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.get_exception_swallowing_context():
-            raise exception_handling.noswallow(raised)
+    with pytest.raises(CustomException) as caught, exception_handling.get_exception_swallowing_context():
+        raise exception_handling.noswallow(raised)
     assert raised is caught.value
 
 
 def test_disable_exception_swallowing_function():
     raised = CustomException()
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.get_exception_swallowing_context():
-            exception_handling.disable_exception_swallowing(raised)
-            raise raised
+    with pytest.raises(CustomException) as caught, exception_handling.get_exception_swallowing_context():
+        exception_handling.disable_exception_swallowing(raised)
+        raise raised
     assert caught.value is raised
 
 
@@ -210,9 +200,8 @@ def test_disable_exception_swallowing_decorator():
     def func():
         raise raised
 
-    with pytest.raises(CustomException) as caught:
-        with exception_handling.get_exception_swallowing_context():
-            func()
+    with pytest.raises(CustomException) as caught, exception_handling.get_exception_swallowing_context():
+        func()
     assert caught.value is raised
 
 
@@ -220,9 +209,8 @@ def test_disable_exception_swallowing_decorator():
 @pytest.mark.parametrize("exc_types", [CustomException, (CustomException, ZeroDivisionError)])
 def test_assert_raises(exc_types, message):
     raised = CustomException()
-    with slash.Session():
-        with slash.assert_raises(exc_types, msg=message) as caught:
-            raise raised
+    with slash.Session(), slash.assert_raises(exc_types, msg=message) as caught:
+        raise raised
     assert sys.exc_info() == exception_handling.NO_EXC_INFO
     assert caught.exception is raised
 
@@ -237,7 +225,7 @@ def test_assert_raises_that_not_raises(message):
         assert expected_substring in str(e)
         assert e.expected_types == (CustomException,)
     else:
-        raise Exception("ExpectedExceptionNotCaught exception was not raised :(")  # pylint: disable=broad-exception-raised
+        raise Exception("ExpectedExceptionNotCaught exception was not raised :(")  # pylint: disable=broad-exception-raised  # noqa: TRY002
 
 
 @pytest.mark.parametrize("with_session", [True, False])
@@ -253,9 +241,8 @@ def test_handling_exceptions_inside_assert_raises_with_session(with_session):
         else:
             session = None
 
-        with slash.assert_raises(CustomException):
-            with exception_handling.handling_exceptions():
-                raise value
+        with slash.assert_raises(CustomException), exception_handling.handling_exceptions():
+            raise value
 
     assert not exception_handling.is_exception_handled(value)
     if with_session:
@@ -266,19 +253,17 @@ def test_handling_exceptions_inside_assert_raises_with_session(with_session):
 @pytest.mark.parametrize("exc_types", [CustomException, (CustomException, ZeroDivisionError)])
 def test_allowing_exceptions(exc_types, message):
     raised = CustomException()
-    with slash.Session():
-        with slash.allowing_exceptions(exc_types, msg=message) as caught:
-            with logbook.TestHandler() as handler:
-                raise raised
+    with slash.Session(), slash.allowing_exceptions(exc_types, msg=message) as caught:  # noqa: SIM117
+        with logbook.TestHandler() as handler:
+            raise raised
     assert sys.exc_info() == exception_handling.NO_EXC_INFO
     assert caught.exception is raised
     assert len(handler.records) == 0  # pylint: disable=len-as-condition
 
 
 def test_allowing_exceptions_that_not_raises():
-    with logbook.TestHandler() as handler:
-        with slash.allowing_exceptions((Exception, CustomException)):
-            pass
+    with logbook.TestHandler() as handler, slash.allowing_exceptions((Exception, CustomException)):
+        pass
     assert len(handler.records) == 1
     assert handler.records[0].message.startswith("Exception/CustomException not raised")
 
@@ -296,10 +281,9 @@ def test_handling_exceptions_inside_allowing_exceptions_with_session(with_sessio
         else:
             session = None
 
-        with logbook.TestHandler() as handler:
-            with slash.allowing_exceptions(CustomException):
-                with exception_handling.handling_exceptions():
-                    raise value
+        with logbook.TestHandler() as handler, slash.allowing_exceptions(CustomException):  # noqa: SIM117
+            with exception_handling.handling_exceptions():
+                raise value
 
     assert not exception_handling.is_exception_handled(value)
     if with_session:

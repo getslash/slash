@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import functools
 from contextlib import contextmanager
@@ -63,5 +63,5 @@ def _write_fixture1(writeln):
 
 @contextmanager
 def _into(f):
-    with f.open("w", ensure=True) as f:
+    with f.open("w", ensure=True) as f:  # noqa: PLR1704
         yield functools.partial(print, file=f)

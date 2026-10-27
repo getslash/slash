@@ -14,7 +14,6 @@ from .core.exclusions import is_excluded
 from .core import requirements
 from .utils.iteration import PeekableIterator
 
-
 _logger = logbook.Logger(__name__)
 log.set_log_color(_logger.name, logbook.NOTICE, "blue")
 
@@ -87,7 +86,7 @@ def run_tests(iterable, stop_on_error=None):
 def _dump_variation(test):
     _logger.trace(
         "Variation information:\n{}",
-        "\n".join("\t{}: {!r}".format(k, v) for k, v in sorted(test.get_variation().id.items())),
+        "\n".join(f"\t{k}: {v!r}" for k, v in sorted(test.get_variation().id.items())),
     )
 
 
@@ -140,7 +139,7 @@ def _process_requirements_and_exclusions(test):
             context.result.add_skip(req.reason)
             msg = "Skipped" if not req.reason else req.reason
         else:
-            msg = "Unmet requirement: {}".format(message or req)
+            msg = f"Unmet requirement: {message or req}"
             context.result.add_skip(msg)
         messages.add(msg)
 
@@ -157,7 +156,7 @@ def _process_exclusions(test):
     return True
 
 
-class TestStartEndController(object):
+class TestStartEndController:
     def __init__(self, result, prev_result):
         self._result = result
         self._prev_result = prev_result
@@ -203,9 +202,7 @@ def _set_test_metadata(test):
     ensure_test_metadata(test)
     if test.__slash__.test_index0 is not None:
         raise SlashInternalError(
-            "Test index of {} should be None when setting test metadata but is {}".format(
-                test, test.__slash__.test_index0
-            )
+            f"Test index of {test} should be None when setting test metadata but is {test.__slash__.test_index0}"
         )
     test.__slash__.test_index0 = (
         next(context.session.test_index_counter)

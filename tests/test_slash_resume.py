@@ -72,9 +72,8 @@ def test_different_folder_no_resume_session_id(suite, tmpdir):  # pylint: disabl
     sessoin_id = get_last_resumeable_session_id()
 
     assert sessoin_id
-    with tmpdir.ensure_dir().as_cwd():
-        with pytest.raises(CannotResume):
-            sessoin_id = get_last_resumeable_session_id()
+    with tmpdir.ensure_dir().as_cwd(), pytest.raises(CannotResume):
+        sessoin_id = get_last_resumeable_session_id()
 
 
 def test_delete_old_sessions(suite, config_override):
@@ -179,7 +178,7 @@ def test_resuming_interrupted_session(suite):
     results = suite.run(expect_interruption=True)
     resumed = get_tests_from_previous_session(results.session.id)
     assert len(resumed) == len(suite)
-    assert set(test.address_in_file for test in resumed) == set(address_in_file(test) for test in suite)
+    assert {test.address_in_file for test in resumed} == {address_in_file(test) for test in suite}
 
 
 @pytest.mark.parametrize(

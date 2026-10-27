@@ -13,12 +13,12 @@ from .test_container import SuiteWriterTestContainer
 
 class File(SuiteWriterTestContainer, CodeElement):
     def __init__(self, suite, relpath=None):
-        super(File, self).__init__(suite)
+        super().__init__(suite)
         self._classes = []
         self._fixtures = []
 
         if relpath is None:
-            relpath = "test_{}.py".format(self.id)
+            relpath = f"test_{self.id}.py"
         self._relpath = relpath
 
     @property
@@ -26,8 +26,8 @@ class File(SuiteWriterTestContainer, CodeElement):
         return os.path.basename(self._relpath)
 
     def add_hook_event(self, hook_name, extra_args=(), evt_name="evt"):
-        self.append_line("@slash.hooks.{}.register".format(hook_name))
-        event_code = "{}_{}".format(evt_name, uuid4())
+        self.append_line(f"@slash.hooks.{hook_name}.register")
+        event_code = f"{evt_name}_{uuid4()}"
         self.append_line("def _hook():")
         self.append_line("    __ut__.events.add({!r}, {})".format(event_code, ", ".join(extra_args)))
         return event_code
@@ -67,7 +67,7 @@ class File(SuiteWriterTestContainer, CodeElement):
 
     @contextmanager
     def _body_context(self, code_formatter):
-        with super(File, self)._body_context(code_formatter):
+        with super()._body_context(code_formatter):
             if self.suite.debug_info:
                 code_formatter.writeln("import __ut__")
             code_formatter.writeln("import slash")
@@ -75,6 +75,6 @@ class File(SuiteWriterTestContainer, CodeElement):
             yield None
 
     def _write_body(self, code_formatter):
-        super(File, self)._write_body(code_formatter)
+        super()._write_body(code_formatter)
         for thing in itertools.chain(self._classes, self._tests, self._fixtures):
             thing.write(code_formatter)

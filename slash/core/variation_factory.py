@@ -12,11 +12,11 @@ from .fixtures.parameters import Parametrization
 from .fixtures.utils import nofixtures
 
 
-class VariationFactory(object):
+class VariationFactory:
     """Helper class to produce variations, while properly naming the needed fixtures to help identifying tests"""
 
     def __init__(self, fixture_store):
-        super(VariationFactory, self).__init__()
+        super().__init__()
         self._store = fixture_store
         self._autouse_fixtures = list(fixture_store.iter_autouse_fixtures_in_namespace())
         self._needed_fixtures = list(self._autouse_fixtures)
@@ -59,13 +59,13 @@ class VariationFactory(object):
                 try:
                     fixture = self._store.get_fixture_by_argument(argument)
                 except FixtureException as e:
-                    raise type(e)("Loading {0.__code__.co_filename}:{0.__name__}: {1}".format(func, e))
+                    raise type(e)(f"Loading {func.__code__.co_filename}:{func.__name__}: {e}")
 
             self._needed_fixtures.append(fixture)
 
             arg_name = argument.name
             if namespace is not None:
-                arg_name = "{}:{}".format(namespace, arg_name)
+                arg_name = f"{namespace}:{arg_name}"
 
             self._populate_param_name_bindings(arg_name, fixture)
             self._arg_name_bindings[arg_name] = fixture
@@ -88,7 +88,7 @@ class VariationFactory(object):
                     if obj.info.id in visited:
                         continue
                     visited.add(obj.info.id)
-                    stack.append(("{}.{}".format(name, sub_name), obj))
+                    stack.append((f"{name}.{sub_name}", obj))
             elif isinstance(fixture, Parametrization):
                 self._param_name_bindings[name] = fixture
             else:

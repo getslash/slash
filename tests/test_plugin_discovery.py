@@ -28,30 +28,30 @@ def expected_names(root_path):
             "a/b/c/p4.py",
         ]
     ):
-        plugin_name = "auto plugin {}".format(index)
+        plugin_name = f"auto plugin {index}"
         class_name = plugin_name.replace(" ", "_")
         path = os.path.join(root_path, path)
         if not os.path.isdir(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
         with open(path, "w") as f:
             f.write(
-                """
+                f"""
 import slash.plugins
 from slash.plugins.interface import PluginInterface
 
 class {class_name}(PluginInterface):
     def get_name(self):
-        return {name!r}
+        return {plugin_name!r}
 
 def install_plugins():
-""".format(class_name=class_name, name=plugin_name)
+"""
             )
             if index % 2 == 0:
                 # don't install
                 f.write("     pass")
             else:
                 returned.add(plugin_name)
-                f.write("     slash.plugins.manager.install({class_name}())".format(class_name=class_name))
+                f.write(f"     slash.plugins.manager.install({class_name}())")
     for junk_file in [
         "a/junk1.p",
         "a/b/junk2",

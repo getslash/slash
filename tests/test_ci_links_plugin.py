@@ -93,7 +93,7 @@ def test_overridden_build_url_getter(suite):
     result = summary.get_all_results_for_test(test)[0]
     log_link = result.details.all().get("log_link")
     local_log_path = "/".join(result.get_log_path().split(os.sep))
-    expected_log_link = "%s/artifact/%s" % (plugin.build_url, local_log_path)
+    expected_log_link = "%s/artifact/%s" % (plugin.build_url, local_log_path)  # noqa: UP031
     assert log_link == expected_log_link
 
 

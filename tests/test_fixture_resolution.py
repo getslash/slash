@@ -94,9 +94,8 @@ def test_resolve_fixture_object_namespace_correctness():
 
 
 def test_invalid_name():
-    with slash.Session() as s:
-        with pytest.raises(UnknownFixtures):
-            s.fixture_store.resolve_name("", start_point=object())
+    with slash.Session() as s, pytest.raises(UnknownFixtures):
+        s.fixture_store.resolve_name("", start_point=object())
 
 
 def test_resolve_fixture_parameterization_with_scopes(suite_builder):
@@ -138,7 +137,7 @@ def test_interdependent_fixtures_called_once(suite_builder):
 
         @slash.fixture
         def fixture_2(fixture_1):
-            return "improved-{}".format(fixture_1)
+            return f"improved-{fixture_1}"
 
         @slash.fixture
         @slash.parameters.toggle("toggle")

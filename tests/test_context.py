@@ -23,7 +23,7 @@ def test_null_context_cant_setattr():
 
 
 def test_dir_object(loaded_context, queried_context):
-    class Object(object):
+    class Object:
         x = 2
         y = 3
 
@@ -104,7 +104,7 @@ def test_object_proxy_eq(contextobj, realobj):
 
 
 def test_object_proxy_ne(contextobj, realobj):
-    assert not (contextobj != realobj)  # pylint: disable=superfluous-parens
+    assert not (contextobj != realobj)  # pylint: disable=superfluous-parens  # noqa: SIM202
 
 
 def test_object_proxy_str_repr(contextobj, realobj):
@@ -114,13 +114,13 @@ def test_object_proxy_str_repr(contextobj, realobj):
 
 @pytest.fixture
 def contextobj(loaded_context, realobj):
-    setattr(loaded_context, "obj", realobj)
+    loaded_context.obj = realobj
     return ContextAttributeProxy("obj")
 
 
 @pytest.fixture
 def realobj():
-    class Object(object):
+    class Object:
         __attr__ = object()
         attr = object()
 

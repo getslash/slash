@@ -19,7 +19,7 @@ def test_interruption_added_to_result(interrupted_suite, interrupted_index):
     def interruption_added(result, exception):
         caught.append(exception)
 
-    summary = interrupted_suite.run(expect_interruption=True)
+    summary = interrupted_suite.run(expect_interruption=True)  # noqa: F841
     assert len(caught) == 1
     [err] = caught  # pylint: disable=unbalanced-tuple-unpacking
     assert err.exception_type is KeyboardInterrupt
@@ -64,7 +64,7 @@ def test_sigterm_interrupt(suite, suite_test):
 
 @pytest.mark.parametrize("hook_name", ["session_start", "test_start"])
 def test_sigterm_on_hook(suite, hook_name):
-    @gossip.register("slash.{}".format(hook_name))
+    @gossip.register(f"slash.{hook_name}")
     def session_start():  # pylint: disable=unused-variable
         raise slash.exceptions.TerminatedException("Terminated by signal")
 
@@ -76,7 +76,7 @@ def test_sigterm_on_hook(suite, hook_name):
         else:
             test.expect_deselect()
 
-    result = suite.run(expect_interruption=True)
+    result = suite.run(expect_interruption=True)  # noqa: F841
 
 
 def test_test_end_called_for_interrupted_test(interrupted_suite, interrupted_test):
@@ -98,7 +98,7 @@ def test_ayalas(interrupted_suite, interrupted_test, interrupted_index, config_o
     config_override("log.root", str(tmpdir))
     callback = Checkpoint()
     slash.hooks.log_file_closed.register(callback)  # pylint: disable=no-member
-    result = interrupted_suite.run(expect_interruption=True)
+    result = interrupted_suite.run(expect_interruption=True)  # noqa: F841
     num_closed_log_files = interrupted_index + 2  # One for each test that run (the index is zero based) + session log
     assert callback.called_count == num_closed_log_files
 
@@ -164,7 +164,7 @@ def test_interrupted_with_custom_exception(suite, suite_test, request):
     for t in suite.iter_all_after(suite_test):
         t.expect_deselect()
 
-    results = suite.run(expect_interruption=True)
+    results = suite.run(expect_interruption=True)  # noqa: F841
 
 
 def test_test_interrupt_hook_exception(suite_builder):
@@ -175,7 +175,7 @@ def test_test_interrupt_hook_exception(suite_builder):
 
         @slash.hooks.test_interrupt.register  # pylint: disable=no-member
         def test_interrupt(**_):
-            1 / 0  # pylint: disable=pointless-statement
+            1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
         def test_1():
             raise KeyboardInterrupt()
@@ -189,7 +189,7 @@ def test_test_interrupt_hook_exception(suite_builder):
 
 @pytest.mark.parametrize("hook_name", ["before_session_cleanup", "session_start", "before_session_start"])
 def test_session_scope_interruption(hook_name, suite, checkpoint):
-    @gossip.register("slash.{}".format(hook_name))
+    @gossip.register(f"slash.{hook_name}")
     def hook(*_, **__):
         raise KeyboardInterrupt()
 

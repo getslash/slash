@@ -4,9 +4,9 @@ from .metadata import Metadata
 from ..exceptions import SlashInternalError
 
 
-class RunnableTestFactory(object):
+class RunnableTestFactory:
     def __init__(self, param=None):
-        super(RunnableTestFactory, self).__init__()
+        super().__init__()
         self._param = param
         self._factory_name = self._filename = self._module_name = None
 
@@ -53,7 +53,7 @@ class RunnableTestFactory(object):
         """
         for test in self._generate_tests(fixture_store):
             if test.__slash__ is not None:
-                raise SlashInternalError("{} has Metadata before generating it".format(test))
+                raise SlashInternalError(f"{test} has Metadata before generating it")
 
             test.__slash__ = Metadata(self, test)
             yield test

@@ -10,7 +10,7 @@ class SuiteWriterTest(Function, Element):
     cls = None
 
     def __init__(self, suite, file):
-        super(SuiteWriterTest, self).__init__(suite)
+        super().__init__(suite)
         self.file = file
         self._expected_result = _SUCCESS
         self._selected = True
@@ -25,11 +25,11 @@ class SuiteWriterTest(Function, Element):
         filepath = os.path.join(root_path, self.file.name)
         name = self.name
         if self.cls is not None:
-            name = "{.name}.{}".format(self.cls, name)  # pylint: disable=missing-format-attribute
-        return "{}:{}".format(filepath, name)
+            name = f"{self.cls.name}.{name}"  # pylint: disable=missing-format-attribute
+        return f"{filepath}:{name}"
 
     def repeat(self, num_repetitions):
-        self.add_decorator("slash.repeat({})".format(num_repetitions))
+        self.add_decorator(f"slash.repeat({num_repetitions})")
         self.expect_repetition(num_repetitions)
 
     def expect_repetition(self, num_repetitions):
@@ -78,19 +78,19 @@ class SuiteWriterTest(Function, Element):
 
     def _write_prologue(self, code_formatter):
         self._write_event(code_formatter, "test_start")
-        super(SuiteWriterTest, self)._write_prologue(code_formatter)
+        super()._write_prologue(code_formatter)
 
     def _write_epilogue(self, code_formatter):
         self._write_event(code_formatter, "test_end")
-        super(SuiteWriterTest, self)._write_epilogue(code_formatter)
+        super()._write_epilogue(code_formatter)
 
     def _get_function_name(self):
-        return "test_{}".format(self.id)
+        return f"test_{self.id}"
 
 
-class WhenRunHelper(object):
+class WhenRunHelper:
     def __init__(self, test):
-        super(WhenRunHelper, self).__init__()
+        super().__init__()
         self.test = test
 
     def raise_exception(self):

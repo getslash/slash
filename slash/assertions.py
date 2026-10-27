@@ -9,10 +9,10 @@ _logger = logbook.Logger(__name__)
 def _get_message(msg, description):
     if msg is None:
         return description
-    return "{} ({})".format(msg, description)
+    return f"{msg} ({description})"
 
 
-class _CaughtContext(object):
+class _CaughtContext:
     def __init__(self, message, exc_types, ensure_caught):
         if not isinstance(exc_types, tuple):
             exc_types = (exc_types,)
@@ -75,5 +75,5 @@ def assert_almost_equal(a, b, delta=0.00000001):
     assert abs(a - b) <= delta
 
 
-class _CaughtException(object):
+class _CaughtException:
     exception = None

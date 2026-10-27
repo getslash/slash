@@ -31,14 +31,14 @@ filtered_channels = {
 
 class ErrorHandler(logbook.handlers.Handler):
     def __init__(self):
-        super(ErrorHandler, self).__init__(level=logbook.ERROR, bubble=True)
+        super().__init__(level=logbook.ERROR, bubble=True)
 
     def emit(self, record):
         if record.extra.get("capture", True):
             add_error(record.message, exc_info=record.exc_info)
 
 
-class _NormalizedObject(object):
+class _NormalizedObject:
     def __init__(self, obj):
         self._obj = obj
 
@@ -107,7 +107,7 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         if self._truncate_lines and len(str(orig_message)) > self.MAX_LINE_LENGTH and should_truncate:
             record.message = "\n".join(self._truncate(line) for line in orig_message.splitlines())
         try:
-            returned = super(ConsoleHandler, self).format(record)
+            returned = super().format(record)
         finally:
             # we back up the original message to avoid propagating truncated lines into the file log
             record.message = orig_message
@@ -122,7 +122,7 @@ class ConsoleHandler(ColorizedHandlerMixin, logbook.StreamHandler):
         reporter = None if context.session is None else context.session.reporter
         if reporter is not None:
             reporter.notify_before_console_output()
-        returned = super(ConsoleHandler, self).emit(record)  # pylint: disable=assignment-from-no-return
+        returned = super().emit(record)  # pylint: disable=assignment-from-no-return
         if reporter is not None:
             reporter.notify_after_console_output()
         return returned
@@ -136,13 +136,13 @@ def _slash_logs_filter(record, handler):  # pylint: disable=unused-argument
     )
 
 
-class SessionLogging(object):
+class SessionLogging:
     """
     A context creator for logging within a session and its tests
     """
 
     def __init__(self, session, console_stream=None):
-        super(SessionLogging, self).__init__()
+        super().__init__()
         if console_stream is None:
             console_stream = sys.stderr
         self.session = session
@@ -261,7 +261,7 @@ class SessionLogging(object):
                 log_path += ".br"
             else:
                 raise InvalidConfiguraion(
-                    "Unsupported compression method: {}".format(config.root.log.compression.algorithm)
+                    f"Unsupported compression method: {config.root.log.compression.algorithm}"
                 )
         return log_path
 
@@ -357,14 +357,14 @@ class SessionLogging(object):
 
 class SilencedLoggersHandler(logbook.Handler):
     def __init__(self, silence_logger_names):
-        super(SilencedLoggersHandler, self).__init__(bubble=False)
+        super().__init__(bubble=False)
         self._silenced_names = set(silence_logger_names)
 
     def should_handle(self, record):
         return record.channel in self._silenced_names
 
 
-class NoopHandler(object):
+class NoopHandler:
     # Logbook's NullHandler does not bubble by default. This is dummy handler that
     # does not interfere with the stack at all
     def applicationbound(self):
@@ -391,7 +391,7 @@ def remove_all_extra_handlers():
 _extra_handlers = []
 
 
-class VERBOSITIES(object):
+class VERBOSITIES:
     DEBUG = logbook.DEBUG
     INFO = logbook.INFO
     NOTICE = logbook.NOTICE
@@ -406,7 +406,7 @@ def _make_bubbling_handler(handler):
 
 class _BubblingWrapper(logbook.Handler):
     def __init__(self, handler):
-        super(_BubblingWrapper, self).__init__(bubble=True)
+        super().__init__(bubble=True)
         self._handler = handler
         self.should_handle = self._handler.should_handle
         self.handle = self._handler.handle
@@ -427,12 +427,12 @@ class RetainedLogHandler(logbook.TestHandler):
     """
 
     def __init__(self, *args, **kwargs):
-        super(RetainedLogHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._enabled = True
 
     def emit(self, record):
         if self._enabled:
-            return super(RetainedLogHandler, self).emit(record)
+            return super().emit(record)
 
     def flush_to_handler(self, handler):
         for r in self.records:

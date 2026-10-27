@@ -55,9 +55,9 @@ class _IgnoredState(threading.local):
 _ignored_state = _IgnoredState()
 
 
-class thread_ignore_exception_context(object):
+class thread_ignore_exception_context:
     def __init__(self, exc_type):
-        super(thread_ignore_exception_context, self).__init__()
+        super().__init__()
         self._exc_type = exc_type
         self._prev = None
 
@@ -86,11 +86,11 @@ def handling_exceptions(fake_traceback=True, **kwargs):
         try:
             fake_tbs = create_traceback_proxy(frame_correction=2)
         except (KeyError, IndexError) as e:
-            _logger.warn("Could not extract full traceback for exceptions handling")
+            _logger.warning("Could not extract full traceback for exceptions handling")
             _logger.trace("Extraction failure: {!r}", e, exc_info=True)
-            fake_tbs = tuple()
+            fake_tbs = ()
     else:
-        fake_tbs = tuple()
+        fake_tbs = ()
     swallow = kwargs.pop("swallow", False)
     swallow_types = kwargs.pop("swallow_types", ())
     if swallow:
@@ -100,11 +100,11 @@ def handling_exceptions(fake_traceback=True, **kwargs):
     return _HandlingException(fake_tbs, swallow_types, passthrough_types, kwargs)
 
 
-class _HandledException(object):
+class _HandledException:
     exception = None
 
 
-class _HandlingException(object):
+class _HandlingException:
     def __init__(self, fake_tbs, swallow_types, passthrough_types, handling_kwargs):
         self._fake_traceback = fake_tbs
         self._kwargs = handling_kwargs
@@ -131,7 +131,7 @@ class _HandlingException(object):
         handle_exception(exc_info, **self._kwargs)
         self._handled.exception = exc_info[1]
         skip_types = () if slash_context.session is None else slash_context.session.get_skip_exception_types()
-        if isinstance(exc_value, skip_types) or isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):
+        if isinstance(exc_value, skip_types) or isinstance(exc_value, exceptions.INTERRUPTION_EXCEPTIONS):  # noqa: SIM101
             return None
         if self._swallow_types and isinstance(exc_value, self._swallow_types):
             _logger.trace("Swallowing {!r}", exc_value)

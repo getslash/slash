@@ -55,8 +55,8 @@ def test_loader_warns_duplicate_test_funcs(tmpdir):
     full_path = tests_dir.join(".dir").join("test_something.py")
     test_name = "test_something"
     with full_path.open("w", ensure=True) as f:
-        f.write("def {}():\n    assert True\n".format(test_name))
-        f.write("def {}():\n    assert True\n".format(test_name))
+        f.write(f"def {test_name}():\n    assert True\n")
+        f.write(f"def {test_name}():\n    assert True\n")
     with Session() as session:
         Loader().get_runnables([str(full_path)])
         assert len(session.warnings) == 1
@@ -89,9 +89,7 @@ def test_iter_specific_factory(suite, suite_test, specific_method, with_paramete
         if suite_test.cls is None and test is not suite_test:
             # we are selecting a specific function, and that's not it:
             test.expect_deselect()
-        elif suite_test.cls is not None and test.cls is not suite_test.cls:
-            test.expect_deselect()
-        elif specific_method and suite_test.cls is test.cls and suite_test is not test:
+        elif suite_test.cls is not None and test.cls is not suite_test.cls or specific_method and suite_test.cls is test.cls and suite_test is not test:
             test.expect_deselect()
 
     path = suite.commit()
@@ -101,10 +99,10 @@ def test_iter_specific_factory(suite, suite_test, specific_method, with_paramete
     else:
         factory_name = suite_test.name
 
-    pattern = "{}:{}".format(os.path.join(path, suite_test.file.get_relative_path()), factory_name)
+    pattern = f"{os.path.join(path, suite_test.file.get_relative_path())}:{factory_name}"
     if suite_test.cls is not None and specific_method:
         assert len(suite_test.cls.tests) > 1
-        pattern += ".{}".format(suite_test.name)
+        pattern += f".{suite_test.name}"
     suite.run(args=[pattern])
 
 
@@ -113,7 +111,7 @@ def test_import_error_registers_as_session_error(active_slash_session, test_load
         test_loader.get_runnables(["/non/existent/path"])
     errors = active_slash_session.results.global_result.get_errors()
     assert len(errors) == 1
-    [error] = errors  # pylint: disable=unused-variable
+    [_error] = errors
 
 
 def test_no_traceback_for_slash_exception():
@@ -175,6 +173,6 @@ def test_fixture_and_test_overrides(tmpdir, config_override):
         f.write("def test_something2():\n    pass\n")
     config_override("run.filter_strings", ["tag:tag-1"])
     with Session():
-        runnables = Loader().get_runnables(["{}:{}{}".format(full_path, test_prefix, index) for index in range(1, 3)])
+        runnables = Loader().get_runnables([f"{full_path}:{test_prefix}{index}" for index in range(1, 3)])
         assert len(runnables) == 1
         assert runnables[0].__slash__.address_in_file == "test_something1"

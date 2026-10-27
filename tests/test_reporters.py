@@ -18,7 +18,7 @@ def test_reporters_inherit_from_interface(reporter_class):
 
 def test_reporters_conform_to_interface(reporter_class):
     def _dir(cls):
-        return set(name for name in dir(cls) if not name.startswith("_"))
+        return {name for name in dir(cls) if not name.startswith("_")}
 
     assert _dir(reporter_class) <= _dir(ReporterInterface)
 

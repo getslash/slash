@@ -21,9 +21,9 @@ from .utils import get_real_fixture_name_from_argument, get_scope_by_name, nofix
 _logger = logbook.Logger(__name__)
 
 
-class FixtureStore(object):
+class FixtureStore:
     def __init__(self):
-        super(FixtureStore, self).__init__()
+        super().__init__()
         self._namespaces = [Namespace(self)]
         self._unresolved_fixture_ids = set()
         self._fixtures_by_id = {}
@@ -51,9 +51,8 @@ class FixtureStore(object):
             yield self.get_fixture_by_id(fid)
 
     def iter_active_fixtures(self):
-        for _, fixtures in self._active_fixtures_by_scope.items():
-            for f in fixtures.values():
-                yield f
+        for fixtures in self._active_fixtures_by_scope.values():
+            yield from fixtures.values()
 
     def call_with_fixtures(self, test_func, namespace, trigger_test_start=False, trigger_test_end=False):
         if not nofixtures.is_marked(test_func):
@@ -165,7 +164,7 @@ class FixtureStore(object):
             _ = self.get_fixture_value(fixture)
 
     def _compute_all_needed_parametrization_ids(self, fixtureobj):
-        stack = [(fixtureobj.info.id, [fixtureobj.info.id], set([fixtureobj.info.id]))]
+        stack = [(fixtureobj.info.id, [fixtureobj.info.id], {fixtureobj.info.id})]
         returned = OrderedSet()
         while stack:
             fixture_id, path, visited = stack.pop()
@@ -183,7 +182,7 @@ class FixtureStore(object):
                     needed_id = needed.info.id
                     if needed_id in visited:
                         self._raise_cyclic_dependency_error(fixtureobj, path, needed_id)
-                    stack.append((needed_id, path + [needed_id], visited | set([needed_id])))
+                    stack.append((needed_id, path + [needed_id], visited | {needed_id}))
         return returned
 
     def _raise_cyclic_dependency_error(self, fixtureobj, path, new_id):
@@ -227,7 +226,7 @@ class FixtureStore(object):
         if existing_fixture is not None:
             return existing_fixture.fixture_func
         if is_valid_test_name(fixture_info.name):
-            raise InvalidFixtureName("Invalid fixture name: {.name}".format(fixture_info))
+            raise InvalidFixtureName(f"Invalid fixture name: {fixture_info.name}")
         fixture_object = Fixture(self, fixture_func)
         current_namespace = self._namespaces[-1]
         current_namespace.add_name(fixture_info.name, fixture_info.id)
@@ -327,7 +326,7 @@ class FixtureStore(object):
         assert not fixture.is_parameter()
 
         if fixture.info.id in self._computing:
-            raise CyclicFixtureDependency("Fixture {!r} is a part of a dependency cycle!".format(name))
+            raise CyclicFixtureDependency(f"Fixture {name!r} is a part of a dependency cycle!")
         active_fixture = self.get_active_fixture(fixture)
         if active_fixture is not None:
             if self._is_active_fixture_valid(fixture):
@@ -375,13 +374,13 @@ class FixtureStore(object):
         kwargs = {}
 
         if fixture.keyword_arguments is None:
-            raise UnresolvedFixtureStore("Fixture {} is unresolved!".format(fixture.info.name))
+            raise UnresolvedFixtureStore(f"Fixture {fixture.info.name} is unresolved!")
 
         for required_name, needed_fixture in fixture.keyword_arguments.items():
             if needed_fixture.is_parameter():
                 continue
             kwargs[required_name] = self._compute_fixture_value(
-                required_name, needed_fixture, relative_name="{} -> {}".format(relative_name, required_name)
+                required_name, needed_fixture, relative_name=f"{relative_name} -> {required_name}"
             )
 
         assert fixture.info.id not in self._active_fixtures_by_scope[fixture.info.scope]

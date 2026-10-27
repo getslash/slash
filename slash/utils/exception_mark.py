@@ -32,9 +32,9 @@ def _ensure_exception_marks(e):
     return returned
 
 
-class ExceptionMarker(object):
+class ExceptionMarker:
     def __init__(self, name):
-        super(ExceptionMarker, self).__init__()
+        super().__init__()
         self.name = name
 
     def mark_exception(self, e):

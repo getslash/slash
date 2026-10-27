@@ -8,7 +8,7 @@ class Fixture(Function):
     def __init__(self, suite, file, scope=None, autouse=False, name=None):
         if name is None:
             name = "fx_{}".format(str(uuid4()).replace("-", "")[:6])
-        super(Fixture, self).__init__(suite, name=name)
+        super().__init__(suite, name=name)
         self.file = file
         self.scope = scope
         self.autouse = autouse
@@ -21,24 +21,24 @@ class Fixture(Function):
 
     def _write_decorators(self, code_formatter):
         self._write_fixture_decorator(code_formatter)
-        super(Fixture, self)._write_decorators(code_formatter)
+        super()._write_decorators(code_formatter)
 
     def _write_prologue(self, code_formatter):
         if not self.suite.debug_info:
             return
 
         self._write_event(code_formatter, "fixture_start")
-        code_formatter.writeln("__ut__.notify_fixture_start({!r}, {})".format(self.id, self.get_value_string()))
+        code_formatter.writeln(f"__ut__.notify_fixture_start({self.id!r}, {self.get_value_string()})")
         code_formatter.writeln("@this.add_cleanup")
         code_formatter.writeln("def cleanup():")
         with code_formatter.indented():
             self._write_event(code_formatter, "fixture_end")
-            code_formatter.writeln("__ut__.notify_fixture_end({!r})".format(self.id))
+            code_formatter.writeln(f"__ut__.notify_fixture_end({self.id!r})")
 
-        super(Fixture, self)._write_prologue(code_formatter)
+        super()._write_prologue(code_formatter)
 
     def _write_return(self, code_formatter):
-        code_formatter.writeln("return {}".format(self.get_value_string()))
+        code_formatter.writeln(f"return {self.get_value_string()}")
 
     def _write_fixture_decorator(self, code_formatter):
         params = {}
@@ -49,22 +49,22 @@ class Fixture(Function):
 
         code_formatter.write("@slash.fixture")
         if params:
-            code_formatter.write("({})".format(", ".join("{}={!r}".format(k, v) for k, v in params.items())))
+            code_formatter.write("({})".format(", ".join(f"{k}={v!r}" for k, v in params.items())))
         code_formatter.writeln()
 
     def get_value_string(self):
-        returned = '{{"value": {!r}, "params": {{'.format(self.name)
+        returned = f'{{"value": {self.name!r}, "params": {{'
 
         for name, param in itertools.chain(
             ((p.name, p) for p in self._parameters),
             ((alias or f.name, f) for alias, f, _ in self._fixtures),
         ):
-            returned += "{!r}: {},".format(param.id, name)
+            returned += f"{param.id!r}: {name},"
         returned += "} }"
         return returned
 
     def _get_argument_strings(self):
-        return itertools.chain(["this"], super(Fixture, self)._get_argument_strings())
+        return itertools.chain(["this"], super()._get_argument_strings())
 
     def __repr__(self):
-        return "<Fixture {}>".format(self.name)
+        return f"<Fixture {self.name}>"

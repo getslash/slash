@@ -32,8 +32,8 @@ def test_parametrized_fixture():
 
 def test_regular_test_parametrization(suite, test):
     # pylint: disable=unused-variable
-    p = test.add_parameter()
-    res = suite.run()
+    p = test.add_parameter()  # noqa: F841
+    res = suite.run()  # noqa: F841
 
 
 @pytest.fixture

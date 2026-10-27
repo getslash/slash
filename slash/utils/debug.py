@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import sys
 import traceback
@@ -26,7 +26,7 @@ def _debugger(debug_function_str, exc_info_transform=None, name=None):  # pragma
         orig_exc_info = exc_info
         _notify_going_into_debugger(orig_exc_info)
         if orig_exc_info == NO_EXC_INFO:
-            func = getattr(module, "set_trace")
+            func = module.set_trace
             func()
         else:
             if exc_info_transform is not None:
@@ -43,9 +43,7 @@ def _notify_going_into_debugger(exc_info):
         context.session.reporter.report_before_debugger(exc_info)
     else:
         print(
-            "\nException caught in debugger: {}".format(
-                traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()
-            )
+            f"\nException caught in debugger: {traceback.format_exception_only(exc_info[0], exc_info[1])[0].strip()}"
         )
 
 
@@ -100,14 +98,14 @@ def launch_debugger(exc_info):
                 debuggers.insert(0, debuggers.pop(index))
                 break
         else:
-            warnings.warn("Specified debugger {!r} is not a known debugger name".format(debugger_name))
+            warnings.warn(f"Specified debugger {debugger_name!r} is not a known debugger name")
 
     for debug_func in debuggers:
         try:
             debug_func(exc_info)
         except NotImplementedError:  # pragma: no cover
             if debug_func.__external_name__ == debugger_name:
-                warnings.warn("Specified debugger {!r} is not available".format(debugger_name))
+                warnings.warn(f"Specified debugger {debugger_name!r} is not available")
             continue
         else:
             break

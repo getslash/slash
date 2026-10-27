@@ -12,7 +12,7 @@ def test_failures_call_test_failure_hook(suite, suite_test, checkpoint):
         checkpoint()
 
     suite_test.expect_failure()
-    summary = suite.run()  # pylint: disable=unused-variable
+    summary = suite.run()  # pylint: disable=unused-variable  # noqa: F841
     assert checkpoint.called_count == 1
 
 
@@ -22,8 +22,8 @@ def test_adding_errors(error_adder, test_type):
     test = suite.add_test(type=test_type)
 
     for i in range(2):
-        test.append_line('slash.{}("msg{}")'.format(error_adder, i))
-    test.append_line("slash.{}(object())".format(error_adder))
+        test.append_line(f'slash.{error_adder}("msg{i}")')
+    test.append_line(f"slash.{error_adder}(object())")
 
     if error_adder == "add_error":
         test.expect_error()

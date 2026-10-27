@@ -10,13 +10,13 @@ def test_add_error_custom_exc_info(suite, suite_test, failure_type, use_custom_m
     message = str(uuid4())
 
     if use_custom_message:
-        add_error_args = "{!r}, ".format(message)
+        add_error_args = f"{message!r}, "
     else:
         add_error_args = ""
 
     add_error_args += "exc_info=exc_info"
 
-    code = """
+    code = f"""
 import sys
 try:
     1/0
@@ -25,8 +25,8 @@ except ZeroDivisionError:
     try:
         None.a = 2
     except AttributeError:
-        slash.add_{0}({1})
-    """.format(failure_type, add_error_args)
+        slash.add_{failure_type}({add_error_args})
+    """
 
     for line in code.strip().splitlines():
         suite_test.append_line(line)
@@ -58,7 +58,7 @@ def test_add_error_that_forbids_setattr(suite, suite_test):
     def __code__():  # pylint: disable=unused-variable
         class MyException(Exception):
             def __setattr__(self, *args):
-                raise Exception("Set-attr")  # pylint: disable=broad-exception-raised
+                raise Exception("Set-attr")  # pylint: disable=broad-exception-raised  # noqa: TRY002
 
         raise MyException("Special Message")
 
@@ -106,13 +106,13 @@ def test_add_error_log_traceback_variables(suite, suite_test, log_variables, con
     @suite_test.prepend_body
     def __code__():  # pylint: disable=unused-variable
         # to avoid the line itself from being detected
-        x_variable = "x" * 3  # pylint: disable=unused-variable
+        x_variable = "x" * 3  # pylint: disable=unused-variable  # noqa: F841
 
-        class Object(object):
+        class Object:
             def __init__(self):
                 self.property_value = "yyy"
 
-        self = Object()  # pylint: disable=unused-variable
+        self = Object()  # pylint: disable=unused-variable  # noqa: F841
 
     suite_test.when_run.error()
     res = suite.run()
@@ -127,7 +127,7 @@ def test_add_error_log_traceback_variables(suite, suite_test, log_variables, con
             if variable_name in line and variable_value in line:
                 found = True
                 break
-        assert found == log_variables, "Variable {!r} not found in traceback log!".format(variable_name)
+        assert found == log_variables, f"Variable {variable_name!r} not found in traceback log!"
 
     _search_variable("x_variable", "xxx")
     _search_variable("self.property_value", "yyy")
@@ -141,7 +141,7 @@ def test_add_error_log_traceback_variables_self_none(suite, suite_test, config_o
     @suite_test.prepend_body
     def __code__():  # pylint: disable=unused-variable
         # to avoid the line itself from being detected
-        self = None  # pylint: disable=unused-variable
+        self = None  # pylint: disable=unused-variable  # noqa: F841
 
     suite_test.when_run.error()
     res = suite.run()

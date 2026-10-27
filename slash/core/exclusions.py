@@ -13,7 +13,7 @@ def exclude(names, values):
     :param values: must be a list of values to exclude for the given parameter
     """
     if not isinstance(values, (tuple, list)):
-        raise RuntimeError("Invalid exclude values specified: must be a sequence, got {!r}".format(values))
+        raise RuntimeError(f"Invalid exclude values specified: must be a sequence, got {values!r}")  # noqa: TRY004
     if not isinstance(names, (tuple, list)):
         names = (names,)
         values = [(value,) for value in values]
@@ -47,15 +47,13 @@ def is_excluded(test):
                 )
                 if not isinstance(param, Parametrization):
                     raise UnknownFixtures(
-                        "{!r} is not a parameter, and therefore cannot be the base for value exclusions".format(
-                            parameter_name
-                        )
+                        f"{parameter_name!r} is not a parameter, and therefore cannot be the base for value exclusions"
                     )
                 params.append(param)
                 try:
                     param_index = test.__slash__.variation.param_value_indices[param.info.id]  # pylint: disable=no-member
                 except LookupError:
-                    raise UnknownFixtures("{!r} cannot be excluded for {!r}".format(parameter_name, test))
+                    raise UnknownFixtures(f"{parameter_name!r} cannot be excluded for {test!r}")
                 value = param.get_value_by_index(param_index)
                 values.append(value)
 

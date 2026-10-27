@@ -18,16 +18,14 @@ def validate_run(suite, run_result, expect_interruption, expect_session_errors):
     if expect_interruption or not run_result.session.results.is_success(allow_skips=True):
         assert run_result.exit_code != 0, "`slash run` unexpectedly returned 0"
     else:
-        assert run_result.exit_code == 0, "`slash run` unexpectedly returned {}. Output: {}".format(
-            run_result.exit_code, run_result.get_console_output()
-        )
+        assert run_result.exit_code == 0, f"`slash run` unexpectedly returned {run_result.exit_code}. Output: {run_result.get_console_output()}"
 
     global_result = run_result.session.results.global_result
     errors = global_result.get_errors() + global_result.get_failures()
     if expect_session_errors:
         assert errors, "Expected session errors but found none"
     else:
-        assert not errors, "Sessions errors were not expected (Got {})".format(errors)
+        assert not errors, f"Sessions errors were not expected (Got {errors})"
 
     for test, results in _group_results_by_test_id(suite, run_result).items():
         _validate_single_test(test, results)
@@ -53,7 +51,7 @@ def _validate_single_test(test, results):
 
                     break
             else:
-                assert False, "Could not find parameter set {}".format(param_values)
+                assert False, f"Could not find parameter set {param_values}"
 
     assert not results, "Unmatched results exist"
 
@@ -103,9 +101,7 @@ def _validate_single_test_result(test, result):
     elif expected == "FAIL":
         assert result.is_failure(), "Test did not fail as expected"
     elif expected == "SUCCESS":
-        assert result.is_success(), "Test {} unexpectedly unsuccessful:\n{}".format(
-            test.id, list(itertools.chain(result.get_errors(), result.get_failures()))
-        )
+        assert result.is_success(), f"Test {test.id} unexpectedly unsuccessful:\n{list(itertools.chain(result.get_errors(), result.get_failures()))}"
     elif expected == "INTERRUPT":
         assert result.is_interrupted(), "Test did not get interrupted as expected"
     elif expected == "SKIP":
@@ -113,11 +109,11 @@ def _validate_single_test_result(test, result):
     elif expected == "NOT_RUN":
         assert result.is_not_run()
     else:
-        raise NotImplementedError("Unknown expected result: {!r}".format(expected))  # pragma: no cover
+        raise NotImplementedError(f"Unknown expected result: {expected!r}")  # pragma: no cover
 
 
 def _group_results_by_test_id(suite, run_result):
-    tests_by_id = dict((t.id, t) for t in suite)
+    tests_by_id = {t.id: t for t in suite}
     unseen = tests_by_id.copy()
 
     groups = {}
@@ -126,7 +122,7 @@ def _group_results_by_test_id(suite, run_result):
         if result.test_metadata.is_interactive():
             continue
         test_id = get_test_id_from_test_address(result.test_metadata.address)
-        assert tests_by_id[test_id].is_selected(), "Test {} appears in results, although not expected!".format(test_id)
+        assert tests_by_id[test_id].is_selected(), f"Test {test_id} appears in results, although not expected!"
         groups.setdefault(tests_by_id[test_id], []).append(result)
         unseen.pop(test_id, None)
 
@@ -134,7 +130,7 @@ def _group_results_by_test_id(suite, run_result):
         if not test.is_selected():
             unseen.pop(test_id, None)
 
-    assert not unseen, "Expected results not found ({})".format(unseen)
+    assert not unseen, f"Expected results not found ({unseen})"
 
     return groups
 

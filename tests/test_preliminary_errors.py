@@ -20,7 +20,7 @@ def test_errors_during_initialization_hoook(suite, init_hook):
 def test_slashrc_errors(suite):
     @suite.slashrc.include
     def __code__():  # pylint: disable=unused-variable
-        1 / 0  # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
     exit_code, output = _console_run(suite)
     assert exit_code != 0

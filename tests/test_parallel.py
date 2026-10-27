@@ -461,7 +461,7 @@ def test_force_on_one_worker(parallel_suite):
         if slash.utils.parallel_utils.is_parent_session():
             from slash import ctx
 
-            worker = list(ctx.session.parallel_manager.workers.values())[0]
+            worker = next(iter(ctx.session.parallel_manager.workers.values()))
             for index in range(len(tests)):
                 worker.force_test(index)
 
@@ -478,7 +478,7 @@ def test_exclude_on_one_worker(parallel_suite, config_override, num_workers):
         if slash.utils.parallel_utils.is_parent_session():
             from slash import ctx
 
-            worker = list(ctx.session.parallel_manager.workers.values())[0]
+            worker = next(iter(ctx.session.parallel_manager.workers.values()))
             for index in range(len(tests)):
                 worker.exclude_test(index)
 
@@ -516,7 +516,7 @@ def test_exclude_and_force_on_same_worker_raises_runtime_err(parallel_suite):
         if slash.utils.parallel_utils.is_parent_session():
             from slash import ctx
 
-            worker = list(ctx.session.parallel_manager.workers.values())[0]
+            worker = next(iter(ctx.session.parallel_manager.workers.values()))
             worker.exclude_test(0)
             worker.force_test(0)
 

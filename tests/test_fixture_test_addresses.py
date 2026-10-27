@@ -10,12 +10,12 @@ from .utils.code_formatter import CodeFormatter
 
 
 def test_fixtures_representation_strings(results, a_values, fixture_values, filename, is_class):
-    prefix = "{}:".format(filename)
+    prefix = f"{filename}:"
     if is_class:
         prefix += "Test."
     assert len(results) == len(a_values) * len(fixture_values)
-    assert set(result.test_metadata.address for result in results) == {
-        "{}test_1(a={},fixture.value={})".format(prefix, i, j) for i, j in itertools.product(a_values, fixture_values)
+    assert {result.test_metadata.address for result in results} == {
+        f"{prefix}test_1(a={i},fixture.value={j})" for i, j in itertools.product(a_values, fixture_values)
     }
 
 
@@ -45,28 +45,27 @@ def results(filename):
 def filename(is_class, a_values, fixture_values, tmpdir):
     returned = str(tmpdir.join("testfile.py"))
 
-    with open(returned, "w") as f:
-        with ExitStack() as stack:
-            code = CodeFormatter(f)
+    with open(returned, "w") as f, ExitStack() as stack:
+        code = CodeFormatter(f)
 
-            code.writeln("import slash")
-            code.writeln("@slash.fixture")
-            code.writeln('@slash.parametrize("value", {})'.format(fixture_values))
-            code.writeln("def fixture(value):")
-            with code.indented():
-                code.writeln("return value")
+        code.writeln("import slash")
+        code.writeln("@slash.fixture")
+        code.writeln(f'@slash.parametrize("value", {fixture_values})')
+        code.writeln("def fixture(value):")
+        with code.indented():
+            code.writeln("return value")
 
-            if is_class:
-                code.writeln("class Test(slash.Test):")
-                stack.enter_context(code.indented())
+        if is_class:
+            code.writeln("class Test(slash.Test):")
+            stack.enter_context(code.indented())
 
-            code.writeln('@slash.parametrize("a", {})'.format(a_values))
-            code.write("def test_1(")
-            if is_class:
-                code.write("self, ")
-            code.writeln("a, fixture):")
-            with code.indented():
-                code.writeln("pass")
+        code.writeln(f'@slash.parametrize("a", {a_values})')
+        code.write("def test_1(")
+        if is_class:
+            code.write("self, ")
+        code.writeln("a, fixture):")
+        with code.indented():
+            code.writeln("pass")
     return returned
 
 

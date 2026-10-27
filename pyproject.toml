@@ -62,7 +62,7 @@ testing = [
     "pytest-timeout",
     "pyforge",
     "astroid~=2.15.5",
-    "pylint~=2.17.4",
+    "ruff",
 ]
 doc = ["alabaster", "docutils", "releases~=1.6.1", "Sphinx"]
 
@@ -72,8 +72,20 @@ source = "vcs"
 [tool.ruff]
 line-length = 120
 
+[tool.ruff.lint]
+ignore = [
+    "PLE1205",  # logbook uses {}-style formatting, which ruff mistakes for logging-too-many-args
+    "BLE001",  # broad `except Exception` is used deliberately across the codebase
+    "B004",  # `hasattr(x, "__call__")` is used instead of `callable(x)`
+    "I001",  # imports are kept in their original (non-isort) order
+]
+
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+# Test code bodies that are copied into generated test files, where `slash` and `__ut__` are defined
+"tests/{test_add_error,test_cleanups,test_exception_handling,test_hook_calling,test_project_customization}.py" = ["F821"]
+# Intentional bare excepts that also catch BaseException (KeyboardInterrupt, SystemExit)
+"{slash/exception_handling,slash/core/fixtures/fixture_store,tests/test_debugging}.py" = ["E722"]
 
 
 [tool.pytest]

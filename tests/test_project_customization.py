@@ -55,7 +55,7 @@ def test_configure_hook_depends_on_configuration_cmdline(customized_suite, suite
         def configure_hook():
             assert slash.config.root.some_config == 1000
 
-    result = customized_suite.run(additional_args=["--some-config=1000"]).session.results.global_result
+    result = customized_suite.run(additional_args=["--some-config=1000"]).session.results.global_result  # noqa: F841
 
 
 @pytest.fixture

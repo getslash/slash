@@ -36,7 +36,7 @@ def test_code_string(error):
     assert (
         error.cause.code_string
         == """def func_3():
-    local_func_3 = global_func_3
+    local_func_3 = global_func_3  # noqa: F841
     raise NotImplementedError()\n"""
     )
 
@@ -90,7 +90,7 @@ def test_to_list(error):
 
 @pytest.mark.usefixtures("disable_vintage_deprecations")
 def test_frame_locals_no_assertion_markers(assertion_error):
-    for var_name, _ in assertion_error.cause.locals.items():
+    for var_name in assertion_error.cause.locals:
         assert "@" not in var_name
 
 
@@ -155,7 +155,7 @@ def test_error_frame_correction():
 def error():
     try:
         func_1()
-    except:
+    except:  # noqa: E722
         return Error.capture_exception()
     else:
         assert False, "Did not fail"
@@ -179,19 +179,19 @@ global_func_3 = "global_func_3"
 
 
 def func_1():
-    local_func_1 = global_func_1
+    local_func_1 = global_func_1  # noqa: F841
 
     func_2()
 
 
 def func_2():
-    local_func_2 = global_func_2
+    local_func_2 = global_func_2  # noqa: F841
 
     func_3()
 
 
 def func_3():
-    local_func_3 = global_func_3
+    local_func_3 = global_func_3  # noqa: F841
     raise NotImplementedError()
 
 
@@ -213,7 +213,7 @@ def func():
 
     try:
         module.func()
-    except:
+    except:  # noqa: E722
         return Error.capture_exception()
     else:
         assert False, "Did not fail"

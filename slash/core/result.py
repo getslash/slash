@@ -24,13 +24,13 @@ _logger = logbook.Logger(__name__)
 _ADDED_TO_RESULT = ExceptionMarker("added_to_result")
 
 
-class Result(object):
+class Result:
     """Represents a single result for a test which was run"""
 
-    pickle_key_blacklist = {"test_metadata", "facts"}
+    pickle_key_blacklist = {"test_metadata", "facts"}  # noqa: RUF012
 
     def __init__(self, test_metadata=None):
-        super(Result, self).__init__()
+        super().__init__()
         self.test_metadata = test_metadata
         #: dictionary to be use by tests and plugins to store result-related information for later analysis
         self.data = {}
@@ -235,7 +235,7 @@ class Result(object):
             error.forget_exc_info()
             return error
         except Exception:
-            _logger.error("Failed to add error to result", exc_info=True, extra={"capture": False})
+            _logger.exception("Failed to add error to result", extra={"capture": False})
             raise
 
     def add_skip(self, reason, append=True):
@@ -287,21 +287,21 @@ class Result(object):
             ", ".join(
                 attr
                 for attr in ("success", "error", "failure", "skip", "finished", "interrupted")
-                if getattr(self, "is_{}".format(attr))()
+                if getattr(self, f"is_{attr}")()
             ),
         )
 
 
 class GlobalResult(Result):
     def __init__(self, session_results=None):
-        super(GlobalResult, self).__init__()
+        super().__init__()
         self._session_results = session_results
 
     def is_global_result(self):
         return True
 
     def is_success(self, allow_skips=False):
-        if not super(GlobalResult, self).is_success(allow_skips=allow_skips):
+        if not super().is_success(allow_skips=allow_skips):
             return False
         if self._session_results is None:
             return True
@@ -313,9 +313,9 @@ class GlobalResult(Result):
         return all(result.is_success(allow_skips=allow_skips) for result in self._session_results.iter_test_results())
 
 
-class SessionResults(object):
+class SessionResults:
     def __init__(self, session):
-        super(SessionResults, self).__init__()
+        super().__init__()
         self.session = session
         self.global_result = GlobalResult(self)
         self._results_dict = {}
@@ -325,9 +325,7 @@ class SessionResults(object):
         return len(self._results_dict)
 
     def __repr__(self):
-        return "<Results: {} successful, {} errors, {} failures, {} skips>".format(
-            self.get_num_successful(), self.get_num_errors(), self.get_num_failures(), self.get_num_skipped()
-        )
+        return f"<Results: {self.get_num_successful()} successful, {self.get_num_errors()} errors, {self.get_num_failures()} failures, {self.get_num_skipped()} skips>"
 
     def iter_all_additional_details(self):
         for result in self.iter_all_results():
@@ -420,7 +418,7 @@ class SessionResults(object):
     def create_result(self, test):
         if test.__slash__.id in self._results_dict:
             raise exceptions.SlashInternalError(
-                "{} shouldn't appear in results dict before adding its result".format(test.__slash__.id)
+                f"{test.__slash__.id} shouldn't appear in results dict before adding its result"
             )
 
         returned = Result(test.__slash__)
@@ -430,7 +428,7 @@ class SessionResults(object):
     def get_result(self, test):
         """Returns the result stored belonging to a given test"""
         if test.__slash__ is None:
-            raise LookupError("Could not find result for {}".format(test))
+            raise LookupError(f"Could not find result for {test}")
         return self._results_dict[test.__slash__.id]
 
     def safe_get_result(self, test):

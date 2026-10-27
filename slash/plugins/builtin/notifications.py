@@ -15,7 +15,6 @@ import slash
 import smtplib
 import jinja2
 
-
 _SLASH_ICON = "http://slash.readthedocs.org/en/latest/_static/slash-logo.png"
 
 
@@ -52,7 +51,7 @@ def _send_email(smtp_server, subject, body, from_email, to_list, cc_list):
         smtp.sendmail(from_email, to_list + cc_list, msg.as_string())
 
 
-class Message(object):
+class Message:
     def __init__(self, title, body_template, kwargs, is_pdb):
         self.title = title
         self.body = body_template
@@ -91,7 +90,7 @@ class Plugin(PluginInterface):
     """
 
     def __init__(self, *args, **kwargs):
-        super(Plugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._notifiers = {}
         self._basic_config = {
             "prowl_api_key": None,
@@ -128,14 +127,14 @@ class Plugin(PluginInterface):
             conf_dict = {}
         assert isinstance(conf_dict, dict)
         conf_dict.setdefault("enabled", False)
-        conf_dict["enabled"] //= Cmdline(on="--notify-{}".format(name))
+        conf_dict["enabled"] //= Cmdline(on=f"--notify-{name}")
         self._basic_config[name] = conf_dict
 
     def _get_from_config_with_legacy(self, notifier_name, legacy_name, new_name):
         this_config = config.get_path("plugin_config.notifications")
         value = this_config[legacy_name]
         if value:
-            warn_deprecation("{} is depreacted. use {}.{} instead".format(legacy_name, notifier_name, new_name))
+            warn_deprecation(f"{legacy_name} is depreacted. use {notifier_name}.{new_name} instead")
         else:
             value = this_config[notifier_name][new_name]
         return value
@@ -218,7 +217,7 @@ class Plugin(PluginInterface):
         backslash_plugin = slash.plugins.manager.get_active_plugins().get("backslash")
         if backslash_plugin and backslash_plugin.session:
             config.root.plugin_config.notifications.email.to_list.append(backslash_plugin.session.user_email)
-            url = backslash_plugin.webapp_url + "sessions/{}".format(session.id)
+            url = backslash_plugin.webapp_url + f"sessions/{session.id}"
             kwargs["backslash_link"] = url
             kwargs["full_name"] = backslash_plugin.session.user_display_name
             session_info = "Backslash: {backslash_link}"

@@ -1,7 +1,7 @@
 import itertools
 from confetti import Metadata
 
-_dest_generator = ("dest_{}".format(i) for i in itertools.count())
+_dest_generator = (f"dest_{i}" for i in itertools.count())
 
 
 # for use with callbacks
@@ -21,7 +21,7 @@ def _decrease(value):
     return value - 1
 
 
-class _Cmdline(object):
+class _Cmdline:
     def __init__(
         self,
         arg=None,
@@ -35,7 +35,7 @@ class _Cmdline(object):
         increase_doc=None,
         decrease_doc=None,
     ):
-        super(_Cmdline, self).__init__()
+        super().__init__()
         dest = next(_dest_generator)
         self.callback_dest = dest + ":callbacks"
         self.arg_dest = dest + ":arg"
@@ -57,7 +57,7 @@ class _Cmdline(object):
         """
         Add all required flags to a parser to support updating the config value from commandline
         """
-        description = node.metadata.get("doc", "(Config: {})".format(path))
+        description = node.metadata.get("doc", f"(Config: {path})")
         if self.arg is not None:
             parser.add_argument(
                 self.arg,

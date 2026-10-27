@@ -58,4 +58,4 @@ def test_stable_ordering(on_fixture):
                 param_values.setdefault((param_name, index), []).append(param_value)
 
     for (param_name, index), values in param_values.items():
-        assert len(set(values)) == 1, "{}#{} is not stable: {}".format(param_name, index, values)
+        assert len(set(values)) == 1, f"{param_name}#{index} is not stable: {values}"

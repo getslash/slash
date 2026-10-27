@@ -8,7 +8,7 @@ from .utils import TestCase
 
 class CustomHooksTest(TestCase):
     def setUp(self):
-        super(CustomHooksTest, self).setUp()
+        super().setUp()
         self.hook_name = "some_custom_hook"
         with vintage.get_no_deprecations_context():
             self.hook = hooks.add_custom_hook(self.hook_name)
@@ -17,7 +17,7 @@ class CustomHooksTest(TestCase):
         with vintage.get_no_deprecations_context():
             hooks.remove_custom_hook(self.hook_name)
         self.assertFalse(hasattr(hooks, self.hook_name))
-        super(CustomHooksTest, self).tearDown()
+        super().tearDown()
 
     def test_hooks_are_globally_available_through_hooks_module(self):
         self.assertIsInstance(hooks.some_custom_hook, gossip.hooks.Hook)  # pylint: disable=no-member

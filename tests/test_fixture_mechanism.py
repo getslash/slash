@@ -29,7 +29,7 @@ def test_fixture_initialization_order_is_preserved(store):
     store.resolve()
     d = store.get_fixture_dict(["fixture1", "fixture2", "fixture3"])
     for i in [1, 2, 3]:
-        assert d["fixture{}".format(i)] == i
+        assert d[f"fixture{i}"] == i
 
 
 def test_fixture_id_remains_even_when_context_popped(store):
@@ -145,10 +145,10 @@ def test_variation_equality(store):
 
     prev_variation = None
     for variation in store.iter_parametrization_variations(fixture_ids=[store.get_fixture_by_name("fixture").info.id]):
-        assert variation == variation
-        assert not (variation != variation)  # pylint: disable=superfluous-parens
+        assert variation == variation  # noqa: PLR0124
+        assert not (variation != variation)  # pylint: disable=superfluous-parens  # noqa: PLR0124, SIM202
         assert variation != prev_variation
-        assert not (variation == prev_variation)  # pylint: disable=superfluous-parens
+        assert not (variation == prev_variation)  # pylint: disable=superfluous-parens  # noqa: SIM201
         prev_variation = variation
 
 
@@ -266,7 +266,7 @@ def test_get_all_needed_fixture_ids_of_parametrization(store):
 
     needed = set(store.get_all_needed_fixture_ids(param_fixtureobj))
     assert len(needed) == 1
-    assert needed == set([param_fixtureobj.info.id])
+    assert needed == {param_fixtureobj.info.id}
 
 
 def test_fixture_store_iter_parametrization_variations_missing_fixtures(store):
@@ -298,12 +298,12 @@ def test_fixture_dependency(store):
     @slash.fixture
     def fixture1(fixture2):
         assert fixture2 == "fixture2_value_0"
-        return "fixture1_value_{}".format(next(counter))
+        return f"fixture1_value_{next(counter)}"
 
     @store.add_fixture
     @slash.fixture
     def fixture2():
-        return "fixture2_value_{}".format(next(counter))
+        return f"fixture2_value_{next(counter)}"
 
     store.resolve()
 
@@ -391,7 +391,7 @@ def test_fixture_decorator_multiple_calls(fixture_func):
 
 
 def test_fixture_required_fixtures(fixture_func):
-    assert set(fixture_func.__slash_fixture__.required_args) == set(arg.name for arg in get_arguments(fixture_func))
+    assert set(fixture_func.__slash_fixture__.required_args) == {arg.name for arg in get_arguments(fixture_func)}
 
 
 def test_fixture_name(fixture_func, fixture_func_name):
@@ -510,7 +510,7 @@ def session_scoped_fixture(store, cleanup_map):
 
 def _get_scoped_fixture(scope, store, cleanup_map):
     @store.add_fixture
-    @slash.fixture(scope=scope, name="{}_scoped_fixture".format(scope))
+    @slash.fixture(scope=scope, name=f"{scope}_scoped_fixture")
     def fixture(this):
         @this.add_cleanup
         def cleanup():
@@ -522,4 +522,4 @@ def _get_scoped_fixture(scope, store, cleanup_map):
 
 
 def ok(s):
-    return "ok_{}".format(s)
+    return f"ok_{s}"

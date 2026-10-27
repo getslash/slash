@@ -8,11 +8,11 @@ from .test_container import SuiteWriterTestContainer
 
 class Class(SuiteWriterTestContainer, CodeElement, Element):
     def __init__(self, suite, file):
-        super(Class, self).__init__(suite)
+        super().__init__(suite)
         self._decorators = []
         self.file = file
         self.suite = file.suite
-        self.name = "Test{}".format(self.id)
+        self.name = f"Test{self.id}"
         self.before = self.after = None
 
     def add_before_method(self):
@@ -39,7 +39,7 @@ class Class(SuiteWriterTestContainer, CodeElement, Element):
         for d in self._decorators:
             code_formatter.write("@")
             code_formatter.writeln(d)
-        code_formatter.writeln("class {}(slash.Test):".format(self.name))
+        code_formatter.writeln(f"class {self.name}(slash.Test):")
         with code_formatter.indented():
             if self.before is not None:
                 self.before.write(code_formatter)
@@ -49,6 +49,6 @@ class Class(SuiteWriterTestContainer, CodeElement, Element):
             yield
 
     def _write_body(self, code_formatter):
-        super(Class, self)._write_body(code_formatter)
+        super()._write_body(code_formatter)
         for test in self._tests:
             test.write(code_formatter)

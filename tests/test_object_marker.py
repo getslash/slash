@@ -27,7 +27,7 @@ def test_try_get_mark_fail_with_default(marked_obj):
 
 
 def test_mark_append():
-    class Obj(object):
+    class Obj:
         pass
 
     mark_name = "some_mark"
@@ -51,7 +51,7 @@ markfactory = mark_factories.append
 @markfactory
 def markfactory_class(mark_name, mark_value):
     @mark(mark_name, mark_value)
-    class Blap(object):
+    class Blap:
         pass
 
     return Blap
@@ -68,7 +68,7 @@ def markfactory_func(mark_name, mark_value):
 
 @markfactory
 def method(mark_name, mark_value):
-    class Blap(object):
+    class Blap:
         @mark(mark_name, mark_value)
         def func(self):
             pass

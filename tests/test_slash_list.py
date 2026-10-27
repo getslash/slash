@@ -1,4 +1,3 @@
-from __future__ import print_function
 import munch
 import functools
 import os
@@ -102,7 +101,7 @@ def test_slash_list_suite_duplicate_tests(tmpdir, show_duplicates, expected_test
     assert result == 0
     returned_tests = report_stream.getvalue().splitlines()
     assert len(returned_tests) == expected_tests_num
-    assert set(returned_tests) == {"{}:test_function".format(f.name)}
+    assert set(returned_tests) == {f"{f.name}:test_function"}
 
 
 @pytest.mark.parametrize("invalid", [None, "test", "method"])
@@ -132,8 +131,8 @@ def test_slash_list_suite_file_incorrect_names(tmpdir, invalid, allow_empty):
 
     with tmpdir.join("suitefile").open("w") as suite_file:
         _print = functools.partial(print, file=suite_file)
-        _print("{}:TestSomething.test_method{}".format(f.name, method_name_remainder))
-        _print("{}:test_function{}".format(f.name, function_name_remainder))
+        _print(f"{f.name}:TestSomething.test_method{method_name_remainder}")
+        _print(f"{f.name}:test_function{function_name_remainder}")
 
     args = ["-f", suite_file.name]
     if allow_empty:
@@ -201,7 +200,7 @@ def test_slash_list_with_filtering(tmpdir):
     assert result == 0
 
     listed_tests = _strip(report_stream.getvalue()).splitlines()
-    assert listed_tests == ["{}:{}".format(fp.name, test_name) for test_name in ("test_a", "test_c")]
+    assert listed_tests == [f"{fp.name}:{test_name}" for test_name in ("test_a", "test_c")]
 
 
 def _strip(line):

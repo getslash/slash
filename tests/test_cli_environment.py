@@ -12,7 +12,7 @@ from .utils import TestCase
 
 class OutputCaptureTest(TestCase):
     def setUp(self):
-        super(OutputCaptureTest, self).setUp()
+        super().setUp()
         self.stderr = StringIO()
         self.forge.replace_with(sys, "stderr", self.stderr)
         self.stdout = StringIO()
@@ -21,7 +21,7 @@ class OutputCaptureTest(TestCase):
 
 class ArgumentParsingTest(OutputCaptureTest):
     def setUp(self):
-        super(ArgumentParsingTest, self).setUp()
+        super().setUp()
         self.config = Config(
             {
                 "a": {"a1": {"flag1": True // conf_utils.Cmdline(off="--no-flag1")}},
@@ -72,7 +72,7 @@ class ArgumentParsingTest(OutputCaptureTest):
 
     def test_config_assign_wrong_path_restores_config(self):
         "Given a bad override, the get_parsed_config_args_context() should leave the configuration untouched"
-        with self.assertRaises(SystemExit) as caught:
+        with self.assertRaises(SystemExit) as caught:  # noqa: SIM117
             with self._cli(["-o", "string_value=bla", "-o", "int_value=hello"]):
                 pass
         self.assertNotEqual(caught.exception.code, 0)
@@ -80,9 +80,8 @@ class ArgumentParsingTest(OutputCaptureTest):
         self.assertEqual(self.config.root.string_value, "")
 
     def test_config_assign_missing_assignment(self):
-        with self.assertRaises(SystemExit) as caught:
-            with self._cli(["-o", "blap"]):
-                pass
+        with self.assertRaises(SystemExit) as caught, self._cli(["-o", "blap"]):
+            pass
         self.assertNotEqual(caught.exception.code, 0)
 
 
@@ -91,7 +90,7 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
     SAMPLE_NAME = "sample plugin"
 
     def setUp(self):
-        super(PluginCommandLineArgumentsTest, self).setUp()
+        super().setUp()
         self.plugin = SampleCommandLinePlugin(self.SAMPLE_NAME)
         with vintage.get_no_deprecations_context():
             plugins.manager.install(self.plugin)

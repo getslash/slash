@@ -118,7 +118,7 @@ def checkpoint2():
 _timestamp = itertools.count(1000000)
 
 
-class Checkpoint(object):
+class Checkpoint:
     called_count = 0
     args = kwargs = timestamp = None
 
@@ -259,7 +259,7 @@ def plugin(no_plugins):  # pylint: disable=unused-argument
         _deactivate_called = False
 
         def __init__(self):
-            super(StartSessionPlugin, self).__init__()
+            super().__init__()
             self.session_start_call_count = 0
 
         def get_name(self):

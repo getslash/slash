@@ -79,12 +79,12 @@ def local_conf_dir(request, tmpdir, expected_dict):
         returned = conf_dir = root_dir.join("slashconf")
         returned.mkdir()
     for i, (key, value) in enumerate(expected_dict.items()):
-        returned = returned.join("subdir{}".format(i))
+        returned = returned.join(f"subdir{i}")
         returned.mkdir()
 
         filename = f"{i}.py" if is_conf_dir else "slashconf.py"
         with returned.join(filename).open("w") as f:
-            f.write("{} = [{!r}]".format(key, value))
+            f.write(f"{key} = [{value!r}]")
     if is_conf_dir:
         return conf_dir
     return returned
@@ -92,4 +92,4 @@ def local_conf_dir(request, tmpdir, expected_dict):
 
 @pytest.fixture
 def expected_dict():
-    return dict(("key_{}".format(i), "value_{}_{}".format(i, uuid1())) for i in range(10))
+    return {f"key_{i}": f"value_{i}_{uuid1()}" for i in range(10)}

@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import signal
 import sys
@@ -32,7 +32,7 @@ def register_handler(signal_name, skip_plugin=False):
 @register_handler("SIGUSR1", skip_plugin=True)
 def _usr1_handler(*_, **__):
     if not sys.stdout.isatty():
-        message = "Running without TTY when {!r} plugin caught SIGUSR1. Current stack:".format(_PLUGIN_NAME)
+        message = f"Running without TTY when {_PLUGIN_NAME!r} plugin caught SIGUSR1. Current stack:"
         if context.session is None:
             print(message)
         else:
@@ -44,12 +44,12 @@ def _usr1_handler(*_, **__):
 
 @register_handler("SIGUSR2", skip_plugin=True)
 def _usr2_handler(*_, **__):
-    skip_test("Skipped due to SIGUSR2 signal caught by {!r} plugin".format(_PLUGIN_NAME))
+    skip_test(f"Skipped due to SIGUSR2 signal caught by {_PLUGIN_NAME!r} plugin")
 
 
 class Plugin(PluginInterface):
     def __init__(self):
-        super(Plugin, self).__init__()
+        super().__init__()
         self._orig_handlers = {}
 
     def get_name(self):

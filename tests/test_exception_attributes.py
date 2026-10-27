@@ -21,7 +21,7 @@ def test_exception_attributes_with_message():
 def error():
     class MyException(Exception):
         def __init__(self):
-            super(MyException, self).__init__()
+            super().__init__()
             self.x = 2
             self.y = [str(i) for i in range(10)]
             self.d = {"some": "dict", "here": "too"}

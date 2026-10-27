@@ -67,7 +67,7 @@ def test_provides_globally_needs_globally(checkpoint1, checkpoint2):
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
 
 def test_provides_globally_needs_specific_hook(checkpoint1, checkpoint2):
@@ -108,7 +108,7 @@ def test_provides_globally_needs_specific_hook(checkpoint1, checkpoint2):
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
 
 def test_provides_globally_needs_specific_hook_which_does_not_exist_at_a(checkpoint2):
@@ -150,7 +150,7 @@ def test_provides_globally_needs_specific_hook_which_does_not_exist_at_a(checkpo
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
 
 def test_provides_specific_hook_needs_globally(checkpoint1, checkpoint2):
@@ -191,7 +191,7 @@ def test_provides_specific_hook_needs_globally(checkpoint1, checkpoint2):
     slash.hooks.session_start()  # pylint: disable=no-member
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.error_added(result=None, error=None)  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
 
 def test_provides_specific_hook_needs_globally_with_this_hook_only(checkpoint1, checkpoint2):
@@ -229,7 +229,7 @@ def test_provides_specific_hook_needs_globally_with_this_hook_only(checkpoint1, 
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
 
 @pytest.mark.parametrize("needs_parent_level", [True, False])
@@ -284,11 +284,11 @@ def test_provides_needs_with_inheritence_on_class_level(
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.error_added()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
     # Ensure only hooks required by PluginB fails
     slash.hooks.test_end()  # pylint: disable=no-member
@@ -338,11 +338,11 @@ def test_provides_needs_in_both_inheritence_levels(checkpoint, checkpoint1, chec
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y"])
+    assert caught.value.unmet_dependencies == {"x", "y"}
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.error_added()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y"])
+    assert caught.value.unmet_dependencies == {"x", "y"}
 
     # Ensure only hooks required by PluginB fails
     slash.hooks.test_end()  # pylint: disable=no-member
@@ -405,11 +405,11 @@ def test_provides_needs_with_inheritence_on_method_level(checkpoint):
     slash.plugins.manager.deactivate("plugin a")
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.test_start()  # pylint: disable=no-member
     slash.hooks.error_added(result=None, error=None)  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x"])
+    assert caught.value.unmet_dependencies == {"x"}
 
 
 def test_provides_needs_with_child_overrides():
@@ -502,29 +502,29 @@ def test_provides_needs_with_child_overrides():
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_end()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["z"])
+    assert caught.value.unmet_dependencies == {"z"}
 
     slash.plugins.manager.deactivate("plugin a")
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y"])
+    assert caught.value.unmet_dependencies == {"x", "y"}
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.test_start()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y"])
+    assert caught.value.unmet_dependencies == {"x", "y"}
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.error_added(result=None, error=None)  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y"])
+    assert caught.value.unmet_dependencies == {"x", "y"}
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.test_end()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y"])
+    assert caught.value.unmet_dependencies == {"x", "y"}
 
     with pytest.raises(CannotResolveDependencies) as caught:
         slash.hooks.session_end()  # pylint: disable=no-member
-    assert caught.value.unmet_dependencies == set(["x", "y", "z"])
+    assert caught.value.unmet_dependencies == {"x", "y", "z"}
 
 
 def autoname(plugin):

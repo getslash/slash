@@ -51,20 +51,16 @@ def test_string_patterns_and(suite, config_override):
 def test_matcher(pattern, matching, not_matching):
     matcher = Matcher(pattern)
     for string in matching:
-        assert matcher.matches(FakeMetadata(string)), "Pattern {!r} unexpectedly does not match {!r}".format(
-            pattern, string
-        )
+        assert matcher.matches(FakeMetadata(string)), f"Pattern {pattern!r} unexpectedly does not match {string!r}"
 
     for string in not_matching:
-        assert not matcher.matches(FakeMetadata(string)), "Pattern {!r} unexpectedly matches {!r}".format(
-            pattern, string
-        )
+        assert not matcher.matches(FakeMetadata(string)), f"Pattern {pattern!r} unexpectedly matches {string!r}"
 
 
 def test_test_name_matcher():
     test_name = "/path/to/testfile.py:TestName"
     m = FakeMetadata(test_name)
-    assert not Matcher("not {}".format(test_name)).matches(m)
+    assert not Matcher(f"not {test_name}").matches(m)
     assert Matcher(test_name).matches(m)
 
 
@@ -98,9 +94,9 @@ def test_matches_values():
     assert not Matcher("tag:bla=bye").matches(FakeMetadata("something", {"bla": "hello"}))
 
 
-class FakeMetadata(object):
+class FakeMetadata:
     def __init__(self, address, tags=NO_TAGS):
-        super(FakeMetadata, self).__init__()
+        super().__init__()
         if isinstance(tags, dict):
             tags = Tags(tags)
         self.address = address

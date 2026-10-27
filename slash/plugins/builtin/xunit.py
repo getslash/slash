@@ -8,7 +8,6 @@ from ...conf import config
 from ...utils.traceback_utils import get_traceback_string
 from ...utils.conf_utils import Cmdline, Doc
 from slash import config as slash_config
-from slash import context
 from xml.etree.ElementTree import tostring as xml_to_string, Element as E, SubElement as SE
 
 
@@ -48,9 +47,11 @@ class Plugin(PluginInterface):
     def _get_test_case_element(self, test):
         return E(
             "testcase",
-            dict(
-                name=str(test), classname="{}.{}".format(test.__class__.__module__, test.__class__.__name__), time="0"
-            ),
+            {
+                "name": str(test),
+                "classname": f"{test.__class__.__module__}.{test.__class__.__name__}",
+                "time": "0",
+            },
         )
 
     def _detail2xml(self, tag, name, value):

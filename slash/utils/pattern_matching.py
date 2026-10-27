@@ -10,9 +10,9 @@ from pyparsing import (
 )
 
 
-class Include(object):
+class Include:
     def __init__(self, t):
-        super(Include, self).__init__()
+        super().__init__()
         self.only_tags = False
         self.pattern = t[0]
         self.exact = False
@@ -35,11 +35,11 @@ class Include(object):
         return "<{}{}>".format(self.pattern, " (only tags)" if self.only_tags else "")
 
 
-class BinaryMatching(object):
+class BinaryMatching:
     aggregator = None
 
     def __init__(self, matchers):
-        super(BinaryMatching, self).__init__()
+        super().__init__()
         self.matchers = matchers
 
     @classmethod
@@ -59,9 +59,9 @@ class OrMatching(BinaryMatching):
     aggregator = any
 
 
-class Exclude(object):
+class Exclude:
     def __init__(self, t):
-        super(Exclude, self).__init__()
+        super().__init__()
         self.matcher = t[0][1]
 
     def matches(self, metadata):
@@ -82,9 +82,9 @@ bool_expr = infix_notation(  # pylint: disable=too-many-function-args
 )
 
 
-class Matcher(object):
+class Matcher:
     def __init__(self, pattern):
-        super(Matcher, self).__init__()
+        super().__init__()
         self._matcher = bool_expr.parse_string(pattern)[0]
 
     def __repr__(self):

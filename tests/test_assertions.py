@@ -92,9 +92,8 @@ def test_assert_raises_multiple_exceptions(func):
         assert caught.exception is value
 
     value = CustomException3("!")
-    with pytest.raises(CustomException3) as caught:
-        with func(exception_types):
-            raise value
+    with pytest.raises(CustomException3) as caught, func(exception_types):
+        raise value
     assert caught.value is value
 
 

@@ -28,9 +28,8 @@ def test_ensure_requirements_called_eagerly(checkpoint1, checkpoint2):
     def test_something():
         pass
 
-    with slash.Session() as session:
-        with session.get_started_context():
-            slash.runner.run_tests(make_runnable_tests(test_something))
+    with slash.Session() as session, session.get_started_context():
+        slash.runner.run_tests(make_runnable_tests(test_something))
     [result] = [res for res in session.results.iter_all_results() if not res.is_global_result()]
     assert result.is_skip()
     assert checkpoint1.called
@@ -41,7 +40,7 @@ def test_requirements_raises_exception(suite, suite_test):
     @suite_test.file.append_body
     def __code__():  # pylint: disable=unused-variable
         def fail_predicate():  # pylint: disable=unused-variable
-            raise Exception("Failing")  # pylint: disable=broad-exception-raised
+            raise Exception("Failing")  # pylint: disable=broad-exception-raised  # noqa: TRY002
 
     suite_test.add_decorator("slash.requires(fail_predicate)")
     suite_test.expect_error()
@@ -70,7 +69,7 @@ def test_requirements(
 ):
     message = "requires something very important"
     if use_message and message_in_retval:
-        retval = "({}, {!r})".format(requirement_fullfilled, message)
+        retval = f"({requirement_fullfilled}, {message!r})"
     else:
         retval = requirement_fullfilled
 
@@ -118,40 +117,37 @@ def test_requirements_on_class():
     with slash.Session():
         [test] = make_runnable_tests(Test)  # pylint: disable=unbalanced-tuple-unpacking
 
-    assert set([r._req for r in test.get_requirements()]) == set(  # pylint: disable=protected-access
-        [req1, req2]
-    )
+    assert {r._req for r in test.get_requirements()} == {req1, req2}
 
 
 @pytest.fixture
 def filename_test_fixture(tmpdir):
     returned = str(tmpdir.join("testfile.py"))
 
-    with open(returned, "w") as f:
-        with ExitStack() as stack:
-            code = CodeFormatter(f)
+    with open(returned, "w") as f, ExitStack() as stack:
+        code = CodeFormatter(f)
 
-            code.writeln("import slash")
-            code.writeln("@slash.fixture")
-            code.writeln("@slash.requires({}, {})".format(_UNMET_REQ_DECORATOR, '"msg1"'))
-            code.writeln("def fixture():")
-            with code.indented():
-                code.writeln("return 1")
+        code.writeln("import slash")
+        code.writeln("@slash.fixture")
+        code.writeln("@slash.requires({}, {})".format(_UNMET_REQ_DECORATOR, '"msg1"'))
+        code.writeln("def fixture():")
+        with code.indented():
+            code.writeln("return 1")
 
-            code.writeln("@slash.fixture(autouse=True)")
-            code.writeln("@slash.requires({}, {})".format(_MET_REQ_DECORATOR, '"msg2"'))
-            code.writeln("def fixture1():")
-            with code.indented():
-                code.writeln("return 1")
+        code.writeln("@slash.fixture(autouse=True)")
+        code.writeln("@slash.requires({}, {})".format(_MET_REQ_DECORATOR, '"msg2"'))
+        code.writeln("def fixture1():")
+        with code.indented():
+            code.writeln("return 1")
 
-            code.writeln("class Test(slash.Test):")
-            stack.enter_context(code.indented())
+        code.writeln("class Test(slash.Test):")
+        stack.enter_context(code.indented())
 
-            code.write("def test_1(")
-            code.write("self, ")
-            code.writeln("fixture):")
-            with code.indented():
-                code.writeln("pass")
+        code.write("def test_1(")
+        code.write("self, ")
+        code.writeln("fixture):")
+        with code.indented():
+            code.writeln("pass")
     return returned
 
 
@@ -293,9 +289,8 @@ def test_class_requirements_class_and_method(class_can_run, method_can_run):
         def test(self):
             pass
 
-    with slash.Session() as session:
-        with session.get_started_context():
-            slash.runner.run_tests(make_runnable_tests(Test))
+    with slash.Session() as session, session.get_started_context():
+        slash.runner.run_tests(make_runnable_tests(Test))
     results = [res for res in session.results.iter_test_results()]
     assert len(results) == 1
     if class_can_run and method_can_run:

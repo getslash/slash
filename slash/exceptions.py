@@ -100,13 +100,13 @@ class SlashInternalError(SlashException):
 
         if context.session is not None:
             context.session.notify_internal_error()
-        super(SlashInternalError, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __str__(self):
         return "\n".join(
             (
                 "INTERNAL ERROR:",
-                super(SlashInternalError, self).__str__(),
+                super().__str__(),
                 "Please open issue at: https://github.com/getslash/slash/issues/new",
             )
         )
@@ -121,13 +121,12 @@ class TestFailed(AssertionError):
     should not be considered a test failure (but rather a code failure)
     """
 
-    pass
 
 
 class ExpectedExceptionNotCaught(TestFailed):
     def __init__(self, msg, expected_types):
         self.expected_types = expected_types
-        super(ExpectedExceptionNotCaught, self).__init__(msg)
+        super().__init__(msg)
 
 
 FAILURE_EXCEPTION_TYPES = (TestFailed, AssertionError, ExpectedExceptionNotCaught)
@@ -140,5 +139,5 @@ class SkipTest(SlashException):
     """
 
     def __init__(self, reason="Test skipped"):
-        super(SkipTest, self).__init__(reason)
+        super().__init__(reason)
         self.reason = reason

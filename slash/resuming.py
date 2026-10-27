@@ -42,14 +42,14 @@ class SessionMetadata(Base):
     created_at = Column(DateTime, nullable=False, index=True)
 
 
-class ResumeTestStatus(object):
+class ResumeTestStatus:
     PLANNED = "planned"
     SUCCESS = "success"
     FAILED = "failed"
     SKIPPED = "skipped"
 
 
-class ResumedTestData(object):
+class ResumedTestData:
     def __init__(self, file_name, address_in_file, variation=None, status=None):
         self.file_name = file_name
         self.address_in_file = address_in_file
@@ -57,9 +57,7 @@ class ResumedTestData(object):
         self.status = status
 
     def __repr__(self):
-        return "<ResumedTestData({!r}, {!r}, {!r}, {!r})>".format(
-            self.file_name, self.address_in_file, self.variation, self.status
-        )
+        return f"<ResumedTestData({self.file_name!r}, {self.address_in_file!r}, {self.variation!r}, {self.status!r})>"
 
     def __eq__(self, other):
         return (
@@ -73,7 +71,7 @@ class ResumedTestData(object):
 def _init_db():
     resume_dir = os.path.expanduser(config.root.run.resume_state_path)
     ensure_directory(resume_dir)
-    engine = create_engine("sqlite:///{}/{}".format(resume_dir, _DB_NAME))
+    engine = create_engine(f"sqlite:///{resume_dir}/{_DB_NAME}")
     _session.configure(bind=engine)
     Base.metadata.create_all(engine)
 
@@ -160,7 +158,7 @@ def get_last_resumeable_session_id():
             .first()
         )
         if not session_id:
-            raise CannotResume("No sessions found for folder {}".format(current_folder))
+            raise CannotResume(f"No sessions found for folder {current_folder}")
         return session_id.session_id
 
 
@@ -182,7 +180,7 @@ def get_tests_from_remote(session_id, get_successful_tests):
     if not hasattr(backslash_plugin, "is_session_exist") or not hasattr(backslash_plugin, "get_tests_to_resume"):
         raise CannotResume("Backslash plugin doesn't support remote resuming")
     if not backslash_plugin.is_session_exist(session_id):
-        raise CannotResume("Could not find resume data for session {}".format(session_id))
+        raise CannotResume(f"Could not find resume data for session {session_id}")
     backslash_version = tuple([int(x) for x in __backslash_version__.split(".")[:2]])
     kwargs = (
         {"filters_dict": {"show_successful": get_successful_tests}}

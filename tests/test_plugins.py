@@ -125,7 +125,7 @@ def test_custom_hook_registration(request, is_internal):
 
 
 def test_multiple_registers_on(request):
-    hook_names = ["some_hook_{}".format(i) for i in range(2)]
+    hook_names = [f"some_hook_{i}" for i in range(2)]
 
     class MyPlugin(PluginInterface):
         def get_name(self):
@@ -195,14 +195,14 @@ def test_builtin_plugins_hooks_start_condition():
     "make sure that all hooks are either empty, or contain callbacks marked with `slash.<identifier>`"
     for hook in gossip.get_group("slash").get_hooks():
         for registration in hook.get_registrations():
-            assert registration.token.startswith("slash."), "Callback {} is not a builtin!".format(hook.full_name)
+            assert registration.token.startswith("slash."), f"Callback {hook.full_name} is not a builtin!"
 
 
 def test_builtin_plugins_are_installed():
     installed = plugins.manager.get_installed_plugins()
     assert installed
     for filename in os.listdir(os.path.join(os.path.dirname(plugins.__file__), "builtin")):
-        if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
+        if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):  # noqa: PIE810
             continue
         plugin_name = filename[:(-3)].replace("_", " ")
         assert plugin_name in installed
@@ -212,7 +212,7 @@ def test_builtin_plugins_are_installed():
 def test_get_installed_plugins():
     class CustomPlugin(PluginInterface):
         def __init__(self, name):
-            super(CustomPlugin, self).__init__()
+            super().__init__()
             self._name = name
 
         def get_name(self):
@@ -230,7 +230,7 @@ def test_get_installed_plugins():
 
 
 def test_cannot_install_incompatible_subclasses(no_plugins):
-    class Incompatible(object):
+    class Incompatible:
         pass
 
     for invalid in (Incompatible, Incompatible(), PluginInterface, object(), 1, "string"):

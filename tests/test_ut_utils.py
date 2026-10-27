@@ -6,7 +6,7 @@ from slash.utils.python import get_arguments
 
 
 def test_gc_marker(gc_marker):
-    class Obj(object):
+    class Obj:
         pass
 
     obj = Obj()
@@ -22,7 +22,7 @@ def test_get_arguments(func):
     assert [a.name for a in args] == ["a", "b", "c"]
 
 
-class SampleClass(object):
+class SampleClass:
     def example_func(self, a, b, c):
         pass
 

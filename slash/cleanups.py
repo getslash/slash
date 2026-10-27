@@ -15,14 +15,14 @@ def add_critical_cleanup(_func, *args, **kwargs):
     """
     Same as :func:`.add_cleanup`, only the cleanup will be called even on interrupted tests
     """
-    return add_cleanup(_func, critical=True, *args, **kwargs)
+    return add_cleanup(_func, critical=True, *args, **kwargs)  # noqa: B026
 
 
 def add_success_only_cleanup(_func, *args, **kwargs):
     """
     Same as :func:`.add_cleanup`, only the cleanup will be called only if the test succeeds
     """
-    return add_cleanup(_func, success_only=True, *args, **kwargs)
+    return add_cleanup(_func, success_only=True, *args, **kwargs)  # noqa: B026
 
 
 def get_current_cleanup_phase():

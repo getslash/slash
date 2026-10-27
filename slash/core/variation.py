@@ -10,7 +10,7 @@ _PRINTABLE_CHARS = set(string.ascii_letters) | set(string.digits) | set("-_")
 _logger = logbook.Logger(__name__)
 
 
-class Variations(object):
+class Variations:
     _current_variation = None
 
     def set_current_variation(self, variation):
@@ -21,7 +21,7 @@ class Variations(object):
         return self._current_variation
 
 
-class Variation(object):
+class Variation:
     """Represents a single variation of parameter points. A variation is merely a mapping of fixture ids to their values.
     This mostly applies for parametrization fixtures. The other fixtures follow since they are either constant
     or indirectly depend on parametrization"""
@@ -30,7 +30,7 @@ class Variation(object):
         """
         :param name_bindings: dictionary mapping parameter name to its id
         """
-        super(Variation, self).__init__()
+        super().__init__()
         self._store = store
         self.param_value_indices = param_value_indices
         self.id = {}
@@ -48,7 +48,7 @@ class Variation(object):
         returned = {}
         for name, value in self.values.items():
             returned[name] = self._format_parameter_value_safe(name, value)
-        return ",".join("{}={}".format(key, returned[key]) for key in sorted(returned))
+        return ",".join(f"{key}={returned[key]}" for key in sorted(returned))
 
     def _format_parameter_value_safe(self, name, value):
         label = self.labels[name]
@@ -58,7 +58,7 @@ class Variation(object):
         value = str(value)
         if self._is_printable(value):
             return str(value)
-        return "{}{}".format(name, label)
+        return f"{name}{label}"
 
     def _is_printable(self, value):
         if not isinstance(value, _PRINTABLE_TYPES):
@@ -89,7 +89,7 @@ class Variation(object):
 
     def __repr__(self):
         return "Variation({})".format(
-            ", ".join("{}={}".format(key, value) for key, value in self.param_value_indices.items())
+            ", ".join(f"{key}={value}" for key, value in self.param_value_indices.items())
         )
 
     def __nonzero__(self):

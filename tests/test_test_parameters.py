@@ -82,9 +82,9 @@ def test_before_parameters_inheritence(cartesian, with_override):
         @slash.parameters.iterate(a=cartesian.before_2_a.make_set(), b=cartesian.before_2_b.make_set())
         def before(self, a, b):  # pylint: disable=arguments-differ
             if with_override:
-                super(DerivedTest, self).before(a=a)
+                super().before(a=a)
             else:
-                super(DerivedTest, self).before()  # pylint: disable=no-value-for-parameter
+                super().before()  # pylint: disable=no-value-for-parameter
             _set("before_2_a", a)
             _set("before_2_b", b)
 
@@ -106,7 +106,7 @@ def test_parametrization_tuples():
 
     session = run_tests_assert_success(test_something)
     results = [result.data["params"] for result in session.results.iter_test_results()]
-    expected = set([(1, 2, 3), (1, 2, 33), (11, 22, 3), (11, 22, 33)])
+    expected = {(1, 2, 3), (1, 2, 33), (11, 22, 3), (11, 22, 33)}
     assert len(expected) == len(results)
     assert expected == set(results)
 

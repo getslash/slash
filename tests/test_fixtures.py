@@ -90,7 +90,7 @@ def test_fixtures_in_before_after(suite, where):
     for func in before, after:
         if func.name in where:
             func.depend_on_fixture(fixture)
-            func.append_line("assert {} == {}".format(fixture.name, fixture.get_value_string()))
+            func.append_line(f"assert {fixture.name} == {fixture.get_value_string()}")
 
     summary = suite.run()
 

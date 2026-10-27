@@ -38,7 +38,7 @@ def test_fixture_end_test_raises_exception(suite_builder):
         def fixture(this, param):
             @this.test_end
             def test_end(*_, **__):
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
             return param
 
@@ -59,7 +59,7 @@ def test_fixture_start_test_raises_exception(suite_builder):
         def fixture(this, param):
             @this.test_start
             def test_start(*_, **__):
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
             return param
 
@@ -82,7 +82,7 @@ def test_fixture_start_test_raises_exception_w_before(suite_builder):
         def fixture(this, param):
             @this.test_start
             def test_start(*_, **__):
-                1 / 0  # pylint: disable=pointless-statement
+                1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
             return param
 

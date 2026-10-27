@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-from __future__ import print_function
 import argparse
 import contextlib
 
@@ -47,7 +45,7 @@ def main():
     with _setup_logging_context(args):
         module_name = _COMMANDS.get(args.cmd)
         if not module_name:
-            parser.error("No such command: {}".format(args.cmd))
+            parser.error(f"No such command: {args.cmd}")
         module_name, func_name = module_name.split(":")
         module = __import__(module_name, fromlist=[""])
         func = getattr(module, func_name)
@@ -58,7 +56,7 @@ def main():
 
 
 def slash_version(_):
-    print("Slash v{}".format(__version__))
+    print(f"Slash v{__version__}")
     return 0
 
 
@@ -69,7 +67,7 @@ _DEFAULT_LOG_LEVEL = logbook.WARNING
 @contextlib.contextmanager
 def _setup_logging_context(args):
     log_level = max(logbook.DEBUG, _DEFAULT_LOG_LEVEL - len(args.verbosity))
-    with logbook.NullHandler().applicationbound():
+    with logbook.NullHandler().applicationbound():  # noqa: SIM117
         with logbook.StderrHandler(level=log_level, bubble=False).applicationbound():
             yield
 

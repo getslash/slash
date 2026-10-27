@@ -19,7 +19,7 @@ _fixture_id = itertools.count()
 
 class Fixture(FixtureBase):
     def __init__(self, store, fixture_func):
-        super(Fixture, self).__init__()
+        super().__init__()
         self.fixture_func = fixture_func
         self.info = self.fixture_func.__slash_fixture__
         self.scope = self.info.scope
@@ -44,7 +44,7 @@ class Fixture(FixtureBase):
     parametrization_ids = None
 
     def __repr__(self):
-        return "<Function Fixture around {}>".format(self.fixture_func)
+        return f"<Function Fixture around {self.fixture_func}>"
 
     def is_override(self):
         parent = self.namespace.get_parent()
@@ -98,16 +98,12 @@ class Fixture(FixtureBase):
 
                 if needed_fixture.scope < self.scope:  # pylint: disable=no-member
                     raise InvalidFixtureScope(
-                        "Fixture {} is dependent on {}, which has a smaller scope ({} > {})".format(
-                            self.info.name, param_name, self.scope, needed_fixture.scope
-                        )
+                        f"Fixture {self.info.name} is dependent on {param_name}, which has a smaller scope ({self.scope} > {needed_fixture.scope})"
                     )  # pylint: disable=no-member
 
                 if needed_fixture is self:
                     raise CyclicFixtureDependency(
-                        "Cyclic fixture dependency detected in {}: {} depends on itself".format(
-                            self.info.func.__code__.co_filename, self.info.name
-                        )
+                        f"Cyclic fixture dependency detected in {self.info.func.__code__.co_filename}: {self.info.name} depends on itself"
                     )
                 keyword_arguments[param_name] = needed_fixture
             except LookupError:

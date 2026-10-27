@@ -197,13 +197,13 @@ def results():
         @slash.fixture
         @slash.parametrize("x", [1, 2, 3])
         def inner_fixture(x):
-            return "inner{}".format(x)
+            return f"inner{x}"
 
         @s.fixture_store.add_fixture
         @slash.fixture
         @slash.parametrize("outer_param", [666])
         def outer_fixture(inner_fixture, outer_param):
-            return "outer_{}".format(inner_fixture)
+            return f"outer_{inner_fixture}"
 
         s.fixture_store.resolve()
 

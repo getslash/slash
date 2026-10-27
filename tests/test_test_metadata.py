@@ -48,7 +48,7 @@ def test_variation(suite, suite_test):
     for result in summary.get_all_results_for_test(suite_test):
         assert len(result.data["variation"]) == 1
         assert fixture.name not in result.data["variation"]
-        assert "{}.{}".format(fixture.name, param.name) in result.data["variation"]
+        assert f"{fixture.name}.{param.name}" in result.data["variation"]
 
 
 def test_function_name_with_special_parameters(test_type):
@@ -87,7 +87,7 @@ def test_set_test_name(test_metadata):
     assert test_metadata.file_path in str(test_metadata)
     custom_name = "some_custom_name"
     test_metadata.set_test_full_name(custom_name)
-    assert str(test_metadata) == "<{}>".format(custom_name)
+    assert str(test_metadata) == f"<{custom_name}>"
 
 
 def test_class_name_with_dot_parameters():
@@ -97,7 +97,7 @@ def test_class_name_with_dot_parameters():
     def test_something(path):
         pass
 
-    with slash.Session() as s:  # pylint: disable=unused-variable
+    with slash.Session() as s:  # pylint: disable=unused-variable  # noqa: F841
         loader = slash.loader.Loader()
         [test] = loader.get_runnables(test_something)  # pylint: disable=unbalanced-tuple-unpacking
         assert test.__slash__.class_name is None
@@ -122,14 +122,14 @@ def test_metadata(suite, suite_test):
 
 
 class TestMetadataTest(TestCase):
-    loaded_tests = []
+    loaded_tests = []  # noqa: RUF012
 
     def setUp(self):
         @slash.hooks.register
         def tests_loaded(tests):  # pylint: disable=unused-variable
             TestMetadataTest.loaded_tests = tests
 
-        super(TestMetadataTest, self).setUp()
+        super().setUp()
         self.root = self.get_new_path()
         self.filename = os.path.join(self.root, "testfile.py")
         with open(self.filename, "w") as f:
@@ -146,17 +146,17 @@ class TestMetadataTest(TestCase):
             self.assertIs(test.__slash__, result.test_metadata)
 
     def test_simple_test_address(self):
-        self.assertEqual(self.results[0].test_metadata.address, "{}:T001.test_method".format(self.filename))
+        self.assertEqual(self.results[0].test_metadata.address, f"{self.filename}:T001.test_method")
 
     def test_parameterized_test_address(self):
-        parameterized = set(x.test_metadata.address for x in self.results[1:])
+        parameterized = {x.test_metadata.address for x in self.results[1:]}
 
         self.assertEqual(
             parameterized,
-            set(
-                "{0}:T002.test_parameters(after:c={2},b={3},before:a={1})".format(self.filename, a, c, b)
+            {
+                f"{self.filename}:T002.test_parameters(after:c={c},b={b},before:a={a})"
                 for a, b, c in itertools.product([1, 2], [3, 4], [5, 6])
-            ),
+            },
         )
 
 

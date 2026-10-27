@@ -24,7 +24,7 @@ if PYPY:
 
 else:
 
-    class TracebackProxy(object):
+    class TracebackProxy:
         """
         Wraps the builtin traceback.traceback object.
         Exports exactly the same interface, making these types interchangable
@@ -54,16 +54,14 @@ else:
             Represents a traceback.frame object
             """
 
-            pass
 
         class _Traceback(_PyObject):
             """
             Represents a traceback.traceback object
             """
 
-            pass
 
-        _Traceback._fields_ = [  # pylint: disable=protected-access
+        _Traceback._fields_ = [  # pylint: disable=protected-access  # noqa: RUF012
             ("tb_next", ctypes.POINTER(_Traceback)),
             ("tb_frame", ctypes.POINTER(_Frame)),
             ("tb_lasti", ctypes.c_int),
@@ -97,7 +95,7 @@ else:
                 old = TracebackProxy._Traceback.from_address(id(self._tb.tb_next))  # pylint: disable=no-member
                 old.ob_refcnt -= 1
 
-            assert tb is None or isinstance(tb, types.TracebackType) or isinstance(tb, TracebackProxy)
+            assert tb is None or isinstance(tb, (types.TracebackType, TracebackProxy))
             if tb:
                 obj = TracebackProxy._Traceback.from_address(id(tb))  # pylint: disable=no-member
                 obj.ob_refcnt += 1
@@ -147,8 +145,8 @@ else:
         @staticmethod
         def create_traceback():
             try:
-                1 / 0
-            except:
+                1 / 0  # noqa: B018
+            except:  # noqa: E722
                 tb = sys.exc_info()[2]
             return tb  # pylint: disable=used-before-assignment
 

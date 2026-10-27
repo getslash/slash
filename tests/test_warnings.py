@@ -88,7 +88,7 @@ def test_deprecation(message):
 
 @pytest.fixture
 def message():
-    return "some message here {}".format(uuid4())
+    return f"some message here {uuid4()}"
 
 
 @pytest.fixture
@@ -107,11 +107,10 @@ def warning():
 
 @contextmanager
 def capturing_native_warnings():
-    with logbook.TestHandler() as log_handler:
-        with warnings.catch_warnings(record=True) as recorded:
-            warnings.simplefilter("always")
-            handlers = collections.namedtuple("Handlers", ("log", "native_warnings"))(log_handler, recorded)
-            yield handlers
+    with logbook.TestHandler() as log_handler, warnings.catch_warnings(record=True) as recorded:
+        warnings.simplefilter("always")
+        handlers = collections.namedtuple("Handlers", ("log", "native_warnings"))(log_handler, recorded)
+        yield handlers
 
 
 @pytest.mark.parametrize("should_ignore", [True, False])
@@ -130,4 +129,4 @@ def test_capture_warnings_before_session_start(request, suite, should_ignore):
         assert len(session_warnings) == 0  # pylint: disable=len-as-condition
     else:
         assert len(session_warnings) == 1
-        assert list(session_warnings)[0].message == warning_message
+        assert next(iter(session_warnings)).message == warning_message

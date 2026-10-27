@@ -14,7 +14,7 @@ def test_cyclic_fixture_detection(suite, suite_test):
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.global_result.is_success()
     assert re.search(
-        r"yclic fixture dependency detected in \S+: {0} -> {1} -> {0}".format(fixture1.name, fixture2.name),
+        rf"yclic fixture dependency detected in \S+: {fixture1.name} -> {fixture2.name} -> {fixture1.name}",
         summary.get_console_output(),
     )
 
@@ -30,6 +30,6 @@ def test_cyclic_fixture_detection_depend_on_self(suite, suite_test):
     summary = suite.run(expect_session_errors=True)
     assert not summary.session.results.global_result.is_success()
     assert re.search(
-        r"yclic fixture dependency detected in \S+: {} depends on itself".format(fixture.name),
+        rf"yclic fixture dependency detected in \S+: {fixture.name} depends on itself",
         summary.get_console_output(),
     )

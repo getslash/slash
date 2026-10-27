@@ -58,7 +58,7 @@ def slash_run(args, report_stream=None, resume=False, rerun=False, app_callback=
                         session_ids = app.positional_args
                         if not session_ids:
                             session_ids = [get_last_resumeable_session_id()]
-                        get_successful_tests = False if resume else True
+                        get_successful_tests = False if resume else True  # noqa: SIM211
                         to_resume = [
                             x
                             for session_id in session_ids

@@ -18,7 +18,7 @@ def test_call_all_raise_first(funcs):
 
 @pytest.fixture
 def funcs():
-    class Func(object):
+    class Func:
         called_count = 0
         exc_type = None
 
@@ -44,7 +44,7 @@ def test_resolve_underlying_function_method(class_method):
     else:
         decorator = lambda f: f
 
-    class Blap(object):
+    class Blap:
         @decorator
         def method(self):
             pass
@@ -77,7 +77,7 @@ def test_resolve_underlying_decorator_regular_func():
 
 
 def test_resolve_underlying_decorator_method():
-    class Blap(object):
+    class Blap:
         def orig(self):
             pass
 

@@ -13,7 +13,7 @@ def test_facts(suite, suite_test, fact_name, fact_value):
     def fact_set(name, value):  # pylint: disable=unused-variable
         facts.append((name, value))
 
-    suite_test.append_line("slash.context.result.facts.set({!r}, {!r})".format(fact_name, fact_value))
+    suite_test.append_line(f"slash.context.result.facts.set({fact_name!r}, {fact_value!r})")
     res = suite.run()[suite_test]
     assert res.facts.all() == {fact_name: fact_value}
     assert facts == [(fact_name, fact_value)]

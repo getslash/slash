@@ -13,7 +13,7 @@ def test_app_reporter(checkpoint):
 
 
 def test_custom_reporter():
-    class DummyReporter(object):
+    class DummyReporter:
         pass
 
     dummy_reporter = DummyReporter()
@@ -28,11 +28,11 @@ def test_exception_during_app_exit_debugger(checkpoint, config_override):
     @hooks.entering_debugger.register  # pylint: disable=no-member
     def callback(*_, **__):  # pylint: disable=unused-variable
         checkpoint()
-        raise Exception("Entering debugger error")  # pylint: disable=broad-exception-raised
+        raise Exception("Entering debugger error")  # pylint: disable=broad-exception-raised  # noqa: TRY002
 
     config_override("debug.enabled", True)
     with Application() as app:
-        raise Exception("Some Exception")  # pylint: disable=broad-exception-raised
+        raise Exception("Some Exception")  # pylint: disable=broad-exception-raised  # noqa: TRY002
     assert checkpoint
     assert app.exit_code != 0
     assert checkpoint.called_count == 1

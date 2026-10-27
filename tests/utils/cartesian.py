@@ -1,9 +1,9 @@
 import itertools
 
 
-class Cartesian(object):
+class Cartesian:
     def __init__(self):
-        super(Cartesian, self).__init__()
+        super().__init__()
         self.sets = {}
         self._assigns = []
 
@@ -46,13 +46,13 @@ class Cartesian(object):
         return returned
 
 
-class SetMaker(object):
+class SetMaker:
     def __init__(self, cartesian, name):
-        super(SetMaker, self).__init__()
+        super().__init__()
         self.cartesian = cartesian
         self.name = name
 
     def make_set(self, size=3):
         assert self.name not in self.cartesian.sets
-        returned = self.cartesian.sets[self.name] = ["{}{}".format(self.name, i) for i in range(size)]
+        returned = self.cartesian.sets[self.name] = [f"{self.name}{i}" for i in range(size)]
         return returned

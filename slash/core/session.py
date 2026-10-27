@@ -26,10 +26,10 @@ class Session(Activatable):
     _has_internal_errors = False
 
     def __init__(self, reporter=None, console_stream=None):
-        super(Session, self).__init__()
+        super().__init__()
         self.parent_session_id = config.root.parallel.parent_session_id
         self.id = (
-            "{}_0".format(uuid.uuid1())
+            f"{uuid.uuid1()}_0"
             if not self.parent_session_id
             else "{}_{}".format(self.parent_session_id.split("_")[0], config.root.parallel.worker_id)
         )
@@ -121,12 +121,11 @@ class Session(Activatable):
         self.cleanups.push_scope("session-global")
         session_start_called = False
         try:
-            with handling_exceptions():
-                with notify_if_slow_context("Initializing session..."):
-                    hooks.before_session_start()  # pylint: disable=no-member
-                    hooks.session_start()  # pylint: disable=no-member
-                    session_start_called = True
-                    hooks.after_session_start()  # pylint: disable=no-member
+            with handling_exceptions(), notify_if_slow_context("Initializing session..."):
+                hooks.before_session_start()  # pylint: disable=no-member
+                hooks.session_start()  # pylint: disable=no-member
+                session_start_called = True
+                hooks.after_session_start()  # pylint: disable=no-member
             self._started = True
             yield
         except exceptions.INTERRUPTION_EXCEPTIONS:

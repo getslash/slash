@@ -11,7 +11,7 @@ from io import StringIO
 def test_notify_if_slow_context(show_duration):
     output_stream = StringIO()
     reporter = ConsoleReporter(logbook.TRACE, output_stream)
-    with slash.Session(console_stream=output_stream, reporter=reporter):
+    with slash.Session(console_stream=output_stream, reporter=reporter):  # noqa: SIM117
         with notify_if_slow_context("message", slow_seconds=0.1, end_message="End", show_duration=show_duration):
             time.sleep(1)
     output = output_stream.getvalue()

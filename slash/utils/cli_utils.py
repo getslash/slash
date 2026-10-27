@@ -1,4 +1,3 @@
-from __future__ import print_function
 import argparse
 import os
 import sys
@@ -7,7 +6,6 @@ from contextlib import contextmanager
 import colorama
 
 from .. import conf, plugins
-
 
 _PLUGIN_ACTIVATION_PREFIX = "--with-"
 _PLUGIN_DEACTIVATION_PREFIX = "--without-"
@@ -58,7 +56,7 @@ def configure_arg_parser_by_config(parser, config=None):
             subparser = plugin_groups.get(plugin_name)
             if subparser is None:
                 subparser = plugin_groups[plugin_name] = parser.add_argument_group(
-                    "options for the {0} plugin (--with-{0})".format(plugin_name)
+                    f"options for the {plugin_name} plugin (--with-{plugin_name})"
                 )
         else:
             subparser = parser
@@ -92,16 +90,16 @@ def get_modified_configuration_from_args_context(parser, args, config=None):
                 try:
                     config.assign_path(path, new_value, deduce_type=True, default_type=str)
                 except ValueError:
-                    parser.error("Invalid value for {}: {!r}".format(cmdline, new_value))
+                    parser.error(f"Invalid value for {cmdline}: {new_value!r}")
         for override in args.config_overrides:
             if "=" not in override:
-                parser.error("Invalid config override: {}".format(override))
+                parser.error(f"Invalid config override: {override}")
             path, _ = override.split("=", 1)
             to_restore.append((path, config.get_path(path)))
             try:
                 config.assign_path_expression(override, deduce_type=True, default_type=str)
             except ValueError:
-                parser.error("Invalid value for config override: {}".format(override))
+                parser.error(f"Invalid value for config override: {override}")
         yield
     finally:
         for path, prev_value in reversed(to_restore):
@@ -110,8 +108,8 @@ def get_modified_configuration_from_args_context(parser, args, config=None):
 
 class SlashArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
-        super(SlashArgumentParser, self).__init__(
-            prog=self._deduce_program_name(), usage="{} [options]".format(self._deduce_program_name()), *args, **kwargs
+        super().__init__(
+            prog=self._deduce_program_name(), usage=f"{self._deduce_program_name()} [options]", *args, **kwargs  # noqa: B026
         )
 
         self._positionals_metavar = None
@@ -119,15 +117,15 @@ class SlashArgumentParser(argparse.ArgumentParser):
     def _deduce_program_name(self):
         returned = os.path.basename(sys.argv[0])
         if len(sys.argv) > 1:
-            returned += " {}".format(sys.argv[1])
+            returned += f" {sys.argv[1]}"
         return returned
 
     def set_positional_metavar(self, metavar, plural=True):
         self._positionals_metavar = metavar
         if plural:
-            self.usage += " {0} [{0} [...]]".format(metavar)
+            self.usage += f" {metavar} [{metavar} [...]]"
         else:
-            self.usage += " {}".format(metavar)
+            self.usage += f" {metavar}"
 
     def set_description(self, description):
         self.description = description
@@ -145,7 +143,7 @@ class ColorizedString(str):
 
     def colorize(self):
         if self.style:
-            return "{}{}{}".format(self.style, self, COLOR_RESET)
+            return f"{self.style}{self}{COLOR_RESET}"
         return str(self)
 
 
@@ -156,7 +154,7 @@ def make_styler(style):
 UNDERLINED = "\x1b[4m"
 
 
-class Printer(object):
+class Printer:
     def __init__(self, report_stread, enable_output=True, force_color=False, enable_color=True, error_stream=None):
         self._stream = report_stread
         self._error_stream = error_stream if error_stream is not None else self._stream

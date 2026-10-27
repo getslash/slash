@@ -44,9 +44,9 @@ def get_requirements(test):
     return list(_get_requirements_list(test, create=False))
 
 
-class Requirement(object):
+class Requirement:
     def __init__(self, req, message=None):
-        super(Requirement, self).__init__()
+        super().__init__()
         self._req = req
         self._message = message
 
@@ -56,7 +56,7 @@ class Requirement(object):
         if isinstance(self._req, bool):
             return "?"
         if hasattr(self._req, "__name__"):
-            return "<{.__name__}>".format(self._req)
+            return f"<{self._req.__name__}>"
         return repr(self._req)
 
     def is_met(self):
@@ -74,5 +74,5 @@ class Skip(Requirement):
     """
 
     def __init__(self, reason=None):
-        super(Skip, self).__init__(False, reason)
+        super().__init__(False, reason)
         self.reason = reason

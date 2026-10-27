@@ -1,6 +1,5 @@
 from importlib.metadata import distribution, PackageNotFoundError
 
-
 __version__ = distribution("slash").version
 
 

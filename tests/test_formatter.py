@@ -6,7 +6,7 @@ from .utils import TestCase
 
 class FormatterTest(TestCase):
     def setUp(self):
-        super(FormatterTest, self).setUp()
+        super().setUp()
         self.buff = StringIO()
         self.f = Formatter(self.buff)
 
@@ -14,7 +14,7 @@ class FormatterTest(TestCase):
         self.assertEqual(self.buff.getvalue(), v)
 
     def test_write_non_strings(self):
-        class MyObject(object):
+        class MyObject:
             def __repr__(self):
                 return "repr"
 
@@ -86,7 +86,7 @@ class FormatterTest(TestCase):
 
 class FormatterColorTest(TestCase):
     def setUp(self):
-        super(FormatterColorTest, self).setUp()
+        super().setUp()
         self.buff = self.forge.create_wildcard_mock()
         self.buff.write("").whenever()  # indentation of 0
 

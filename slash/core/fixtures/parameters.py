@@ -82,18 +82,18 @@ def iter_parametrization_fixtures(func):
     return param_info.iter_parametrization_fixtures()
 
 
-class ParameterizationInfo(object):
+class ParameterizationInfo:
     def __init__(self, func):
-        super(ParameterizationInfo, self).__init__()
+        super().__init__()
         self._argument_names = get_argument_names(func)
         self._argument_name_set = frozenset(self._argument_names)
         self._params = {}
         self._extra_params = {}
-        self.path = "{}:{}".format(func.__module__, func.__name__)
+        self.path = f"{func.__module__}:{func.__name__}"
 
     def add_options(self, param_name, values):
         if param_name in self._params:
-            raise ParameterException("{!r} already parametrized for {}".format(param_name, self.path))
+            raise ParameterException(f"{param_name!r} already parametrized for {self.path}")
         values = list(values)
 
         if not isinstance(param_name, (list, tuple)):
@@ -103,7 +103,7 @@ class ParameterizationInfo(object):
 
         values = _normalize_values(values, num_params=len(names))
 
-        p = Parametrization(values=values, path="{}.{}".format(self.path, param_name))
+        p = Parametrization(values=values, path=f"{self.path}.{param_name}")
         for index, name in enumerate(names):
             if name in self._argument_name_set:
                 params_dict = self._params
@@ -129,7 +129,7 @@ def _id(obj):
 
 class Parametrization(FixtureBase):
     def __init__(self, path, values, info=None, transform=_id):
-        super(Parametrization, self).__init__()
+        super().__init__()
         self.path = path
         self.values = values
         if info is None:
@@ -169,9 +169,9 @@ class Parametrization(FixtureBase):
         return returned
 
 
-class ParametrizationValue(object):
+class ParametrizationValue:
     def __init__(self, label=NOTHING, value=NOTHING, tags=None):
-        super(ParametrizationValue, self).__init__()
+        super().__init__()
         self._validate_label(label)
         self.label = label
         self.value = value
@@ -185,7 +185,7 @@ class ParametrizationValue(object):
 
     def _validate_label(self, label):
         if isinstance(label, str) and not re.match(r"^[a-zA-Z_][0-9a-zA-Z_]{0,29}$", label):
-            raise RuntimeError("Invalid label: {!r}".format(label))
+            raise RuntimeError(f"Invalid label: {label!r}")
 
     def __rfloordiv__(self, other):
         assert self.value is NOTHING, "Parameter already has a value"
@@ -199,10 +199,10 @@ def _normalize_values(values, num_params=1):
         value = _normalize_single_value(value, default_label=index)
         if num_params > 1:
             if not isinstance(value.value, (tuple, list)):
-                raise RuntimeError("Invalid parametrization value (expected sequence): {!r}".format(value.value))
+                raise RuntimeError(f"Invalid parametrization value (expected sequence): {value.value!r}")
             if len(value.value) != num_params:
                 raise RuntimeError(
-                    "Invalid parametrization value (invalid length, expected {}): {!r}".format(num_params, value.value)
+                    f"Invalid parametrization value (invalid length, expected {num_params}): {value.value!r}"
                 )
 
         returned.append(value)
@@ -214,6 +214,6 @@ def _normalize_single_value(value, default_label):
         value = ParametrizationValue(label=default_label, value=value)
     if value.value is NOTHING:
         raise mark_exception_frame_correction(
-            RuntimeError("Parameter {} has no value defined!".format(value.label)), +4
+            RuntimeError(f"Parameter {value.label} has no value defined!"), +4
         )
     return value

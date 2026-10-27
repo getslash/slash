@@ -14,7 +14,7 @@ from .fixtures.utils import nofixtures
 
 class TestTestFactory(RunnableTestFactory):
     def __init__(self, testclass):
-        super(TestTestFactory, self).__init__(testclass)
+        super().__init__(testclass)
         self.testclass = testclass
 
     def get_class_name(self):
@@ -69,7 +69,7 @@ class Test(RunnableTest):
     """
 
     def __init__(self, test_method_name, fixture_store, fixture_namespace, variation):
-        super(Test, self).__init__(fixture_store, fixture_namespace, variation)
+        super().__init__(fixture_store, fixture_namespace, variation)
         self._test_method_name = test_method_name
 
     def get_test_function(self):
@@ -99,13 +99,13 @@ class Test(RunnableTest):
     def get_address_in_factory(self):
         returned = ""
         if self._test_method_name is not None:
-            returned += ".{}".format(self._test_method_name)
+            returned += f".{self._test_method_name}"
         return returned
 
     def _get_call_string(self, kwargs):
         if not kwargs:
             return ""
-        return "({})".format(", ".join("{}={!r}".format(k, v) for k, v in kwargs.items()))
+        return "({})".format(", ".join(f"{k}={v!r}" for k, v in kwargs.items()))
 
     def get_requirements(self):
         test_requirements = get_requirements(type(self)) + get_requirements(self.get_test_function())
@@ -127,7 +127,7 @@ class Test(RunnableTest):
                 with handling_exceptions():
                     result = _call_with_fixtures(method, trigger_test_start=True)
                     if isinstance(result, GeneratorType):
-                        raise InvalidTest("{} is a generator. Running generators is not supported".format(method))
+                        raise InvalidTest(f"{method} is a generator. Running generators is not supported")
 
             finally:
                 with handling_exceptions():
@@ -137,16 +137,14 @@ class Test(RunnableTest):
         """
         Gets called before each separate case generated from this test class
         """
-        pass
 
     def after(self):
         """
         Gets called after each separate case from this test class executed, assuming :meth:`.before` was successful.
         """
-        pass
 
     def _format_kwargs(self, kwargs):
-        return ", ".join("{}={!r}".format(x, y) for x, y in kwargs.items())
+        return ", ".join(f"{x}={y!r}" for x, y in kwargs.items())
 
 
 def abstract_test_class(cls):

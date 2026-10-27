@@ -1,9 +1,9 @@
 from ...exception_handling import handling_exceptions
 
 
-class ActiveFixture(object):
+class ActiveFixture:
     def __init__(self, fixture):
-        super(ActiveFixture, self).__init__()
+        super().__init__()
         self.fixture = fixture
         self.id = fixture.info.id
         self.name = fixture.info.name

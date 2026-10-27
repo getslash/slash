@@ -33,7 +33,7 @@ def test_marker_value_does_not_exist(func):
 
 
 def test_marker_on_methods(marker):
-    class Obj(object):
+    class Obj:
         @marker
         def marked_func(self):
             pass

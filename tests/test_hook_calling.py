@@ -79,7 +79,7 @@ def test_no_error_hooks_called_on_success(suite):
     called = []
 
     for hook_name in ["test_error", "test_failure", "test_skip", "error_added"]:
-        gossip.register(lambda name=hook_name, **kw: called.append(name), "slash.{}".format(hook_name))
+        gossip.register(lambda name=hook_name, **kw: called.append(name), f"slash.{hook_name}")
 
     suite.run()
     assert not called
@@ -107,8 +107,8 @@ def test_hook__error_added_after_test(suite, request, checkpoint, suite_test):
     assert not checkpoint.called
     [result] = summary.get_all_results_for_test(suite_test)
     try:
-        1 / 0
-    except:
+        1 / 0  # noqa: B018
+    except:  # noqa: E722
         result.add_error()
     assert checkpoint.called
     assert checkpoint.kwargs["result"] is result
@@ -169,9 +169,8 @@ def test_debugger_called_on_hooks(
     with ExitStack() as exception_stack:
         if should_raise:
             exception_stack.enter_context(pytest.raises(exception_type))
-        with slash.Session() as s:
-            with s.get_started_context():
-                slash.runner.run_tests(make_runnable_tests(test_something))
+        with slash.Session() as s, s.get_started_context():
+            slash.runner.run_tests(make_runnable_tests(test_something))
 
     assert checkpoint.called == debug_enabled
     if debug_enabled:
@@ -195,9 +194,8 @@ def test_before_cleanup_hook(request, forge):
     def test_something():
         slash.add_cleanup(cleanup)
 
-    with slash.Session() as s:
-        with s.get_started_context():
-            slash.runner.run_tests(make_runnable_tests(test_something))
+    with slash.Session() as s, s.get_started_context():
+        slash.runner.run_tests(make_runnable_tests(test_something))
 
 
 def test_session_end_not_called_when_before_session_start_fails(checkpoint):
@@ -209,10 +207,8 @@ def test_session_end_not_called_when_before_session_start_fails(checkpoint):
     def hook():
         checkpoint()
 
-    with slash.Session() as s:
-        with pytest.raises(CustomException):
-            with s.get_started_context():
-                pass
+    with slash.Session() as s, pytest.raises(CustomException), s.get_started_context():
+        pass
 
     [err] = s.results.global_result.get_errors()  # pylint: disable=unbalanced-tuple-unpacking
     assert "CustomException" in str(err)
@@ -224,7 +220,7 @@ def test_session_end_not_called_when_before_session_start_fails(checkpoint):
 
 class HookCallingTest(_TestCase):
     def setUp(self):
-        super(HookCallingTest, self).setUp()
+        super().setUp()
         self.plugin1 = make_custom_plugin("plugin1", self)
         self.plugin2 = make_custom_plugin(
             "plugin2", self, hook_names=["before_session_start", "session_start", "after_session_start"]
@@ -260,9 +256,8 @@ class HookCallingTest(_TestCase):
         plugins.manager.install(self.plugin1, activate=True)
         plugins.manager.install(self.plugin2, activate=True)
 
-        with slash.Session() as s:
-            with s.get_started_context():
-                pass
+        with slash.Session() as s, s.get_started_context():
+            pass
 
 
 def make_custom_plugin(name, test, hook_names=None):
@@ -279,6 +274,6 @@ def make_custom_plugin(name, test, hook_names=None):
     for hook_name in hook_names:
         setattr(CustomPlugin, hook_name, test.forge.create_wildcard_function_stub(name=hook_name))
 
-    setattr(CustomPlugin, "activate", test.forge.create_wildcard_function_stub(name="activate"))
+    CustomPlugin.activate = test.forge.create_wildcard_function_stub(name="activate")
 
     return CustomPlugin()

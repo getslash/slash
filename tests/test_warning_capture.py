@@ -49,10 +49,8 @@ def test_session_warning_calls_hook():
 
 def test_cant_reenter_twice():
     ctx = warning_callback_context(no_op)
-    with ctx:
-        with pytest.raises(RuntimeError):
-            with ctx:
-                pass
+    with ctx, pytest.raises(RuntimeError), ctx:
+        pass
 
 
 def test_cant_exit_no_enter():
@@ -65,7 +63,7 @@ def no_op(*args, **kwargs):  # pylint: disable=unused-argument
     pass
 
 
-class Warning(object):
+class Warning:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
