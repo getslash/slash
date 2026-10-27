@@ -91,7 +91,7 @@ class CustomizationTest(TestCase):
     def test_customize_via_pkgutil_entry_point(self):
         self.forge.replace(importlib.metadata, "entry_points")
         entry_point = self.forge.create_wildcard_mock()
-        importlib.metadata.entry_points(group="slash.site.customize").and_return(iter([entry_point]))
+        importlib.metadata.entry_points(group="slash.site.customize").and_return(iter([entry_point]))  # pylint: disable=no-member
         unused = self.get_customization_source()  # expect a single customization  # pylint: disable=unused-variable
         entry_point.load().and_return(_apply_customization)
         self.forge.replay()

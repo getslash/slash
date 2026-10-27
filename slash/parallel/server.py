@@ -177,7 +177,7 @@ class Server(object):
                 return NO_MORE_TESTS
             test = self.tests[test_index]
             self.executing_tests[client_id] = test_index
-            hooks.test_distributed(
+            hooks.test_distributed(  # pylint: disable=no-member
                 test_logical_id=test.__slash__.id, worker_session_id=self._get_worker_session_id(client_id)
             )  # pylint: disable=no-member
             _logger.notice(
