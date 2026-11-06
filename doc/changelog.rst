@@ -1,5 +1,23 @@
 Changelog
 =========
+* :release:`1.16.0 <06-11-2026>`
+* :bug:`- major` Fix ``ExtensionImporter`` for python >= 3.12
+* :feature:`-` Support python 3.12 to 3.15
+* :bug:`- major` Fix pattern matching of patterns containing quotes
+* :bug:`- major` Remove usage of deprecated APIs (``pkg_resources`` and deprecated pattern matching API)
+* :feature:`-` Drop support for python version < 3.10
+* :release:`1.15.0 <07-07-2024>`
+* :bug:`- major` Fix reporting of fixtures located on another drive on Windows
+* :feature:`-` Support python 3.10 and 3.11
+* :feature:`-` Use ``pyproject.toml`` for project metadata
+* :bug:`- major` Remove xunit testcase ``classname`` attribute for test functions
+* :feature:`1068` Resuming sessions now supports ``--no-skipped`` to avoid resuming skipped tests
+* :release:`1.14.0 <22-02-2023>`
+* :bug:`- major` Make ``python_requires`` PEP 440 compatible, fixing installation with setuptools >= 67.0.0
+* :bug:`1058 major` Support bytes log messages
+* :bug:`- major` Fix SQLAlchemy deprecation warnings
+* :bug:`- major` Use the ``daemon`` parameter instead of the deprecated ``Thread.setDaemon``
+* :feature:`1056` Use GitHub Actions for CI instead of Travis CI
 * :release:`1.13.0 <01-03-2022>`
 * :feature:`-` Support python 3.9
 * :release:`1.12.0 <24-09-2020>`
