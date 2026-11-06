@@ -1,1 +1,1 @@
-include MANIFEST.in tests/* tox.ini .pylintrc
+include MANIFEST.in tests/* tox.ini

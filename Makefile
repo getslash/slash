@@ -3,7 +3,7 @@ default: test
 test: env
 	.venv/bin/pytest --cov=slash --cov-report=html tests
 
-pylint: env
+ruff: env
 	.venv/bin/ruff check .
 
 env: .venv/.up-to-date
