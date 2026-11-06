@@ -1,17 +1,18 @@
 from pyparsing import (
-    infixNotation,
+    infix_notation,
     opAssoc,
     Word,
     alphanums,
     Keyword,
     ZeroOrMore,
     Literal,
+    QuotedString,
 )
 
 
-class Include(object):
+class Include:
     def __init__(self, t):
-        super(Include, self).__init__()
+        super().__init__()
         self.only_tags = False
         self.pattern = t[0]
         self.exact = False
@@ -34,11 +35,11 @@ class Include(object):
         return "<{}{}>".format(self.pattern, " (only tags)" if self.only_tags else "")
 
 
-class BinaryMatching(object):
+class BinaryMatching:
     aggregator = None
 
     def __init__(self, matchers):
-        super(BinaryMatching, self).__init__()
+        super().__init__()
         self.matchers = matchers
 
     @classmethod
@@ -58,20 +59,20 @@ class OrMatching(BinaryMatching):
     aggregator = any
 
 
-class Exclude(object):
+class Exclude:
     def __init__(self, t):
-        super(Exclude, self).__init__()
+        super().__init__()
         self.matcher = t[0][1]
 
     def matches(self, metadata):
         return not self.matcher.matches(metadata)
 
 
-word = Word(alphanums + "._,-=/:")
+word = Word(alphanums + "._,-=/:") | QuotedString("'") | QuotedString('"')
 matcher = Literal("tag:") + ZeroOrMore(" ") + word | word
-matcher.setParseAction(Include)
+matcher.set_parse_action(Include)
 
-bool_expr = infixNotation(  # pylint: disable=too-many-function-args
+bool_expr = infix_notation(  # pylint: disable=too-many-function-args
     matcher,
     [
         (Keyword("not"), 1, opAssoc.RIGHT, Exclude),
@@ -81,10 +82,10 @@ bool_expr = infixNotation(  # pylint: disable=too-many-function-args
 )
 
 
-class Matcher(object):
+class Matcher:
     def __init__(self, pattern):
-        super(Matcher, self).__init__()
-        self._matcher = bool_expr.parseString(pattern)[0]
+        super().__init__()
+        self._matcher = bool_expr.parse_string(pattern)[0]
 
     def __repr__(self):
         return repr(self._matcher)

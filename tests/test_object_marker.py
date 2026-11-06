@@ -25,19 +25,21 @@ def test_try_get_mark_fail_with_default(marked_obj):
     _default = object()
     assert try_get_mark(marked_obj, "nonexistent", _default) is _default
 
-def test_mark_append():
 
-    class Obj(object):
+def test_mark_append():
+    class Obj:
         pass
 
-    mark_name = 'some_mark'
+    mark_name = "some_mark"
     assert try_get_mark(Obj, mark_name) is None
-    assert mark(mark_name, 'mark_value', append=True)(Obj) is Obj
-    assert get_marks(Obj) == {mark_name: ['mark_value']}
+    assert mark(mark_name, "mark_value", append=True)(Obj) is Obj
+    assert get_marks(Obj) == {mark_name: ["mark_value"]}
 
-@pytest.mark.parametrize('obj', [1, None, object(), type, "string"])
+
+@pytest.mark.parametrize("obj", [1, None, object(), type, "string"])
 def test_try_get_mark_fail_non_marked(obj):
     assert try_get_mark(obj, "mark") is None
+
 
 ### Boilerplate ###
 
@@ -49,7 +51,7 @@ markfactory = mark_factories.append
 @markfactory
 def markfactory_class(mark_name, mark_value):
     @mark(mark_name, mark_value)
-    class Blap(object):
+    class Blap:
         pass
 
     return Blap
@@ -66,8 +68,7 @@ def markfactory_func(mark_name, mark_value):
 
 @markfactory
 def method(mark_name, mark_value):
-    class Blap(object):
-
+    class Blap:
         @mark(mark_name, mark_value)
         def func(self):
             pass
@@ -81,11 +82,11 @@ def marked_obj(request, mark_name, mark_value):
     return returned
 
 
-@pytest.fixture(params=['mark_name'])
+@pytest.fixture(params=["mark_name"])
 def mark_name(request):
     return request.param
 
 
-@pytest.fixture(params=['mark_value', 1, True, 1.0])
+@pytest.fixture(params=["mark_value", 1, True, 1.0])
 def mark_value(request):
     return request.param

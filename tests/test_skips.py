@@ -15,8 +15,8 @@ def test_skip_test(args):
 
 def test_skip_with_before_after_test(checkpoint):
     "Make sure that after() is called for Test even if we skip"
-    class MyTest(slash.Test):
 
+    class MyTest(slash.Test):
         def test(self):
             slash.skip_test("!")
 
@@ -29,7 +29,6 @@ def test_skip_with_before_after_test(checkpoint):
 
 def test_method_without_reason():
     class Test(slash.Test):
-
         @slash.skipped
         def test(self):
             pass
@@ -38,17 +37,15 @@ def test_method_without_reason():
 
 
 def test_method_with_reason():
-
     class Test(slash.Test):
-
         @slash.skipped("reason")
         def test(self):
             pass
+
     _assert_skips(Test, "reason")
 
 
 def test_class_decorator(suite):
-
     cls = suite.classes[1]
 
     cls.add_decorator('slash.skipped("reason")')
@@ -60,18 +57,17 @@ def test_class_decorator(suite):
 
     for test in cls.tests:
         result = results[test]
-        assert 'reason' in result.get_skips()
+        assert "reason" in result.get_skips()
 
 
 def test_custom_skip_exception():
-    reason = 'blabla'
+    reason = "blabla"
 
     class MyCustomSkipException(Exception):
-
         def __repr__(self):
             return reason
-        __str__ = __repr__
 
+        __str__ = __repr__
 
     def test_skip():
         slash.register_skip_exception(MyCustomSkipException)

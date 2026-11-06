@@ -11,9 +11,8 @@ from .utils import TestCase
 
 
 class OutputCaptureTest(TestCase):
-
     def setUp(self):
-        super(OutputCaptureTest, self).setUp()
+        super().setUp()
         self.stderr = StringIO()
         self.forge.replace_with(sys, "stderr", self.stderr)
         self.stdout = StringIO()
@@ -21,17 +20,18 @@ class OutputCaptureTest(TestCase):
 
 
 class ArgumentParsingTest(OutputCaptureTest):
-
     def setUp(self):
-        super(ArgumentParsingTest, self).setUp()
-        self.config = Config({
-            "a": {"a1": {"flag1": True // conf_utils.Cmdline(off="--no-flag1")}},
-            "b": {"b1": {"flag2": False // conf_utils.Cmdline(on="--flag2")}},
-            "string_value": "",
-            "int_value": 0 // conf_utils.Cmdline(increase="--increase", decrease="--decrease"),
-            "arg_value": "" // conf_utils.Cmdline(arg="--arg-value"),
-            "list": ["existing_item"] // conf_utils.Cmdline(append="--append"),
-        })
+        super().setUp()
+        self.config = Config(
+            {
+                "a": {"a1": {"flag1": True // conf_utils.Cmdline(off="--no-flag1")}},
+                "b": {"b1": {"flag2": False // conf_utils.Cmdline(on="--flag2")}},
+                "string_value": "",
+                "int_value": 0 // conf_utils.Cmdline(increase="--increase", decrease="--decrease"),
+                "arg_value": "" // conf_utils.Cmdline(arg="--arg-value"),
+                "list": ["existing_item"] // conf_utils.Cmdline(append="--append"),
+            }
+        )
         self._parser = cli_utils.SlashArgumentParser()
         cli_utils.configure_arg_parser_by_config(self._parser, self.config)
 
@@ -72,7 +72,7 @@ class ArgumentParsingTest(OutputCaptureTest):
 
     def test_config_assign_wrong_path_restores_config(self):
         "Given a bad override, the get_parsed_config_args_context() should leave the configuration untouched"
-        with self.assertRaises(SystemExit) as caught:
+        with self.assertRaises(SystemExit) as caught:  # noqa: SIM117
             with self._cli(["-o", "string_value=bla", "-o", "int_value=hello"]):
                 pass
         self.assertNotEqual(caught.exception.code, 0)
@@ -80,9 +80,8 @@ class ArgumentParsingTest(OutputCaptureTest):
         self.assertEqual(self.config.root.string_value, "")
 
     def test_config_assign_missing_assignment(self):
-        with self.assertRaises(SystemExit) as caught:
-            with self._cli(['-o', 'blap']):
-                pass
+        with self.assertRaises(SystemExit) as caught, self._cli(["-o", "blap"]):
+            pass
         self.assertNotEqual(caught.exception.code, 0)
 
 
@@ -91,7 +90,7 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
     SAMPLE_NAME = "sample plugin"
 
     def setUp(self):
-        super(PluginCommandLineArgumentsTest, self).setUp()
+        super().setUp()
         self.plugin = SampleCommandLinePlugin(self.SAMPLE_NAME)
         with vintage.get_no_deprecations_context():
             plugins.manager.install(self.plugin)
@@ -144,7 +143,7 @@ class PluginCommandLineArgumentsTest(OutputCaptureTest):
     def test_help_shows_available_plugins(self):
         cli_utils.configure_arg_parser_by_plugins(self._parser)
         with self.assertRaises(SystemExit):
-            self._parser.parse_args(['-h'])
+            self._parser.parse_args(["-h"])
         output = self.stdout.getvalue()
         self.assertIn("--with-sample-plugin", output)
         self.assertIn("--plugin-option", output)
@@ -159,7 +158,6 @@ class PluginCommandLineArgumentsTestWithDashes(PluginCommandLineArgumentsTest):
 
 
 class SampleCommandLinePlugin(PluginInterface):
-
     def __init__(self, name="sample plugin"):
         self._name = name
 
@@ -177,7 +175,6 @@ class SampleCommandLinePlugin(PluginInterface):
 
 
 class InternalPlugin(PluginInterface):
-
     def __init__(self, name="internal plugin"):
         self._name = name
 

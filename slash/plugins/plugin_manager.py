@@ -20,20 +20,24 @@ _logger = logbook.Logger(__name__)
 
 _SKIPPED_PLUGIN_METHOD_NAMES = set(dir(PluginInterface))
 PluginInfo = collections.namedtuple("PluginInfo", ("plugin_instance", "is_internal"))
-_DEPRECATED_CHARACTERS = '-_'
+_DEPRECATED_CHARACTERS = "-_"
+
 
 class IncompatiblePlugin(ValueError):
     pass
 
+
 class UnknownPlugin(ValueError):
     pass
+
 
 class IllegalPluginName(ValueError):
     pass
 
-class PluginManager(object):
+
+class PluginManager:
     def __init__(self):
-        super(PluginManager, self).__init__()
+        super().__init__()
         self._installed = {}
         self._cmd_line_to_name = {}
         self._config_to_name = {}
@@ -58,7 +62,6 @@ class PluginManager(object):
             for name in set(self._installed) - set(previous_installed):
                 self.uninstall(name)
 
-
     def discover(self):
         """
         Iterates over all search paths and loads plugins
@@ -78,9 +81,11 @@ class PluginManager(object):
         """
         Returns a dict mapping plugin names to currently installed plugins
         """
-        return {plugin_name: plugin_info.plugin_instance
-                for plugin_name, plugin_info in self._installed.items()
-                if include_internals or (not plugin_info.is_internal)}
+        return {
+            plugin_name: plugin_info.plugin_instance
+            for plugin_name, plugin_info in self._installed.items()
+            if include_internals or (not plugin_info.is_internal)
+        }
 
     def get_active_plugins(self):
         """
@@ -120,12 +125,20 @@ class PluginManager(object):
     def _is_parallel_supported(self, plugin):
         if not parallel_utils.is_parallel_session():
             return False
-        plugin_parallel_mode = try_get_mark(plugin, 'parallel_mode', parallel_utils.ParallelPluginModes.ENABLED)
+        plugin_parallel_mode = try_get_mark(plugin, "parallel_mode", parallel_utils.ParallelPluginModes.ENABLED)
         if plugin_parallel_mode == parallel_utils.ParallelPluginModes.ENABLED:
             return False
-        if (plugin_parallel_mode == parallel_utils.ParallelPluginModes.DISABLED) \
-            or (plugin_parallel_mode == parallel_utils.ParallelPluginModes.PARENT_ONLY and parallel_utils.is_child_session()) \
-            or (plugin_parallel_mode == parallel_utils.ParallelPluginModes.CHILD_ONLY and parallel_utils.is_parent_session()):
+        if (  # noqa: SIM103
+            (plugin_parallel_mode == parallel_utils.ParallelPluginModes.DISABLED)
+            or (
+                plugin_parallel_mode == parallel_utils.ParallelPluginModes.PARENT_ONLY
+                and parallel_utils.is_child_session()
+            )
+            or (
+                plugin_parallel_mode == parallel_utils.ParallelPluginModes.CHILD_ONLY
+                and parallel_utils.is_parent_session()
+            )
+        ):
             return True
         return False
 
@@ -140,21 +153,23 @@ class PluginManager(object):
         :class:`slash.plugins.PluginInterface`.
         """
         if not isinstance(plugin, PluginInterface):
-            raise IncompatiblePlugin("Invalid plugin type: {!r}".format(type(plugin)))
+            raise IncompatiblePlugin(f"Invalid plugin type: {type(plugin)!r}")
         plugin_name = plugin.get_name()
-        if re.search(r'[^A-Za-z0-9_ -]', plugin_name):
-            raise IllegalPluginName("Illegal plugin name: {}".format(plugin_name))
+        if re.search(r"[^A-Za-z0-9_ -]", plugin_name):
+            raise IllegalPluginName(f"Illegal plugin name: {plugin_name}")
 
         if any(char in plugin_name for char in _DEPRECATED_CHARACTERS):
-            warn_deprecation("In the future, dashes and underscore will not be allowed in plugin names - "
-                             "spaces should be used instead (plugin name: {!r})".format(plugin_name))
+            warn_deprecation(
+                "In the future, dashes and underscore will not be allowed in plugin names - "
+                f"spaces should be used instead (plugin name: {plugin_name!r})"
+            )
         self._configure(plugin)
         self._installed[plugin_name] = PluginInfo(plugin, is_internal)
         self._cmd_line_to_name[self.normalize_command_line_name(plugin_name)] = plugin_name
         self._config_to_name[self.normalize_config_name(plugin_name)] = plugin_name
-        if not hasattr(plugin, '__toggles__'):
+        if not hasattr(plugin, "__toggles__"):
             plugin.__toggles__ = {
-                'session': gossip.Toggle(),
+                "session": gossip.Toggle(),
             }
         if activate:
             try:
@@ -168,16 +183,13 @@ class PluginManager(object):
 
     def install_builtin_plugins(self):
         for builtin_plugin_module in self._iter_builtin_plugin_modules():
-            module = __import__(
-                "slash.plugins.builtin.{}".format(builtin_plugin_module),
-                fromlist=[""]
-            )
+            module = __import__(f"slash.plugins.builtin.{builtin_plugin_module}", fromlist=[""])
             self.install(module.Plugin())
 
     def _iter_builtin_plugin_modules(self):
         builtin_dir = os.path.join(os.path.dirname(__file__), "builtin")
         for filename in os.listdir(builtin_dir):
-            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):
+            if filename.startswith("_") or filename.startswith(".") or not filename.endswith(".py"):  # noqa: PIE810
                 continue
             yield filename[:-3]
 
@@ -215,7 +227,9 @@ class PluginManager(object):
         plugin = self._get_installed_plugin(plugin)
         plugin_name = plugin.get_name()
         if self._is_parallel_supported(plugin):
-            _logger.warn("Activating plugin {} though it's configuration for parallel mode doesn't fit to current session".format(plugin.get_name()))
+            _logger.warning(
+                f"Activating plugin {plugin.get_name()} though it's configuration for parallel mode doesn't fit to current session"
+            )
         plugin.activate()
         for hook, callback, kwargs in self._get_plugin_registrations(plugin):
             hook.register(callback, **kwargs)
@@ -253,10 +267,10 @@ class PluginManager(object):
                 self.deactivate(plugin_name)
 
     def normalize_command_line_name(self, plugin_name):
-        return plugin_name.replace(' ', '-')
+        return plugin_name.replace(" ", "-")
 
     def normalize_config_name(self, plugin_name):
-        return plugin_name.replace(' ', '_')
+        return plugin_name.replace(" ", "_")
 
     def deactivate(self, plugin):
         """
@@ -276,23 +290,24 @@ class PluginManager(object):
     def _configure(self, plugin):
         cfg = plugin.get_config()
         if cfg is not None:
-            warn_deprecation('PluginInterface.get_config() is deprecated. '
-                             'Please use PluginInterface.get_default_config() instead')
+            warn_deprecation(
+                "PluginInterface.get_config() is deprecated. " "Please use PluginInterface.get_default_config() instead"
+            )
         else:
             cfg = plugin.get_default_config()
         if cfg is not None:
             plugin_name = plugin.get_name()
             config_name = self.normalize_config_name(plugin_name)
-            config['plugin_config'].extend({config_name: cfg})
+            config["plugin_config"].extend({config_name: cfg})
 
     def _unconfigure(self, plugin):
-        plugin_config = config['plugin_config']
+        plugin_config = config["plugin_config"]
         config_name = self.normalize_config_name(plugin.get_name())
         if config_name in plugin_config:
             plugin_config.pop(config_name)
 
     def _get_token(self, plugin_name):
-        return "slash.plugins.{}".format(plugin_name)
+        return f"slash.plugins.{plugin_name}"
 
     def _get_installed_plugin_instance_by_name(self, plugin_name):
         plugin_info = self._installed.get(plugin_name)
@@ -302,7 +317,7 @@ class PluginManager(object):
 
     def _get_installed_plugin_instance_by_type(self, plugin_class):
         for plugin in self._installed.values():
-            if type(plugin.plugin_instance) is plugin_class: # pylint: disable=unidiomatic-typecheck
+            if type(plugin.plugin_instance) is plugin_class:  # pylint: disable=unidiomatic-typecheck
                 return plugin.plugin_instance
         return None
 
@@ -319,21 +334,21 @@ class PluginManager(object):
             plugin_instance = plugin
             plugin_name = plugin.get_name()
         if plugin_instance is None or self._get_installed_plugin_instance_by_name(plugin_name) is not plugin_instance:
-            raise UnknownPlugin("Unknown plugin: {}".format(plugin_name))
+            raise UnknownPlugin(f"Unknown plugin: {plugin_name}")
         return plugin_instance
 
     def _get_plugin_registrations(self, plugin):
         plugin_name = plugin.get_name()
         returned = []
         unknown = []
-        global_needs = try_get_mark(plugin, 'plugin_needs', [])
-        global_provides = try_get_mark(plugin, 'plugin_provides', [])
+        global_needs = try_get_mark(plugin, "plugin_needs", [])
+        global_provides = try_get_mark(plugin, "plugin_provides", [])
 
         has_session_end = has_session_start = False
 
         register_no_op_hooks = set()
         if global_provides:
-            register_no_op_hooks.update(hook.full_name for hook in gossip.get_group('slash').get_hooks())
+            register_no_op_hooks.update(hook.full_name for hook in gossip.get_group("slash").get_hooks())
 
         for method_name in dir(type(plugin)):
             if method_name in _SKIPPED_PLUGIN_METHOD_NAMES:
@@ -341,37 +356,41 @@ class PluginManager(object):
 
             method = getattr(plugin, method_name)
 
-            if not hasattr(method, '__call__'):
+            if not hasattr(method, "__call__"):
                 continue
 
-            registration_list = try_get_mark(method, 'register_on', NOTHING)
+            registration_list = try_get_mark(method, "register_on", NOTHING)
 
             if registration_list is not NOTHING:
                 registration_list = registration_list[:]
             else:
-                if method_name.startswith('_'):
+                if method_name.startswith("_"):
                     continue
-                registration_list = [RegistrationInfo("slash.{}".format(method_name), expect_exists=True)]
+                registration_list = [RegistrationInfo(f"slash.{method_name}", expect_exists=True)]
 
             for registration_info in registration_list:
                 if registration_info.hook_name is None:
                     # asked not to register for nothing
                     continue
 
-                if not try_get_mark(method, 'register_if', True):
+                if not try_get_mark(method, "register_if", True):
                     continue
 
                 plugin_needs = list(
                     itertools.chain(
-                        try_get_mark(method, 'plugin_needs', []),
+                        try_get_mark(method, "plugin_needs", []),
                         global_needs,
-                        registration_info.register_kwargs.get('needs', [])))
+                        registration_info.register_kwargs.get("needs", []),
+                    )
+                )
 
                 plugin_provides = list(
                     itertools.chain(
-                        try_get_mark(method, 'plugin_provides', []),
+                        try_get_mark(method, "plugin_provides", []),
                         global_provides,
-                        registration_info.register_kwargs.get('provides', [])))
+                        registration_info.register_kwargs.get("provides", []),
+                    )
+                )
 
                 try:
                     if registration_info.expect_exists:
@@ -388,23 +407,25 @@ class PluginManager(object):
                 register_no_op_hooks.discard(registration_info.hook_name)
 
                 kwargs = registration_info.register_kwargs.copy()
-                kwargs.update({
-                    'needs': plugin_needs,
-                    'provides': plugin_provides,
-                    'token': self._get_token(plugin_name),
-                })
-                if registration_info.hook_name == 'slash.session_start':
+                kwargs.update(
+                    {
+                        "needs": plugin_needs,
+                        "provides": plugin_provides,
+                        "token": self._get_token(plugin_name),
+                    }
+                )
+                if registration_info.hook_name == "slash.session_start":
                     has_session_start = True
-                    kwargs['toggles_on'] = plugin.__toggles__['session']
-                elif registration_info.hook_name == 'slash.session_end':
+                    kwargs["toggles_on"] = plugin.__toggles__["session"]
+                elif registration_info.hook_name == "slash.session_end":
                     has_session_end = True
-                    kwargs['toggles_off'] = plugin.__toggles__['session']
+                    kwargs["toggles_off"] = plugin.__toggles__["session"]
 
                 returned.append((hook, method, kwargs))
 
         if has_session_end and not has_session_start:
-            hook = gossip.get_hook('slash.session_start')
-            returned.append((hook, lambda: None, {'toggles_on': plugin.__toggles__['session']}))
+            hook = gossip.get_hook("slash.session_start")
+            returned.append((hook, lambda: None, {"toggles_on": plugin.__toggles__["session"]}))
             register_no_op_hooks.discard(hook.full_name)
 
         for hook_name in register_no_op_hooks:

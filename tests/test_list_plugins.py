@@ -13,7 +13,7 @@ def test_slash_list_plugins(report_stream):
     installed = manager.get_installed_plugins()
     for plugin_name in installed:
         assert plugin_name in output
-        activate_flag = "--with-{}".format(plugin_name.replace(' ', '-'))
+        activate_flag = "--with-{}".format(plugin_name.replace(" ", "-"))
         assert activate_flag in output
 
 
@@ -26,7 +26,7 @@ def test_slash_list_plugins_for_internal_plugins(report_stream):
 
     assert internal_plugin.get_name() in manager.get_installed_plugins()
     assert internal_plugin.get_name() not in output
-    assert '--internal-plugin-option' not in output
+    assert "--internal-plugin-option" not in output
 
 
 @pytest.fixture
@@ -35,7 +35,6 @@ def report_stream():
 
 
 class InternalPlugin(PluginInterface):
-
     def get_name(self):
         return "internal plugin"
 

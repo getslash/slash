@@ -6,22 +6,23 @@ build-backend = "hatchling.build"
 name = "slash"
 description = "A Modern Testing Framework for Large-scale Projects"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = { text = "BSD 3-Clause License" }
 
 classifiers = [
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "arrow",
     "colorama",
     "confetti>=2.5.3",
-    "dessert~=1.4.7",
-    "emport~=1.3.1",
+    "dessert~=1.6.1",
+    "emport~=1.4.1",
     "gossip>=2.3.0",
     "Jinja2",
     "Logbook>=1.2.0",
@@ -41,9 +42,7 @@ dependencies = [
 
 dynamic = ["version"]
 
-authors = [
-    { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
-]
+authors = [{ name = "Rotem Yaari", email = "vmalloc@gmail.com" }]
 
 [project.urls]
 "Homepage" = "http://getslash.github.io/"
@@ -51,7 +50,7 @@ authors = [
 
 
 [project.scripts]
-slash  = "slash.frontend.main:main_entry_point"
+slash = "slash.frontend.main:main_entry_point"
 
 [project.optional-dependencies]
 testing = [
@@ -63,19 +62,33 @@ testing = [
     "pytest-timeout",
     "pyforge",
     "astroid~=2.15.5",
-    "pylint~=2.17.4",
+    "ruff",
 ]
-doc = [
-    "alabaster",
-    "docutils",
-    "releases~=1.6.1",
-    "Sphinx",
-]
+doc = ["alabaster", "docutils", "releases~=1.6.1", "Sphinx"]
 
 [tool.hatch.version]
 source = "vcs"
 
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    "PLE1205",  # logbook uses {}-style formatting, which ruff mistakes for logging-too-many-args
+    "BLE001",  # broad `except Exception` is used deliberately across the codebase
+    "B004",  # `hasattr(x, "__call__")` is used instead of `callable(x)`
+    "I001",  # imports are kept in their original (non-isort) order
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+# Test code bodies that are copied into generated test files, where `slash` and `__ut__` are defined
+"tests/{test_add_error,test_cleanups,test_exception_handling,test_hook_calling,test_project_customization}.py" = ["F821"]
+# Intentional bare excepts that also catch BaseException (KeyboardInterrupt, SystemExit)
+"{slash/exception_handling,slash/core/fixtures/fixture_store,tests/test_debugging}.py" = ["E722"]
+
+
 [tool.pytest]
-testpaths = "tests"
+testpaths = ["tests"]
 timeout_method = "signal"
-addopts = "-ra -W error::DeprecationWarning"
+addopts = ["-ra", "-W", "error::DeprecationWarning"]

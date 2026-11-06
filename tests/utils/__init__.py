@@ -22,18 +22,16 @@ from slash.utils.python import PYPY
 
 import unittest
 
-
 _logger = logbook.Logger(__name__)
 
 
 class TestCase(unittest.TestCase):
-
     def setUp(self):
-        super(TestCase, self).setUp()
+        super().setUp()
         self._handler = LoggingHandler()
         self._handler.push_application()
         self.addCleanup(self._handler.pop_application)
-        gossip.get_group('slash').set_exception_policy(gossip.RaiseImmediately())
+        gossip.get_group("slash").set_exception_policy(gossip.RaiseImmediately())
         self.override_config("log.console_level", 10000)  # silence console in tests
 
     def override_config(self, path, value):
@@ -52,6 +50,7 @@ class TestCase(unittest.TestCase):
         if self._forge is None:
             self._forge = forge.Forge()
         return self._forge
+
     _events = None
 
     @property
@@ -64,11 +63,10 @@ class TestCase(unittest.TestCase):
         if self._forge is not None:
             self._forge.restore_all_replacements()
             self._forge.verify()
-        super(TestCase, self).tearDown()
+        super().tearDown()
 
 
-class NullFile(object):
-
+class NullFile:
     def write(self, s):
         pass
 
@@ -80,14 +78,12 @@ class NullFile(object):
 
 
 class CustomException(Exception):
-
     @classmethod
     def do_raise(cls):
         raise cls("Custom exception")
 
 
 class NamedPlugin(PluginInterface):
-
     def get_name(self):
         return type(self).__name__
 
@@ -110,6 +106,8 @@ def run_tests_in_session(test_class_path_or_iterator, session=None):
         for err in itertools.chain(result.get_errors(), result.get_failures(), result.get_skips()):
             _logger.debug("Unsuccessful result: {0}", err)
     return session
+
+
 run_tests_in_session.__test__ = False
 
 
@@ -118,7 +116,9 @@ def run_tests_assert_success(test_class_path_or_iterator, session=None):
     assert session.results.is_success(), "Run did not succeed"
     return session
 
+
 run_tests_assert_success.__test__ = False
+
 
 def make_runnable_tests(thing):
     return slash.loader.Loader().get_runnables(thing)
@@ -134,7 +134,7 @@ def resolve_and_run(thing):
 
 
 def without_pyc(filename):
-    if filename.endswith('.pyc'):
+    if filename.endswith(".pyc"):
         return filename[:-1]
     return filename
 
@@ -148,6 +148,7 @@ def raises_maybe(exc, cond):
         return pytest.raises(exc)
     return noop()
 
+
 _noop = lambda f: f
 
 if PYPY:
@@ -156,18 +157,17 @@ else:
     skip_on_pypy = _noop
 
 
-class Unprintable(object):
-
+class Unprintable:
     def __repr__(self):  # pylint: disable=invalid-repr-returned
-        1/0                     # pylint: disable=pointless-statement
+        1 / 0  # pylint: disable=pointless-statement  # noqa: B018
 
     __str__ = __repr__
 
 
 def maybe_decorate(decorator, flag):
-
     def returned(func):
         if flag:
             func = decorator(func)
         return func
+
     return returned

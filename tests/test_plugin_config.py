@@ -10,20 +10,19 @@ def restore_plugins(request):
 
 
 def test_plugin_config():
-
-    assert 'sample' not in slash.config['plugin_config']
+    assert "sample" not in slash.config["plugin_config"]
     value = object()
 
     class Plugin(PluginInterface):
-
         def get_name(self):
-            return 'sample'
+            return "sample"
 
         def get_default_config(self):
             return {
-                'values': {
-                    'value_1': value,
-                }}
+                "values": {
+                    "value_1": value,
+                }
+            }
 
     plugin = Plugin()
     slash.plugins.manager.install(plugin)
@@ -31,6 +30,6 @@ def test_plugin_config():
     assert slash.config.root.plugin_config.sample.values.value_1 is value
     assert plugin.current_config.values.value_1 is value
 
-    slash.plugins.manager.uninstall('sample')
+    slash.plugins.manager.uninstall("sample")
 
-    assert 'sample' not in slash.config['plugin_config']
+    assert "sample" not in slash.config["plugin_config"]

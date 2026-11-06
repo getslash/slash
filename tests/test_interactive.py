@@ -8,26 +8,25 @@ from slash import start_interactive_shell
 
 
 def test_interactive_test(suite, interactive_checkpoint):
-
-    summary = suite.run(additional_args=['-i'])
+    summary = suite.run(additional_args=["-i"])
     assert interactive_checkpoint.called
 
     result = next(summary.session.results.iter_test_results())
-    assert repr(result.test_metadata) == '<Interactive>'
-    assert result.test_metadata.file_path == '<Interactive>'
+    assert repr(result.test_metadata) == "<Interactive>"
+    assert result.test_metadata.file_path == "<Interactive>"
 
 
-@pytest.mark.parametrize('with_session', [True, False])
+@pytest.mark.parametrize("with_session", [True, False])
 def test_interactive_scope(forge, with_session):
-    interact_mock = forge.replace(interactive, '_interact')
+    interact_mock = forge.replace(interactive, "_interact")
 
     def _add_namespace_var(namespace):
-        namespace['z'] = 4
+        namespace["z"] = 4
 
-    interact_mock({'x': 2, 'y': 3, 'z': 4})
+    interact_mock({"x": 2, "y": 3, "z": 4})
     forge.replay()
 
-    with gossip.registered('slash.before_interactive_shell', _add_namespace_var):
+    with gossip.registered("slash.before_interactive_shell", _add_namespace_var):
         if with_session:
             with slash.Session():
                 slash.g.x = 2
@@ -37,27 +36,25 @@ def test_interactive_scope(forge, with_session):
 
 
 def test_interactive_planned_tests(interactive_checkpoint, suite):
-
     counts = Munch(original=len(suite), got=None)
 
     @slash.hooks.register
-    def tests_loaded(tests):    # pylint: disable=unused-variable
+    def tests_loaded(tests):  # pylint: disable=unused-variable
         counts.got = len(tests)
 
-    suite.run(additional_args=['-i'])
+    suite.run(additional_args=["-i"])
     assert interactive_checkpoint.called
     assert counts.got == counts.original + 1
-
 
 
 @pytest.fixture
 def interactive_checkpoint(checkpoint, forge):
     def _interact(*_, **__):  # pylint: disable=unused-argument
-        assert slash.context.session.scope_manager.get_current_stack() == ['session', 'module', 'test']
+        assert slash.context.session.scope_manager.get_current_stack() == ["session", "module", "test"]
         assert slash.context.test.__slash__.is_interactive()
         assert slash.context.test.__slash__.id
         checkpoint()
 
-    forge.replace_with(interactive, '_interact', _interact)
+    forge.replace_with(interactive, "_interact", _interact)
 
     return checkpoint

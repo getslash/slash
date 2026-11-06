@@ -8,7 +8,8 @@ def test_slash_list_config():
     list_config(munch.Munch(argv=[]), report_stream)
     assert report_stream.getvalue()
 
+
 def test_slash_list_config_with_filters():
     report_stream = StringIO()
-    list_config(munch.Munch(argv=['log']), report_stream)
-    assert 'log.root' in report_stream.getvalue()
+    list_config(munch.Munch(argv=["log"]), report_stream)
+    assert "log.root" in report_stream.getvalue()
