@@ -9,8 +9,8 @@ ruff: env
 env: .venv/.up-to-date
 
 .venv/.up-to-date: Makefile pyproject.toml
-	python -m venv .venv
-	.venv/bin/pip install -e .[testing,doc]
+	uv venv --allow-existing .venv
+	uv pip install --python .venv -e ".[testing,doc]"
 	touch .venv/.up-to-date
 
 doc: env
