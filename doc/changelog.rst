@@ -1,5 +1,9 @@
 Changelog
 =========
+* :release:`1.16.1 <08-11-2026>`
+* :support:`- backported` Publish to PyPI automatically when a tag is pushed
+* :support:`- backported` Use ``uv`` to set up the development environment and CI
+* :support:`- backported` Use ``ruff`` instead of ``pylint`` for linting
 * :release:`1.16.0 <06-11-2026>`
 * :bug:`- major` Fix ``ExtensionImporter`` for python >= 3.12
 * :feature:`-` Support python 3.12 to 3.15
