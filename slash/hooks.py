@@ -69,6 +69,11 @@ _define(
     ),
 )
 _define("before_test_cleanups", doc="Called right before a test cleanups are executed")
+_define(
+    "test_retry",
+    doc="Called when a failed test attempt is about to be retried, after the attempt's test_end",
+    arg_names=("attempt", "max_attempts"),
+)
 _define("test_success", doc="Called on test success")
 _define("test_error", doc="Called on test error")
 _define("test_failure", doc="Called on test failure")

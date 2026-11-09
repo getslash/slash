@@ -1,7 +1,7 @@
 import functools
 
 from ..ctx import context
-from ..core.markers import repeat_marker
+from ..core.markers import repeat_marker, retry_marker
 from ..core import requirements
 from ..exceptions import SkipTest
 
@@ -19,6 +19,19 @@ def repeat(num_repetitions):
     Marks a test to be repeated multiple times when run
     """
     return repeat_marker(num_repetitions)
+
+
+def retry(num_retries):
+    """
+    Marks a test to be retried up to ``num_retries`` more times if it fails or errors.
+
+    Each retry is a fresh attempt: test-scoped fixtures and cleanups from the failed attempt
+    are torn down and created again, and ``test_start``/``test_end`` fire for every attempt.
+    The test passes if any attempt passes. Overrides the ``run.retries`` configuration value.
+    """
+    if not isinstance(num_retries, int) or isinstance(num_retries, bool) or num_retries < 0:
+        raise ValueError(f"num_retries must be a non-negative integer, got {num_retries!r}")
+    return retry_marker(num_retries)
 
 
 def skipped(thing, reason=None):

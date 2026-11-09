@@ -135,6 +135,8 @@ Misc. Utilities
 
 .. autofunction:: slash.repeat
 
+.. autofunction:: slash.retry
+
 
 Internals
 ---------

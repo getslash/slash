@@ -1,5 +1,6 @@
 Changelog
 =========
+* :feature:`1079` Failing tests can be retried, with ``--retries NUM`` (``run.retries``) for every test or ``@slash.retry(NUM)`` for a single test. Each attempt gets fresh test-scoped fixtures and cleanups, and a new ``test_retry`` hook fires before each retry
 * :release:`1.16.0 <06-11-2026>`
 * :bug:`- major` Fix ``ExtensionImporter`` for python >= 3.12
 * :feature:`-` Support python 3.12 to 3.15

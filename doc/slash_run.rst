@@ -58,6 +58,23 @@ Stopping at the first unsuccessful test is done with the ``-x`` flag.
 
 
 
+Retrying Failed Tests
+---------------------
+
+Tests that fail intermittently, for example ones that drive real hardware or a network, can be retried before they are reported as failed. ``--retries`` retries every failing test up to the given number of extra times::
+
+  $ slash run --retries 2 tests/
+
+A single test can set its own count with ``slash.retry``, which takes precedence over ``--retries``:
+
+.. code-block:: python
+
+  @slash.retry(3)
+  def test_link_comes_up(connection):
+      ...
+
+Each retry is a fresh attempt. Test-scoped fixtures and cleanups from the failed attempt are torn down and created again, ``test_start`` and ``test_end`` fire for every attempt, and the ``test_retry`` hook fires before each retry. Module and session fixtures are kept. The test is reported once: it succeeds if any attempt succeeds, and otherwise reports the errors of its last attempt. Earlier attempts stay available through ``result.get_retried_attempts()``, and ``result.get_num_retries()`` tells how many retries were needed. Skips, interruptions and fatal errors are never retried.
+
 Including and Excluding Tests
 -----------------------------
 

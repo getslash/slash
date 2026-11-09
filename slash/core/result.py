@@ -47,6 +47,7 @@ class Result:
         self._interrupted = False
         self._log_path = None
         self._extra_logs = []
+        self._retried_attempts = []
 
     def _fact_set_callback(self, fact_name, fact_value):
         gossip.trigger("slash.fact_set", name=fact_name, value=fact_value)
@@ -118,6 +119,21 @@ class Result:
 
     def has_errors_or_failures(self):
         return bool(self._failures or self._errors)
+
+    def get_num_retries(self):
+        """Returns how many times the test was retried after a failed attempt"""
+        return len(self._retried_attempts)
+
+    def get_retried_attempts(self):
+        """Returns the errors and failures of each retried attempt, oldest first, as a list of
+        ``(errors, failures)`` pairs. The current errors and failures belong to the last attempt."""
+        return list(self._retried_attempts)
+
+    def start_retry(self):
+        """Sets aside the errors and failures of a failed attempt so the next attempt starts clean"""
+        self._retried_attempts.append((self._errors, self._failures))
+        self._errors = []
+        self._failures = []
 
     def get_log_path(self):
         """Returns log path"""

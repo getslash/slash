@@ -117,6 +117,9 @@ config = Config(
             "repeat_all": 1
             // Doc("Repeat all suite a specified amount of times")
             // Cmdline(arg="--repeat-all", metavar="NUM_TIMES"),
+            "retries": 0
+            // Doc("Retry each failing test up to this many more times (overridden per test by slash.retry)")
+            // Cmdline(arg="--retries", metavar="NUM_RETRIES"),
             "session_state_path": "~/.slash/last_session" // Doc("Where to keep last session serialized data"),
             "project_name": None,
             "project_customization_file_path": "./.slashrc",

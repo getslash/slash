@@ -11,6 +11,7 @@ from .exceptions import NoActiveSession, SlashInternalError
 from .core.function_test import FunctionTest
 from .core.metadata import ensure_test_metadata
 from .core.exclusions import is_excluded
+from .core.markers import retry_marker
 from .core import requirements
 from .utils.iteration import PeekableIterator
 
@@ -102,19 +103,26 @@ def _run_single_test(test, test_iterator):
                 return
 
             result.mark_started()
+            max_attempts = 1 + _get_num_retries(test)
             with TestStartEndController(result, prev_result) as controller:
                 try:
-                    try:
-                        with handling_exceptions(swallow=True):
-                            context.session.scope_manager.begin_test(test)
-                            try:
-                                controller.start()
-                                with handling_exceptions(swallow=True):
-                                    test.run()
-                            finally:
-                                context.session.scope_manager.end_test(test)
-                    except context.session.get_skip_exception_types():
-                        pass
+                    attempt = 1
+                    while True:
+                        try:
+                            with handling_exceptions(swallow=True):
+                                context.session.scope_manager.begin_test(test)
+                                try:
+                                    controller.start()
+                                    with handling_exceptions(swallow=True):
+                                        test.run()
+                                finally:
+                                    context.session.scope_manager.end_test(test)
+                        except context.session.get_skip_exception_types():
+                            pass
+                        if attempt >= max_attempts or not _should_retry(result):
+                            break
+                        attempt += 1
+                        _retry(test, controller, result, attempt, max_attempts)
 
                     _fire_test_summary_hooks(test, result)
                     if next_test is None and config.root.parallel.worker_id is None:
@@ -125,6 +133,36 @@ def _run_single_test(test, test_iterator):
 
                 except context.session.get_skip_exception_types():
                     pass
+
+
+def _get_num_retries(test):
+    marked = retry_marker.get_value(test.get_test_function(), None)
+    if marked is not None:
+        return marked
+    return config.root.run.retries  # pylint: disable=no-member
+
+
+def _should_retry(result):
+    if not result.has_errors_or_failures():
+        return False
+    # Skips, interruptions and fatal errors end the test as they would without retries
+    return not (result.is_skip() or result.is_interrupted() or result.has_fatal_errors())
+
+
+def _retry(test, controller, result, attempt, max_attempts):
+    # The failed attempt ends like a test does, so the next one starts like a fresh test
+    controller.end_attempt()
+    result.start_retry()
+    _logger.notice(
+        "#{}: retrying {} (attempt {}/{})",
+        test.__slash__.test_index1,
+        test.__slash__.get_address(raw_params=config.root.log.show_raw_param_values),
+        attempt,
+        max_attempts,
+        extra={"highlight": True, "filter_bypass": True},
+    )
+    with handling_exceptions(swallow=True):
+        hooks.test_retry(attempt=attempt, max_attempts=max_attempts)  # pylint: disable=no-member
 
 
 def _process_requirements_and_exclusions(test):
@@ -161,6 +199,7 @@ class TestStartEndController:
         self._result = result
         self._prev_result = prev_result
         self._started = False
+        self._retrying = False
 
     def __enter__(self):
         return self
@@ -168,8 +207,18 @@ class TestStartEndController:
     def start(self):
         if not self._started:
             self._started = True
-            self._result.mark_started()
+            # A retried attempt keeps the original start time, so the duration covers every attempt
+            if not self._retrying:
+                self._result.mark_started()
             hooks.test_start()  # pylint: disable=no-member
+
+    def end_attempt(self):
+        """Ends a failed attempt that will be retried: fires test_end but keeps the result open"""
+        if self._started:
+            self._started = False
+            self._retrying = True
+            with context.session.cleanups.forbid_implicit_scoping_context(), handling_exceptions(swallow=True):
+                hooks.test_end()  # pylint: disable=no-member
 
     def end(self):
         if self._started:
