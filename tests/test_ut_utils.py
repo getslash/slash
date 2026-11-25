@@ -22,6 +22,13 @@ def test_get_arguments(func):
     assert [a.name for a in args] == ["a", "b", "c"]
 
 
+def test_get_arguments_pypy_code_path(func, monkeypatch):
+    # inspect.getargspec, which this code path used to call, was removed in Python 3.11
+    monkeypatch.setattr("slash.utils.python.PYPY", True)
+    args = get_arguments(func)
+    assert [a.name for a in args] == ["a", "b", "c"]
+
+
 class SampleClass:
     def example_func(self, a, b, c):
         pass
