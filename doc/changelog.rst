@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`967 major` Don't print ``BrokenPipeError`` when the output of a ``slash`` command is piped to a command that exits early (such as ``head``)
 * :release:`1.16.0 <06-11-2026>`
 * :bug:`- major` Fix ``ExtensionImporter`` for python >= 3.12
 * :feature:`-` Support python 3.12 to 3.15

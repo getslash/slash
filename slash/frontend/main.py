@@ -78,7 +78,15 @@ def main_entry_point():
     if is_windows:
         colorama.init()
     try:
-        sys.exit(main())
+        returned = main()
+        # surface a closed pipe here, and not while the interpreter exits
+        sys.stdout.flush()
+        sys.exit(returned)
+    except BrokenPipeError:
+        # The reader of our output (e.g. ``head``) went away. Point stdout at devnull, so
+        # that flushing it on exit doesn't print "Exception ignored ... BrokenPipeError"
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        sys.exit(1)
     finally:
         if is_windows:
             colorama.deinit()
