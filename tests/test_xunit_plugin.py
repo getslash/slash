@@ -67,6 +67,17 @@ def test_xunit_plugin_add_failure_error(suite, suite_test, xunit_filename, errty
     assert errors
 
 
+def test_xunit_plugin_strips_characters_invalid_in_xml(suite, suite_test, xunit_filename):
+    suite_test.append_line('slash.add_error("bad \\x1b char")')
+    suite_test.expect_error()
+
+    suite.run()
+
+    # parsing fails if the file contains the (invalid in XML) escape character
+    testcase_xml = _get_testcase_xml(suite_test, xunit_filename)
+    assert testcase_xml.find("error").attrib["message"] == "bad  char"
+
+
 def _get_testcase_xml(suite_test, filename):
     with open(filename) as f:
         xml = ElementTree.parse(f)

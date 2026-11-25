@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import re
 import socket
 import sys
 from ..interface import PluginInterface
@@ -9,6 +10,14 @@ from ...utils.traceback_utils import get_traceback_string
 from ...utils.conf_utils import Cmdline, Doc
 from slash import config as slash_config
 from xml.etree.ElementTree import tostring as xml_to_string, Element as E, SubElement as SE
+
+
+# Characters that are not allowed in an XML 1.0 document (e.g. the ESC control character)
+_INVALID_XML_CHARS = re.compile("[^\t\n\r\u0020-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]")
+
+
+def _strip_invalid_xml_chars(value):
+    return _INVALID_XML_CHARS.sub("", value) if isinstance(value, str) else value
 
 
 class Plugin(PluginInterface):
@@ -123,6 +132,10 @@ class Plugin(PluginInterface):
                     test.append(value)
 
             e.append(test)
+
+        for element in e.iter():
+            element.text = _strip_invalid_xml_chars(element.text)
+            element.attrib = {key: _strip_invalid_xml_chars(value) for key, value in element.attrib.items()}
 
         with open(slash_config.root.plugin_config.xunit.filename, "wb") as outfile:
             outfile.write(xml_to_string(e))
