@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`1091 major` Strip characters that are not valid in XML (such as escape sequences) from the xunit plugin output
 * :release:`1.16.0 <06-11-2026>`
 * :bug:`- major` Fix ``ExtensionImporter`` for python >= 3.12
 * :feature:`-` Support python 3.12 to 3.15
