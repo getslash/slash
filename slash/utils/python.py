@@ -73,7 +73,7 @@ def get_arguments_dict(func):
 def get_arguments(func):
     if PYPY:
         func = get_underlying_func(func)
-        spec = inspect.getargspec(func)  # pylint: disable=deprecated-method
+        spec = inspect.getfullargspec(func)
         returned = [FunctionArgument(name=name) for name in spec.args]
     else:
         if getattr(func, "__self__", None) is not None:
