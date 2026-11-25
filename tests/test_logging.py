@@ -2,6 +2,7 @@
 import functools
 import os
 import sys
+import types
 
 import logbook
 import brotli
@@ -9,6 +10,7 @@ import gzip
 import gossip
 import pytest
 import slash
+from slash.log import _NormalizedObject
 
 from .utils import run_tests_assert_success, run_tests_in_session, TestCase, make_runnable_tests
 from .utils.suite_writer import Suite
@@ -305,6 +307,13 @@ def test_log_names_with_timestamps(files_dir, config_override, suite):
     config_override("log.session_subpath", "{timestamp:%Y-%m-%d-%H%M%S}/session.log")
     config_override("log.subpath", "{timestamp:%Y-%m-%d-%H%M%S}/test.log")
     suite.run()
+
+
+def test_log_path_format_specs():
+    # e.g. log.subpath = "{context.test.name:.4}/debug.log" trims the name
+    obj = types.SimpleNamespace(name="SomeTestClass", path="a/b")
+    formatted = "{o.name:.4}/{o.path:>5}/debug.log".format(o=_NormalizedObject(obj))
+    assert formatted == "Some/  a_b/debug.log"
 
 
 @pytest.mark.parametrize("raw_values", [True, False])
