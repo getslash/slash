@@ -53,6 +53,9 @@ class _NormalizedObject:
     def __str__(self):
         return self._escape(str(self._obj))
 
+    def __format__(self, format_spec):
+        return format(str(self), format_spec)
+
     def __repr__(self):
         return self._escape(repr(self._obj))
 

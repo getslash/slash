@@ -1,5 +1,6 @@
 Changelog
 =========
+* :bug:`1069 major` Support format specs (such as ``{context.test_classname:.3}``) in ``log.subpath`` and the other log path settings
 * :release:`1.16.0 <06-11-2026>`
 * :bug:`- major` Fix ``ExtensionImporter`` for python >= 3.12
 * :feature:`-` Support python 3.12 to 3.15
